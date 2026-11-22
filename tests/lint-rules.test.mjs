@@ -42,14 +42,25 @@ const FIXTURE_FILES = {
   'src/components/Scene.android.tsx': 'export function Scene() { return null; }\n',
   'src/components/Scene.native.tsx': 'export function Scene() { return null; }\n',
   'src/components/widget.module.css': '.box { color: red; }\n',
+  'src/features/assembly-explorer/Scene.ios.tsx': 'export function Scene() { return null; }\n',
+  'src/features/assembly-explorer/Scene.android.tsx': 'export function Scene() { return null; }\n',
+  'src/features/assembly-explorer/renderer/AssemblyScene.ios.tsx':
+    'export function AssemblyScene() { return null; }\n',
+  'src/features/assembly-explorer/renderer/AssemblyScene.android.tsx':
+    'export function AssemblyScene() { return null; }\n',
+  'src/features/assembly-explorer/3d/SceneNode.ios.tsx':
+    'export function SceneNode() { return null; }\n',
   'modules/realitykit-view/index.ts': 'export const RealityKitView = {};\n',
   'modules/filament-view/index.ts': 'export const FilamentView = {};\n',
   'node_modules/react/index.d.ts': 'export {};\n',
   'node_modules/react-native/index.d.ts': 'export const Platform = { OS: "ios" };\n',
   'node_modules/react-dom/index.d.ts': 'export function createPortal() {}\n',
   'node_modules/three/index.d.ts': 'export class Scene {}\n',
+  'node_modules/@expo/ui/index.d.ts': 'export const Host = {};\n',
   'node_modules/@expo/ui/swift-ui/index.d.ts': 'export const Host = {};\n',
   'node_modules/@expo/ui/jetpack-compose/index.d.ts': 'export const Host = {};\n',
+  'node_modules/realitykit-view/index.d.ts': 'export const RealityKitView = {};\n',
+  'node_modules/filament-view/index.d.ts': 'export const FilamentView = {};\n',
   'node_modules/@react-navigation/native/index.d.ts': 'export const useNavigation = () => ({});\n',
   'node_modules/expo-router/index.d.ts': 'export const Link = () => null;\n',
   'node_modules/firebase/firestore/index.d.ts': 'export const getFirestore = () => ({});\n',
@@ -248,63 +259,121 @@ describe('zappd lint rules', () => {
       assertHasRule(navRes, 'no-restricted-imports');
     });
 
-    it('blocks platform-specific libraries in platform-agnostic files', async () => {
-      for (const pkg of ['three', 'react-dom', '@expo/ui/swift-ui', '@expo/ui/jetpack-compose']) {
+    it('allows universal @expo/ui in shared native files and blocks it in web and domain files', async () => {
+      for (const filePath of [
+        'src/features/projects/index.ts',
+        'src/components/Scene.native.tsx',
+      ]) {
         const res = await lintFixture(
-          'src/features/projects/index.ts',
-          `import * as Pkg from '${pkg}';\nexport const x = Pkg;\n`,
+          filePath,
+          "import { Host } from '@expo/ui';\nexport const x = Host;\n",
+        );
+        assertNoRule(res, 'no-restricted-imports');
+      }
+
+      for (const filePath of ['src/components/Scene.web.tsx', 'src/shared/domain/part.ts']) {
+        const res = await lintFixture(
+          filePath,
+          "import { Host } from '@expo/ui';\nexport const x = Host;\n",
         );
         assertHasRule(res, 'no-restricted-imports');
       }
     });
 
-    it('allows web libraries in *.web.tsx and blocks iOS/Android libraries there', async () => {
+    it('blocks platform-specific @expo/ui subpaths across all src files', async () => {
+      const filesToTest = [
+        'src/features/projects/index.ts',
+        'src/components/Scene.native.tsx',
+        'src/components/Scene.web.tsx',
+        'src/components/Scene.ios.tsx',
+        'src/components/Scene.android.tsx',
+        'src/features/assembly-explorer/renderer/AssemblyScene.ios.tsx',
+        'src/features/assembly-explorer/renderer/AssemblyScene.android.tsx',
+      ];
+      for (const filePath of filesToTest) {
+        for (const pkg of ['@expo/ui/swift-ui', '@expo/ui/jetpack-compose']) {
+          const res = await lintFixture(
+            filePath,
+            `import { Host } from '${pkg}';\nexport const x = Host;\n`,
+          );
+          assertHasRule(res, 'no-restricted-imports');
+        }
+      }
+    });
+
+    it('blocks web libraries in non-web files and allows them in *.web.tsx', async () => {
       const allowedWeb = await lintFixture(
         'src/components/Scene.web.tsx',
         "import { createPortal } from 'react-dom';\nimport { Scene as ThreeScene } from 'three';\nexport const x = [createPortal, ThreeScene];\n",
       );
       assertNoRule(allowedWeb, 'no-restricted-imports');
 
-      const blockedIosInWeb = await lintFixture(
-        'src/components/Scene.web.tsx',
-        "import { Host } from '@expo/ui/swift-ui';\nexport const x = Host;\n",
-      );
-      assertHasRule(blockedIosInWeb, 'no-restricted-imports');
-
-      const blockedAndroidInWeb = await lintFixture(
-        'src/components/Scene.web.tsx',
-        "import { Host } from '@expo/ui/jetpack-compose';\nexport const x = Host;\n",
-      );
-      assertHasRule(blockedAndroidInWeb, 'no-restricted-imports');
-    });
-
-    it('allows iOS libraries in *.ios.tsx and blocks web/Android libraries there', async () => {
-      const allowedIos = await lintFixture(
+      const nonWebFiles = [
+        'src/features/projects/index.ts',
+        'src/components/Scene.native.tsx',
         'src/components/Scene.ios.tsx',
-        "import { Host } from '@expo/ui/swift-ui';\nexport const x = Host;\n",
-      );
-      assertNoRule(allowedIos, 'no-restricted-imports');
-
-      for (const pkg of ['three', 'react-dom', '@expo/ui/jetpack-compose']) {
-        const res = await lintFixture(
-          'src/components/Scene.ios.tsx',
-          `import * as Pkg from '${pkg}';\nexport const x = Pkg;\n`,
-        );
-        assertHasRule(res, 'no-restricted-imports');
+        'src/components/Scene.android.tsx',
+      ];
+      for (const filePath of nonWebFiles) {
+        for (const pkg of ['three', 'react-dom']) {
+          const res = await lintFixture(
+            filePath,
+            `import * as Pkg from '${pkg}';\nexport const x = Pkg;\n`,
+          );
+          assertHasRule(res, 'no-restricted-imports');
+        }
       }
     });
 
-    it('allows Android libraries in *.android.tsx and blocks web/iOS libraries there', async () => {
-      const allowedAndroid = await lintFixture(
-        'src/components/Scene.android.tsx',
-        "import { Host } from '@expo/ui/jetpack-compose';\nexport const x = Host;\n",
+    it('restricts realitykit-view to *.ios.{ts,tsx} and filament-view to *.android.{ts,tsx}', async () => {
+      const allowedIosPkg = await lintFixture(
+        'src/features/assembly-explorer/renderer/AssemblyScene.ios.tsx',
+        "import { RealityKitView } from 'realitykit-view';\nexport const x = RealityKitView;\n",
       );
-      assertNoRule(allowedAndroid, 'no-restricted-imports');
+      assertNoRule(allowedIosPkg, 'no-restricted-imports');
 
-      for (const pkg of ['three', 'react-dom', '@expo/ui/swift-ui']) {
+      const allowedIosLocal = await lintFixture(
+        'src/components/Scene.ios.tsx',
+        "import { RealityKitView } from '../../modules/realitykit-view';\nexport const x = RealityKitView;\n",
+      );
+      assertNoRule(allowedIosLocal, 'no-restricted-imports');
+
+      const allowedAndroidPkg = await lintFixture(
+        'src/features/assembly-explorer/renderer/AssemblyScene.android.tsx',
+        "import { FilamentView } from 'filament-view';\nexport const x = FilamentView;\n",
+      );
+      assertNoRule(allowedAndroidPkg, 'no-restricted-imports');
+
+      const allowedAndroidLocal = await lintFixture(
+        'src/components/Scene.android.tsx',
+        "import { FilamentView } from '../../modules/filament-view';\nexport const x = FilamentView;\n",
+      );
+      assertNoRule(allowedAndroidLocal, 'no-restricted-imports');
+
+      for (const filePath of [
+        'src/features/assembly-explorer/renderer/AssemblyScene.android.tsx',
+        'src/components/Scene.android.tsx',
+        'src/components/Scene.web.tsx',
+        'src/components/Scene.native.tsx',
+        'src/components/Scene.tsx',
+      ]) {
         const res = await lintFixture(
-          'src/components/Scene.android.tsx',
-          `import * as Pkg from '${pkg}';\nexport const x = Pkg;\n`,
+          filePath,
+          "import { RealityKitView } from 'realitykit-view';\nexport const x = RealityKitView;\n",
+        );
+        assertHasRule(res, 'no-restricted-imports');
+      }
+
+      for (const filePath of [
+        'src/features/assembly-explorer/renderer/AssemblyScene.ios.tsx',
+        'src/components/Scene.ios.tsx',
+        'src/components/Scene.web.tsx',
+        'src/components/Scene.native.tsx',
+        'src/components/Scene.tsx',
+      ]) {
+        const res = await lintFixture(
+          filePath,
+          "import { FilamentView } from 'filament-view';\nexport const x = FilamentView;\n",
         );
         assertHasRule(res, 'no-restricted-imports');
       }
@@ -324,6 +393,88 @@ describe('zappd lint rules', () => {
         "import { getFirestore } from 'firebase/firestore';\nexport const x = getFirestore;\n",
       );
       assertHasRule(routeFirebase, 'no-restricted-imports');
+    });
+  });
+
+  describe('local/ios-android-3d-only', () => {
+    it('blocks .ios.tsx and .android.tsx files outside renderer/ or 3d/ without 3D bindings', async () => {
+      const iosNoThreeD = await lintFixture(
+        'src/components/Scene.ios.tsx',
+        'export function Scene() { return null; }\n',
+      );
+      assertHasRule(iosNoThreeD, 'local/ios-android-3d-only');
+
+      const androidNoThreeD = await lintFixture(
+        'src/components/Scene.android.tsx',
+        'export function Scene() { return null; }\n',
+      );
+      assertHasRule(androidNoThreeD, 'local/ios-android-3d-only');
+    });
+
+    it('allows .ios.tsx and .android.tsx files inside renderer/ or 3d/ directories', async () => {
+      const rendererIos = await lintFixture(
+        'src/features/assembly-explorer/renderer/AssemblyScene.ios.tsx',
+        'export function AssemblyScene() { return null; }\n',
+      );
+      assertNoRule(rendererIos, 'local/ios-android-3d-only');
+
+      const rendererAndroid = await lintFixture(
+        'src/features/assembly-explorer/renderer/AssemblyScene.android.tsx',
+        'export function AssemblyScene() { return null; }\n',
+      );
+      assertNoRule(rendererAndroid, 'local/ios-android-3d-only');
+
+      const threeDIos = await lintFixture(
+        'src/features/assembly-explorer/3d/SceneNode.ios.tsx',
+        'export function SceneNode() { return null; }\n',
+      );
+      assertNoRule(threeDIos, 'local/ios-android-3d-only');
+    });
+
+    it('allows .ios.tsx and .android.tsx files binding their platform 3D module', async () => {
+      const localIos = await lintFixture(
+        'src/components/Scene.ios.tsx',
+        "import { RealityKitView } from '../../modules/realitykit-view';\nexport const x = RealityKitView;\n",
+      );
+      assertNoRule(localIos, 'local/ios-android-3d-only');
+      assertNoRule(localIos, 'no-restricted-imports');
+
+      const localAndroid = await lintFixture(
+        'src/components/Scene.android.tsx',
+        "import { FilamentView } from '../../modules/filament-view';\nexport const x = FilamentView;\n",
+      );
+      assertNoRule(localAndroid, 'local/ios-android-3d-only');
+      assertNoRule(localAndroid, 'no-restricted-imports');
+
+      const featureIos = await lintFixture(
+        'src/features/assembly-explorer/Scene.ios.tsx',
+        "import { RealityKitView } from 'realitykit-view';\nexport const x = RealityKitView;\n",
+      );
+      assertNoRule(featureIos, 'local/ios-android-3d-only');
+      assertNoRule(featureIos, 'no-restricted-imports');
+      assertNoRule(featureIos, 'boundaries/dependencies');
+
+      const featureAndroid = await lintFixture(
+        'src/features/assembly-explorer/Scene.android.tsx',
+        "import { FilamentView } from 'filament-view';\nexport const x = FilamentView;\n",
+      );
+      assertNoRule(featureAndroid, 'local/ios-android-3d-only');
+      assertNoRule(featureAndroid, 'no-restricted-imports');
+      assertNoRule(featureAndroid, 'boundaries/dependencies');
+    });
+
+    it('blocks mismatched 3D module bindings in .ios.tsx and .android.tsx files', async () => {
+      const mismatchedIos = await lintFixture(
+        'src/features/assembly-explorer/Scene.ios.tsx',
+        "import { FilamentView } from 'filament-view';\nexport const x = FilamentView;\n",
+      );
+      assertHasRule(mismatchedIos, 'local/ios-android-3d-only');
+
+      const mismatchedAndroid = await lintFixture(
+        'src/features/assembly-explorer/Scene.android.tsx',
+        "import { RealityKitView } from 'realitykit-view';\nexport const x = RealityKitView;\n",
+      );
+      assertHasRule(mismatchedAndroid, 'local/ios-android-3d-only');
     });
   });
 

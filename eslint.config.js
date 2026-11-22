@@ -46,6 +46,74 @@ const localPlugin = {
         };
       },
     },
+    'ios-android-3d-only': {
+      meta: {
+        type: 'problem',
+        docs: {
+          description: 'Restrict .ios and .android files under src/ to 3D rendering.',
+        },
+        schema: [],
+        messages: {
+          nonThreeDSplit:
+            "Separate .ios/.android files are reserved for 3D rendering (place under a feature's renderer/ or 3d/ directory, or bind realitykit-view/filament-view). Share iOS and Android UI in one file using universal @expo/ui.",
+        },
+      },
+      create(context) {
+        const normalizedPath = context.filename.replace(/\\/g, '/');
+        const match = /(?:^|\/)src\/.*\.(ios|android)\.(?:ts|tsx)$/.exec(normalizedPath);
+        if (!match) {
+          return {};
+        }
+        if (/(?:^|\/)(?:renderer|3d)\//.test(match[0])) {
+          return {};
+        }
+
+        const requiredModule = match[1] === 'ios' ? 'realitykit-view' : 'filament-view';
+        let hasThreeDBinding = false;
+
+        function recordSource(sourceNode) {
+          if (
+            sourceNode &&
+            sourceNode.type === 'Literal' &&
+            typeof sourceNode.value === 'string' &&
+            sourceNode.value.includes(requiredModule)
+          ) {
+            hasThreeDBinding = true;
+          }
+        }
+
+        return {
+          ImportDeclaration(node) {
+            recordSource(node.source);
+          },
+          ExportNamedDeclaration(node) {
+            if (node.source) {
+              recordSource(node.source);
+            }
+          },
+          ExportAllDeclaration(node) {
+            recordSource(node.source);
+          },
+          ImportExpression(node) {
+            recordSource(node.source);
+          },
+          CallExpression(node) {
+            if (
+              node.callee.type === 'Identifier' &&
+              node.callee.name === 'require' &&
+              node.arguments.length === 1
+            ) {
+              recordSource(node.arguments[0]);
+            }
+          },
+          'Program:exit'(node) {
+            if (!hasThreeDBinding) {
+              context.report({ node, messageId: 'nonThreeDSplit' });
+            }
+          },
+        };
+      },
+    },
   },
 };
 
@@ -134,17 +202,43 @@ const WEB_ONLY_RESTRICTIONS = {
   ],
 };
 
-const IOS_ONLY_RESTRICTIONS = {
+const PLATFORM_SPECIFIC_EXPO_UI_RESTRICTIONS = {
   paths: [],
   patterns: [
     {
       group: [
         '@expo/ui/swift-ui',
         '@expo/ui/swift-ui/*',
-        '*realitykit-view*',
-        '**/realitykit-view*',
+        '@expo/ui/jetpack-compose',
+        '@expo/ui/jetpack-compose/*',
       ],
-      message: 'iOS-only libraries (SwiftUI, RealityKit) must stay inside `*.ios.{ts,tsx}` files.',
+      message:
+        'Use universal `@expo/ui` in a shared native file instead of `@expo/ui/swift-ui` or `@expo/ui/jetpack-compose`. Separate `.ios`/`.android` files are reserved for 3D rendering.',
+    },
+  ],
+};
+
+const WEB_EXPO_UI_RESTRICTIONS = {
+  paths: [
+    {
+      name: '@expo/ui',
+      message: 'Web files (`*.web.{ts,tsx}`) use React DOM, HTML, and CSS instead of `@expo/ui`.',
+    },
+  ],
+  patterns: [
+    {
+      group: ['@expo/ui/*'],
+      message: 'Web files (`*.web.{ts,tsx}`) use React DOM, HTML, and CSS instead of `@expo/ui`.',
+    },
+  ],
+};
+
+const IOS_ONLY_RESTRICTIONS = {
+  paths: [],
+  patterns: [
+    {
+      group: ['*realitykit-view*', '**/realitykit-view*'],
+      message: 'iOS 3D libraries (RealityKit) must stay inside `*.ios.{ts,tsx}` files.',
     },
   ],
 };
@@ -153,14 +247,8 @@ const ANDROID_ONLY_RESTRICTIONS = {
   paths: [],
   patterns: [
     {
-      group: [
-        '@expo/ui/jetpack-compose',
-        '@expo/ui/jetpack-compose/*',
-        '*filament-view*',
-        '**/filament-view*',
-      ],
-      message:
-        'Android-only libraries (Jetpack Compose, Filament) must stay inside `*.android.{ts,tsx}` files.',
+      group: ['*filament-view*', '**/filament-view*'],
+      message: 'Android 3D libraries (Filament) must stay inside `*.android.{ts,tsx}` files.',
     },
   ],
 };
@@ -528,6 +616,8 @@ module.exports = defineConfig([
     rules: {
       'no-restricted-imports': restrictedImports(
         BASE_RESTRICTIONS,
+        PLATFORM_SPECIFIC_EXPO_UI_RESTRICTIONS,
+        WEB_EXPO_UI_RESTRICTIONS,
         IOS_ONLY_RESTRICTIONS,
         ANDROID_ONLY_RESTRICTIONS,
       ),
@@ -538,6 +628,7 @@ module.exports = defineConfig([
     rules: {
       'no-restricted-imports': restrictedImports(
         BASE_RESTRICTIONS,
+        PLATFORM_SPECIFIC_EXPO_UI_RESTRICTIONS,
         WEB_ONLY_RESTRICTIONS,
         ANDROID_ONLY_RESTRICTIONS,
       ),
@@ -548,6 +639,7 @@ module.exports = defineConfig([
     rules: {
       'no-restricted-imports': restrictedImports(
         BASE_RESTRICTIONS,
+        PLATFORM_SPECIFIC_EXPO_UI_RESTRICTIONS,
         WEB_ONLY_RESTRICTIONS,
         IOS_ONLY_RESTRICTIONS,
       ),
@@ -558,6 +650,7 @@ module.exports = defineConfig([
     rules: {
       'no-restricted-imports': restrictedImports(
         BASE_RESTRICTIONS,
+        PLATFORM_SPECIFIC_EXPO_UI_RESTRICTIONS,
         WEB_ONLY_RESTRICTIONS,
         IOS_ONLY_RESTRICTIONS,
         ANDROID_ONLY_RESTRICTIONS,
@@ -570,6 +663,7 @@ module.exports = defineConfig([
     rules: {
       'no-restricted-imports': restrictedImports(
         BASE_RESTRICTIONS,
+        PLATFORM_SPECIFIC_EXPO_UI_RESTRICTIONS,
         WEB_ONLY_RESTRICTIONS,
         IOS_ONLY_RESTRICTIONS,
         ANDROID_ONLY_RESTRICTIONS,
@@ -584,6 +678,7 @@ module.exports = defineConfig([
     rules: {
       'no-restricted-imports': restrictedImports(
         BASE_RESTRICTIONS,
+        PLATFORM_SPECIFIC_EXPO_UI_RESTRICTIONS,
         WEB_ONLY_RESTRICTIONS,
         IOS_ONLY_RESTRICTIONS,
         ANDROID_ONLY_RESTRICTIONS,
@@ -601,6 +696,7 @@ module.exports = defineConfig([
     rules: {
       'no-restricted-imports': restrictedImports(
         BASE_RESTRICTIONS,
+        PLATFORM_SPECIFIC_EXPO_UI_RESTRICTIONS,
         WEB_ONLY_RESTRICTIONS,
         IOS_ONLY_RESTRICTIONS,
         ANDROID_ONLY_RESTRICTIONS,
@@ -629,6 +725,12 @@ module.exports = defineConfig([
     },
     rules: {
       'local/no-comments': 'error',
+    },
+  },
+  {
+    files: ['src/**/*.ios.{ts,tsx}', 'src/**/*.android.{ts,tsx}'],
+    rules: {
+      'local/ios-android-3d-only': 'error',
     },
   },
 
