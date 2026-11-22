@@ -1,0 +1,351 @@
+import { execFile } from 'node:child_process';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { promisify } from 'node:util';
+
+import { z } from 'genkit';
+
+import {
+  type AiProviderId,
+  type AssemblyNode,
+  type VerifiedProjectAssembly,
+  canClassifyAsVerified,
+  getCatalogArchetypeById,
+  matchProjectArchetypeFromPrompt,
+  parseVerifiedProjectAssembly,
+  toCatalogArchetypeId,
+  toProjectId,
+  verifyOneToOneNodeMapping,
+} from '@/shared/domain';
+import {
+  type FirebaseEmulatorRepository,
+  defaultFirebaseEmulatorRepository,
+} from '@/shared/firebase';
+
+import {
+  type ProviderPlanResolution,
+  createMultiProviderGenkitInstance,
+  planProjectWithProvider,
+} from './aiProviders';
+
+const execFileAsync = promisify(execFile);
+
+const OrchestrationInputSchema = z.object({
+  prompt: z.string().min(1),
+  provider: z.enum(['gemini', 'openai', 'deepseek']).default('gemini'),
+  apiKey: z.string().optional(),
+  baseUrl: z.string().optional(),
+  injectCollisionTest: z.boolean().optional(),
+});
+
+const RetrievalInputSchema = z.object({
+  archetypeId: z.string().min(1),
+});
+
+const CadValidationInputSchema = z.object({
+  archetypeId: z.string().min(1),
+  outputDir: z.string().min(1),
+  injectCollisionTest: z.boolean().optional(),
+});
+
+export type ComponentRetrievalSummary = {
+  readonly archetypeId: string;
+  readonly title: string;
+  readonly totalNodes: number;
+  readonly openCatalogCount: number;
+  readonly fallbackCount: number;
+  readonly relationshipsCount: number;
+  readonly assemblyStepsCount: number;
+};
+
+type CadWorkerPayload = {
+  readonly archetypeId: string;
+  readonly verificationStatus: string;
+  readonly nodes: readonly AssemblyNode[];
+  readonly manifest: VerifiedProjectAssembly['manifest'];
+  readonly validation: VerifiedProjectAssembly['validation'];
+  readonly glbNodeIds: readonly string[];
+  readonly usdzPrimPaths: readonly string[];
+};
+
+function resolveRepoRoot(): string {
+  return path.resolve(process.cwd());
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function parseCadWorkerPayload(raw: unknown): CadWorkerPayload {
+  if (!isRecord(raw)) {
+    throw new Error('CAD worker result must be an object');
+  }
+  const nodes = raw.nodes;
+  const glbNodeIds = raw.glbNodeIds;
+  const usdzPrimPaths = raw.usdzPrimPaths;
+  if (!Array.isArray(nodes) || !Array.isArray(glbNodeIds) || !Array.isArray(usdzPrimPaths)) {
+    throw new Error('CAD worker result missing nodes, glbNodeIds, or usdzPrimPaths');
+  }
+  const dummyAssembly = parseVerifiedProjectAssembly({
+    projectId: 'proj_check',
+    archetypeId: raw.archetypeId,
+    title: 'Validation Check',
+    userPrompt: 'Validation Check',
+    verificationStatus: raw.verificationStatus,
+    rootNodeId: 'proj_root',
+    nodes,
+    relationships: [],
+    assemblySteps: [],
+    manifest: raw.manifest,
+    validation: raw.validation,
+    orchestration: {
+      provider: 'gemini',
+      modelId: 'googleai/gemini-2.5-flash',
+      apiFormat: 'google_genai',
+      baseUrl: 'https://generativelanguage.googleapis.com',
+      executionMode: 'local_catalog_planner',
+      plannedSubsystems: [],
+    },
+  });
+  return {
+    archetypeId: dummyAssembly.archetypeId,
+    verificationStatus: dummyAssembly.verificationStatus,
+    nodes: dummyAssembly.nodes,
+    manifest: dummyAssembly.manifest,
+    validation: dummyAssembly.validation,
+    glbNodeIds: glbNodeIds.map(String),
+    usdzPrimPaths: usdzPrimPaths.map(String),
+  };
+}
+
+async function runComponentRetrieval(archetypeId: string): Promise<ComponentRetrievalSummary> {
+  const archetype =
+    getCatalogArchetypeById(archetypeId) ?? matchProjectArchetypeFromPrompt(archetypeId);
+  const openCatalogCount = archetype.nodes.filter(
+    (node) => node.origin === 'open_step_catalog',
+  ).length;
+  const fallbackCount = archetype.nodes.filter(
+    (node) => node.origin === 'build123d_fallback',
+  ).length;
+  return {
+    archetypeId: archetype.archetypeId,
+    title: archetype.title,
+    totalNodes: archetype.nodes.length,
+    openCatalogCount,
+    fallbackCount,
+    relationshipsCount: archetype.relationships.length,
+    assemblyStepsCount: archetype.assemblySteps.length,
+  };
+}
+
+async function runCadAssemblyAndValidation(args: {
+  readonly archetypeId: string;
+  readonly outputDir: string;
+  readonly injectCollisionTest?: boolean;
+}): Promise<CadWorkerPayload> {
+  const repoRoot = resolveRepoRoot();
+  const pythonBin = path.join(repoRoot, 'backend', '.venv', 'bin', 'python');
+  const cliScript = path.join(repoRoot, 'backend', 'cad_worker', 'cli.py');
+  const jsonOutPath = path.join(args.outputDir, 'pipeline_result.json');
+
+  const cliArgs = [
+    cliScript,
+    '--archetype',
+    args.archetypeId,
+    '--output-dir',
+    args.outputDir,
+    '--json-out',
+    jsonOutPath,
+  ];
+  if (args.injectCollisionTest === true) {
+    cliArgs.push('--inject-collision-test');
+  }
+
+  await execFileAsync(pythonBin, cliArgs, { cwd: repoRoot });
+  const rawJson: unknown = JSON.parse(await fs.readFile(jsonOutPath, 'utf8'));
+  const workerResult = parseCadWorkerPayload(rawJson);
+
+  const status =
+    workerResult.verificationStatus === 'sourced_verified' ||
+    workerResult.verificationStatus === 'synthesized_verified'
+      ? workerResult.verificationStatus
+      : 'unverified';
+  const mappingOk = verifyOneToOneNodeMapping(
+    workerResult.nodes,
+    workerResult.glbNodeIds,
+    workerResult.usdzPrimPaths,
+  );
+  if (!canClassifyAsVerified(workerResult.validation, status) || !mappingOk) {
+    throw new Error(
+      `OpenCascade validation rejected assembly "${args.archetypeId}": ${workerResult.validation.failures.join('; ')}`,
+    );
+  }
+
+  return workerResult;
+}
+
+async function executeProjectOrchestration(
+  args: {
+    readonly prompt: string;
+    readonly provider: AiProviderId;
+    readonly apiKey?: string;
+    readonly baseUrl?: string;
+    readonly injectCollisionTest?: boolean;
+  },
+  repository: FirebaseEmulatorRepository,
+): Promise<VerifiedProjectAssembly> {
+  const plan: ProviderPlanResolution = await planProjectWithProvider({
+    prompt: args.prompt,
+    provider: args.provider,
+    apiKey: args.apiKey,
+    baseUrl: args.baseUrl,
+  });
+  const retrieval = await runComponentRetrieval(plan.archetypeId);
+
+  const workDir = await fs.mkdtemp(path.join(os.tmpdir(), 'zappd-cad-run-'));
+  try {
+    const cadResult = await runCadAssemblyAndValidation({
+      archetypeId: retrieval.archetypeId,
+      outputDir: workDir,
+      injectCollisionTest: args.injectCollisionTest,
+    });
+
+    const archetype =
+      getCatalogArchetypeById(retrieval.archetypeId) ??
+      matchProjectArchetypeFromPrompt(args.prompt);
+
+    const assembly: VerifiedProjectAssembly = {
+      projectId: toProjectId(
+        `proj_${archetype.archetypeId}_${cadResult.manifest.manifestHash.slice(0, 8)}`,
+      ),
+      archetypeId: toCatalogArchetypeId(archetype.archetypeId),
+      title: plan.projectTitle,
+      userPrompt: args.prompt,
+      verificationStatus: 'sourced_verified',
+      rootNodeId: archetype.rootNodeId,
+      nodes: cadResult.nodes,
+      relationships: archetype.relationships,
+      assemblySteps: archetype.assemblySteps,
+      manifest: cadResult.manifest,
+      validation: cadResult.validation,
+      orchestration: {
+        provider: plan.provider,
+        modelId: plan.modelId,
+        apiFormat: plan.apiFormat,
+        baseUrl: plan.baseUrl,
+        executionMode: plan.executionMode,
+        plannedSubsystems: plan.plannedSubsystems,
+      },
+    };
+
+    const [stepBytes, glbBytes, usdzBytes, manifestBytes] = await Promise.all([
+      fs.readFile(path.join(workDir, 'model.step')),
+      fs.readFile(path.join(workDir, 'model.glb')),
+      fs.readFile(path.join(workDir, 'model.usdz')),
+      fs.readFile(path.join(workDir, 'manifest.json')),
+    ]);
+
+    await repository.saveProjectAssembly(
+      assembly,
+      {
+        step: new Uint8Array(stepBytes),
+        glb: new Uint8Array(glbBytes),
+        usdz: new Uint8Array(usdzBytes),
+        manifest: new Uint8Array(manifestBytes),
+      },
+      { syncLiveEmulator: false },
+    );
+
+    return assembly;
+  } finally {
+    await fs.rm(workDir, { recursive: true, force: true });
+  }
+}
+
+export function createZappdOrchestratorFlows(repository: FirebaseEmulatorRepository) {
+  const ai = createMultiProviderGenkitInstance();
+
+  const projectPlanningFlow = ai.defineFlow(
+    {
+      name: 'projectPlanningAgent',
+      inputSchema: OrchestrationInputSchema,
+    },
+    async (input) =>
+      planProjectWithProvider({
+        prompt: input.prompt,
+        provider: input.provider,
+        apiKey: input.apiKey,
+        baseUrl: input.baseUrl,
+      }),
+  );
+
+  const componentRetrievalFlow = ai.defineFlow(
+    {
+      name: 'componentRetrievalAgent',
+      inputSchema: RetrievalInputSchema,
+    },
+    async (input) => runComponentRetrieval(input.archetypeId),
+  );
+
+  const cadAssemblyAndValidationFlow = ai.defineFlow(
+    {
+      name: 'cadAssemblyAndValidationAgent',
+      inputSchema: CadValidationInputSchema,
+    },
+    async (input) =>
+      runCadAssemblyAndValidation({
+        archetypeId: input.archetypeId,
+        outputDir: input.outputDir,
+        injectCollisionTest: input.injectCollisionTest,
+      }),
+  );
+
+  const orchestrateProjectFlow = ai.defineFlow(
+    {
+      name: 'orchestrateProjectAssemblyCreation',
+      inputSchema: OrchestrationInputSchema,
+    },
+    async (input) =>
+      executeProjectOrchestration(
+        {
+          prompt: input.prompt,
+          provider: input.provider,
+          apiKey: input.apiKey,
+          baseUrl: input.baseUrl,
+          injectCollisionTest: input.injectCollisionTest,
+        },
+        repository,
+      ),
+  );
+
+  return {
+    ai,
+    projectPlanningFlow,
+    componentRetrievalFlow,
+    cadAssemblyAndValidationFlow,
+    orchestrateProjectFlow,
+  };
+}
+
+export async function orchestrateProjectAssemblyCreation(args: {
+  readonly prompt: string;
+  readonly provider?: AiProviderId;
+  readonly apiKey?: string;
+  readonly baseUrl?: string;
+  readonly injectCollisionTest?: boolean;
+  readonly repository?: FirebaseEmulatorRepository;
+}): Promise<VerifiedProjectAssembly> {
+  const repository = args.repository ?? defaultFirebaseEmulatorRepository;
+  createZappdOrchestratorFlows(repository);
+  return executeProjectOrchestration(
+    {
+      prompt: args.prompt,
+      provider: args.provider ?? 'gemini',
+      apiKey: args.apiKey,
+      baseUrl: args.baseUrl,
+      injectCollisionTest: args.injectCollisionTest,
+    },
+    repository,
+  );
+}
