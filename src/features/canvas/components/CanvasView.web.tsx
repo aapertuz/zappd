@@ -3,7 +3,13 @@ import { type FormEvent, type KeyboardEvent, useEffect, useRef } from 'react';
 import { type CanvasViewProps } from '../types';
 import classes from './CanvasView.module.css';
 
-export function CanvasView({ draft, canSubmit, onDraftChange, onSubmit }: CanvasViewProps) {
+export function CanvasView({
+  draft,
+  canSubmit,
+  surfaceContent,
+  onDraftChange,
+  onSubmit,
+}: CanvasViewProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -26,7 +32,7 @@ export function CanvasView({ draft, canSubmit, onDraftChange, onSubmit }: Canvas
 
   return (
     <main className={classes.canvas}>
-      <div className={classes.surface} />
+      <div className={classes.surface}>{surfaceContent}</div>
       <div className={classes.composerDock}>
         <form className={classes.composer} onSubmit={handleFormSubmit}>
           <textarea

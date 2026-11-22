@@ -1,0 +1,228 @@
+.explorerRoot {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 16px 8px 16px;
+  box-sizing: border-box;
+  gap: 10px;
+}
+
+.headerBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background-color: #ffffff;
+  border: 1px solid #e5e5e0;
+  border-radius: 16px;
+  padding: 10px 14px;
+}
+
+.titleGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.projectTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #18181b;
+}
+
+.statusBadge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.providerGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.workspaceGrid {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 12px;
+}
+
+.viewportCard {
+  flex: 1;
+  min-width: 0;
+  min-height: 280px;
+  position: relative;
+  border-radius: 20px;
+  border: 1px solid #e5e5e0;
+  background: radial-gradient(circle at 50% 35%, #ffffff 0%, #eeeeea 100%);
+  overflow: hidden;
+}
+
+.canvasMount {
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: grab;
+}
+
+.canvasMount:active {
+  cursor: grabbing;
+}
+
+.viewportOverlay {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  right: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.overlayPillGroup {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  background-color: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e5e5e0;
+  border-radius: 12px;
+  padding: 6px 8px;
+  pointer-events: auto;
+}
+
+.sidePanel {
+  width: 280px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: #ffffff;
+  border: 1px solid #e5e5e0;
+  border-radius: 18px;
+  padding: 12px;
+  overflow-y: auto;
+}
+
+.panelSection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #71717a;
+  margin: 0;
+}
+
+.buttonRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.controlButton {
+  border: 1px solid #e4e4e7;
+  background-color: #f4f4f5;
+  color: #18181b;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 9px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.controlButton:hover:enabled {
+  background-color: #e4e4e7;
+}
+
+.controlButton:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.controlButtonActive {
+  border-color: #18181b;
+  background-color: #ffe500;
+  color: #18181b;
+  font-weight: 600;
+}
+
+.explodeSlider {
+  width: 100%;
+  accent-color: #18181b;
+}
+
+.partList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.partButton {
+  width: 100%;
+  text-align: left;
+  border: 1px solid #e4e4e7;
+  background-color: #fafafa;
+  color: #18181b;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+}
+
+.partButtonSelected {
+  border-color: #18181b;
+  background-color: #fef08a;
+  font-weight: 600;
+}
+
+.partMeta {
+  font-size: 10px;
+  color: #52525b;
+  flex-shrink: 0;
+}
+
+.fallbackHint {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e4e4e7;
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: #52525b;
+}
+
+@media (max-width: 820px) {
+  .workspaceGrid {
+    flex-direction: column;
+  }
+
+  .sidePanel {
+    width: 100%;
+    max-height: 220px;
+  }
+}

@@ -30,7 +30,13 @@ const SEND_BUTTON_STYLE: UniversalStyle = {
   backgroundColor: CANVAS_COLORS.primaryButton,
 };
 
-export function CanvasView({ draft, canSubmit, onDraftChange, onSubmit }: CanvasViewProps) {
+export function CanvasView({
+  draft,
+  canSubmit,
+  surfaceContent,
+  onDraftChange,
+  onSubmit,
+}: CanvasViewProps) {
   const [textInput, setTextInput] = useState<TextInputRef | null>(null);
   const textState = useNativeState(draft);
 
@@ -57,7 +63,11 @@ export function CanvasView({ draft, canSubmit, onDraftChange, onSubmit }: Canvas
       <KeyboardAvoidingView
         style={styles.keyboardContainer}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <Pressable style={styles.dismissArea} onPress={handleDismissKeyboard} />
+        {surfaceContent !== undefined && surfaceContent !== null ? (
+          <View style={styles.dismissArea}>{surfaceContent}</View>
+        ) : (
+          <Pressable style={styles.dismissArea} onPress={handleDismissKeyboard} />
+        )}
         <View style={styles.composerDock}>
           <View style={styles.composer}>
             <Host style={styles.inputHost} matchContents={{ vertical: true }} colorScheme="light">
