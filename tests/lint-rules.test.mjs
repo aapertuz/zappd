@@ -48,8 +48,15 @@ const FIXTURE_FILES = {
     'export function AssemblyScene() { return null; }\n',
   'src/features/assembly-explorer/renderer/AssemblyScene.android.tsx':
     'export function AssemblyScene() { return null; }\n',
-  'src/features/assembly-explorer/3d/SceneNode.ios.tsx':
-    'export function SceneNode() { return null; }\n',
+  'src/components/Orphan.ios.tsx': 'export function Orphan() { return null; }\n',
+  'src/components/OrphanAndroid.android.tsx': 'export function OrphanAndroid() { return null; }\n',
+  'src/components/NativeFallback.ios.tsx': 'export function NativeFallback() { return null; }\n',
+  'src/components/NativeFallback.native.tsx': 'export function NativeFallback() { return null; }\n',
+  'src/components/BaseFallback.android.tsx': 'export function BaseFallback() { return null; }\n',
+  'src/components/BaseFallback.tsx': 'export function BaseFallback() { return null; }\n',
+  'src/app/only-web.web.tsx': 'export default function OnlyWeb() { return null; }\n',
+  'src/app/index.web.tsx': 'export default function IndexWeb() { return null; }\n',
+  'src/app/+html.tsx': 'export default function Html() { return null; }\n',
   'modules/realitykit-view/index.ts': 'export const RealityKitView = {};\n',
   'modules/filament-view/index.ts': 'export const FilamentView = {};\n',
   'node_modules/react/index.d.ts': 'export {};\n',
@@ -58,7 +65,10 @@ const FIXTURE_FILES = {
   'node_modules/three/index.d.ts': 'export class Scene {}\n',
   'node_modules/@expo/ui/index.d.ts': 'export const Host = {};\n',
   'node_modules/@expo/ui/swift-ui/index.d.ts': 'export const Host = {};\n',
+  'node_modules/@expo/ui/swift-ui/modifiers/index.d.ts': 'export const padding = () => ({});\n',
   'node_modules/@expo/ui/jetpack-compose/index.d.ts': 'export const Host = {};\n',
+  'node_modules/@expo/ui/jetpack-compose/modifiers/index.d.ts':
+    'export const padding = () => ({});\n',
   'node_modules/realitykit-view/index.d.ts': 'export const RealityKitView = {};\n',
   'node_modules/filament-view/index.d.ts': 'export const FilamentView = {};\n',
   'node_modules/@react-navigation/native/index.d.ts': 'export const useNavigation = () => ({});\n',
@@ -262,6 +272,7 @@ describe('zappd lint rules', () => {
     it('allows universal @expo/ui in shared native files and blocks it in web and domain files', async () => {
       for (const filePath of [
         'src/features/projects/index.ts',
+        'src/components/Scene.tsx',
         'src/components/Scene.native.tsx',
       ]) {
         const res = await lintFixture(
@@ -280,24 +291,86 @@ describe('zappd lint rules', () => {
       }
     });
 
-    it('blocks platform-specific @expo/ui subpaths across all src files', async () => {
-      const filesToTest = [
-        'src/features/projects/index.ts',
-        'src/components/Scene.native.tsx',
-        'src/components/Scene.web.tsx',
+    it('allows @expo/ui/swift-ui and @expo/ui/swift-ui/modifiers in *.ios.tsx and blocks them in *.web.tsx, *.android.tsx, and plain *.tsx', async () => {
+      for (const filePath of [
         'src/components/Scene.ios.tsx',
-        'src/components/Scene.android.tsx',
         'src/features/assembly-explorer/renderer/AssemblyScene.ios.tsx',
-        'src/features/assembly-explorer/renderer/AssemblyScene.android.tsx',
-      ];
-      for (const filePath of filesToTest) {
-        for (const pkg of ['@expo/ui/swift-ui', '@expo/ui/jetpack-compose']) {
+      ]) {
+        const res = await lintFixture(
+          filePath,
+          "import { Host } from '@expo/ui/swift-ui';\nimport { padding } from '@expo/ui/swift-ui/modifiers';\nexport const x = [Host, padding];\n",
+        );
+        assertNoRule(res, 'no-restricted-imports');
+      }
+
+      for (const filePath of [
+        'src/components/Scene.web.tsx',
+        'src/components/Scene.android.tsx',
+        'src/components/Scene.tsx',
+        'src/features/projects/index.ts',
+        'src/app/index.tsx',
+        'src/shared/domain/part.ts',
+      ]) {
+        for (const pkg of ['@expo/ui/swift-ui', '@expo/ui/swift-ui/modifiers']) {
           const res = await lintFixture(
             filePath,
-            `import { Host } from '${pkg}';\nexport const x = Host;\n`,
+            `import * as Pkg from '${pkg}';\nexport const x = Pkg;\n`,
           );
           assertHasRule(res, 'no-restricted-imports');
         }
+      }
+    });
+
+    it('allows @expo/ui/jetpack-compose and @expo/ui/jetpack-compose/modifiers in *.android.tsx and blocks them in *.web.tsx, *.ios.tsx, and plain *.tsx', async () => {
+      for (const filePath of [
+        'src/components/Scene.android.tsx',
+        'src/features/assembly-explorer/renderer/AssemblyScene.android.tsx',
+      ]) {
+        const res = await lintFixture(
+          filePath,
+          "import { Host } from '@expo/ui/jetpack-compose';\nimport { padding } from '@expo/ui/jetpack-compose/modifiers';\nexport const x = [Host, padding];\n",
+        );
+        assertNoRule(res, 'no-restricted-imports');
+      }
+
+      for (const filePath of [
+        'src/components/Scene.web.tsx',
+        'src/components/Scene.ios.tsx',
+        'src/components/Scene.tsx',
+        'src/features/projects/index.ts',
+        'src/app/index.tsx',
+        'src/shared/domain/part.ts',
+      ]) {
+        for (const pkg of ['@expo/ui/jetpack-compose', '@expo/ui/jetpack-compose/modifiers']) {
+          const res = await lintFixture(
+            filePath,
+            `import * as Pkg from '${pkg}';\nexport const x = Pkg;\n`,
+          );
+          assertHasRule(res, 'no-restricted-imports');
+        }
+      }
+    });
+
+    it('allows universal @expo/ui and platform modifiers in *.native.tsx while blocking single-OS components, 3D bindings, and web libraries', async () => {
+      const allowedNative = await lintFixture(
+        'src/components/Scene.native.tsx',
+        "import { Host } from '@expo/ui';\nimport { padding as iosPadding } from '@expo/ui/swift-ui/modifiers';\nimport { padding as androidPadding } from '@expo/ui/jetpack-compose/modifiers';\nexport const x = [Host, iosPadding, androidPadding];\n",
+      );
+      assertNoRule(allowedNative, 'no-restricted-imports');
+
+      for (const pkg of [
+        '@expo/ui/swift-ui',
+        '@expo/ui/jetpack-compose',
+        'realitykit-view',
+        'filament-view',
+        'react-dom',
+        'three',
+      ]) {
+        const res = await lintFixture(
+          'src/components/Scene.native.tsx',
+          `import * as Pkg from '${pkg}';\nexport const x = Pkg;\n`,
+        );
+        assertHasRule(res, 'no-restricted-imports');
       }
     });
 
@@ -396,85 +469,75 @@ describe('zappd lint rules', () => {
     });
   });
 
-  describe('local/ios-android-3d-only', () => {
-    it('blocks .ios.tsx and .android.tsx files outside renderer/ or 3d/ without 3D bindings', async () => {
-      const iosNoThreeD = await lintFixture(
-        'src/components/Scene.ios.tsx',
-        'export function Scene() { return null; }\n',
+  describe('local/paired-native-platform-split', () => {
+    it('blocks unpaired .ios.tsx and .android.tsx files without a matching sibling or fallback', async () => {
+      const orphanIos = await lintFixture(
+        'src/components/Orphan.ios.tsx',
+        'export function Orphan() { return null; }\n',
       );
-      assertHasRule(iosNoThreeD, 'local/ios-android-3d-only');
+      assertHasRule(orphanIos, 'local/paired-native-platform-split');
 
-      const androidNoThreeD = await lintFixture(
-        'src/components/Scene.android.tsx',
-        'export function Scene() { return null; }\n',
+      const orphanAndroid = await lintFixture(
+        'src/components/OrphanAndroid.android.tsx',
+        'export function OrphanAndroid() { return null; }\n',
       );
-      assertHasRule(androidNoThreeD, 'local/ios-android-3d-only');
+      assertHasRule(orphanAndroid, 'local/paired-native-platform-split');
     });
 
-    it('allows .ios.tsx and .android.tsx files inside renderer/ or 3d/ directories', async () => {
-      const rendererIos = await lintFixture(
+    it('allows .ios.tsx and .android.tsx files paired with the other OS, .native, or base file', async () => {
+      const pairedIos = await lintFixture(
         'src/features/assembly-explorer/renderer/AssemblyScene.ios.tsx',
         'export function AssemblyScene() { return null; }\n',
       );
-      assertNoRule(rendererIos, 'local/ios-android-3d-only');
+      assertNoRule(pairedIos, 'local/paired-native-platform-split');
 
-      const rendererAndroid = await lintFixture(
+      const pairedAndroid = await lintFixture(
         'src/features/assembly-explorer/renderer/AssemblyScene.android.tsx',
         'export function AssemblyScene() { return null; }\n',
       );
-      assertNoRule(rendererAndroid, 'local/ios-android-3d-only');
+      assertNoRule(pairedAndroid, 'local/paired-native-platform-split');
 
-      const threeDIos = await lintFixture(
-        'src/features/assembly-explorer/3d/SceneNode.ios.tsx',
-        'export function SceneNode() { return null; }\n',
-      );
-      assertNoRule(threeDIos, 'local/ios-android-3d-only');
-    });
-
-    it('allows .ios.tsx and .android.tsx files binding their platform 3D module', async () => {
-      const localIos = await lintFixture(
+      const sceneIos = await lintFixture(
         'src/components/Scene.ios.tsx',
-        "import { RealityKitView } from '../../modules/realitykit-view';\nexport const x = RealityKitView;\n",
+        'export function Scene() { return null; }\n',
       );
-      assertNoRule(localIos, 'local/ios-android-3d-only');
-      assertNoRule(localIos, 'no-restricted-imports');
+      assertNoRule(sceneIos, 'local/paired-native-platform-split');
 
-      const localAndroid = await lintFixture(
-        'src/components/Scene.android.tsx',
-        "import { FilamentView } from '../../modules/filament-view';\nexport const x = FilamentView;\n",
+      const nativeFallbackIos = await lintFixture(
+        'src/components/NativeFallback.ios.tsx',
+        'export function NativeFallback() { return null; }\n',
       );
-      assertNoRule(localAndroid, 'local/ios-android-3d-only');
-      assertNoRule(localAndroid, 'no-restricted-imports');
+      assertNoRule(nativeFallbackIos, 'local/paired-native-platform-split');
 
-      const featureIos = await lintFixture(
-        'src/features/assembly-explorer/Scene.ios.tsx',
-        "import { RealityKitView } from 'realitykit-view';\nexport const x = RealityKitView;\n",
+      const baseFallbackAndroid = await lintFixture(
+        'src/components/BaseFallback.android.tsx',
+        'export function BaseFallback() { return null; }\n',
       );
-      assertNoRule(featureIos, 'local/ios-android-3d-only');
-      assertNoRule(featureIos, 'no-restricted-imports');
-      assertNoRule(featureIos, 'boundaries/dependencies');
+      assertNoRule(baseFallbackAndroid, 'local/paired-native-platform-split');
+    });
+  });
 
-      const featureAndroid = await lintFixture(
-        'src/features/assembly-explorer/Scene.android.tsx',
-        "import { FilamentView } from 'filament-view';\nexport const x = FilamentView;\n",
+  describe('local/no-platform-only-route', () => {
+    it('blocks platform-suffixed routes in src/app/ without a matching base route file', async () => {
+      const orphanWebRoute = await lintFixture(
+        'src/app/only-web.web.tsx',
+        'export default function OnlyWeb() { return null; }\n',
       );
-      assertNoRule(featureAndroid, 'local/ios-android-3d-only');
-      assertNoRule(featureAndroid, 'no-restricted-imports');
-      assertNoRule(featureAndroid, 'boundaries/dependencies');
+      assertHasRule(orphanWebRoute, 'local/no-platform-only-route');
     });
 
-    it('blocks mismatched 3D module bindings in .ios.tsx and .android.tsx files', async () => {
-      const mismatchedIos = await lintFixture(
-        'src/features/assembly-explorer/Scene.ios.tsx',
-        "import { FilamentView } from 'filament-view';\nexport const x = FilamentView;\n",
+    it('allows platform-suffixed routes with a base route file and +html.tsx', async () => {
+      const pairedWebRoute = await lintFixture(
+        'src/app/index.web.tsx',
+        'export default function IndexWeb() { return null; }\n',
       );
-      assertHasRule(mismatchedIos, 'local/ios-android-3d-only');
+      assertNoRule(pairedWebRoute, 'local/no-platform-only-route');
 
-      const mismatchedAndroid = await lintFixture(
-        'src/features/assembly-explorer/Scene.android.tsx',
-        "import { RealityKitView } from 'realitykit-view';\nexport const x = RealityKitView;\n",
+      const htmlRoute = await lintFixture(
+        'src/app/+html.tsx',
+        'export default function Html() { return null; }\n',
       );
-      assertHasRule(mismatchedAndroid, 'local/ios-android-3d-only');
+      assertNoRule(htmlRoute, 'local/no-platform-only-route');
     });
   });
 

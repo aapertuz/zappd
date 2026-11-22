@@ -1,3 +1,5 @@
+const fs = require('node:fs');
+const path = require('node:path');
 const { defineConfig, globalIgnores } = require('eslint/config');
 const expoConfig = require('eslint-config-expo/flat');
 const boundaries = require('eslint-plugin-boundaries');
@@ -46,16 +48,58 @@ const localPlugin = {
         };
       },
     },
-    'ios-android-3d-only': {
+    'no-platform-only-route': {
       meta: {
         type: 'problem',
         docs: {
-          description: 'Restrict .ios and .android files under src/ to 3D rendering.',
+          description:
+            'Disallow platform-suffixed route files in src/app/ without a matching non-suffixed base route file.',
         },
         schema: [],
         messages: {
-          nonThreeDSplit:
-            "Separate .ios/.android files are reserved for 3D rendering (place under a feature's renderer/ or 3d/ directory, or bind realitykit-view/filament-view). Share iOS and Android UI in one file using universal @expo/ui.",
+          missingBaseRoute:
+            'Platform-suffixed route files in src/app/ require a matching non-suffixed base route file. Prefer keeping routes universal and placing platform splits inside src/features/ or src/shared/.',
+        },
+      },
+      create(context) {
+        const normalizedPath = context.filename.replace(/\\/g, '/');
+        if (
+          normalizedPath.endsWith('/src/app/+html.tsx') ||
+          normalizedPath === 'src/app/+html.tsx'
+        ) {
+          return {};
+        }
+        if (!/(?:^|\/)src\/app\/.+\.(?:web|ios|android|native)\.(?:ts|tsx)$/.test(normalizedPath)) {
+          return {};
+        }
+
+        const absolutePath = path.resolve(context.cwd, context.filename);
+        const baseName = path
+          .basename(absolutePath)
+          .replace(/\.(?:web|ios|android|native)\.(?:ts|tsx)$/, '');
+        const basePath = path.join(path.dirname(absolutePath), baseName);
+        if (fs.existsSync(`${basePath}.tsx`) || fs.existsSync(`${basePath}.ts`)) {
+          return {};
+        }
+
+        return {
+          Program(node) {
+            context.report({ node, messageId: 'missingBaseRoute' });
+          },
+        };
+      },
+    },
+    'paired-native-platform-split': {
+      meta: {
+        type: 'problem',
+        docs: {
+          description:
+            'Require .ios and .android files under src/ to have a matching sibling for the other native platform or a shared fallback.',
+        },
+        schema: [],
+        messages: {
+          unpairedNativeSplit:
+            'Platform-specific .ios/.android files must have a matching sibling for the other native platform or a shared .native/.ts(x) fallback so Metro resolves cleanly on both iOS and Android.',
         },
       },
       create(context) {
@@ -64,52 +108,26 @@ const localPlugin = {
         if (!match) {
           return {};
         }
-        if (/(?:^|\/)(?:renderer|3d)\//.test(match[0])) {
+
+        const otherPlatform = match[1] === 'ios' ? 'android' : 'ios';
+        const absolutePath = path.resolve(context.cwd, context.filename);
+        const baseName = path.basename(absolutePath).replace(/\.(?:ios|android)\.(?:ts|tsx)$/, '');
+        const basePath = path.join(path.dirname(absolutePath), baseName);
+        const siblingCandidates = [
+          `${basePath}.${otherPlatform}.tsx`,
+          `${basePath}.${otherPlatform}.ts`,
+          `${basePath}.native.tsx`,
+          `${basePath}.native.ts`,
+          `${basePath}.tsx`,
+          `${basePath}.ts`,
+        ];
+        if (siblingCandidates.some((candidate) => fs.existsSync(candidate))) {
           return {};
         }
 
-        const requiredModule = match[1] === 'ios' ? 'realitykit-view' : 'filament-view';
-        let hasThreeDBinding = false;
-
-        function recordSource(sourceNode) {
-          if (
-            sourceNode &&
-            sourceNode.type === 'Literal' &&
-            typeof sourceNode.value === 'string' &&
-            sourceNode.value.includes(requiredModule)
-          ) {
-            hasThreeDBinding = true;
-          }
-        }
-
         return {
-          ImportDeclaration(node) {
-            recordSource(node.source);
-          },
-          ExportNamedDeclaration(node) {
-            if (node.source) {
-              recordSource(node.source);
-            }
-          },
-          ExportAllDeclaration(node) {
-            recordSource(node.source);
-          },
-          ImportExpression(node) {
-            recordSource(node.source);
-          },
-          CallExpression(node) {
-            if (
-              node.callee.type === 'Identifier' &&
-              node.callee.name === 'require' &&
-              node.arguments.length === 1
-            ) {
-              recordSource(node.arguments[0]);
-            }
-          },
-          'Program:exit'(node) {
-            if (!hasThreeDBinding) {
-              context.report({ node, messageId: 'nonThreeDSplit' });
-            }
+          Program(node) {
+            context.report({ node, messageId: 'unpairedNativeSplit' });
           },
         };
       },
@@ -202,22 +220,6 @@ const WEB_ONLY_RESTRICTIONS = {
   ],
 };
 
-const PLATFORM_SPECIFIC_EXPO_UI_RESTRICTIONS = {
-  paths: [],
-  patterns: [
-    {
-      group: [
-        '@expo/ui/swift-ui',
-        '@expo/ui/swift-ui/*',
-        '@expo/ui/jetpack-compose',
-        '@expo/ui/jetpack-compose/*',
-      ],
-      message:
-        'Use universal `@expo/ui` in a shared native file instead of `@expo/ui/swift-ui` or `@expo/ui/jetpack-compose`. Separate `.ios`/`.android` files are reserved for 3D rendering.',
-    },
-  ],
-};
-
 const WEB_EXPO_UI_RESTRICTIONS = {
   paths: [
     {
@@ -233,24 +235,60 @@ const WEB_EXPO_UI_RESTRICTIONS = {
   ],
 };
 
-const IOS_ONLY_RESTRICTIONS = {
-  paths: [],
+const IOS_COMPONENT_AND_3D_RESTRICTIONS = {
+  paths: [
+    {
+      name: '@expo/ui/swift-ui',
+      message:
+        'iOS-only components and 3D bindings (`@expo/ui/swift-ui`, `realitykit-view`) must stay inside `*.ios.{ts,tsx}` files.',
+    },
+  ],
   patterns: [
     {
       group: ['*realitykit-view*', '**/realitykit-view*'],
-      message: 'iOS 3D libraries (RealityKit) must stay inside `*.ios.{ts,tsx}` files.',
+      message:
+        'iOS-only components and 3D bindings (`@expo/ui/swift-ui`, `realitykit-view`) must stay inside `*.ios.{ts,tsx}` files.',
     },
   ],
 };
 
-const ANDROID_ONLY_RESTRICTIONS = {
-  paths: [],
+const IOS_MODIFIER_RESTRICTIONS = {
+  paths: [
+    {
+      name: '@expo/ui/swift-ui/modifiers',
+      message:
+        'SwiftUI modifiers require the native `ExpoUI` module and must stay inside `*.ios.{ts,tsx}` or `*.native.{ts,tsx}` files.',
+    },
+  ],
+  patterns: [],
+};
+
+const ANDROID_COMPONENT_AND_3D_RESTRICTIONS = {
+  paths: [
+    {
+      name: '@expo/ui/jetpack-compose',
+      message:
+        'Android-only components and 3D bindings (`@expo/ui/jetpack-compose`, `filament-view`) must stay inside `*.android.{ts,tsx}` files.',
+    },
+  ],
   patterns: [
     {
       group: ['*filament-view*', '**/filament-view*'],
-      message: 'Android 3D libraries (Filament) must stay inside `*.android.{ts,tsx}` files.',
+      message:
+        'Android-only components and 3D bindings (`@expo/ui/jetpack-compose`, `filament-view`) must stay inside `*.android.{ts,tsx}` files.',
     },
   ],
+};
+
+const ANDROID_MODIFIER_RESTRICTIONS = {
+  paths: [
+    {
+      name: '@expo/ui/jetpack-compose/modifiers',
+      message:
+        'Jetpack Compose modifiers must stay inside `*.android.{ts,tsx}` or `*.native.{ts,tsx}` files.',
+    },
+  ],
+  patterns: [],
 };
 
 const FIREBASE_RESTRICTIONS = {
@@ -616,10 +654,11 @@ module.exports = defineConfig([
     rules: {
       'no-restricted-imports': restrictedImports(
         BASE_RESTRICTIONS,
-        PLATFORM_SPECIFIC_EXPO_UI_RESTRICTIONS,
         WEB_EXPO_UI_RESTRICTIONS,
-        IOS_ONLY_RESTRICTIONS,
-        ANDROID_ONLY_RESTRICTIONS,
+        IOS_COMPONENT_AND_3D_RESTRICTIONS,
+        IOS_MODIFIER_RESTRICTIONS,
+        ANDROID_COMPONENT_AND_3D_RESTRICTIONS,
+        ANDROID_MODIFIER_RESTRICTIONS,
       ),
     },
   },
@@ -628,9 +667,9 @@ module.exports = defineConfig([
     rules: {
       'no-restricted-imports': restrictedImports(
         BASE_RESTRICTIONS,
-        PLATFORM_SPECIFIC_EXPO_UI_RESTRICTIONS,
         WEB_ONLY_RESTRICTIONS,
-        ANDROID_ONLY_RESTRICTIONS,
+        ANDROID_COMPONENT_AND_3D_RESTRICTIONS,
+        ANDROID_MODIFIER_RESTRICTIONS,
       ),
     },
   },
@@ -639,9 +678,9 @@ module.exports = defineConfig([
     rules: {
       'no-restricted-imports': restrictedImports(
         BASE_RESTRICTIONS,
-        PLATFORM_SPECIFIC_EXPO_UI_RESTRICTIONS,
         WEB_ONLY_RESTRICTIONS,
-        IOS_ONLY_RESTRICTIONS,
+        IOS_COMPONENT_AND_3D_RESTRICTIONS,
+        IOS_MODIFIER_RESTRICTIONS,
       ),
     },
   },
@@ -650,10 +689,9 @@ module.exports = defineConfig([
     rules: {
       'no-restricted-imports': restrictedImports(
         BASE_RESTRICTIONS,
-        PLATFORM_SPECIFIC_EXPO_UI_RESTRICTIONS,
         WEB_ONLY_RESTRICTIONS,
-        IOS_ONLY_RESTRICTIONS,
-        ANDROID_ONLY_RESTRICTIONS,
+        IOS_COMPONENT_AND_3D_RESTRICTIONS,
+        ANDROID_COMPONENT_AND_3D_RESTRICTIONS,
       ),
     },
   },
@@ -663,10 +701,11 @@ module.exports = defineConfig([
     rules: {
       'no-restricted-imports': restrictedImports(
         BASE_RESTRICTIONS,
-        PLATFORM_SPECIFIC_EXPO_UI_RESTRICTIONS,
         WEB_ONLY_RESTRICTIONS,
-        IOS_ONLY_RESTRICTIONS,
-        ANDROID_ONLY_RESTRICTIONS,
+        IOS_COMPONENT_AND_3D_RESTRICTIONS,
+        IOS_MODIFIER_RESTRICTIONS,
+        ANDROID_COMPONENT_AND_3D_RESTRICTIONS,
+        ANDROID_MODIFIER_RESTRICTIONS,
         FIREBASE_RESTRICTIONS,
         DOMAIN_RUNTIME_RESTRICTIONS,
       ),
@@ -678,10 +717,11 @@ module.exports = defineConfig([
     rules: {
       'no-restricted-imports': restrictedImports(
         BASE_RESTRICTIONS,
-        PLATFORM_SPECIFIC_EXPO_UI_RESTRICTIONS,
         WEB_ONLY_RESTRICTIONS,
-        IOS_ONLY_RESTRICTIONS,
-        ANDROID_ONLY_RESTRICTIONS,
+        IOS_COMPONENT_AND_3D_RESTRICTIONS,
+        IOS_MODIFIER_RESTRICTIONS,
+        ANDROID_COMPONENT_AND_3D_RESTRICTIONS,
+        ANDROID_MODIFIER_RESTRICTIONS,
         FIREBASE_RESTRICTIONS,
       ),
     },
@@ -696,10 +736,11 @@ module.exports = defineConfig([
     rules: {
       'no-restricted-imports': restrictedImports(
         BASE_RESTRICTIONS,
-        PLATFORM_SPECIFIC_EXPO_UI_RESTRICTIONS,
         WEB_ONLY_RESTRICTIONS,
-        IOS_ONLY_RESTRICTIONS,
-        ANDROID_ONLY_RESTRICTIONS,
+        IOS_COMPONENT_AND_3D_RESTRICTIONS,
+        IOS_MODIFIER_RESTRICTIONS,
+        ANDROID_COMPONENT_AND_3D_RESTRICTIONS,
+        ANDROID_MODIFIER_RESTRICTIONS,
       ),
     },
   },
@@ -728,9 +769,16 @@ module.exports = defineConfig([
     },
   },
   {
+    files: ['src/app/**/*.{web,ios,android,native}.{ts,tsx}'],
+    ignores: ['src/app/+html.tsx'],
+    rules: {
+      'local/no-platform-only-route': 'error',
+    },
+  },
+  {
     files: ['src/**/*.ios.{ts,tsx}', 'src/**/*.android.{ts,tsx}'],
     rules: {
-      'local/ios-android-3d-only': 'error',
+      'local/paired-native-platform-split': 'error',
     },
   },
 
