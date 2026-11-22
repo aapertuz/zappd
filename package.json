@@ -54,7 +54,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test:lint": "node --test tests/lint-rules.test.mjs",
-    "check": "pnpm run lint -- --max-warnings=0 && pnpm run typecheck && pnpm run format:check && pnpm run test:lint",
+    "test:unit": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test tests/canvas-composer.test.mjs",
+    "check": "pnpm run lint -- --max-warnings=0 && pnpm run typecheck && pnpm run format:check && pnpm run test:lint && pnpm run test:unit",
     "prepare": "husky"
   },
   "private": true
