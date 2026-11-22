@@ -1,4 +1,4 @@
-import '@/global.css';
+import '@/shared/ui/global.css';
 
 import { Platform } from 'react-native';
 

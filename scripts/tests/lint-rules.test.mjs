@@ -7,7 +7,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const { ESLint } = require('eslint');
-const projectConfig = require('../eslint.config.js');
+const projectConfig = require('../../eslint.config.js');
 
 let tmpDir;
 let eslint;
@@ -36,27 +36,42 @@ const FIXTURE_FILES = {
   'src/shared/domain/part.ts': 'export type PartId = string;\n',
   'src/shared/firebase/client.ts': 'export const db = {};\n',
   'src/shared/ui/Button.tsx': 'export function Button() { return null; }\n',
-  'src/components/Scene.tsx': 'export function Scene() { return null; }\n',
-  'src/components/Scene.web.tsx': 'export function Scene() { return null; }\n',
-  'src/components/Scene.ios.tsx': 'export function Scene() { return null; }\n',
-  'src/components/Scene.android.tsx': 'export function Scene() { return null; }\n',
-  'src/components/Scene.native.tsx': 'export function Scene() { return null; }\n',
-  'src/components/widget.module.css': '.box { color: red; }\n',
+  'src/shared/ui/Scene.tsx': 'export function Scene() { return null; }\n',
+  'src/shared/ui/Scene.web.tsx': 'export function Scene() { return null; }\n',
+  'src/shared/ui/Scene.ios.tsx': 'export function Scene() { return null; }\n',
+  'src/shared/ui/Scene.android.tsx': 'export function Scene() { return null; }\n',
+  'src/shared/ui/Scene.native.tsx': 'export function Scene() { return null; }\n',
+  'src/shared/ui/widget.module.css': '.box { color: red; }\n',
   'src/features/assembly-explorer/Scene.ios.tsx': 'export function Scene() { return null; }\n',
   'src/features/assembly-explorer/Scene.android.tsx': 'export function Scene() { return null; }\n',
   'src/features/assembly-explorer/renderer/AssemblyScene.ios.tsx':
     'export function AssemblyScene() { return null; }\n',
   'src/features/assembly-explorer/renderer/AssemblyScene.android.tsx':
     'export function AssemblyScene() { return null; }\n',
-  'src/components/Orphan.ios.tsx': 'export function Orphan() { return null; }\n',
-  'src/components/OrphanAndroid.android.tsx': 'export function OrphanAndroid() { return null; }\n',
-  'src/components/NativeFallback.ios.tsx': 'export function NativeFallback() { return null; }\n',
-  'src/components/NativeFallback.native.tsx': 'export function NativeFallback() { return null; }\n',
-  'src/components/BaseFallback.android.tsx': 'export function BaseFallback() { return null; }\n',
-  'src/components/BaseFallback.tsx': 'export function BaseFallback() { return null; }\n',
+  'src/shared/ui/Orphan.ios.tsx': 'export function Orphan() { return null; }\n',
+  'src/shared/ui/OrphanAndroid.android.tsx': 'export function OrphanAndroid() { return null; }\n',
+  'src/shared/ui/NativeFallback.ios.tsx': 'export function NativeFallback() { return null; }\n',
+  'src/shared/ui/NativeFallback.native.tsx': 'export function NativeFallback() { return null; }\n',
+  'src/shared/ui/BaseFallback.android.tsx': 'export function BaseFallback() { return null; }\n',
+  'src/shared/ui/BaseFallback.tsx': 'export function BaseFallback() { return null; }\n',
   'src/app/only-web.web.tsx': 'export default function OnlyWeb() { return null; }\n',
   'src/app/index.web.tsx': 'export default function IndexWeb() { return null; }\n',
   'src/app/+html.tsx': 'export default function Html() { return null; }\n',
+  'src/app/+native-intent.ts': 'export const redirectSystemPath = () => "/";\n',
+  'src/app/health+api.ts': 'export const GET = () => new Response("ok");\n',
+  'src/app/helpers.ts': 'export const helper = () => true;\n',
+  'src/app/canvas.test.mjs': 'export default function Test() {}\n',
+  'src/components/Badge.tsx': 'export const Badge = () => null;\n',
+  'src/constants/theme.ts': 'export const spacing = 8;\n',
+  'src/hooks/use-theme.ts': 'export const useTheme = () => ({});\n',
+  'src/utils.ts': 'export const helper = () => true;\n',
+  'src/features/orphan.ts': 'export const helper = () => true;\n',
+  'src/shared/orphan.ts': 'export const helper = () => true;\n',
+  'tests/canvas.test.mjs': 'export const fixture = 1;\n',
+  'canvas.test.mjs': 'export const fixture = 1;\n',
+  'src/features/projects/tests/project.test.mjs': 'export const fixture = 1;\n',
+  'src/shared/ui/tests/button.test.mjs': 'export const fixture = 1;\n',
+  'scripts/tests/lint.test.mjs': 'export const fixture = 1;\n',
   'modules/realitykit-view/index.ts': 'export const RealityKitView = {};\n',
   'modules/filament-view/index.ts': 'export const FilamentView = {};\n',
   'node_modules/react/index.d.ts': 'export {};\n',
@@ -113,7 +128,7 @@ function assertNoRule(messages, ruleId) {
 
 describe('zappd lint rules', () => {
   before(async () => {
-    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'zappd-lint-test-'));
+    tmpDir = await fs.mkdtemp(path.join(await fs.realpath(os.tmpdir()), 'zappd-lint-test-'));
     await writeFixtureFiles(tmpDir, FIXTURE_FILES);
 
     eslint = new ESLint({
@@ -121,6 +136,7 @@ describe('zappd lint rules', () => {
       overrideConfigFile: true,
       overrideConfig: [
         ...projectConfig,
+        { settings: { react: { version: '19.3.0' } } },
         {
           files: ['**/*.ts', '**/*.tsx'],
           ignores: ['**/*.d.ts'],
@@ -132,9 +148,8 @@ describe('zappd lint rules', () => {
           },
         },
         {
-          files: ['src/**/*.{js,jsx,ts,tsx}', 'modules/**/*.{js,jsx,ts,tsx}'],
+          files: ['{src,modules}/**/*.{js,jsx,mjs,cjs,ts,tsx}'],
           settings: {
-            react: { version: '19.3.0' },
             'boundaries/root-path': tmpDir,
             'import/resolver': {
               typescript: {
@@ -170,6 +185,56 @@ describe('zappd lint rules', () => {
     if (tmpDir) {
       await fs.rm(tmpDir, { recursive: true, force: true });
     }
+  });
+
+  describe('source file placement', () => {
+    it('requires an owner for application code and tests', async () => {
+      for (const file of [
+        'src/components/Badge.tsx',
+        'src/constants/theme.ts',
+        'src/hooks/use-theme.ts',
+        'src/utils.ts',
+        'src/features/orphan.ts',
+        'src/shared/orphan.ts',
+        'tests/canvas.test.mjs',
+        'canvas.test.mjs',
+        'src/app/canvas.test.mjs',
+      ]) {
+        const messages = await lintFixture(file, FIXTURE_FILES[file]);
+        assertHasRule(messages, 'no-restricted-syntax');
+      }
+    });
+
+    it('allows colocated product tests and repository tooling tests', async () => {
+      for (const file of [
+        'src/features/projects/tests/project.test.mjs',
+        'src/shared/ui/tests/button.test.mjs',
+        'scripts/tests/lint.test.mjs',
+      ]) {
+        const messages = await lintFixture(file, FIXTURE_FILES[file]);
+        assertNoRule(messages, 'no-restricted-syntax');
+      }
+    });
+
+    it('requires screen routes to have a default export', async () => {
+      const helper = await lintFixture('src/app/helpers.ts', FIXTURE_FILES['src/app/helpers.ts']);
+      assertHasRule(helper, 'no-restricted-syntax');
+
+      for (const file of [
+        'src/app/index.tsx',
+        'src/app/+native-intent.ts',
+        'src/app/health+api.ts',
+      ]) {
+        const messages = await lintFixture(file, FIXTURE_FILES[file]);
+        assertNoRule(messages, 'no-restricted-syntax');
+      }
+
+      const reexport = await lintFixture(
+        'src/app/index.tsx',
+        "export { ProjectScreen as default } from '@/features/projects';\n",
+      );
+      assertNoRule(reexport, 'no-restricted-syntax');
+    });
   });
 
   describe('boundaries/dependencies', () => {
@@ -257,7 +322,7 @@ describe('zappd lint rules', () => {
       for (const suffix of ['web', 'ios', 'android', 'native']) {
         const res = await lintFixture(
           'src/features/projects/index.ts',
-          `import { Scene } from '@/components/Scene.${suffix}';\nexport const x = Scene;\n`,
+          `import { Scene } from '@/shared/ui/Scene.${suffix}';\nexport const x = Scene;\n`,
         );
         assertHasRule(res, 'no-restricted-imports');
       }
@@ -272,8 +337,8 @@ describe('zappd lint rules', () => {
     it('allows universal @expo/ui in shared native files and blocks it in web and domain files', async () => {
       for (const filePath of [
         'src/features/projects/index.ts',
-        'src/components/Scene.tsx',
-        'src/components/Scene.native.tsx',
+        'src/shared/ui/Scene.tsx',
+        'src/shared/ui/Scene.native.tsx',
       ]) {
         const res = await lintFixture(
           filePath,
@@ -282,7 +347,7 @@ describe('zappd lint rules', () => {
         assertNoRule(res, 'no-restricted-imports');
       }
 
-      for (const filePath of ['src/components/Scene.web.tsx', 'src/shared/domain/part.ts']) {
+      for (const filePath of ['src/shared/ui/Scene.web.tsx', 'src/shared/domain/part.ts']) {
         const res = await lintFixture(
           filePath,
           "import { Host } from '@expo/ui';\nexport const x = Host;\n",
@@ -293,7 +358,7 @@ describe('zappd lint rules', () => {
 
     it('allows @expo/ui/swift-ui and @expo/ui/swift-ui/modifiers in *.ios.tsx and blocks them in *.web.tsx, *.android.tsx, and plain *.tsx', async () => {
       for (const filePath of [
-        'src/components/Scene.ios.tsx',
+        'src/shared/ui/Scene.ios.tsx',
         'src/features/assembly-explorer/renderer/AssemblyScene.ios.tsx',
       ]) {
         const res = await lintFixture(
@@ -304,9 +369,9 @@ describe('zappd lint rules', () => {
       }
 
       for (const filePath of [
-        'src/components/Scene.web.tsx',
-        'src/components/Scene.android.tsx',
-        'src/components/Scene.tsx',
+        'src/shared/ui/Scene.web.tsx',
+        'src/shared/ui/Scene.android.tsx',
+        'src/shared/ui/Scene.tsx',
         'src/features/projects/index.ts',
         'src/app/index.tsx',
         'src/shared/domain/part.ts',
@@ -323,7 +388,7 @@ describe('zappd lint rules', () => {
 
     it('allows @expo/ui/jetpack-compose and @expo/ui/jetpack-compose/modifiers in *.android.tsx and blocks them in *.web.tsx, *.ios.tsx, and plain *.tsx', async () => {
       for (const filePath of [
-        'src/components/Scene.android.tsx',
+        'src/shared/ui/Scene.android.tsx',
         'src/features/assembly-explorer/renderer/AssemblyScene.android.tsx',
       ]) {
         const res = await lintFixture(
@@ -334,9 +399,9 @@ describe('zappd lint rules', () => {
       }
 
       for (const filePath of [
-        'src/components/Scene.web.tsx',
-        'src/components/Scene.ios.tsx',
-        'src/components/Scene.tsx',
+        'src/shared/ui/Scene.web.tsx',
+        'src/shared/ui/Scene.ios.tsx',
+        'src/shared/ui/Scene.tsx',
         'src/features/projects/index.ts',
         'src/app/index.tsx',
         'src/shared/domain/part.ts',
@@ -353,7 +418,7 @@ describe('zappd lint rules', () => {
 
     it('allows universal @expo/ui and platform modifiers in *.native.tsx while blocking single-OS components, 3D bindings, and web libraries', async () => {
       const allowedNative = await lintFixture(
-        'src/components/Scene.native.tsx',
+        'src/shared/ui/Scene.native.tsx',
         "import { Host } from '@expo/ui';\nimport { padding as iosPadding } from '@expo/ui/swift-ui/modifiers';\nimport { padding as androidPadding } from '@expo/ui/jetpack-compose/modifiers';\nexport const x = [Host, iosPadding, androidPadding];\n",
       );
       assertNoRule(allowedNative, 'no-restricted-imports');
@@ -367,7 +432,7 @@ describe('zappd lint rules', () => {
         'three',
       ]) {
         const res = await lintFixture(
-          'src/components/Scene.native.tsx',
+          'src/shared/ui/Scene.native.tsx',
           `import * as Pkg from '${pkg}';\nexport const x = Pkg;\n`,
         );
         assertHasRule(res, 'no-restricted-imports');
@@ -376,16 +441,16 @@ describe('zappd lint rules', () => {
 
     it('blocks web libraries in non-web files and allows them in *.web.tsx', async () => {
       const allowedWeb = await lintFixture(
-        'src/components/Scene.web.tsx',
+        'src/shared/ui/Scene.web.tsx',
         "import { createPortal } from 'react-dom';\nimport { Scene as ThreeScene } from 'three';\nexport const x = [createPortal, ThreeScene];\n",
       );
       assertNoRule(allowedWeb, 'no-restricted-imports');
 
       const nonWebFiles = [
         'src/features/projects/index.ts',
-        'src/components/Scene.native.tsx',
-        'src/components/Scene.ios.tsx',
-        'src/components/Scene.android.tsx',
+        'src/shared/ui/Scene.native.tsx',
+        'src/shared/ui/Scene.ios.tsx',
+        'src/shared/ui/Scene.android.tsx',
       ];
       for (const filePath of nonWebFiles) {
         for (const pkg of ['three', 'react-dom']) {
@@ -406,7 +471,7 @@ describe('zappd lint rules', () => {
       assertNoRule(allowedIosPkg, 'no-restricted-imports');
 
       const allowedIosLocal = await lintFixture(
-        'src/components/Scene.ios.tsx',
+        'src/shared/ui/Scene.ios.tsx',
         "import { RealityKitView } from '../../modules/realitykit-view';\nexport const x = RealityKitView;\n",
       );
       assertNoRule(allowedIosLocal, 'no-restricted-imports');
@@ -418,17 +483,17 @@ describe('zappd lint rules', () => {
       assertNoRule(allowedAndroidPkg, 'no-restricted-imports');
 
       const allowedAndroidLocal = await lintFixture(
-        'src/components/Scene.android.tsx',
+        'src/shared/ui/Scene.android.tsx',
         "import { FilamentView } from '../../modules/filament-view';\nexport const x = FilamentView;\n",
       );
       assertNoRule(allowedAndroidLocal, 'no-restricted-imports');
 
       for (const filePath of [
         'src/features/assembly-explorer/renderer/AssemblyScene.android.tsx',
-        'src/components/Scene.android.tsx',
-        'src/components/Scene.web.tsx',
-        'src/components/Scene.native.tsx',
-        'src/components/Scene.tsx',
+        'src/shared/ui/Scene.android.tsx',
+        'src/shared/ui/Scene.web.tsx',
+        'src/shared/ui/Scene.native.tsx',
+        'src/shared/ui/Scene.tsx',
       ]) {
         const res = await lintFixture(
           filePath,
@@ -439,10 +504,10 @@ describe('zappd lint rules', () => {
 
       for (const filePath of [
         'src/features/assembly-explorer/renderer/AssemblyScene.ios.tsx',
-        'src/components/Scene.ios.tsx',
-        'src/components/Scene.web.tsx',
-        'src/components/Scene.native.tsx',
-        'src/components/Scene.tsx',
+        'src/shared/ui/Scene.ios.tsx',
+        'src/shared/ui/Scene.web.tsx',
+        'src/shared/ui/Scene.native.tsx',
+        'src/shared/ui/Scene.tsx',
       ]) {
         const res = await lintFixture(
           filePath,
@@ -472,13 +537,13 @@ describe('zappd lint rules', () => {
   describe('local/paired-native-platform-split', () => {
     it('blocks unpaired .ios.tsx and .android.tsx files without a matching sibling or fallback', async () => {
       const orphanIos = await lintFixture(
-        'src/components/Orphan.ios.tsx',
+        'src/shared/ui/Orphan.ios.tsx',
         'export function Orphan() { return null; }\n',
       );
       assertHasRule(orphanIos, 'local/paired-native-platform-split');
 
       const orphanAndroid = await lintFixture(
-        'src/components/OrphanAndroid.android.tsx',
+        'src/shared/ui/OrphanAndroid.android.tsx',
         'export function OrphanAndroid() { return null; }\n',
       );
       assertHasRule(orphanAndroid, 'local/paired-native-platform-split');
@@ -498,19 +563,19 @@ describe('zappd lint rules', () => {
       assertNoRule(pairedAndroid, 'local/paired-native-platform-split');
 
       const sceneIos = await lintFixture(
-        'src/components/Scene.ios.tsx',
+        'src/shared/ui/Scene.ios.tsx',
         'export function Scene() { return null; }\n',
       );
       assertNoRule(sceneIos, 'local/paired-native-platform-split');
 
       const nativeFallbackIos = await lintFixture(
-        'src/components/NativeFallback.ios.tsx',
+        'src/shared/ui/NativeFallback.ios.tsx',
         'export function NativeFallback() { return null; }\n',
       );
       assertNoRule(nativeFallbackIos, 'local/paired-native-platform-split');
 
       const baseFallbackAndroid = await lintFixture(
-        'src/components/BaseFallback.android.tsx',
+        'src/shared/ui/BaseFallback.android.tsx',
         'export function BaseFallback() { return null; }\n',
       );
       assertNoRule(baseFallbackAndroid, 'local/paired-native-platform-split');
@@ -586,7 +651,7 @@ describe('zappd lint rules', () => {
 
     it('allows triple-slash directives only in declaration files', async () => {
       const dtsDirective = await lintFixture(
-        'src/types/env.d.ts',
+        'src/shared/types/env.d.ts',
         '/// <reference types="expo/types" />\n',
       );
       assertNoRule(dtsDirective, 'local/no-comments');

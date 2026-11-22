@@ -1,5 +1,5 @@
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useColorScheme } from '@/shared/ui/hooks/use-color-scheme';
+import { Colors } from '@/shared/ui/theme';
 
 export function useTheme() {
   const scheme = useColorScheme();

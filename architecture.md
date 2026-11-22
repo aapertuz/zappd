@@ -25,6 +25,7 @@
 
 - Use `src/` as the application source root. Organize application code by **feature/domain**.
 - Each feature owns its screens, UI components, hooks/state, services, and tests; share code only when genuinely reused.
+- Keep application tests with their feature or shared area. Keep repository tooling tests in `scripts/tests/`.
 - Example feature boundaries: `canvas/`, `projects/`, `assembly-explorer/`, `learning/`, and `offline/`; refine names as implementation evolves.
 - Keep platform-specific implementations **inside the owning feature** behind shared typed interfaces following the three-tier escalation model: default to one shared file (Tier 1), add `.web.tsx` alongside a shared native file when web diverges (Tier 2, such as `canvas/components/CanvasView.tsx` and `CanvasView.web.tsx`), and isolate `.ios.tsx`/`.android.tsx` splits to the smallest leaf when iOS and Android themselves diverge (Tier 3, such as `assembly-explorer/renderer/AssemblyScene.{web,ios,android}.tsx` or an OS-specific native control in a feature or `shared/ui/`).
 - Reserve `shared/` for reusable domain contracts, design primitives, and infrastructure adapters; avoid feature-to-feature imports into internals.

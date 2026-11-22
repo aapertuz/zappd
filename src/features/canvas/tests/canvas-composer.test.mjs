@@ -5,7 +5,7 @@ import {
   INITIAL_CANVAS_COMPOSER_STATE,
   canSubmitPrompt,
   reduceCanvasComposerState,
-} from '../src/features/canvas/model/composerState.ts';
+} from '../model/composerState.ts';
 
 function typeDraft(state, text) {
   return reduceCanvasComposerState(state, { type: 'changeDraft', text });

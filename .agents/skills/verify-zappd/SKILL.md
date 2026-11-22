@@ -101,7 +101,7 @@ Proof standards:
 
 - Drive only real user interactions (`browser-act`, keyboard events, real clicks); never bypass controls via internal state hooks or state-mutating JS evaluation.
 - Capture **both** the action/pre-submit state and the resulting state (not just the end screen), including console/page error counts.
-- Pair web `prompt-submission` UI proofs with `pnpm run test:unit` (`tests/canvas-composer.test.mjs`) to verify non-rendered reducer state (`lastSubmittedPrompt`, monotonic `id`) until a visible prompt feed exists in `src/app/index.tsx`.
+- Pair web `prompt-submission` UI proofs with `pnpm run test:unit` (`src/features/canvas/tests/canvas-composer.test.mjs`) to verify non-rendered reducer state (`lastSubmittedPrompt`, monotonic `id`) until a visible prompt feed exists in `src/app/index.tsx`.
 - If a precondition is unmet (such as no built native app for `native-canvas.md`), report the feature as failed/`verified-unreachable` with the unmet precondition and never weaken the journey.
 
 ## Cleanup

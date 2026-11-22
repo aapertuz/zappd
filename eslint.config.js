@@ -7,6 +7,7 @@ const eslintConfigPrettier = require('eslint-config-prettier/flat');
 const globals = require('globals');
 
 const TRIPLE_SLASH_DIRECTIVE_PATTERN = /^\/\s*<(?:reference|amd-module|amd-dependency)\b/;
+const SOURCE_EXTENSION = '{js,jsx,mjs,cjs,ts,tsx}';
 
 const localPlugin = {
   rules: {
@@ -443,7 +444,7 @@ module.exports = defineConfig([
   },
 
   {
-    files: ['src/**/*.{js,jsx,ts,tsx}', 'modules/**/*.{js,jsx,ts,tsx}'],
+    files: [`{src,modules}/**/*.${SOURCE_EXTENSION}`],
     plugins: {
       boundaries,
     },
@@ -458,7 +459,7 @@ module.exports = defineConfig([
           extensions: EXPO_EXTENSIONS,
         },
       },
-      'boundaries/ignore': ['**/*.{test,spec}.{ts,tsx,js,jsx}', '**/__tests__/**'],
+      'boundaries/ignore': [`**/*.{test,spec}.${SOURCE_EXTENSION}`, '**/__tests__/**'],
       'boundaries/elements': [
         { type: 'app', pattern: 'src/app', partialMatch: false, exclusive: true },
         {
@@ -485,13 +486,6 @@ module.exports = defineConfig([
           type: 'shared',
           pattern: 'src/shared/*',
           capture: ['sliceName'],
-          partialMatch: false,
-          exclusive: true,
-        },
-        { type: 'shared-root', pattern: 'src/shared', partialMatch: false },
-        {
-          type: 'starter',
-          pattern: ['src/components', 'src/constants', 'src/hooks'],
           partialMatch: false,
           exclusive: true,
         },
@@ -544,14 +538,7 @@ module.exports = defineConfig([
                   { element: { type: 'feature', fileInternalPath: 'index.{ts,tsx}' } },
                   {
                     element: {
-                      type: [
-                        'shared-domain',
-                        'shared-firebase',
-                        'shared-ui',
-                        'shared',
-                        'shared-root',
-                        'starter',
-                      ],
+                      type: ['shared-domain', 'shared-firebase', 'shared-ui', 'shared'],
                     },
                   },
                 ],
@@ -575,8 +562,6 @@ module.exports = defineConfig([
                         'shared-firebase',
                         'shared-ui',
                         'shared',
-                        'shared-root',
-                        'starter',
                         'native-module',
                       ],
                     },
@@ -595,7 +580,7 @@ module.exports = defineConfig([
               allow: {
                 to: {
                   element: {
-                    type: ['shared-domain', 'shared-firebase', 'shared', 'shared-root'],
+                    type: ['shared-domain', 'shared-firebase', 'shared'],
                   },
                 },
               },
@@ -605,34 +590,17 @@ module.exports = defineConfig([
               allow: {
                 to: {
                   element: {
-                    type: ['shared-domain', 'shared-ui', 'shared', 'shared-root', 'starter'],
+                    type: ['shared-domain', 'shared-ui', 'shared'],
                   },
                 },
               },
             },
             {
-              from: { element: { type: ['shared', 'shared-root'] } },
+              from: { element: { type: 'shared' } },
               allow: {
                 to: {
                   element: {
-                    type: [
-                      'shared-domain',
-                      'shared-firebase',
-                      'shared-ui',
-                      'shared',
-                      'shared-root',
-                      'starter',
-                    ],
-                  },
-                },
-              },
-            },
-            {
-              from: { element: { type: 'starter' } },
-              allow: {
-                to: {
-                  element: {
-                    type: ['starter', 'shared-domain', 'shared-ui', 'shared', 'shared-root'],
+                    type: ['shared-domain', 'shared-firebase', 'shared-ui', 'shared'],
                   },
                 },
               },
@@ -746,13 +714,62 @@ module.exports = defineConfig([
   },
 
   {
-    files: ['scripts/**/*.js', 'tests/**/*.{js,mjs}', '*.config.{js,cjs,mjs}'],
+    files: ['scripts/**/*.{js,mjs,cjs}', '*.config.{js,cjs,mjs}'],
     languageOptions: {
       globals: globals.node,
     },
     rules: {
       'no-console': 'off',
       '@typescript-eslint/no-require-imports': 'off',
+    },
+  },
+  {
+    files: [
+      `*.${SOURCE_EXTENSION}`,
+      `{app,components,constants,features,hooks,lib,screens,services,shared,tests,types,utils,__tests__}/**/*.${SOURCE_EXTENSION}`,
+      `src/**/*.${SOURCE_EXTENSION}`,
+    ],
+    ignores: [`*.config.${SOURCE_EXTENSION}`, 'src/app/**', 'src/{features,shared}/*/**'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'Program',
+          message:
+            'Place application code and tests in an owning src/features/<feature>/ or src/shared/<area>/ directory. Use src/app/ for routes and scripts/ for tooling.',
+        },
+      ],
+    },
+  },
+  {
+    files: [`src/app/**/*.${SOURCE_EXTENSION}`],
+    ignores: [`src/app/**/*+api.${SOURCE_EXTENSION}`, `src/app/+native-intent.${SOURCE_EXTENSION}`],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            'Program:not(:has(ExportDefaultDeclaration, ExportNamedDeclaration[exportKind!="type"] > ExportSpecifier[exportKind!="type"][exported.name="default"]))',
+          message:
+            'Screen routes and layouts must export a default component. Move other modules to the owning feature or shared area.',
+        },
+      ],
+    },
+  },
+  {
+    files: [
+      `src/app/**/*.{test,spec}.${SOURCE_EXTENSION}`,
+      `src/app/**/{tests,__tests__}/**/*.${SOURCE_EXTENSION}`,
+      'src/app/**/*.d.ts',
+    ],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'Program',
+          message: 'Place tests and declarations in the owning feature or shared area.',
+        },
+      ],
     },
   },
 
