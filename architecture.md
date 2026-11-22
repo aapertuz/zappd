@@ -23,43 +23,45 @@
 
 ## Feature-Based Organization
 
-- Organize application code by **feature/domain**, not by technical layer or platform.
+- Use `src/` as the application source root. Organize application code by **feature/domain**.
 - Each feature owns its screens, UI components, hooks/state, services, and tests; share code only when genuinely reused.
 - Example feature boundaries: `canvas/`, `projects/`, `assembly-explorer/`, `learning/`, and `offline/`; refine names as implementation evolves.
 - Keep platform-specific implementations **inside the owning feature** behind shared typed interfaces following the three-tier escalation model: default to one shared file (Tier 1), add `.web.tsx` alongside a shared native file when web diverges (Tier 2, such as `canvas/components/CanvasView.tsx` and `CanvasView.web.tsx`), and isolate `.ios.tsx`/`.android.tsx` splits to the smallest leaf when iOS and Android themselves diverge (Tier 3, such as `assembly-explorer/renderer/AssemblyScene.{web,ios,android}.tsx` or an OS-specific native control in a feature or `shared/ui/`).
 - Reserve `shared/` for reusable domain contracts, design primitives, and infrastructure adapters; avoid feature-to-feature imports into internals.
-- Expo Router route files remain thin entry points that delegate to features.
+- Reserve `src/app/` for Expo Router routes and layouts. Keep route files as thin entry points that delegate to features.
 
 Example project tree (illustrative, not prescriptive):
 
 ```text
-app/                                  # Thin Expo Router routes
-  index.tsx
-  projects/[projectId].tsx
-features/
-  canvas/
-    components/CanvasView.tsx         # Shared iOS and Android UI (@expo/ui)
-    components/CanvasView.web.tsx     # Web-optimal UI (React DOM and CSS)
-    screens/CanvasScreen.tsx
-    index.ts                          # Public feature API
-  projects/
-    screens/ProjectScreen.tsx
-    index.ts
-  assembly-explorer/
-    renderer/AssemblyScene.web.tsx    # Three.js / React Three Fiber
-    renderer/AssemblyScene.ios.tsx    # RealityKit binding
-    renderer/AssemblyScene.android.tsx # Filament binding
-    index.ts
-  learning/
-    components/
-    index.ts
-  offline/
-    services/
-    index.ts
-shared/
-  domain/                             # Common contracts and IDs
-  firebase/                           # Shared Firebase adapters
-  ui/                                 # Reusable design primitives and isolated OS-specific leaf controls
+src/
+  app/                                  # Expo Router routes and layouts
+    _layout.tsx
+    index.tsx
+    projects/[projectId].tsx
+  features/
+    canvas/
+      components/CanvasView.tsx          # Shared iOS and Android UI (@expo/ui)
+      components/CanvasView.web.tsx      # Web-optimal UI (React DOM and CSS)
+      screens/CanvasScreen.tsx
+      index.ts                           # Public feature API
+    projects/
+      screens/ProjectScreen.tsx
+      index.ts
+    assembly-explorer/
+      renderer/AssemblyScene.web.tsx     # Three.js / React Three Fiber
+      renderer/AssemblyScene.ios.tsx     # RealityKit binding
+      renderer/AssemblyScene.android.tsx # Filament binding
+      index.ts
+    learning/
+      components/
+      index.ts
+    offline/
+      services/
+      index.ts
+  shared/
+    domain/                             # Common contracts and IDs
+    firebase/                           # Shared Firebase adapters
+    ui/                                 # Reusable design primitives and isolated OS-specific leaf controls
 modules/
   realitykit-view/                    # Swift Expo module
   filament-view/                      # Kotlin Expo module
