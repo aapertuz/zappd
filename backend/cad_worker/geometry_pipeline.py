@@ -10,7 +10,7 @@ from typing import Any
 
 import numpy as np
 from OCP.Bnd import Bnd_Box
-from OCP.BRep import BRep_Tool
+from OCP.BRep import BRep_Builder, BRep_Tool
 from OCP.BRepAlgoAPI import BRepAlgoAPI_Common
 from OCP.BRepBndLib import BRepBndLib
 from OCP.BRepBuilderAPI import BRepBuilderAPI_Transform
@@ -23,7 +23,6 @@ from OCP.TopAbs import TopAbs_FACE
 from OCP.TopExp import TopExp_Explorer
 from OCP.TopLoc import TopLoc_Location
 from OCP.TopoDS import TopoDS, TopoDS_Compound
-from OCP.BRep import BRep_Builder
 from OCP.gp import gp_Trsf, gp_Vec
 from pygltflib import (
     ARRAY_BUFFER,
@@ -42,7 +41,32 @@ from pygltflib import (
     Scene,
 )
 
-from catalog_ingestor import resolve_component_step
+from catalog_ingestor import MIN_CAD_BREP_FACES, resolve_component_step
+
+
+MATERIAL_PBR_TABLE: dict[str, tuple[float, float]] = {
+    "carbon_fiber": (0.15, 0.38),
+    "carbon_fiber_composite": (0.15, 0.38),
+    "anodized_aluminum": (0.86, 0.28),
+    "machined_aluminum": (0.88, 0.24),
+    "extruded_aluminum": (0.86, 0.28),
+    "anodized_steel": (0.90, 0.26),
+    "stainless_steel": (0.92, 0.22),
+    "brass": (0.92, 0.22),
+    "copper_winding": (0.92, 0.28),
+    "polycarbonate": (0.05, 0.25),
+    "fr4_pcb": (0.08, 0.48),
+    "abs_3d_printed": (0.06, 0.52),
+    "pla_3d_printed": (0.06, 0.50),
+    "acetal_polymer": (0.05, 0.45),
+    "nylon_glass_filled": (0.05, 0.55),
+    "servo_housing": (0.10, 0.42),
+    "optical_glass": (0.12, 0.08),
+}
+
+
+def material_pbr_factors(material_hint: str) -> tuple[float, float]:
+    return MATERIAL_PBR_TABLE.get(material_hint, (0.25, 0.45))
 
 
 def hex_to_rgba(hex_color: str) -> list[float]:
@@ -65,14 +89,19 @@ def translate_shape_mm(shape, offset_mm: tuple[float, float, float]):
 
 def shape_bounds_mm(shape) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
     box = Bnd_Box()
-    BRepBndLib.Add_s(shape, box)
+    BRepBndLib.AddOptimal_s(shape, box, False, False)
+    box.SetGap(0.0)
     cmin = box.CornerMin()
     cmax = box.CornerMax()
     return (cmin.X(), cmin.Y(), cmin.Z()), (cmax.X(), cmax.Y(), cmax.Z())
 
 
-def tessellate_shape_meters_y_up(shape, linear_deflection: float = 0.05) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    BRepMesh_IncrementalMesh(shape, linear_deflection, False, 0.1, True)
+def tessellate_shape_meters_y_up(
+    shape,
+    linear_deflection: float = 0.2,
+    angular_deflection: float = 0.4,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    BRepMesh_IncrementalMesh(shape, linear_deflection, False, angular_deflection, True)
     vertices: list[list[float]] = []
     normals: list[list[float]] = []
     indices: list[int] = []
@@ -172,8 +201,9 @@ def export_hierarchical_glb(
             "depth": node_spec["depth"],
             "explodeDirection": list(node_spec["explodeDirection"]),
             "explodeDistanceMeters": node_spec["explodeDistanceMeters"],
-            "verificationStatus": verification_status if cid in geometry_by_id else verification_status,
+            "verificationStatus": verification_status,
             "spdxLicense": node_spec["spdxLicense"],
+            "materialHint": node_spec["materialHint"],
         }
 
         mesh_index = None
@@ -182,6 +212,7 @@ def export_hierarchical_glb(
             verts: np.ndarray = geom["vertices"]
             norms: np.ndarray = geom["normals"]
             idxs: np.ndarray = geom["indices"]
+            metallic, roughness = material_pbr_factors(str(node_spec.get("materialHint", "")))
 
             mat_idx = len(gltf.materials)
             gltf.materials.append(
@@ -189,8 +220,8 @@ def export_hierarchical_glb(
                     name=f"mat_{cid}",
                     pbrMetallicRoughness=PbrMetallicRoughness(
                         baseColorFactor=hex_to_rgba(node_spec["colorHex"]),
-                        metallicFactor=0.35,
-                        roughnessFactor=0.55,
+                        metallicFactor=metallic,
+                        roughnessFactor=roughness,
                     ),
                 )
             )
@@ -325,8 +356,10 @@ def export_usdz_archive(
         if cid in geometry_by_id:
             geom = geometry_by_id[cid]
             verts: np.ndarray = geom["vertices"]
+            norms: np.ndarray = geom["normals"]
             idxs: np.ndarray = geom["indices"]
             pts_str = ", ".join(f"({v[0]:.6f}, {v[1]:.6f}, {v[2]:.6f})" for v in verts)
+            norms_str = ", ".join(f"({n[0]:.5f}, {n[1]:.5f}, {n[2]:.5f})" for n in norms)
             face_counts = ", ".join(["3"] * (len(idxs) // 3))
             face_indices = ", ".join(str(int(i)) for i in idxs)
             rgba = hex_to_rgba(node["colorHex"])
@@ -340,6 +373,7 @@ def export_usdz_archive(
             lines.append(f"{pad}        int[] faceVertexCounts = [{face_counts}]")
             lines.append(f"{pad}        int[] faceVertexIndices = [{face_indices}]")
             lines.append(f"{pad}        point3f[] points = [{pts_str}]")
+            lines.append(f"{pad}        normal3f[] normals = [{norms_str}]")
             lines.append(f"{pad}        color3f[] primvars:displayColor = [({rgba[0]}, {rgba[1]}, {rgba[2]})]")
             lines.append(f"{pad}    }}")
         else:
@@ -398,6 +432,19 @@ def parse_usdz_prim_paths(usdz_path: Path) -> str:
         return zf.read("model.usda").decode("utf-8")
 
 
+def _validate_node_provenance(node_spec: dict[str, Any]) -> str | None:
+    cid = node_spec["id"]
+    if node_spec.get("origin") != "open_step_catalog":
+        return f"Node {cid} origin is not open_step_catalog"
+    source_url = str(node_spec.get("sourceUrl", ""))
+    if not source_url.startswith("https://"):
+        return f"Node {cid} lacks verified HTTPS sourceUrl"
+    spdx_license = str(node_spec.get("spdxLicense", "")).strip()
+    if not spdx_license:
+        return f"Node {cid} lacks SPDX license identifier"
+    return None
+
+
 def run_cad_pipeline(
     archetype_spec: dict[str, Any],
     output_dir: Path,
@@ -420,9 +467,18 @@ def run_cad_pipeline(
 
     for idx, node_spec in enumerate(nodes_spec):
         cid = node_spec["id"]
+        provenance_failure = _validate_node_provenance(node_spec)
+        if provenance_failure is not None:
+            failures.append(provenance_failure)
+
         resolved = resolve_component_step(node_spec, cache_dir)
         if not resolved["hasGeometry"]:
             continue
+
+        if resolved["faceCount"] < MIN_CAD_BREP_FACES:
+            failures.append(
+                f"Component {cid} has {resolved['faceCount']} faces (< {MIN_CAD_BREP_FACES})"
+            )
 
         shape = resolved["shape"]
         if not BRepCheck_Analyzer(shape).IsValid():
@@ -431,7 +487,7 @@ def run_cad_pipeline(
 
         rest_m = list(node_spec["restPositionMeters"])
         if inject_collision_test and idx == len(nodes_spec) - 1:
-            first_geom_node = next(n for n in nodes_spec if n.get("geometrySpec") is not None)
+            first_geom_node = next(n for n in nodes_spec if n.get("stepFixtureName") is not None)
             rest_m = list(first_geom_node["restPositionMeters"])
 
         cad_offset_mm = world_rest_to_cad_mm(rest_m)
@@ -511,6 +567,7 @@ def run_cad_pipeline(
         failures.append("Incomplete 1:1 componentId mapping across Firestore, GLB, and USDZ")
 
     valid = all_checks_ok and node_mapping_complete
+    final_status = "sourced_verified" if valid else "unverified"
 
     step_bytes = step_out.read_bytes()
     glb_bytes = glb_out.read_bytes()
@@ -529,7 +586,7 @@ def run_cad_pipeline(
             node_status = ingested[cid]["targetVerifiedStatus"] if valid else "unverified"
             node_sha = ingested[cid]["sha256"]
         else:
-            node_status = "sourced_verified" if valid else "unverified"
+            node_status = final_status
             node_sha = step_sha
 
         enriched_nodes.append(
@@ -602,7 +659,7 @@ def run_cad_pipeline(
 
     result = {
         "archetypeId": archetype_id,
-        "verificationStatus": "sourced_verified" if valid else "unverified",
+        "verificationStatus": final_status,
         "nodes": enriched_nodes,
         "manifest": manifest,
         "validation": validation,
