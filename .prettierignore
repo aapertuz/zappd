@@ -10,3 +10,8 @@ coverage
 assets
 pnpm-lock.yaml
 expo-env.d.ts
+backend/.venv
+backend/data
+.audit
+.pytest_cache
+public/assemblies

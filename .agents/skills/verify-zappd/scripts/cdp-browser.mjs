@@ -393,7 +393,9 @@ export async function launchChromeSession({
     chromeBin,
     [
       '--headless=new',
-      '--disable-gpu',
+      '--use-gl=angle',
+      '--use-angle=swiftshader',
+      '--enable-unsafe-swiftshader',
       '--no-first-run',
       '--no-default-browser-check',
       `--user-data-dir=${profileDir}`,

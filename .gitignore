@@ -41,3 +41,12 @@ example
 # generated native folders
 /ios
 /android
+
+# backend runtime & generated cad bundles
+backend/.venv/
+backend/data/
+.audit/
+.pytest_cache/
+public/assemblies/
+__pycache__/
+*.py[cod]

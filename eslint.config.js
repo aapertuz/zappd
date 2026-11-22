@@ -357,6 +357,10 @@ module.exports = defineConfig([
     '.serena/**',
     'coverage/**',
     'expo-env.d.ts',
+    'backend/.venv/**',
+    'backend/data/**',
+    '.audit/**',
+    'public/assemblies/**',
   ]),
 
   expoConfig,
