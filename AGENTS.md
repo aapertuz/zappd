@@ -43,7 +43,7 @@ Run lint and typecheck before declaring any task done.
 ## Architecture Boundaries
 
 - Organize by feature. Keep routes thin and expose cross-feature functionality through public feature APIs.
-- Keep web, iOS, and Android implementations behind shared typed contracts; platform-specific code stays in its owning feature.
+- Keep platform implementations behind shared typed contracts inside the owning feature: share iOS and Android UI in one file with universal `@expo/ui`, add `.web.tsx` (React DOM/CSS) when web benefits from a dedicated interface (evaluate and decide or ask when unclear), and reserve `.ios.tsx` / `.android.tsx` splits strictly for 3D rendering (enforced by ESLint).
 - Treat Firestore's component hierarchy, stable IDs, relationships, and assembly steps as the domain model, never mesh names or a single 3D file.
 - Treat source CAD as engineering truth; GLB/USDZ are derived render assets. Do not mistake successful rendering for validated engineering.
 - Respect Phase 1's verified CAD assemblies; do not introduce custom CAD generation unless the task explicitly requires Phase 2.
