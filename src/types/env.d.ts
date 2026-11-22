@@ -29,3 +29,8 @@ declare module '*.svg' {
   const asset: number;
   export default asset;
 }
+
+declare module '*.xml' {
+  const asset: number;
+  export default asset;
+}
