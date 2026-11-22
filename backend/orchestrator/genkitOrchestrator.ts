@@ -37,7 +37,16 @@ const OrchestrationInputSchema = z.object({
   apiKey: z.string().optional(),
   baseUrl: z.string().optional(),
   injectCollisionTest: z.boolean().optional(),
+  requireLiveApiKey: z.boolean().optional(),
 });
+
+const PUBLISHED_ASSEMBLY_FILE_NAMES = [
+  'model.glb',
+  'model.step',
+  'model.usdz',
+  'manifest.json',
+  'pipeline_result.json',
+] as const;
 
 const RetrievalInputSchema = z.object({
   archetypeId: z.string().min(1),
@@ -185,6 +194,16 @@ async function runCadAssemblyAndValidation(args: {
   return workerResult;
 }
 
+async function publishAssemblyArtifacts(workDir: string, archetypeId: string): Promise<void> {
+  const publicDir = path.join(resolveRepoRoot(), 'public', 'assemblies', archetypeId);
+  await fs.mkdir(publicDir, { recursive: true });
+  await Promise.all(
+    PUBLISHED_ASSEMBLY_FILE_NAMES.map((fileName) =>
+      fs.copyFile(path.join(workDir, fileName), path.join(publicDir, fileName)),
+    ),
+  );
+}
+
 async function executeProjectOrchestration(
   args: {
     readonly prompt: string;
@@ -192,6 +211,7 @@ async function executeProjectOrchestration(
     readonly apiKey?: string;
     readonly baseUrl?: string;
     readonly injectCollisionTest?: boolean;
+    readonly requireLiveApiKey?: boolean;
   },
   repository: FirebaseEmulatorRepository,
 ): Promise<VerifiedProjectAssembly> {
@@ -200,6 +220,7 @@ async function executeProjectOrchestration(
     provider: args.provider,
     apiKey: args.apiKey,
     baseUrl: args.baseUrl,
+    requireLiveApiKey: args.requireLiveApiKey,
   });
   const retrieval = await runComponentRetrieval(plan.archetypeId);
 
@@ -256,6 +277,7 @@ async function executeProjectOrchestration(
       },
       { syncLiveEmulator: false },
     );
+    await publishAssemblyArtifacts(workDir, archetype.archetypeId);
 
     return assembly;
   } finally {
@@ -277,6 +299,7 @@ export function createZappdOrchestratorFlows(repository: FirebaseEmulatorReposit
         provider: input.provider,
         apiKey: input.apiKey,
         baseUrl: input.baseUrl,
+        requireLiveApiKey: input.requireLiveApiKey,
       }),
   );
 
@@ -314,6 +337,7 @@ export function createZappdOrchestratorFlows(repository: FirebaseEmulatorReposit
           apiKey: input.apiKey,
           baseUrl: input.baseUrl,
           injectCollisionTest: input.injectCollisionTest,
+          requireLiveApiKey: input.requireLiveApiKey,
         },
         repository,
       ),
@@ -334,6 +358,7 @@ export async function orchestrateProjectAssemblyCreation(args: {
   readonly apiKey?: string;
   readonly baseUrl?: string;
   readonly injectCollisionTest?: boolean;
+  readonly requireLiveApiKey?: boolean;
   readonly repository?: FirebaseEmulatorRepository;
 }): Promise<VerifiedProjectAssembly> {
   const repository = args.repository ?? defaultFirebaseEmulatorRepository;
@@ -345,6 +370,7 @@ export async function orchestrateProjectAssemblyCreation(args: {
       apiKey: args.apiKey,
       baseUrl: args.baseUrl,
       injectCollisionTest: args.injectCollisionTest,
+      requireLiveApiKey: args.requireLiveApiKey,
     },
     repository,
   );

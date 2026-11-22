@@ -1,7 +1,14 @@
 import { useEffect, useReducer } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { type ComponentId, type ExplodeStageFilter } from '@/shared/domain';
+import {
+  type AiProviderId,
+  type ComponentId,
+  DEFAULT_AI_PROVIDER,
+  type ExplodeStageFilter,
+  getAiProviderDescriptor,
+  SUPPORTED_AI_PROVIDERS,
+} from '@/shared/domain';
 
 import {
   INITIAL_ASSEMBLY_EXPLORER_STATE,
@@ -11,15 +18,48 @@ import { AssemblyScene } from '../renderer/AssemblyScene';
 import { loadVerifiedAssemblyForPrompt } from '../services/assemblyRuntimeService';
 import { type AssemblyExplorerProps, type SeparationAxis } from '../types';
 
+function ProviderSwitcher({
+  selectedProvider,
+  onSelectProvider,
+}: {
+  readonly selectedProvider: AiProviderId;
+  readonly onSelectProvider: (provider: AiProviderId) => void;
+}) {
+  return (
+    <View style={styles.providerRow} accessibilityRole="toolbar">
+      {SUPPORTED_AI_PROVIDERS.map((providerId) => {
+        const descriptor = getAiProviderDescriptor(providerId);
+        const active = providerId === selectedProvider;
+        return (
+          <Pressable
+            key={providerId}
+            accessibilityRole="button"
+            accessibilityLabel={`Use ${descriptor.displayName}`}
+            accessibilityState={{ selected: active }}
+            style={[styles.providerButton, active ? styles.providerButtonActive : null]}
+            onPress={() => onSelectProvider(providerId)}>
+            <Text style={active ? styles.providerLabelActive : styles.providerLabel}>
+              {descriptor.displayName}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
 export function AssemblyExplorerView({
   submittedPrompt,
   selectedProvider,
+  providerExplicitlySelected,
   onSelectProvider,
+  onResolveProvider,
 }: AssemblyExplorerProps) {
   const [state, dispatch] = useReducer(
     reduceAssemblyExplorerState,
     INITIAL_ASSEMBLY_EXPLORER_STATE,
   );
+  const requestedProvider = providerExplicitlySelected ? selectedProvider : DEFAULT_AI_PROVIDER;
 
   useEffect(() => {
     dispatch({ type: 'setProvider', provider: selectedProvider });
@@ -36,7 +76,8 @@ export function AssemblyExplorerView({
 
     void loadVerifiedAssemblyForPrompt({
       prompt: submittedPrompt.text,
-      provider: selectedProvider,
+      provider: requestedProvider,
+      providerExplicitlySelected,
     })
       .then((bundle) => {
         if (cancelled) {
@@ -48,6 +89,7 @@ export function AssemblyExplorerView({
           assembly: bundle.assembly,
           glbArrayBuffer: bundle.glbArrayBuffer,
         });
+        onResolveProvider(bundle.assembly.orchestration.provider);
       })
       .catch((error: unknown) => {
         if (cancelled) {
@@ -61,7 +103,7 @@ export function AssemblyExplorerView({
     return () => {
       cancelled = true;
     };
-  }, [submittedPrompt, selectedProvider]);
+  }, [submittedPrompt, requestedProvider, providerExplicitlySelected, onResolveProvider]);
 
   if (state.isLoading && state.assembly === null) {
     return (
@@ -75,6 +117,10 @@ export function AssemblyExplorerView({
     return (
       <View style={styles.statusContainer}>
         <Text style={styles.errorText}>{state.errorMessage}</Text>
+        <ProviderSwitcher
+          selectedProvider={state.selectedProvider}
+          onSelectProvider={onSelectProvider}
+        />
       </View>
     );
   }
@@ -129,6 +175,36 @@ const styles = StyleSheet.create({
   errorText: {
     color: '#dc2626',
     fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  providerRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 16,
+  },
+  providerButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#d4d4d8',
+    backgroundColor: '#ffffff',
+  },
+  providerButtonActive: {
+    borderColor: '#18181b',
+    backgroundColor: '#18181b',
+  },
+  providerLabel: {
+    color: '#18181b',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  providerLabelActive: {
+    color: '#ffffff',
+    fontSize: 13,
     fontWeight: '600',
   },
 });

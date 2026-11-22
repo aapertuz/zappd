@@ -44,6 +44,15 @@
   color: #166534;
 }
 
+.orchestrationBadge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background-color: #e0e7ff;
+  color: #3730a3;
+}
+
 .providerGroup {
   display: flex;
   align-items: center;

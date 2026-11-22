@@ -1,4 +1,4 @@
-import type { Vector3Tuple } from '@/shared/domain';
+import type { AiProviderId, Vector3Tuple } from '@/shared/domain';
 
 import type {
   AssemblyExplorerAction,
@@ -14,8 +14,10 @@ export const DEFAULT_EXPLORER_CAMERA: ExplorerCameraState = {
   targetMeters: [0, 0.04, 0],
 };
 
+const INITIAL_EXPLORER_PROVIDER: AiProviderId = 'deepseek';
+
 export const INITIAL_ASSEMBLY_EXPLORER_STATE: AssemblyExplorerState = {
-  selectedProvider: 'gemini',
+  selectedProvider: INITIAL_EXPLORER_PROVIDER,
   lastPromptId: null,
   assembly: null,
   glbArrayBuffer: null,

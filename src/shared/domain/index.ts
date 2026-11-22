@@ -1,5 +1,6 @@
 export {
   AI_PROVIDER_REGISTRY,
+  DEFAULT_AI_PROVIDER,
   SUPPORTED_AI_PROVIDERS,
   getAiProviderDescriptor,
   isAiProviderId,

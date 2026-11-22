@@ -77,5 +77,7 @@ export type AssemblySceneProps = {
 export type AssemblyExplorerProps = {
   readonly submittedPrompt: { readonly id: number; readonly text: string } | null;
   readonly selectedProvider: AiProviderId;
+  readonly providerExplicitlySelected: boolean;
   readonly onSelectProvider: (provider: AiProviderId) => void;
+  readonly onResolveProvider: (provider: AiProviderId) => void;
 };

@@ -1,6 +1,6 @@
 import { useReducer, useState } from 'react';
 
-import { type AiProviderId } from '@/shared/domain';
+import { type AiProviderId, DEFAULT_AI_PROVIDER } from '@/shared/domain';
 
 import { AssemblyExplorerView } from '@/features/assembly-explorer';
 
@@ -15,7 +15,8 @@ import { type CanvasScreenProps } from '../types';
 
 export function CanvasScreen({ onSubmitPrompt }: CanvasScreenProps) {
   const [state, dispatch] = useReducer(reduceCanvasComposerState, INITIAL_CANVAS_COMPOSER_STATE);
-  const [selectedProvider, setSelectedProvider] = useState<AiProviderId>('gemini');
+  const [selectedProvider, setSelectedProvider] = useState<AiProviderId>(DEFAULT_AI_PROVIDER);
+  const [providerExplicitlySelected, setProviderExplicitlySelected] = useState(false);
   const canSubmit = canSubmitPrompt(state.draft);
 
   function handleDraftChange(text: string) {
@@ -29,12 +30,19 @@ export function CanvasScreen({ onSubmitPrompt }: CanvasScreenProps) {
     onSubmitPrompt?.(normalized);
   }
 
+  function handleSelectProvider(provider: AiProviderId) {
+    setSelectedProvider(provider);
+    setProviderExplicitlySelected(true);
+  }
+
   const surfaceContent =
     state.lastSubmittedPrompt !== null ? (
       <AssemblyExplorerView
         submittedPrompt={state.lastSubmittedPrompt}
         selectedProvider={selectedProvider}
-        onSelectProvider={setSelectedProvider}
+        providerExplicitlySelected={providerExplicitlySelected}
+        onSelectProvider={handleSelectProvider}
+        onResolveProvider={setSelectedProvider}
       />
     ) : null;
 

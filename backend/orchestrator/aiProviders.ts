@@ -1,3 +1,6 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
 import { openAICompatible } from '@genkit-ai/compat-oai';
 import { deepSeek } from '@genkit-ai/compat-oai/deepseek';
 import { openAI } from '@genkit-ai/compat-oai/openai';
@@ -6,6 +9,7 @@ import { genkit, z } from 'genkit';
 
 import {
   type AiApiFormat,
+  type AiModelDescriptor,
   type AiProviderId,
   getAiProviderDescriptor,
   matchProjectArchetypeFromPrompt,
@@ -26,6 +30,7 @@ export type ProviderPlanRequest = {
   readonly apiKey?: string;
   readonly baseUrl?: string;
   readonly modelName?: string;
+  readonly requireLiveApiKey?: boolean;
 };
 
 export type ProviderPlanResolution = ProjectPlanOutput & {
@@ -77,25 +82,76 @@ export function createMultiProviderGenkitInstance(config?: {
   return genkit({ plugins });
 }
 
-function resolveEnvApiKey(
-  envKeyName: 'GEMINI_API_KEY' | 'OPENAI_API_KEY' | 'DEEPSEEK_API_KEY',
-): string | undefined {
-  let value: string | undefined;
-  switch (envKeyName) {
-    case 'GEMINI_API_KEY':
-      value = process.env.GEMINI_API_KEY;
-      break;
-    case 'OPENAI_API_KEY':
-      value = process.env.OPENAI_API_KEY;
-      break;
-    case 'DEEPSEEK_API_KEY':
-      value = process.env.DEEPSEEK_API_KEY;
-      break;
-  }
-  if (typeof value === 'string' && value.trim().length > 0) {
-    return value.trim();
+type ProviderEnvKeyName = AiModelDescriptor['envKeyName'];
+
+const DOT_ENV_FILE_NAMES = ['.env.local', '.env'] as const;
+
+const CONFIGURED_PROVIDER_PRIORITY: readonly AiProviderId[] = ['deepseek', 'gemini', 'openai'];
+
+function toNonEmptyTrimmed(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed !== undefined && trimmed.length > 0 ? trimmed : undefined;
+}
+
+function stripSurroundingQuotes(value: string): string {
+  const quoted = /^(["'])(.*)\1$/.exec(value);
+  return quoted?.[2] ?? value;
+}
+
+function findDotEnvValue(contents: string, envKeyName: ProviderEnvKeyName): string | undefined {
+  for (const rawLine of contents.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    const separatorIndex = line.indexOf('=');
+    if (line.startsWith('#') || separatorIndex <= 0) {
+      continue;
+    }
+    const key = line
+      .slice(0, separatorIndex)
+      .replace(/^export\s+/, '')
+      .trim();
+    if (key === envKeyName) {
+      return toNonEmptyTrimmed(stripSurroundingQuotes(line.slice(separatorIndex + 1).trim()));
+    }
   }
   return undefined;
+}
+
+function readDotEnvLocalKey(envKeyName: ProviderEnvKeyName): string | undefined {
+  for (const fileName of DOT_ENV_FILE_NAMES) {
+    const filePath = path.join(process.cwd(), fileName);
+    if (!fs.existsSync(filePath)) {
+      continue;
+    }
+    const value = findDotEnvValue(fs.readFileSync(filePath, 'utf8'), envKeyName);
+    if (value !== undefined) {
+      return value;
+    }
+  }
+  return undefined;
+}
+
+function resolveEnvApiKey(envKeyName: ProviderEnvKeyName): string | undefined {
+  return toNonEmptyTrimmed(process.env[envKeyName]) ?? readDotEnvLocalKey(envKeyName);
+}
+
+export function listConfiguredAiProviders(): readonly AiProviderId[] {
+  return CONFIGURED_PROVIDER_PRIORITY.filter(
+    (provider) => resolveEnvApiKey(getAiProviderDescriptor(provider).envKeyName) !== undefined,
+  );
+}
+
+export function resolveDefaultConfiguredProvider(preferred: AiProviderId): AiProviderId {
+  const configured = listConfiguredAiProviders();
+  return configured.includes(preferred) ? preferred : (configured[0] ?? preferred);
+}
+
+function describeMissingProviderKey(descriptor: AiModelDescriptor): string {
+  const configured = listConfiguredAiProviders();
+  const configuredHint =
+    configured.length > 0
+      ? `Configured providers: ${configured.join(', ')}.`
+      : 'No AI provider keys are configured.';
+  return `Missing ${descriptor.envKeyName} in .env.local for ${descriptor.displayName}. ${configuredHint}`;
 }
 
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
@@ -230,6 +286,10 @@ export async function planProjectWithProvider(
   const resolvedBaseUrl = request.baseUrl ?? descriptor.defaultBaseUrl;
   const resolvedModel = request.modelName ?? descriptor.rawModelName;
   const resolvedApiKey = request.apiKey ?? resolveEnvApiKey(descriptor.envKeyName);
+
+  if (resolvedApiKey === undefined && request.requireLiveApiKey === true) {
+    throw new Error(describeMissingProviderKey(descriptor));
+  }
 
   if (resolvedApiKey !== undefined) {
     if (descriptor.apiFormat === 'openai_compatible') {

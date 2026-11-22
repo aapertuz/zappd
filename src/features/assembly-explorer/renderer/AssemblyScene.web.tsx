@@ -385,6 +385,9 @@ export function AssemblyScene({
         <div className={classes.titleGroup}>
           <h1 className={classes.projectTitle}>{assembly.title}</h1>
           <span className={classes.statusBadge}>{assembly.verificationStatus}</span>
+          <span className={classes.orchestrationBadge} title="Live orchestration">
+            {`${assembly.orchestration.provider} · ${assembly.orchestration.executionMode}`}
+          </span>
         </div>
         <div className={classes.providerGroup} role="group" aria-label="AI orchestrator model">
           {SUPPORTED_AI_PROVIDERS.map((providerId) => {

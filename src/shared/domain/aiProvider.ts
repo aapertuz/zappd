@@ -44,6 +44,8 @@ export const AI_PROVIDER_REGISTRY: Readonly<Record<AiProviderId, AiModelDescript
 
 export const SUPPORTED_AI_PROVIDERS: readonly AiProviderId[] = ['gemini', 'deepseek', 'openai'];
 
+export const DEFAULT_AI_PROVIDER: AiProviderId = 'deepseek';
+
 export function isAiProviderId(value: unknown): value is AiProviderId {
   return value === 'gemini' || value === 'openai' || value === 'deepseek';
 }

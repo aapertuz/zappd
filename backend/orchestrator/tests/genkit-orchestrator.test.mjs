@@ -3,6 +3,7 @@ import { Buffer } from 'node:buffer';
 import fs from 'node:fs';
 import http from 'node:http';
 import { registerHooks } from 'node:module';
+import os from 'node:os';
 import path from 'node:path';
 import { describe, it } from 'node:test';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -192,5 +193,33 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
       /OpenCascade validation rejected assembly/,
     );
     assert.equal(repository.listCollection('projects').length, 0);
+  });
+
+  it('requires a live provider key instead of falling back to keyword matching', async () => {
+    const repository = new FirebaseEmulatorRepository();
+    const originalCwd = process.cwd();
+    const originalOpenAiKey = process.env.OPENAI_API_KEY;
+    const isolatedCwd = fs.mkdtempSync(path.join(os.tmpdir(), 'zappd-no-env-'));
+    delete process.env.OPENAI_API_KEY;
+    process.chdir(isolatedCwd);
+    try {
+      await assert.rejects(
+        () =>
+          orchestrateProjectAssemblyCreation({
+            prompt: 'I want to build a quadcopter',
+            provider: 'openai',
+            requireLiveApiKey: true,
+            repository,
+          }),
+        /Missing OPENAI_API_KEY in \.env\.local for OpenAI/,
+      );
+      assert.equal(repository.listCollection('projects').length, 0);
+    } finally {
+      process.chdir(originalCwd);
+      fs.rmSync(isolatedCwd, { recursive: true, force: true });
+      if (originalOpenAiKey !== undefined) {
+        process.env.OPENAI_API_KEY = originalOpenAiKey;
+      }
+    }
   });
 });

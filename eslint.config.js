@@ -500,6 +500,13 @@ module.exports = defineConfig([
           partialMatch: false,
           exclusive: true,
         },
+        {
+          type: 'backend',
+          pattern: 'backend/*',
+          capture: ['serviceName'],
+          partialMatch: false,
+          exclusive: true,
+        },
       ],
     },
     rules: {
@@ -542,7 +549,7 @@ module.exports = defineConfig([
                   { element: { type: 'feature', fileInternalPath: 'index.{ts,tsx}' } },
                   {
                     element: {
-                      type: ['shared-domain', 'shared-firebase', 'shared-ui', 'shared'],
+                      type: ['shared-domain', 'shared-firebase', 'shared-ui', 'shared', 'backend'],
                     },
                   },
                 ],

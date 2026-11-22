@@ -2,11 +2,7 @@ import {
   type AiProviderId,
   type VerifiedProjectAssembly,
   canClassifyAsVerified,
-  getAiProviderDescriptor,
-  matchProjectArchetypeFromPrompt,
   parseVerifiedProjectAssembly,
-  toCatalogArchetypeId,
-  toProjectId,
 } from '@/shared/domain';
 import {
   type FirebaseEmulatorRepository,
@@ -18,74 +14,55 @@ export type LoadedAssemblyBundle = {
   readonly glbArrayBuffer: ArrayBuffer;
 };
 
+const ORCHESTRATE_ENDPOINT = '/api/orchestrate';
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+async function readOrchestrationErrorMessage(response: Response): Promise<string> {
+  const fallbackMessage = `Orchestration request failed with HTTP ${response.status}`;
+  try {
+    const payload: unknown = await response.json();
+    return isRecord(payload) && typeof payload.error === 'string' ? payload.error : fallbackMessage;
+  } catch {
+    return fallbackMessage;
+  }
 }
 
 export async function loadVerifiedAssemblyForPrompt(args: {
   readonly prompt: string;
   readonly provider: AiProviderId;
+  readonly providerExplicitlySelected?: boolean;
   readonly repository?: FirebaseEmulatorRepository;
 }): Promise<LoadedAssemblyBundle> {
-  const archetype = matchProjectArchetypeFromPrompt(args.prompt);
-  const descriptor = getAiProviderDescriptor(args.provider);
   const repository = args.repository ?? defaultFirebaseEmulatorRepository;
 
-  const baseUrl = `/assemblies/${archetype.archetypeId}`;
-  const [pipelineResponse, glbResponse] = await Promise.all([
-    fetch(`${baseUrl}/pipeline_result.json`),
-    fetch(`${baseUrl}/model.glb`),
-  ]);
-
-  if (!pipelineResponse.ok) {
-    throw new Error(
-      `Failed to load CAD pipeline metadata for ${archetype.archetypeId}: HTTP ${pipelineResponse.status}`,
-    );
-  }
-  if (!glbResponse.ok) {
-    throw new Error(
-      `Failed to load GLB geometry for ${archetype.archetypeId}: HTTP ${glbResponse.status}`,
-    );
-  }
-
-  const rawPipeline: unknown = await pipelineResponse.json();
-  if (!isRecord(rawPipeline) || !isRecord(rawPipeline.manifest)) {
-    throw new Error(`Invalid pipeline_result.json payload for ${archetype.archetypeId}`);
-  }
-
-  const manifestHash =
-    typeof rawPipeline.manifest.manifestHash === 'string'
-      ? rawPipeline.manifest.manifestHash
-      : '0'.repeat(64);
-  const glbArrayBuffer = await glbResponse.arrayBuffer();
-
-  const assembly = parseVerifiedProjectAssembly({
-    projectId: toProjectId(`proj_${archetype.archetypeId}_${manifestHash.slice(0, 8)}`),
-    archetypeId: toCatalogArchetypeId(archetype.archetypeId),
-    title: archetype.title,
-    userPrompt: args.prompt,
-    verificationStatus: rawPipeline.verificationStatus,
-    rootNodeId: archetype.rootNodeId,
-    nodes: rawPipeline.nodes,
-    relationships: archetype.relationships,
-    assemblySteps: archetype.assemblySteps,
-    manifest: rawPipeline.manifest,
-    validation: rawPipeline.validation,
-    orchestration: {
-      provider: descriptor.provider,
-      modelId: descriptor.modelId,
-      apiFormat: descriptor.apiFormat,
-      baseUrl: descriptor.defaultBaseUrl,
-      executionMode: 'local_catalog_planner',
-      plannedSubsystems: archetype.nodes
-        .filter((node) => node.level === 'subsystem')
-        .map((node) => node.name),
-    },
+  const orchestrationResponse = await fetch(ORCHESTRATE_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      prompt: args.prompt,
+      provider: args.provider,
+      providerExplicitlySelected: args.providerExplicitlySelected ?? false,
+    }),
   });
+  if (!orchestrationResponse.ok) {
+    throw new Error(await readOrchestrationErrorMessage(orchestrationResponse));
+  }
 
+  const assembly = parseVerifiedProjectAssembly(await orchestrationResponse.json());
   if (!canClassifyAsVerified(assembly.validation, assembly.verificationStatus)) {
     throw new Error(`Assembly ${assembly.archetypeId} failed OpenCascade validation checks`);
   }
+
+  const glbResponse = await fetch(assembly.manifest.files.glb.publicUrl);
+  if (!glbResponse.ok) {
+    throw new Error(
+      `Failed to load GLB geometry for ${assembly.archetypeId}: HTTP ${glbResponse.status}`,
+    );
+  }
+  const glbArrayBuffer = await glbResponse.arrayBuffer();
 
   await repository.saveProjectAssembly(
     assembly,

@@ -9,6 +9,15 @@ import {
 } from '../model/explorerState.ts';
 
 describe('assembly explorer manipulation state reducer', () => {
+  it('starts on DeepSeek and switches provider on selection', () => {
+    assert.equal(INITIAL_ASSEMBLY_EXPLORER_STATE.selectedProvider, 'deepseek');
+    const switched = reduceAssemblyExplorerState(INITIAL_ASSEMBLY_EXPLORER_STATE, {
+      type: 'setProvider',
+      provider: 'gemini',
+    });
+    assert.equal(switched.selectedProvider, 'gemini');
+  });
+
   it('rotates and zooms the camera within physical bounds', () => {
     const orbited = reduceAssemblyExplorerState(INITIAL_ASSEMBLY_EXPLORER_STATE, {
       type: 'orbitCamera',
