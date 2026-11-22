@@ -1,4 +1,4 @@
-import type { AiProviderId, Vector3Tuple } from '@/shared/domain';
+import type { AiProviderId, Vector3Tuple, VerifiedProjectAssembly } from '@/shared/domain';
 
 import type {
   AssemblyExplorerAction,
@@ -9,10 +9,36 @@ import type {
 
 export const DEFAULT_EXPLORER_CAMERA: ExplorerCameraState = {
   azimuthDeg: 38,
-  elevationDeg: 26,
-  distanceMeters: 0.42,
-  targetMeters: [0, 0.04, 0],
+  elevationDeg: 28,
+  distanceMeters: 0.38,
+  targetMeters: [0, 0.018, 0],
 };
+
+export function computeDefaultCameraForAssembly(
+  assembly: VerifiedProjectAssembly | null,
+): ExplorerCameraState {
+  if (assembly === null) {
+    return DEFAULT_EXPLORER_CAMERA;
+  }
+  switch (assembly.archetypeId) {
+    case 'robotic_arm_3dof_v1':
+      return {
+        azimuthDeg: 42,
+        elevationDeg: 24,
+        distanceMeters: 0.36,
+        targetMeters: [0, 0.082, 0.045],
+      };
+    case 'open_source_rover_v1':
+      return {
+        azimuthDeg: 36,
+        elevationDeg: 26,
+        distanceMeters: 0.42,
+        targetMeters: [0, 0.035, 0],
+      };
+    default:
+      return DEFAULT_EXPLORER_CAMERA;
+  }
+}
 
 const INITIAL_EXPLORER_PROVIDER: AiProviderId = 'deepseek';
 
@@ -86,7 +112,6 @@ export function reduceAssemblyExplorerState(
       if (state.lastPromptId !== null && action.promptId < state.lastPromptId) {
         return state;
       }
-      const isArm = action.assembly.archetypeId === 'robotic_arm_3dof_v1';
       return {
         ...state,
         lastPromptId: action.promptId,
@@ -94,11 +119,7 @@ export function reduceAssemblyExplorerState(
         glbArrayBuffer: action.glbArrayBuffer,
         isLoading: false,
         errorMessage: null,
-        camera: {
-          ...DEFAULT_EXPLORER_CAMERA,
-          targetMeters: isArm ? [0.04, 0.1, 0] : DEFAULT_EXPLORER_CAMERA.targetMeters,
-          distanceMeters: isArm ? 0.44 : DEFAULT_EXPLORER_CAMERA.distanceMeters,
-        },
+        camera: computeDefaultCameraForAssembly(action.assembly),
         explodeFactor: 0,
         activeExplodeStage: 'all',
         selectedComponentId: null,
@@ -135,8 +156,8 @@ export function reduceAssemblyExplorerState(
     case 'zoomCamera': {
       const nextDistance = clampNumber(
         state.camera.distanceMeters + action.deltaDistanceMeters,
-        0.14,
-        1.5,
+        0.08,
+        1.8,
       );
       return {
         ...state,
@@ -147,14 +168,9 @@ export function reduceAssemblyExplorerState(
       };
     }
     case 'resetCamera': {
-      const isArm = state.assembly?.archetypeId === 'robotic_arm_3dof_v1';
       return {
         ...state,
-        camera: {
-          ...DEFAULT_EXPLORER_CAMERA,
-          targetMeters: isArm ? [0.04, 0.1, 0] : DEFAULT_EXPLORER_CAMERA.targetMeters,
-          distanceMeters: isArm ? 0.44 : DEFAULT_EXPLORER_CAMERA.distanceMeters,
-        },
+        camera: computeDefaultCameraForAssembly(state.assembly),
       };
     }
     case 'setExplodeFactor': {

@@ -2,6 +2,7 @@ import {
   type AiProviderId,
   type VerifiedProjectAssembly,
   canClassifyAsVerified,
+  hasVerifiedUpstreamProvenance,
   parseVerifiedProjectAssembly,
 } from '@/shared/domain';
 import {
@@ -52,7 +53,11 @@ export async function loadVerifiedAssemblyForPrompt(args: {
   }
 
   const assembly = parseVerifiedProjectAssembly(await orchestrationResponse.json());
-  if (!canClassifyAsVerified(assembly.validation, assembly.verificationStatus)) {
+  if (
+    !canClassifyAsVerified(assembly.validation, assembly.verificationStatus) ||
+    (assembly.verificationStatus === 'sourced_verified' &&
+      !hasVerifiedUpstreamProvenance(assembly.nodes))
+  ) {
     throw new Error(`Assembly ${assembly.archetypeId} failed OpenCascade validation checks`);
   }
 

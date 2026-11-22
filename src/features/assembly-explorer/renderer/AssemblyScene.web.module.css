@@ -23,8 +23,9 @@
 
 .titleGroup {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
 }
 
@@ -42,6 +43,11 @@
   border-radius: 999px;
   background-color: #dcfce7;
   color: #166534;
+}
+
+.statusBadgeUnverified {
+  background-color: #fee2e2;
+  color: #991b1b;
 }
 
 .orchestrationBadge {
@@ -73,7 +79,7 @@
   position: relative;
   border-radius: 20px;
   border: 1px solid #e5e5e0;
-  background: radial-gradient(circle at 50% 35%, #ffffff 0%, #eeeeea 100%);
+  background: radial-gradient(circle at 50% 30%, #ffffff 0%, #f1f0eb 65%, #e6e4dd 100%);
   overflow: hidden;
 }
 
@@ -114,7 +120,7 @@
 }
 
 .sidePanel {
-  width: 280px;
+  width: 320px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -179,6 +185,80 @@
   accent-color: #18181b;
 }
 
+.inspectorCard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid #e4e4e7;
+  background-color: #fafafa;
+  font-size: 12px;
+  color: #27272a;
+}
+
+.inspectorHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.inspectorTitle {
+  font-weight: 600;
+  color: #18181b;
+}
+
+.inspectorBadge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background-color: #e4e4e7;
+  color: #27272a;
+  text-transform: uppercase;
+}
+
+.inspectorMetaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.specPill {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background-color: #ffffff;
+  border: 1px solid #e4e4e7;
+  color: #3f3f46;
+}
+
+.relationshipBox {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background-color: #ffffff;
+  border: 1px solid #e4e4e7;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.provenanceLink {
+  color: #0369a1;
+  font-size: 11px;
+  text-decoration: underline;
+  word-break: break-all;
+}
+
+.provenanceMeta {
+  font-size: 11px;
+  color: #52525b;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
 .partList {
   display: flex;
   flex-direction: column;
@@ -232,6 +312,7 @@
 
   .sidePanel {
     width: 100%;
-    max-height: 220px;
+    box-sizing: border-box;
+    max-height: 260px;
   }
 }

@@ -38,13 +38,16 @@ describe('assembly explorer manipulation state reducer', () => {
       type: 'zoomCamera',
       deltaDistanceMeters: -0.2,
     });
-    assert.ok(Math.abs(zoomedIn.camera.distanceMeters - 0.22) < 1e-6);
+    assert.ok(
+      Math.abs(zoomedIn.camera.distanceMeters - (DEFAULT_EXPLORER_CAMERA.distanceMeters - 0.2)) <
+        1e-6,
+    );
 
     const clampedClose = reduceAssemblyExplorerState(zoomedIn, {
       type: 'zoomCamera',
       deltaDistanceMeters: -10,
     });
-    assert.equal(clampedClose.camera.distanceMeters, 0.14);
+    assert.equal(clampedClose.camera.distanceMeters, 0.08);
 
     const reset = reduceAssemblyExplorerState(clampedClose, { type: 'resetCamera' });
     assert.deepEqual(reset.camera, DEFAULT_EXPLORER_CAMERA);
