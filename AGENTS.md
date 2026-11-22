@@ -59,6 +59,7 @@ Run lint and typecheck before declaring any task done.
 
 ## Verify Behavior
 
+- For any web UI change, verify the rendered screen and interactions in Google Chrome using the verify-zappd skill (.agents/skills/verify-zappd/scripts/zappd-verify.mjs) even if the prompt does not mention the browser; do not use T3 Preview (preview_* tools) for verification, and clean up temporary Chrome/Metro sessions when done.
 - Add or update tests for changed behavior; every bug fix needs a regression test.
 - Prioritize tests for component identity/relationships, assembly steps, asset manifests, offline cache/sync, and local AI-to-cloud fallback.
 - Verify user-visible 3D interactions and platform-specific UI on affected targets; use screenshots or recordings when useful.
