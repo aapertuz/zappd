@@ -1,0 +1,12 @@
+node_modules
+.expo
+.serena
+.husky/_
+dist
+web-build
+ios
+android
+coverage
+assets
+pnpm-lock.yaml
+expo-env.d.ts
