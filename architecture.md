@@ -4,17 +4,29 @@
 
 - **Framework:** Expo + Expo Router with TypeScript; one application for web, iOS, and Android.
 - **Shared code:** domain models, state, business logic, Firebase access, AI interfaces, and 3D interaction contracts.
-- **Web UI:** React DOM, HTML, and CSS via Expo web/DOM components in `.web.tsx` files when web benefits from a dedicated web-optimal interface (including main screens such as the canvas). Evaluate per component whether a `.web.tsx` split is warranted, and decide or ask the user when unclear.
-- **Native UI (iOS and Android):** shared implementation (`.tsx` or `.native.tsx`) using universal `@expo/ui` (SwiftUI on iOS, Jetpack Compose on Android). Do not split non-3D native UI into `.ios.tsx` and `.android.tsx` files or import `@expo/ui/swift-ui` or `@expo/ui/jetpack-compose` directly.
-- **iOS/Android platform separation (3D only):** `.ios.tsx` and `.android.tsx` implementations are reserved strictly for where 3D rendering differs (RealityKit on iOS, Filament on Android), inside a feature's `renderer/` or `3d/` directory (or files binding `realitykit-view` or `filament-view`).
-- **Native integration:** custom Expo modules expose native 3D rendering views and commands to TypeScript; native development builds are required.
+- **Web UI:** React DOM, HTML, and CSS via Expo web/DOM components in `.web.tsx` when web needs a dedicated interface.
+- **Native UI:** universal `@expo/ui` by default across iOS and Android, with `@expo/ui/swift-ui` (`.ios.tsx`) and `@expo/ui/jetpack-compose` (`.android.tsx`) available when a component needs OS-specific controls not covered by universal `@expo/ui`.
+- **Native integration:** custom Expo modules expose native 3D rendering views and platform-specific SDK capabilities to TypeScript; native development builds are required.
+
+### Platform File Escalation
+
+| Tier                         | Files                                             | When to use                                                                                                                                                                                                                                                                          |
+| ---------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Tier 1 (default)             | `Foo.ts` / `Foo.tsx`                              | Domain logic, state, hooks, thin `src/app/` routes, and UI whose layout and controls match across web, iOS, and Android (including minor differences via `Platform.select` or `Icon.select`).                                                                                        |
+| Tier 2 (web + shared native) | `Foo.web.tsx` + `Foo.tsx` (or `Foo.native.tsx`)   | Web differs from mobile while iOS and Android share behavior: desktop pointer/hover/keyboard shortcuts or wide CSS layouts vs touch/bottom-sheet UX, browser DOM/IndexedDB/Cache API vs `expo-file-system` and universal `@expo/ui`, or distinct desktop web navigation chrome.      |
+| Tier 3 (per platform)        | `Foo.web.tsx` + `Foo.ios.tsx` + `Foo.android.tsx` | iOS and Android themselves diverge: 3D rendering engines (`Three.js` vs `RealityKit` vs `Filament`), distinct native SDKs/runtimes (browser Prompt API vs Apple Foundation Models vs Android ML Kit Gemini Nano), or OS-exclusive native controls missing from universal `@expo/ui`. |
+
+- **Start at Tier 1 and escalate only when needed:** stay in one shared file until web diverges (Tier 2), and split iOS from Android (Tier 3) only when iOS and Android themselves require different engines, native SDKs, or OS-exclusive controls.
+- **Keep Tier 3 splits narrow:** isolate OS-specific SwiftUI controls (`GlassEffectContainer`, `Toolbar`, `ContextMenu`, `Popover`), Jetpack Compose controls (`HorizontalFloatingToolbar`, `FloatingActionButton`, `DropdownMenu`, `FilledIconButton`, `Snackbar`), and 3D bindings to the smallest leaf component behind a shared typed props contract. Every `.ios`/`.android` file must have a matching sibling for the other native platform or a `.native`/base fallback (enforced by ESLint).
+- **Isolate platform imports by suffix:** keep `@expo/ui/swift-ui` and `realitykit-view` in `.ios`, `@expo/ui/jetpack-compose` and `filament-view` in `.android`, SwiftUI/Compose modifiers in `.ios`/`.android`/`.native`, and React DOM/Three.js/CSS Modules in `.web` (enforced by ESLint).
+- **Keep `src/app/` routes universal and ask when ambiguous:** never place a platform-suffixed file in `src/app/` without a matching non-suffixed base route file (prefer splitting inside `src/features/` or `src/shared/`). Evaluate Tier 1 vs Tier 2 vs Tier 3 per component and ask when the right split is unclear.
 
 ## Feature-Based Organization
 
 - Organize application code by **feature/domain**, not by technical layer or platform.
 - Each feature owns its screens, UI components, hooks/state, services, and tests; share code only when genuinely reused.
 - Example feature boundaries: `canvas/`, `projects/`, `assembly-explorer/`, `learning/`, and `offline/`; refine names as implementation evolves.
-- Keep platform-specific implementations **inside the owning feature** behind shared interfaces: pair a shared native component with `.web.tsx` when web needs a dedicated UI (for example, `canvas/components/CanvasView.tsx` and `CanvasView.web.tsx`), and reserve `.ios.tsx` and `.android.tsx` splits strictly for 3D rendering (for example, `assembly-explorer/renderer/AssemblyScene.{web,ios,android}.tsx`).
+- Keep platform-specific implementations **inside the owning feature** behind shared typed interfaces following the three-tier escalation model: default to one shared file (Tier 1), add `.web.tsx` alongside a shared native file when web diverges (Tier 2, such as `canvas/components/CanvasView.tsx` and `CanvasView.web.tsx`), and isolate `.ios.tsx`/`.android.tsx` splits to the smallest leaf when iOS and Android themselves diverge (Tier 3, such as `assembly-explorer/renderer/AssemblyScene.{web,ios,android}.tsx` or an OS-specific native control in a feature or `shared/ui/`).
 - Reserve `shared/` for reusable domain contracts, design primitives, and infrastructure adapters; avoid feature-to-feature imports into internals.
 - Expo Router route files remain thin entry points that delegate to features.
 
@@ -47,7 +59,7 @@ features/
 shared/
   domain/                             # Common contracts and IDs
   firebase/                           # Shared Firebase adapters
-  ui/                                 # Reusable design primitives
+  ui/                                 # Reusable design primitives and isolated OS-specific leaf controls
 modules/
   realitykit-view/                    # Swift Expo module
   filament-view/                      # Kotlin Expo module
