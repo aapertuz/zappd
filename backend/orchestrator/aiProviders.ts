@@ -11,7 +11,9 @@ import {
   type AiApiFormat,
   type AiModelDescriptor,
   type AiProviderId,
+  CATALOG_ARCHETYPES,
   getAiProviderDescriptor,
+  getCatalogArchetypeById,
   matchProjectArchetypeFromPrompt,
 } from '@/shared/domain';
 
@@ -200,7 +202,9 @@ function parseJsonPlan(rawText: string, fallbackPrompt: string): ProjectPlanOutp
     .trim();
   const parsedJson: unknown = JSON.parse(cleaned);
   const parsed = ProjectPlanOutputSchema.parse(parsedJson);
-  const catalogMatch = matchProjectArchetypeFromPrompt(`${fallbackPrompt} ${parsed.archetypeId}`);
+  const catalogMatch =
+    getCatalogArchetypeById(parsed.archetypeId) ??
+    matchProjectArchetypeFromPrompt(`${fallbackPrompt} ${parsed.archetypeId}`);
   const subsystems =
     parsed.plannedSubsystems.length > 0
       ? parsed.plannedSubsystems
@@ -213,6 +217,13 @@ function parseJsonPlan(rawText: string, fallbackPrompt: string): ProjectPlanOutp
   };
 }
 
+function buildPlannerSystemInstruction(): string {
+  const supportedIds = CATALOG_ARCHETYPES.map(
+    (entry) => `"${entry.archetypeId}" (${entry.title})`,
+  ).join(', ');
+  return `You are the Zappd Phase 1 CAD project planning agent. Return strict JSON with keys: archetypeId (one of ${supportedIds}), projectTitle (string), plannedSubsystems (string[]), rationale (string).`;
+}
+
 async function invokeOpenAiCompatiblePlanner(args: {
   readonly prompt: string;
   readonly model: string;
@@ -220,8 +231,7 @@ async function invokeOpenAiCompatiblePlanner(args: {
   readonly apiKey: string;
 }): Promise<ProjectPlanOutput> {
   const endpoint = `${args.baseUrl.replace(/\/+$/, '')}/chat/completions`;
-  const systemInstruction =
-    'You are the Zappd Phase 1 CAD project planning agent. Return strict JSON with keys: archetypeId ("quadcopter_drone_v1" or "robotic_arm_3dof_v1"), projectTitle (string), plannedSubsystems (string[]), rationale (string).';
+  const systemInstruction = buildPlannerSystemInstruction();
   const response = await fetch(endpoint, {
     method: 'POST',
     headers: {
@@ -253,8 +263,7 @@ async function invokeGeminiPlanner(args: {
   readonly apiKey: string;
 }): Promise<ProjectPlanOutput> {
   const endpoint = `${args.baseUrl.replace(/\/+$/, '')}/v1beta/models/${args.model}:generateContent?key=${encodeURIComponent(args.apiKey)}`;
-  const systemInstruction =
-    'You are the Zappd Phase 1 CAD project planning agent. Return strict JSON with keys: archetypeId ("quadcopter_drone_v1" or "robotic_arm_3dof_v1"), projectTitle (string), plannedSubsystems (string[]), rationale (string).';
+  const systemInstruction = buildPlannerSystemInstruction();
   const response = await fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

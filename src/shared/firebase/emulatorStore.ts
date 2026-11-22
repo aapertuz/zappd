@@ -1,7 +1,11 @@
 import { doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes } from 'firebase/storage';
 
-import { canClassifyAsVerified, type VerifiedProjectAssembly } from '@/shared/domain';
+import {
+  canClassifyAsVerified,
+  hasVerifiedUpstreamProvenance,
+  type VerifiedProjectAssembly,
+} from '@/shared/domain';
 
 import { FIREBASE_EMULATOR_CONFIG, getFirebaseEmulatorClients } from './firebaseClient';
 
@@ -60,7 +64,11 @@ export class FirebaseEmulatorRepository {
     binaries?: Partial<Record<StoredBinaryFormat, Uint8Array>>,
     options?: { readonly syncLiveEmulator?: boolean },
   ): Promise<void> {
-    if (!canClassifyAsVerified(assembly.validation, assembly.verificationStatus)) {
+    if (
+      !canClassifyAsVerified(assembly.validation, assembly.verificationStatus) ||
+      (assembly.verificationStatus === 'sourced_verified' &&
+        !hasVerifiedUpstreamProvenance(assembly.nodes))
+    ) {
       throw new Error(
         `Refusing to persist unverified or invalid assembly "${assembly.projectId}": ${assembly.validation.failures.join('; ')}`,
       );

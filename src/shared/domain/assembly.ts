@@ -208,6 +208,20 @@ export function canClassifyAsVerified(
   );
 }
 
+export function hasVerifiedUpstreamProvenance(nodes: readonly AssemblyNode[]): boolean {
+  if (nodes.length === 0) {
+    return false;
+  }
+  return nodes.every(
+    (node) =>
+      node.provenance.origin === 'open_step_catalog' &&
+      node.provenance.verificationStatus === 'sourced_verified' &&
+      node.provenance.sourceUrl.startsWith('https://') &&
+      node.provenance.spdxLicense.trim().length > 0 &&
+      isAssetChecksum(node.provenance.stepSha256),
+  );
+}
+
 export function clampExplodeFactor(value: number): number {
   if (!Number.isFinite(value)) {
     return 0;

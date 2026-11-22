@@ -52,6 +52,7 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
     assert.equal(assembly.validation.brepValid, true);
     assert.equal(assembly.validation.interferenceCount, 0);
     assert.ok(assembly.validation.maxDimensionalErrorMm <= 0.1);
+    assert.equal(assembly.nodes.length, 30);
     assert.equal(assembly.orchestration.provider, 'gemini');
     assert.equal(assembly.orchestration.apiFormat, 'google_genai');
 
@@ -79,10 +80,10 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
     assert.equal(Buffer.from(glbObj.bytes.slice(0, 4)).toString('utf8'), 'glTF');
   });
 
-  it('orchestrates a second robotics archetype (3-DOF robotic arm)', async () => {
+  it('orchestrates a second robotics archetype (SO-ARM100 manipulator)', async () => {
     const repository = new FirebaseEmulatorRepository();
     const assembly = await orchestrateProjectAssemblyCreation({
-      prompt: 'Build a 3-DOF robotic arm with parallel gripper',
+      prompt: 'Build a 5-DOF SO-100 robotic arm with parallel gripper',
       provider: 'gemini',
       repository,
     });
@@ -90,7 +91,23 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
     assert.equal(assembly.archetypeId, 'robotic_arm_3dof_v1');
     assert.equal(assembly.validation.valid, true);
     assert.equal(assembly.validation.interferenceCount, 0);
-    assert.equal(assembly.nodes.length, 12);
+    assert.equal(assembly.nodes.length, 24);
+    assert.equal(assembly.assemblySteps.length, 4);
+  });
+
+  it('orchestrates a third robotics archetype (NOVA2 open-source rover)', async () => {
+    const repository = new FirebaseEmulatorRepository();
+    const assembly = await orchestrateProjectAssemblyCreation({
+      prompt: 'Explore an autonomous ground rover chassis with stereo camera',
+      provider: 'gemini',
+      repository,
+    });
+
+    assert.equal(assembly.archetypeId, 'open_source_rover_v1');
+    assert.equal(assembly.verificationStatus, 'sourced_verified');
+    assert.equal(assembly.validation.valid, true);
+    assert.equal(assembly.validation.interferenceCount, 0);
+    assert.equal(assembly.nodes.length, 15);
     assert.equal(assembly.assemblySteps.length, 3);
   });
 
@@ -119,7 +136,7 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
                         : 'quadcopter_drone_v1',
                     projectTitle:
                       body.model === 'deepseek-chat'
-                        ? 'DeepSeek Planned 3-DOF Arm'
+                        ? 'DeepSeek Planned SO-ARM100'
                         : 'OpenAI Planned Quadcopter',
                     plannedSubsystems: ['Subsystem A', 'Subsystem B'],
                     rationale: 'Planned over OpenAI-compatible endpoint',
@@ -146,7 +163,7 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
         repository: repo,
       });
       const deepseekRun = await orchestrateProjectAssemblyCreation({
-        prompt: 'Plan a 3-DOF robotic arm',
+        prompt: 'Plan a 5-DOF robotic arm',
         provider: 'deepseek',
         apiKey: 'sk-test-deepseek',
         baseUrl,
@@ -161,7 +178,7 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
       assert.equal(deepseekRun.orchestration.provider, 'deepseek');
       assert.equal(deepseekRun.orchestration.apiFormat, 'openai_compatible');
       assert.equal(deepseekRun.orchestration.executionMode, 'live_api');
-      assert.equal(deepseekRun.title, 'DeepSeek Planned 3-DOF Arm');
+      assert.equal(deepseekRun.title, 'DeepSeek Planned SO-ARM100');
 
       assert.deepEqual(receivedRequests, [
         {

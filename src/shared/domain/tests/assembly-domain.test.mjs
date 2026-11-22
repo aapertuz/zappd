@@ -11,6 +11,7 @@ import {
   canClassifyAsVerified,
   computeExplodeStageWeight,
   computeNodeWorldPositionMeters,
+  hasVerifiedUpstreamProvenance,
   toComponentId,
   verifyOneToOneNodeMapping,
 } from '../assembly.ts';
@@ -33,17 +34,24 @@ describe('shared domain contracts', () => {
     assert.throws(() => parseAiProviderId('unknown_provider'));
   });
 
-  it('matches extensible robotics archetypes from user prompts', () => {
-    assert.ok(CATALOG_ARCHETYPES.length >= 2);
+  it('matches extensible robotics archetypes across aerial, manipulator, and rover categories', () => {
+    assert.ok(CATALOG_ARCHETYPES.length >= 3);
     const drone = matchProjectArchetypeFromPrompt('I want to learn how to build a quadcopter');
     assert.equal(drone.archetypeId, 'quadcopter_drone_v1');
+    assert.equal(getCatalogArchetypeById('quadcopter_drone_v1')?.nodes.length, 30);
 
-    const arm = matchProjectArchetypeFromPrompt('Build a 3-DOF robotic arm with gripper');
+    const arm = matchProjectArchetypeFromPrompt('Build a 5-DOF SO-100 robotic arm with gripper');
     assert.equal(arm.archetypeId, 'robotic_arm_3dof_v1');
-    assert.equal(getCatalogArchetypeById('robotic_arm_3dof_v1')?.nodes.length, 12);
+    assert.equal(getCatalogArchetypeById('robotic_arm_3dof_v1')?.nodes.length, 24);
+
+    const rover = matchProjectArchetypeFromPrompt(
+      'Inspect a planetary rover chassis with stereo camera',
+    );
+    assert.equal(rover.archetypeId, 'open_source_rover_v1');
+    assert.equal(getCatalogArchetypeById('open_source_rover_v1')?.nodes.length, 15);
   });
 
-  it('prevents classifying unvalidated or colliding models as verified', () => {
+  it('prevents classifying unvalidated, colliding, or ungrounded models as verified', () => {
     const validReport = {
       valid: true,
       brepValid: true,
@@ -65,6 +73,34 @@ describe('shared domain contracts', () => {
       canClassifyAsVerified({ ...validReport, maxDimensionalErrorMm: 0.15 }, 'sourced_verified'),
       false,
     );
+
+    const drone = matchProjectArchetypeFromPrompt('quadcopter');
+    const validNodes = drone.nodes.map((bp) => ({
+      ...bp,
+      provenance: {
+        origin: bp.origin,
+        verificationStatus: 'sourced_verified',
+        spdxLicense: bp.spdxLicense,
+        sourceUrl: bp.sourceUrl,
+        sourceName: bp.sourceName,
+        stepSha256: 'a'.repeat(64),
+      },
+      glbNodeName: bp.id,
+      usdzPrimPath: `/World/${bp.id}`,
+    }));
+    assert.equal(hasVerifiedUpstreamProvenance(validNodes), true);
+
+    const fallbackNodes = validNodes.map((n, index) =>
+      index === 0 ? { ...n, provenance: { ...n.provenance, origin: 'build123d_fallback' } } : n,
+    );
+    assert.equal(hasVerifiedUpstreamProvenance(fallbackNodes), false);
+
+    const localUrlNodes = validNodes.map((n, index) =>
+      index === 0
+        ? { ...n, provenance: { ...n.provenance, sourceUrl: 'local://build123d/fallback/test' } }
+        : n,
+    );
+    assert.equal(hasVerifiedUpstreamProvenance(localUrlNodes), false);
   });
 
   it('computes hierarchical constraint-axis explosion by assembly depth without axial drift', () => {
