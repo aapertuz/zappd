@@ -17,6 +17,7 @@ import {
   launchChromeSession,
   performBrowserAction,
   terminateProcessGroup,
+  waitForBrowserState,
 } from './cdp-browser.mjs';
 
 const BASE_DIR = '/tmp/zappd-verify';
@@ -45,7 +46,7 @@ function parseCliArgs(argv) {
     printJson({
       ok: true,
       usage:
-        'zappd-verify.mjs <launch|doctor|save-evidence|browser-open|browser-act|browser-snapshot|browser-close|cleanup|list> [flags]',
+        'zappd-verify.mjs <launch|doctor|save-evidence|browser-open|browser-act|browser-wait|browser-snapshot|browser-close|cleanup|list> [flags]',
     });
     process.exit(0);
   }
@@ -599,6 +600,23 @@ async function handleDoctor(flags) {
   }
   checks.push({ name: 'rootRouteRender', ok: routeOk, detail: routeDetail });
 
+  let orchestrateOk = false;
+  let orchestrateDetail = 'not checked';
+  try {
+    const apiRes = await fetchText(`${state.url}/api/orchestrate`, 5000);
+    const parsed = apiRes.status === 200 ? JSON.parse(apiRes.body) : null;
+    const configured = Array.isArray(parsed?.configuredProviders)
+      ? parsed.configuredProviders
+      : null;
+    orchestrateOk = apiRes.status === 200 && configured !== null;
+    orchestrateDetail = orchestrateOk
+      ? `status=200 configuredProviders=[${configured.join(', ')}] defaultProvider=${String(parsed.defaultProvider ?? '')}`
+      : `status=${apiRes.status} body=${apiRes.body.slice(0, 120)}`;
+  } catch (error) {
+    orchestrateDetail = error instanceof Error ? error.message : String(error);
+  }
+  checks.push({ name: 'orchestrateEndpoint', ok: orchestrateOk, detail: orchestrateDetail });
+
   const currentGitHead = getGitHead(state.repoRoot);
   const gitOk = currentGitHead === state.gitHead;
   checks.push({
@@ -824,6 +842,41 @@ async function handleBrowserAct(flags) {
   }
 }
 
+async function handleBrowserWait(flags) {
+  const runId = assertValidId(flags['run-id'], 'run-id');
+  const { state } = readRunState(runId);
+
+  if (!state.browser || !isExpectedChromeProcess(state.browser.pid, state.browser.profileDir)) {
+    fail(`No active headless browser session for run "${runId}". Run browser-open first.`);
+  }
+
+  const timeoutMs = flags['timeout-ms'] ? Number.parseInt(flags['timeout-ms'], 10) : 25000;
+  if (!Number.isInteger(timeoutMs) || timeoutMs < 500) {
+    fail(`Invalid --timeout-ms value: ${flags['timeout-ms']}`);
+  }
+
+  try {
+    const result = await waitForBrowserState(state.browser.pageWsUrl, {
+      archetype: flags.archetype,
+      provider: flags.provider,
+      text: flags.text,
+      timeoutMs,
+      viewport: {
+        width: state.browser.width,
+        height: state.browser.height,
+      },
+    });
+    printJson({
+      ok: true,
+      runId,
+      diagnostics: result.diagnostics,
+      errors: result.errors,
+    });
+  } catch (error) {
+    fail(error instanceof Error ? error.message : String(error), { runId });
+  }
+}
+
 async function handleBrowserSnapshot(flags) {
   const runId = assertValidId(flags['run-id'], 'run-id');
   const { state } = readRunState(runId);
@@ -997,6 +1050,9 @@ async function main() {
       break;
     case 'browser-act':
       await handleBrowserAct(flags);
+      break;
+    case 'browser-wait':
+      await handleBrowserWait(flags);
       break;
     case 'browser-snapshot':
       await handleBrowserSnapshot(flags);

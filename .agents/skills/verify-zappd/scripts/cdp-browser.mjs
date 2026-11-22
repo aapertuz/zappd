@@ -225,6 +225,36 @@ async function readPageDiagnostics(cdp) {
       const sendButton = document.querySelector('button[aria-label="Send"]');
       const form = document.querySelector('form');
       const textareaStyle = textarea ? getComputedStyle(textarea) : null;
+      const hasExplorer = document.querySelector('section[aria-label="3D Assembly Explorer"]') !== null;
+      const rawAssembly = hasExplorer ? window.__zappdAssemblyDiagnostics : null;
+      const assembly = rawAssembly
+        ? {
+            projectId: rawAssembly.projectId ?? null,
+            archetypeId: rawAssembly.archetypeId ?? null,
+            title: rawAssembly.title ?? null,
+            provider: rawAssembly.provider ?? null,
+            apiFormat: rawAssembly.apiFormat ?? null,
+            verificationStatus: rawAssembly.verificationStatus ?? null,
+            validationPassed: Boolean(rawAssembly.validationPassed),
+            interferenceCount: rawAssembly.interferenceCount ?? null,
+            nodeCount: rawAssembly.nodeCount ?? 0,
+            glbNodeCount: Array.isArray(rawAssembly.glbNodeIds) ? rawAssembly.glbNodeIds.length : 0,
+            selectedComponentId: rawAssembly.selectedComponentId ?? null,
+            isolatedComponentId: rawAssembly.isolatedComponentId ?? null,
+            explodeFactor: rawAssembly.explodeFactor ?? null,
+            activeExplodeStage: rawAssembly.activeExplodeStage ?? null,
+            camera: rawAssembly.camera ?? null,
+            separatedOffsets: rawAssembly.separatedOffsets ?? {},
+            selectedNodePositionMeters:
+              rawAssembly.selectedComponentId && rawAssembly.nodePositionsMeters
+                ? (rawAssembly.nodePositionsMeters[rawAssembly.selectedComponentId] ?? null)
+                : null,
+            webglActive: Boolean(rawAssembly.webglActive),
+          }
+        : null;
+      const bodyText = document.body ? document.body.innerText : '';
+      const isLoadingAssembly = bodyText.includes('Loading verified CAD assembly');
+      const hasProviderToolbar = document.querySelector('[role="toolbar"]') !== null;
       return {
         url: window.location.href,
         title: document.title,
@@ -239,6 +269,9 @@ async function readPageDiagnostics(cdp) {
         viewportWidth: window.innerWidth,
         viewportHeight: window.innerHeight,
         overflowX: document.documentElement.scrollWidth > window.innerWidth,
+        isLoadingAssembly,
+        hasProviderToolbar,
+        assembly,
         errors: Array.isArray(window.__zappdVerifyErrors) ? window.__zappdVerifyErrors : [],
       };
     })()`,
@@ -650,5 +683,56 @@ export async function performBrowserAction(pageWsUrl, options) {
       diagnostics,
       errors: diagnostics?.errors ?? [],
     };
+  });
+}
+
+export async function waitForBrowserState(pageWsUrl, options) {
+  const timeoutMs = options.timeoutMs ?? 25000;
+  const deadline = Date.now() + timeoutMs;
+
+  return withCdpPage(pageWsUrl, async (cdp) => {
+    await cdp.send('Runtime.enable');
+    await applyViewport(cdp, options.viewport);
+
+    let lastDiagnostics = null;
+    while (Date.now() < deadline) {
+      const diagnostics = await readPageDiagnostics(cdp);
+      lastDiagnostics = diagnostics;
+
+      let textMatched = true;
+      if (options.text) {
+        const textRes = await cdp.send('Runtime.evaluate', {
+          returnByValue: true,
+          expression: `Boolean(document.body && document.body.innerText.includes(${JSON.stringify(options.text)}))`,
+        });
+        textMatched = textRes.result?.value === true;
+      }
+
+      const assembly = diagnostics?.assembly ?? null;
+      const glbReady =
+        assembly !== null && assembly.nodeCount > 0 && assembly.glbNodeCount === assembly.nodeCount;
+      const archetypeMatched = options.archetype
+        ? assembly?.archetypeId === options.archetype && glbReady
+        : true;
+      const providerMatched = options.provider ? assembly?.provider === options.provider : true;
+      const defaultSettled =
+        !options.text && !options.archetype && !options.provider
+          ? !diagnostics?.isLoadingAssembly &&
+            (glbReady || diagnostics?.hasProviderToolbar === true)
+          : true;
+
+      if (textMatched && archetypeMatched && providerMatched && defaultSettled) {
+        return {
+          diagnostics,
+          errors: diagnostics?.errors ?? [],
+        };
+      }
+
+      await delay(250);
+    }
+
+    throw new Error(
+      `Timed out waiting for browser state after ${timeoutMs}ms (archetype=${options.archetype ?? 'any'}, provider=${options.provider ?? 'any'}, text=${options.text ? JSON.stringify(options.text) : 'any'}, lastArchetype=${lastDiagnostics?.assembly?.archetypeId ?? 'none'}, loading=${String(lastDiagnostics?.isLoadingAssembly)})`,
+    );
   });
 }
