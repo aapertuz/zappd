@@ -1,15 +1,19 @@
 # Robotics Learning Platform: Product Vision
 
 ## Vision
+
 Make robotics understandable through direct interaction. People should be able to see how a machine works, examine its individual parts, and learn how to build it within one interactive learning experience.
 
 ## Problem
+
 Learning to build robotics projects often means switching between videos, diagrams, manuals, and parts lists. These resources rarely show how every component fits into the complete system or why it is needed. Seeing a finished machine is not the same as understanding it.
 
 ## Who It Serves
+
 Curious learners, students, makers, educators, and aspiring builders who want to understand robotics through practical visual learning, regardless of their starting experience.
 
 ## Core Experience
+
 The experience centers on an interactive canvas containing a detailed 3D model of a robotics project.
 
 1. **Start with an intention.** A learner describes what they want to understand or build, such as a camera drone, or chooses an available project. In the current phase, the platform matches their intention to an existing verified assembly.
@@ -23,11 +27,13 @@ The experience centers on an interactive canvas containing a detailed 3D model o
 ## Product Phases
 
 ### Phase 1: Verified Assemblies (Current Focus)
+
 Learners interact with existing, verified CAD assemblies of robotics projects. The platform presents the complete artifact, its constituent parts, their relationships, and grounded explanations and build guidance wherever reliable source information is available.
 
 A open ended request helps the learner find an appropriate supported project; it does not imply that the platform creates arbitrary new mechanical designs in this phase. The priority is a coherent, accurate learning experience built around trustworthy reference assemblies.
 
 ### Phase 2: Custom Projects (Future)
+
 Learners describe a robotics project and its requirements, then generate a customized 3D design with its parts, relationships, explanations, and assembly sequence. They can modify requirements and examine how the design changes.
 
 Generated designs must be distinguished from verified reference assemblies. Physical compatibility, feasibility, and safe construction require validation rather than assumption.
@@ -42,7 +48,9 @@ Generated designs must be distinguished from verified reference assemblies. Phys
 - **Honest guidance.** Clearly distinguish verified information from explanations, estimates, or suggestions that need further checking.
 
 ## Product Boundaries
+
 The platform is a learning experience, not a replacement for engineering validation or professional CAD authoring. In Phase 1, it does not promise generation of unrestricted custom designs. Assembly guidance should not imply that a real build is safe or feasible unless the relevant constraints have been verified.
 
 ## Success Looks Like
+
 A learner can start with a robotics project, understand what it does, manipulate the complete model, identify and inspect its parts, explain why those parts matter, and follow how they come together without needing to piece together disconnected learning resources.
