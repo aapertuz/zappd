@@ -11,26 +11,31 @@ Prompt composer lets a user edit a prompt draft, guards against empty or whitesp
 
 ## How to get to it (user POV)
 
-- Click or focus `Prompt input` at the bottom of the canvas and type text.
+- Click or focus `Prompt input` at the bottom of the canvas in Chrome and type text.
 - Press `Shift+Enter` inside `Prompt input` to insert a newline.
 
-## Driving it with T3 Preview
+## Driving it with Chrome (zappd-verify)
 
 Preconditions:
 
-- Zappd Metro server is healthy (`zappd-verify.mjs doctor --run-id <run-id>` exits `0`).
-- T3 Preview tab `tabId` is open on `/` with an empty `Prompt input` (or `zappd-verify.mjs browser-open --run-id <run-id> --path /` is active after two T3 Preview failures).
+- Zappd Metro server and Chrome session are healthy (`browser-open --run-id <run-id> --path / --width 1280 --height 800` and `doctor --run-id <run-id>` exits `0` with `browserAlive: ok`).
+- `Prompt input` starts empty (`promptValue === ""`, `sendDisabled === true`).
 
-- **Initial empty state.** Capture baseline. Run `preview_snapshot(tabId, includeImage: true, save: true)` (or `zappd-verify.mjs browser-snapshot --run-id <run-id>`). `textbox "Prompt input"` is empty and `button "Send"` has `disabled: true`.
-- **Whitespace guard.** Click and enter spaces. Run `preview_act(tabId, action: "type", locator: "aria-ref=<inputRef>", text: "   ")` and `preview_snapshot(tabId, includeImage: true, save: true)` (or `zappd-verify.mjs browser-act --run-id <run-id> --action type --role textbox --name "Prompt input" --text "   "` + `browser-snapshot --feature prompt-composer --step 01-whitespace-disabled ...`). `Prompt input` holds `"   "` and `button "Send"` remains disabled.
-- **Whitespace proof.** In T3 Preview, run `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs save-evidence --run-id <run-id> --feature prompt-composer --step 01-whitespace-disabled --screenshot <screenshotPath> --entry-point "Type spaces into Prompt input" --note "Send button remains disabled"`. Artifact is written.
-- **Enable send.** Replace with non-empty text. Run `preview_act(tabId, action: "type", locator: "aria-ref=<inputRef>", clear: true, text: "Build a camera drone")` and `preview_snapshot(tabId, includeImage: true, save: true)` (or `zappd-verify.mjs browser-act --run-id <run-id> --action type --role textbox --name "Prompt input" --clear --text "Build a camera drone"`). `Prompt input` shows `"Build a camera drone"` and `button "Send"` is enabled (`disabled` absent).
-- **Multiline auto-grow.** Measure initial height via read-only `preview_evaluate` (or `diagnostics.promptHeight` from `browser-act`), then press `Shift+Enter` and insert 5 additional lines (`preview_act(tabId, action: "press", key: "Enter", modifiers: ["Shift"])` or `zappd-verify.mjs browser-act --run-id <run-id> --action press --key Enter --modifiers Shift` interleaved with typing lines 2 through 6). Capture `preview_snapshot(tabId, includeImage: true, save: true)` and read-only `preview_evaluate` (or `browser-snapshot --feature prompt-composer --step 02-multiline-grow ...`). Height increases above the initial single-line height and clamps at `max-height: 120px` while `scrollHeight > height` with `overflowY === 'auto'`.
-- **Multiline proof.** In T3 Preview, run `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs save-evidence --run-id <run-id> --feature prompt-composer --step 02-multiline-grow --screenshot <screenshotPath> --entry-point "Shift+Enter multiline draft" --note "Height grew and clamped at max-height 120px"`. Artifact is written.
+- **Whitespace guard and proof.** Enter whitespace into `Prompt input` and capture proof:
+  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action type --role textbox --name "Prompt input" --text "   "`
+  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-snapshot --run-id <run-id> --feature prompt-composer --step 01-whitespace-disabled --entry-point "Type spaces into Prompt input" --note "Send button remains disabled; 0 errors"`
+    `diagnostics.promptValue` equals `"   "`, `diagnostics.sendDisabled` equals `true`, and `errors` is `[]`.
+- **Enable send.** Replace whitespace with non-empty text:
+  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action type --role textbox --name "Prompt input" --clear --text "Line 1"`
+    `diagnostics.promptValue` equals `"Line 1"` and `diagnostics.sendDisabled` equals `false`. Record `diagnostics.promptHeight` as the initial single-line height (`56` px).
+- **Multiline auto-grow and proof.** Repeat `Shift+Enter` followed by typing lines `Line 2` through `Line 6` while focus remains in `Prompt input`:
+  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action press --key Enter --modifiers Shift`
+  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action type --role textbox --name "Prompt input" --text "Line 2"`
+  - Repeat for `Line 3` through `Line 6`, then run `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-snapshot --run-id <run-id> --feature prompt-composer --step 02-multiline-grow --entry-point "Shift+Enter multiline draft (6 lines)" --note "Textarea grew and clamped at CSS max-height 120px"`
+    `diagnostics.promptValue` equals `"Line 1\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6"`, `diagnostics.promptHeight > 56`, `diagnostics.promptMaxHeight === "120px"`, `diagnostics.promptScrollHeight > diagnostics.promptHeight`, `diagnostics.promptOverflowY === "auto"`, and `errors` is `[]`.
 
 ## Gotchas
 
-- In T3 Preview, `aria-ref` values invalidate after every `preview_snapshot`; always read the newest snapshot before calling `preview_act`.
-- `press` sends keys to the currently focused element; focus `Prompt input` by typing or clicking it before calling `press`.
-- Test `Shift+Enter` with `press` (`modifiers: ["Shift"]` / `--modifiers Shift`) to prove the keyboard newline path does not trigger submission.
-- If T3 Preview fails twice with `"The browser is not producing screenshot frames..."`, close the tab, quote the error, and use `zappd-verify.mjs browser-*` commands.
+- `browser-act --action type` skips re-clicking the textarea center when `Prompt input` is already focused (unless `--clear` is passed), preserving the caret at the new line after `Shift+Enter`.
+- Always test `Shift+Enter` via `browser-act --action press --key Enter --modifiers Shift` rather than passing literal `\n` so React's `onKeyDown` path is exercised end-to-end.
+- In `CanvasView.module.css`, `.input` sets `max-height: 120px` and `padding: 8px 0` with default `box-sizing: content-box`, so single-line `getBoundingClientRect().height` starts at `56` px (`40` px content + `16` px vertical padding) and clamps at `136` px (`120px` max content height + `16` px padding) once overflowing.

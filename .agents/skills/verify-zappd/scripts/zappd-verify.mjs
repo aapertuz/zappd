@@ -762,7 +762,7 @@ async function handleBrowserOpen(flags) {
 
 async function handleBrowserAct(flags) {
   const runId = assertValidId(flags['run-id'], 'run-id');
-  const { state } = readRunState(runId);
+  const { statePath, state } = readRunState(runId);
 
   if (!state.browser || !isExpectedChromeProcess(state.browser.pid, state.browser.profileDir)) {
     fail(`No active headless browser session for run "${runId}". Run browser-open first.`);
@@ -783,6 +783,10 @@ async function handleBrowserAct(flags) {
     modifiers: flags.modifiers ? flags.modifiers.split(',') : [],
     width: flags.width ? Number.parseInt(flags.width, 10) : undefined,
     height: flags.height ? Number.parseInt(flags.height, 10) : undefined,
+    viewport: {
+      width: state.browser.width,
+      height: state.browser.height,
+    },
   };
 
   if (action === 'click' && (!options.role || !options.name)) {
@@ -803,6 +807,11 @@ async function handleBrowserAct(flags) {
 
   try {
     const result = await performBrowserAction(state.browser.pageWsUrl, options);
+    if (action === 'resize') {
+      state.browser.width = options.width;
+      state.browser.height = options.height;
+      writeRunState(statePath, state);
+    }
     printJson({
       ok: true,
       runId,
@@ -824,7 +833,10 @@ async function handleBrowserSnapshot(flags) {
   }
 
   try {
-    const snapshot = await capturePageSnapshot(state.browser.pageWsUrl);
+    const snapshot = await capturePageSnapshot(state.browser.pageWsUrl, {
+      width: state.browser.width,
+      height: state.browser.height,
+    });
     let saved = null;
     if (flags.feature !== undefined || flags.step !== undefined) {
       const feature = assertValidId(flags.feature, 'feature');

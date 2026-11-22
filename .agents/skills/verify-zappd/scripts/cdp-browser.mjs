@@ -205,6 +205,18 @@ async function withCdpPage(pageWsUrl, task) {
   }
 }
 
+async function applyViewport(cdp, viewport) {
+  if (!viewport || !Number.isInteger(viewport.width) || !Number.isInteger(viewport.height)) {
+    return;
+  }
+  await cdp.send('Emulation.setDeviceMetricsOverride', {
+    width: viewport.width,
+    height: viewport.height,
+    deviceScaleFactor: 2,
+    mobile: viewport.width < 600,
+  });
+}
+
 async function readPageDiagnostics(cdp) {
   const response = await cdp.send('Runtime.evaluate', {
     returnByValue: true,
@@ -212,6 +224,7 @@ async function readPageDiagnostics(cdp) {
       const textarea = document.querySelector('textarea[aria-label="Prompt input"]');
       const sendButton = document.querySelector('button[aria-label="Send"]');
       const form = document.querySelector('form');
+      const textareaStyle = textarea ? getComputedStyle(textarea) : null;
       return {
         url: window.location.href,
         title: document.title,
@@ -219,6 +232,8 @@ async function readPageDiagnostics(cdp) {
         promptValue: textarea ? textarea.value : null,
         promptHeight: textarea ? textarea.getBoundingClientRect().height : null,
         promptScrollHeight: textarea ? textarea.scrollHeight : null,
+        promptMaxHeight: textareaStyle ? textareaStyle.maxHeight : null,
+        promptOverflowY: textareaStyle ? textareaStyle.overflowY : null,
         sendDisabled: sendButton ? sendButton.disabled : null,
         formWidth: form ? form.getBoundingClientRect().width : null,
         viewportWidth: window.innerWidth,
@@ -369,7 +384,7 @@ export async function launchChromeSession({
 }) {
   const chromeBin = findChromeBinary();
   if (!chromeBin) {
-    throw new Error('No Chrome or Chromium binary found for headless CDP fallback');
+    throw new Error('No Chrome or Chromium binary found');
   }
 
   fs.mkdirSync(profileDir, { recursive: true });
@@ -434,12 +449,7 @@ export async function launchChromeSession({
       await cdp.send('DOM.enable');
       await cdp.send('Runtime.enable');
       await cdp.send('Accessibility.enable');
-      await cdp.send('Emulation.setDeviceMetricsOverride', {
-        width,
-        height,
-        deviceScaleFactor: 2,
-        mobile: width < 600,
-      });
+      await applyViewport(cdp, { width, height });
       await cdp.send('Page.addScriptToEvaluateOnNewDocument', {
         source: `(() => {
           const errors = [];
@@ -501,11 +511,12 @@ export async function launchChromeSession({
   }
 }
 
-export async function capturePageSnapshot(pageWsUrl) {
+export async function capturePageSnapshot(pageWsUrl, viewport) {
   return withCdpPage(pageWsUrl, async (cdp) => {
     await cdp.send('Page.enable');
     await cdp.send('Runtime.enable');
     await cdp.send('Accessibility.enable');
+    await applyViewport(cdp, viewport);
 
     const { nodes } = await cdp.send('Accessibility.getFullAXTree');
     const ariaLines = formatAxTree(nodes);
@@ -527,15 +538,11 @@ export async function performBrowserAction(pageWsUrl, options) {
     await cdp.send('DOM.enable');
     await cdp.send('Runtime.enable');
     await cdp.send('Accessibility.enable');
+    await applyViewport(cdp, options.viewport);
 
     switch (options.action) {
       case 'resize': {
-        await cdp.send('Emulation.setDeviceMetricsOverride', {
-          width: options.width,
-          height: options.height,
-          deviceScaleFactor: 2,
-          mobile: options.width < 600,
-        });
+        await applyViewport(cdp, { width: options.width, height: options.height });
         break;
       }
       case 'click': {
@@ -557,8 +564,14 @@ export async function performBrowserAction(pageWsUrl, options) {
             `Control not found: role=${options.role} name=${JSON.stringify(options.name)}`,
           );
         }
-        await clickBackendNode(cdp, targetNode.backendDOMNodeId);
-        await cdp.send('DOM.focus', { backendNodeId: targetNode.backendDOMNodeId });
+        const alreadyFocused =
+          targetNode.properties?.some(
+            (prop) => prop.name === 'focused' && prop.value?.value === true,
+          ) === true;
+        if (!alreadyFocused || options.clear) {
+          await clickBackendNode(cdp, targetNode.backendDOMNodeId);
+          await cdp.send('DOM.focus', { backendNodeId: targetNode.backendDOMNodeId });
+        }
         if (options.clear) {
           await cdp.send('Input.dispatchKeyEvent', {
             type: 'rawKeyDown',
