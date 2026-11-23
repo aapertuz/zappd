@@ -11,7 +11,7 @@ body,
   margin: 0;
   padding: 0;
   height: 100%;
-  background-color: #050912;
+  background-color: #08080b;
   -webkit-font-smoothing: antialiased;
   font-family: var(--font-display);
 }

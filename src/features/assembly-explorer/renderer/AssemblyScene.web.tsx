@@ -476,10 +476,10 @@ function buildQueuedEdges(model: WebAssemblyModel): void {
     const geometry = new THREE.EdgesGeometry(binding.mesh.geometry, 32);
     const selected = model.selectedComponentId === binding.ownerId;
     const material = new THREE.LineBasicMaterial({
-      color: selected ? '#38bdf8' : '#94a3b8',
+      color: selected ? '#f5c451' : '#a8a29e',
       transparent: true,
       depthWrite: false,
-      opacity: (selected ? 0.78 : 0.18) * (model.lastPoses?.[binding.ownerId]?.opacity ?? 1),
+      opacity: (selected ? 0.8 : 0.18) * (model.lastPoses?.[binding.ownerId]?.opacity ?? 1),
     });
     const lines = new THREE.LineSegments(geometry, material);
     lines.raycast = () => {};
@@ -503,13 +503,13 @@ function applyMeshPose(binding: MeshBinding, pose: AnimatedNodePose, isSelected:
     const opacity = pose.isAnimatingOpacity ? pose.opacity : 1;
     if (material.opacity !== opacity) material.opacity = opacity;
     if (material instanceof THREE.MeshStandardMaterial) {
-      material.emissive.setHex(isSelected ? 0x0ea5e9 : 0x000000);
-      material.emissiveIntensity = isSelected ? 0.32 : 0;
+      material.emissive.setHex(isSelected ? 0xeab308 : 0x000000);
+      material.emissiveIntensity = isSelected ? 0.26 : 0;
     }
   }
   if (edgeMaterial !== undefined) {
-    edgeMaterial.color.set(isSelected ? '#38bdf8' : '#94a3b8');
-    edgeMaterial.opacity = (isSelected ? 0.78 : 0.18) * pose.opacity;
+    edgeMaterial.color.set(isSelected ? '#f5c451' : '#a8a29e');
+    edgeMaterial.opacity = (isSelected ? 0.8 : 0.18) * pose.opacity;
   }
 }
 
@@ -665,8 +665,8 @@ export function AssemblyScene({
     configureCameraViewport(camera, width, height);
     updateCameraFromSpherical(camera, targetsRef.current.camera);
 
-    const hemiLight = new THREE.HemisphereLight('#cde8ff', '#162033', 0.85);
-    const keyLight = new THREE.DirectionalLight('#f8fafc', 1.95);
+    const hemiLight = new THREE.HemisphereLight('#fff8e7', '#1c1917', 0.88);
+    const keyLight = new THREE.DirectionalLight('#fffcf5', 1.95);
     keyLight.position.set(0.8, 1.6, 1.1);
     keyLight.castShadow = true;
     keyLight.shadow.mapSize.set(1024, 1024);
@@ -678,13 +678,13 @@ export function AssemblyScene({
     keyLight.shadow.camera.bottom = -0.35;
     keyLight.shadow.bias = -0.0003;
 
-    const fillLight = new THREE.DirectionalLight('#dbeafe', 0.65);
+    const fillLight = new THREE.DirectionalLight('#fef3c7', 0.55);
     fillLight.position.set(0.9, -0.4, -0.9);
 
-    const rimLight = new THREE.DirectionalLight('#38bdf8', 1.15);
+    const rimLight = new THREE.DirectionalLight('#f5c451', 1.05);
     rimLight.position.set(-1, 0.85, -0.95);
 
-    const gridHelper = new THREE.GridHelper(0.8, 16, '#1d4b75', '#0e243d');
+    const gridHelper = new THREE.GridHelper(0.8, 16, '#5c4b27', '#262118');
     for (const material of [gridHelper.material].flat()) {
       material.transparent = true;
       material.opacity = 0.42;

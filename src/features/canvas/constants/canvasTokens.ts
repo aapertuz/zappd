@@ -1,13 +1,13 @@
 export const CANVAS_COLORS = {
-  background: '#050912',
-  composerSurface: '#0B1322',
-  composerBorder: '#1E3A5F',
-  composerBorderFocused: '#38BDF8',
-  text: '#F0F6FC',
-  primaryButton: '#38BDF8',
-  primaryButtonPressed: '#0EA5E9',
-  buttonIcon: '#04101D',
-  buttonIconMuted: '#64748B',
+  background: '#08080B',
+  composerSurface: '#12110E',
+  composerBorder: '#3A3222',
+  composerBorderFocused: '#F5C451',
+  text: '#FAF6ED',
+  primaryButton: '#F5C451',
+  primaryButtonPressed: '#E0AC32',
+  buttonIcon: '#141008',
+  buttonIconMuted: '#8B816E',
   composerShadow: '#00000080',
 } as const;
 
