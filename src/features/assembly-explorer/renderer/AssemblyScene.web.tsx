@@ -1,15 +1,21 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import {
+  type CSSProperties,
+  type PointerEvent,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 import {
-  SUPPORTED_AI_PROVIDERS,
-  type AssemblyNode,
   type ComponentId,
   type ExplodeStageFilter,
   type Vector3Tuple,
-  getAiProviderDescriptor,
   isComponentId,
 } from '@/shared/domain';
 
@@ -24,11 +30,20 @@ import {
   settleAssemblyPlayback,
 } from '../model/assemblyAnimation';
 import {
-  computeDefaultCameraForAssembly,
   orbitExplorerCamera,
+  reconcileCameraTarget,
   zoomExplorerCamera,
 } from '../model/explorerState';
 import type { AssemblySceneProps, ExplorerCameraState } from '../types';
+
+type ScreenPoint = readonly [number, number];
+
+type FocusedPartCallout = {
+  readonly componentId: ComponentId;
+  readonly name: string;
+  readonly anchorPx: ScreenPoint;
+  readonly labelPx: ScreenPoint;
+};
 
 declare global {
   interface Window {
@@ -43,6 +58,9 @@ declare global {
       readonly interferenceCount: number;
       readonly nodeCount: number;
       readonly glbNodeIds: readonly string[];
+      readonly viewMode: AssemblySceneProps['state']['viewMode']['kind'];
+      readonly focusedPartCallout: FocusedPartCallout | null;
+      readonly nodeScreenPositions: Readonly<Record<string, ScreenPoint>>;
       readonly selectedComponentId: string | null;
       readonly isolatedComponentId: string | null;
       readonly explodeFactor: number;
@@ -160,6 +178,125 @@ function updateCameraFromSpherical(
   camera.position.set(x, y, z);
   camera.lookAt(tx, ty, tz);
   camera.updateMatrixWorld();
+}
+
+function configureCameraViewport(
+  camera: THREE.PerspectiveCamera,
+  width: number,
+  height: number,
+): void {
+  camera.aspect = width / height;
+  const portraitFov = THREE.MathUtils.radToDeg(
+    2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(17)) / camera.aspect),
+  );
+  camera.fov = THREE.MathUtils.clamp(portraitFov, 40, 84);
+  camera.updateProjectionMatrix();
+}
+
+function projectPart(
+  part: THREE.Object3D,
+  camera: THREE.PerspectiveCamera,
+  { width, height }: DOMRectReadOnly,
+  bounds: THREE.Box3,
+  projection: THREE.Vector3,
+): ScreenPoint | null {
+  bounds.setFromObject(part);
+  if (bounds.isEmpty()) return null;
+
+  bounds.getCenter(projection).project(camera);
+  const { x, y, z } = projection;
+  if (!(Math.abs(x) <= 1 && Math.abs(y) <= 1 && Math.abs(z) <= 1)) return null;
+  return [((x + 1) * width) / 2, ((1 - y) * height) / 2];
+}
+
+function updateFocusedCallout({
+  overlay,
+  label,
+  leader,
+  arrow,
+  reticle,
+  anchor,
+  viewport,
+}: {
+  readonly overlay: HTMLDivElement | null;
+  readonly label: HTMLDivElement | null;
+  readonly leader: SVGPathElement | null;
+  readonly arrow: SVGPathElement | null;
+  readonly reticle: SVGGElement | null;
+  readonly anchor: ScreenPoint | null;
+  readonly viewport: DOMRectReadOnly;
+}): ScreenPoint | null {
+  if (overlay === null || label === null || leader === null || arrow === null || reticle === null) {
+    return null;
+  }
+  if (anchor === null) {
+    overlay.style.visibility = 'hidden';
+    return null;
+  }
+
+  const [anchorX, anchorY] = anchor;
+  const labelWidth = label.offsetWidth;
+  const labelHeight = label.offsetHeight;
+  const placeOnRight = anchorX <= viewport.width / 2;
+  const labelX = THREE.MathUtils.clamp(
+    placeOnRight ? anchorX + 76 : anchorX - 76 - labelWidth,
+    16,
+    viewport.width - 16 - labelWidth,
+  );
+  const topSafeInset = viewport.width <= 800 ? 122 : 84;
+  const bottomSafeY = Math.max(topSafeInset, viewport.height - 194 - labelHeight);
+  const labelY = THREE.MathUtils.clamp(anchorY - 128, topSafeInset, bottomSafeY);
+
+  const startX = placeOnRight ? labelX : labelX + labelWidth;
+  const startY = labelY + labelHeight / 2;
+  const directionX = anchorX - startX;
+  const elbowX = startX + Math.sign(directionX) * Math.min(22, Math.abs(directionX) / 3);
+  const remainingX = anchorX - elbowX;
+  const remainingY = anchorY - startY;
+  const remainingLength = Math.hypot(remainingX, remainingY);
+  if (remainingLength < 18) {
+    leader.setAttribute('d', '');
+    arrow.setAttribute('d', '');
+  } else {
+    const unitX = remainingX / remainingLength;
+    const unitY = remainingY / remainingLength;
+    const tipX = anchorX - 10 * unitX;
+    const tipY = anchorY - 10 * unitY;
+    const baseX = tipX - 7 * unitX;
+    const baseY = tipY - 7 * unitY;
+    leader.setAttribute('d', `M ${startX} ${startY} H ${elbowX} L ${baseX} ${baseY}`);
+    arrow.setAttribute(
+      'd',
+      `M ${tipX} ${tipY} L ${baseX - 3 * unitY} ${baseY + 3 * unitX} L ${baseX + 3 * unitY} ${baseY - 3 * unitX} Z`,
+    );
+  }
+  reticle.setAttribute('transform', `translate(${anchorX} ${anchorY})`);
+  label.style.transform = `translate(${labelX}px, ${labelY}px)`;
+  overlay.style.visibility = 'visible';
+  return [labelX, labelY];
+}
+
+const HUD_ICON_PATHS = {
+  back: 'm13 4-6 6 6 6M7 10h10',
+  explode: 'M7.5 3.5h-4v4m9-4h4v4m0 5v4h-4m-5 0h-4v-4m0-9 4 4m9-4-4 4m4 9-4-4m-9 4 4-4',
+  zoomIn: 'M14.5 14.5 18 18M6.5 9.5h6m-3-3v6M15.5 9.5a6 6 0 1 1-12 0 6 6 0 0 1 12 0Z',
+  zoomOut: 'M14.5 14.5 18 18M6.5 9.5h6m3 0a6 6 0 1 1-12 0 6 6 0 0 1 12 0Z',
+};
+
+function HudIcon({ kind }: { readonly kind: keyof typeof HUD_ICON_PATHS }) {
+  return (
+    <svg
+      className={classes.hudIcon}
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true">
+      <path d={HUD_ICON_PATHS[kind]} />
+    </svg>
+  );
 }
 
 function resolveStudioFloorY(archetypeId: string): number {
@@ -337,11 +474,12 @@ function buildQueuedEdges(model: WebAssemblyModel): void {
     if (binding === undefined) return;
     model.nextEdgeIndex += 1;
     const geometry = new THREE.EdgesGeometry(binding.mesh.geometry, 32);
+    const selected = model.selectedComponentId === binding.ownerId;
     const material = new THREE.LineBasicMaterial({
-      color: '#18181b',
+      color: selected ? '#38bdf8' : '#94a3b8',
       transparent: true,
       depthWrite: false,
-      opacity: 0.18 * (model.lastPoses?.[binding.ownerId]?.opacity ?? 1),
+      opacity: (selected ? 0.78 : 0.18) * (model.lastPoses?.[binding.ownerId]?.opacity ?? 1),
     });
     const lines = new THREE.LineSegments(geometry, material);
     lines.raycast = () => {};
@@ -365,11 +503,14 @@ function applyMeshPose(binding: MeshBinding, pose: AnimatedNodePose, isSelected:
     const opacity = pose.isAnimatingOpacity ? pose.opacity : 1;
     if (material.opacity !== opacity) material.opacity = opacity;
     if (material instanceof THREE.MeshStandardMaterial) {
-      material.emissive.setHex(isSelected ? 0x6b5b00 : 0x000000);
-      material.emissiveIntensity = isSelected ? 0.85 : 0;
+      material.emissive.setHex(isSelected ? 0x0ea5e9 : 0x000000);
+      material.emissiveIntensity = isSelected ? 0.32 : 0;
     }
   }
-  if (edgeMaterial !== undefined) edgeMaterial.opacity = 0.18 * pose.opacity;
+  if (edgeMaterial !== undefined) {
+    edgeMaterial.color.set(isSelected ? '#38bdf8' : '#94a3b8');
+    edgeMaterial.opacity = (isSelected ? 0.78 : 0.18) * pose.opacity;
+  }
 }
 
 function applyModelPoses(
@@ -399,19 +540,32 @@ export function AssemblyScene({
   state,
   onSetCamera,
   onSetExplodeFactor,
-  onSetExplodeStage,
-  onSelectComponent,
-  onToggleIsolate,
-  onSeparateComponent,
-  onResetSeparation,
-  onSelectProvider,
+  onToggleExplodePreset,
+  onFocusComponent,
+  onExitPartFocus,
 }: AssemblySceneProps) {
   const mountRef = useRef<HTMLDivElement>(null);
+  const calloutRef = useRef<HTMLDivElement>(null);
+  const labelRef = useRef<HTMLDivElement>(null);
+  const leaderRef = useRef<SVGPathElement>(null);
+  const arrowRef = useRef<SVGPathElement>(null);
+  const reticleRef = useRef<SVGGElement>(null);
   const runtimeRef = useRef<SceneRuntime | null>(null);
   const animationRef = useRef<AssemblyAnimationController | null>(null);
   const playbackInterruptedRef = useRef(false);
   const targetsRef = useRef<AssemblyAnimationTargets>(state);
-  const propsRef = useRef({ assembly, glbArrayBuffer, state });
+  const leafPartIds = useMemo(() => {
+    const parents = new Set(assembly.nodes.map(({ parentId }) => parentId));
+    return assembly.nodes
+      .filter(
+        ({ id, level }) => !parents.has(id) && (level === 'component' || level === 'subcomponent'),
+      )
+      .map(({ id }) => id);
+  }, [assembly.nodes]);
+  const focusedId = state.viewMode.kind === 'part_focus' ? state.viewMode.componentId : null;
+  const focusedNode =
+    focusedId === null ? null : (assembly.nodes.find(({ id }) => id === focusedId) ?? null);
+  const propsRef = useRef({ assembly, glbArrayBuffer, state, leafPartIds, focusedNode });
   const lastCommittedCameraRef = useRef<ExplorerCameraState | null>(null);
   const dragRef = useRef<PointerDrag | null>(null);
   const wheelCommitRef = useRef<number | null>(null);
@@ -426,11 +580,17 @@ export function AssemblyScene({
   useLayoutEffect(() => {
     reactRenderCount.current += 1;
     const previous = propsRef.current;
-    propsRef.current = { assembly, glbArrayBuffer, state };
+    propsRef.current = { assembly, glbArrayBuffer, state, leafPartIds, focusedNode };
     const modelChanged =
       previous.assembly !== assembly || previous.glbArrayBuffer !== glbArrayBuffer;
-    const externalCameraChanged =
-      previous.state.camera !== state.camera && state.camera !== lastCommittedCameraRef.current;
+    const { nextCamera, nextLastCommittedCamera, externalCameraChanged } = reconcileCameraTarget({
+      previousStateCamera: previous.state.camera,
+      stateCamera: state.camera,
+      liveCamera: targetsRef.current.camera,
+      lastCommittedCamera: lastCommittedCameraRef.current,
+      modelChanged,
+    });
+    lastCommittedCameraRef.current = nextLastCommittedCamera;
     if (modelChanged) {
       playbackInterruptedRef.current = false;
       if (wheelCommitRef.current !== null) {
@@ -440,10 +600,11 @@ export function AssemblyScene({
       dragRef.current = null;
     }
     targetsRef.current = {
-      camera: modelChanged || externalCameraChanged ? state.camera : targetsRef.current.camera,
+      camera: nextCamera,
       explodeFactor: state.explodeFactor,
       activeExplodeStage: state.activeExplodeStage,
       isolatedComponentId: state.isolatedComponentId,
+      focusedComponentId: focusedId,
       separatedOffsets: state.separatedOffsets,
     };
 
@@ -453,6 +614,7 @@ export function AssemblyScene({
       previous.state.explodeFactor !== state.explodeFactor ||
       previous.state.activeExplodeStage !== state.activeExplodeStage ||
       previous.state.selectedComponentId !== state.selectedComponentId ||
+      previous.state.viewMode !== state.viewMode ||
       previous.state.isolatedComponentId !== state.isolatedComponentId ||
       previous.state.separatedOffsets !== state.separatedOffsets ||
       previous.state.selectedProvider !== state.selectedProvider
@@ -461,32 +623,32 @@ export function AssemblyScene({
     }
   });
 
-  const nodesById = useMemo(() => {
-    const map: Record<string, AssemblyNode> = {};
-    for (const node of assembly.nodes) {
-      map[node.id] = node;
+  const interruptPlayback = useCallback(() => {
+    playbackInterruptedRef.current = true;
+    if (animationRef.current !== null) settleAssemblyPlayback(animationRef.current);
+    runtimeRef.current?.requestRender();
+  }, []);
+
+  const exitPartFocus = useCallback(() => {
+    interruptPlayback();
+    onExitPartFocus();
+  }, [interruptPlayback, onExitPartFocus]);
+
+  useEffect(() => {
+    function handleEscape(event: KeyboardEvent) {
+      if (
+        event.key === 'Escape' &&
+        !event.defaultPrevented &&
+        !event.isComposing &&
+        propsRef.current.state.viewMode.kind === 'part_focus'
+      ) {
+        exitPartFocus();
+      }
     }
-    return map;
-  }, [assembly.nodes]);
 
-  const interactiveParts = useMemo(
-    () =>
-      assembly.nodes.filter((node) => node.level === 'component' || node.level === 'subcomponent'),
-    [assembly.nodes],
-  );
-
-  const selectedNode =
-    state.selectedComponentId !== null ? (nodesById[state.selectedComponentId] ?? null) : null;
-  const inspectedNode = selectedNode ?? nodesById[assembly.rootNodeId] ?? assembly.nodes[0] ?? null;
-
-  const selectedRelationships = useMemo(() => {
-    if (selectedNode === null) {
-      return [];
-    }
-    return assembly.relationships.filter(
-      (rel) => rel.fromComponentId === selectedNode.id || rel.toComponentId === selectedNode.id,
-    );
-  }, [assembly.relationships, selectedNode]);
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [exitPartFocus]);
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -494,16 +656,17 @@ export function AssemblyScene({
       return;
     }
 
-    const width = Math.max(mount.clientWidth, 320);
-    const height = Math.max(mount.clientHeight, 260);
+    const width = Math.max(mount.clientWidth, 1);
+    const height = Math.max(mount.clientHeight, 1);
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#f4f3ef');
+    scene.background = null;
 
     const camera = new THREE.PerspectiveCamera(40, width / height, 0.008, 25);
+    configureCameraViewport(camera, width, height);
     updateCameraFromSpherical(camera, targetsRef.current.camera);
 
-    const hemiLight = new THREE.HemisphereLight('#ffffff', '#d4d4d8', 0.65);
-    const keyLight = new THREE.DirectionalLight('#fffdf8', 1.65);
+    const hemiLight = new THREE.HemisphereLight('#cde8ff', '#162033', 0.85);
+    const keyLight = new THREE.DirectionalLight('#f8fafc', 1.95);
     keyLight.position.set(0.8, 1.6, 1.1);
     keyLight.castShadow = true;
     keyLight.shadow.mapSize.set(1024, 1024);
@@ -515,16 +678,21 @@ export function AssemblyScene({
     keyLight.shadow.camera.bottom = -0.35;
     keyLight.shadow.bias = -0.0003;
 
-    const fillLight = new THREE.DirectionalLight('#e0f2fe', 0.65);
-    fillLight.position.set(-1.1, 0.9, -0.8);
+    const fillLight = new THREE.DirectionalLight('#dbeafe', 0.65);
+    fillLight.position.set(0.9, -0.4, -0.9);
 
-    const rimLight = new THREE.DirectionalLight('#f4f4f5', 0.5);
-    rimLight.position.set(0.0, -0.9, -1.2);
+    const rimLight = new THREE.DirectionalLight('#38bdf8', 1.15);
+    rimLight.position.set(-1, 0.85, -0.95);
 
-    const gridHelper = new THREE.GridHelper(0.7, 14, '#d4d4d8', '#e7e5e4');
+    const gridHelper = new THREE.GridHelper(0.8, 16, '#1d4b75', '#0e243d');
+    for (const material of [gridHelper.material].flat()) {
+      material.transparent = true;
+      material.opacity = 0.42;
+      material.depthWrite = false;
+    }
 
     const shadowPlaneGeo = new THREE.PlaneGeometry(1.2, 1.2);
-    const shadowPlaneMat = new THREE.ShadowMaterial({ opacity: 0.16 });
+    const shadowPlaneMat = new THREE.ShadowMaterial({ opacity: 0.34 });
     const shadowFloor = new THREE.Mesh(shadowPlaneGeo, shadowPlaneMat);
     shadowFloor.rotation.x = -Math.PI / 2;
     shadowFloor.receiveShadow = true;
@@ -537,12 +705,12 @@ export function AssemblyScene({
     let roomEnvironment: RoomEnvironment | null = null;
     let envRenderTarget: THREE.WebGLRenderTarget | null = null;
     try {
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       renderer.setSize(width, height);
       renderer.outputColorSpace = THREE.SRGBColorSpace;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.08;
+      renderer.toneMappingExposure = 1.18;
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFShadowMap;
       renderer.shadowMap.autoUpdate = false;
@@ -563,6 +731,8 @@ export function AssemblyScene({
     let frameId: number | null = null;
     let lastFrameTime: number | null = null;
     let framesRendered = 0;
+    const partBounds = new THREE.Box3();
+    const projectedPoint = new THREE.Vector3();
     let publishedDiagnostics: Window['__zappdAssemblyDiagnostics'];
     const runtime: SceneRuntime = {
       camera,
@@ -582,11 +752,11 @@ export function AssemblyScene({
       }
     }
 
-    function renderFrame(now: number): void {
+    const renderFrame = (now: number): void => {
       frameId = null;
       const dtSec = lastFrameTime === null ? 0 : (now - lastFrameTime) / 1000;
       lastFrameTime = now;
-      const { assembly, state } = propsRef.current;
+      const { assembly, state, leafPartIds, focusedNode } = propsRef.current;
       const targets = targetsRef.current;
       const model = runtime.model;
       const snapshot = animationRef.current?.step(model?.hasPainted ? dtSec : 0, targets);
@@ -617,6 +787,46 @@ export function AssemblyScene({
           if (pose !== undefined) nodePositionsMeters[id] = pose.worldPositionMeters;
         }
       }
+      const viewport = mount.getBoundingClientRect();
+      const nodeScreenPositions: Record<string, ScreenPoint> = {};
+      if (renderer !== null && model !== null && snapshot !== undefined) {
+        for (const id of leafPartIds) {
+          const part = model.objectsById.get(id);
+          if (part === undefined || !snapshot.nodePoses[id]?.visible) continue;
+          const point = projectPart(part, camera, viewport, partBounds, projectedPoint);
+          if (point !== null) {
+            nodeScreenPositions[id] = [viewport.left + point[0], viewport.top + point[1]];
+          }
+        }
+      }
+
+      const focusedPart =
+        focusedNode !== null && snapshot?.nodePoses[focusedNode.id]?.visible
+          ? model?.objectsById.get(focusedNode.id)
+          : undefined;
+      const anchor =
+        renderer !== null && focusedPart !== undefined
+          ? projectPart(focusedPart, camera, viewport, partBounds, projectedPoint)
+          : null;
+      const label = updateFocusedCallout({
+        overlay: calloutRef.current,
+        label: labelRef.current,
+        leader: leaderRef.current,
+        arrow: arrowRef.current,
+        reticle: reticleRef.current,
+        anchor,
+        viewport,
+      });
+      const focusedPartCallout =
+        focusedNode !== null && anchor !== null && label !== null
+          ? {
+              componentId: focusedNode.id,
+              name: focusedNode.name,
+              anchorPx: anchor,
+              labelPx: label,
+            }
+          : null;
+
       publishedDiagnostics = {
         projectId: assembly.projectId,
         archetypeId: assembly.archetypeId,
@@ -628,6 +838,9 @@ export function AssemblyScene({
         interferenceCount: assembly.validation.interferenceCount,
         nodeCount: assembly.nodes.length,
         glbNodeIds: model?.glbNodeIds ?? [],
+        viewMode: state.viewMode.kind,
+        focusedPartCallout,
+        nodeScreenPositions,
         selectedComponentId: state.selectedComponentId,
         isolatedComponentId: targets.isolatedComponentId,
         explodeFactor: targets.explodeFactor,
@@ -649,13 +862,12 @@ export function AssemblyScene({
       } else {
         lastFrameTime = null;
       }
-    }
+    };
 
     const resizeObserver = new ResizeObserver(() => {
-      const nextWidth = Math.max(mount.clientWidth, 240);
-      const nextHeight = Math.max(mount.clientHeight, 220);
-      camera.aspect = nextWidth / nextHeight;
-      camera.updateProjectionMatrix();
+      const nextWidth = Math.max(mount.clientWidth, 1);
+      const nextHeight = Math.max(mount.clientHeight, 1);
+      configureCameraViewport(camera, nextWidth, nextHeight);
       renderer?.setSize(nextWidth, nextHeight);
       requestRender();
     });
@@ -768,24 +980,13 @@ export function AssemblyScene({
     syncCamera();
   }
 
-  function interruptPlayback() {
-    playbackInterruptedRef.current = true;
-    if (animationRef.current !== null) settleAssemblyPlayback(animationRef.current);
-    runtimeRef.current?.requestRender();
-  }
-
   function changeExplodeFactor(explodeFactor: number) {
     targetsRef.current = { ...targetsRef.current, explodeFactor };
     interruptPlayback();
     onSetExplodeFactor(explodeFactor);
   }
 
-  function pickComponent(componentId: ComponentId | null) {
-    interruptPlayback();
-    onSelectComponent(componentId);
-  }
-
-  function handlePointerDown(event: React.PointerEvent<HTMLDivElement>) {
+  function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
     if (!event.isPrimary || event.button !== 0) return;
     const { clientX, clientY, pointerId } = event;
     dragRef.current = {
@@ -799,7 +1000,7 @@ export function AssemblyScene({
     event.currentTarget.setPointerCapture(pointerId);
   }
 
-  function handlePointerMove(event: React.PointerEvent<HTMLDivElement>) {
+  function handlePointerMove(event: PointerEvent<HTMLDivElement>) {
     const drag = dragRef.current;
     if (drag?.id !== event.pointerId) return;
     const { clientX, clientY } = event;
@@ -816,7 +1017,7 @@ export function AssemblyScene({
     drag.lastY = clientY;
   }
 
-  function finishPointerDrag(event: React.PointerEvent<HTMLDivElement>) {
+  function finishPointerDrag(event: PointerEvent<HTMLDivElement>) {
     const drag = dragRef.current;
     if (drag?.id !== event.pointerId) return null;
     dragRef.current = null;
@@ -824,7 +1025,7 @@ export function AssemblyScene({
     return drag;
   }
 
-  function handlePointerUp(event: React.PointerEvent<HTMLDivElement>) {
+  function handlePointerUp(event: PointerEvent<HTMLDivElement>) {
     const drag = finishPointerDrag(event);
     if (drag === null || drag.moved || runtimeRef.current === null) return;
 
@@ -837,368 +1038,112 @@ export function AssemblyScene({
     raycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), camera);
     const hits = raycaster.intersectObjects(rootGroup.children, true);
     const hit = hits.find(({ object }) => object.visible && isThreeMesh(object));
-    pickComponent(hit === undefined ? null : findAncestorComponentId(hit.object));
+    const componentId = hit === undefined ? null : findAncestorComponentId(hit.object);
+    if (componentId === null) return;
+
+    if (wheelCommitRef.current !== null) {
+      window.clearTimeout(wheelCommitRef.current);
+      wheelCommitRef.current = null;
+      syncCamera();
+    }
+    interruptPlayback();
+    onFocusComponent(componentId);
   }
 
-  const parentNode =
-    selectedNode !== null && selectedNode.parentId !== null
-      ? (nodesById[selectedNode.parentId] ?? null)
-      : null;
+  const explodePercent = Math.round(state.explodeFactor * 100);
+  const sliderStyle: CSSProperties & { readonly '--explode-progress': string } = {
+    '--explode-progress': `${state.explodeFactor * 100}%`,
+  };
 
   return (
     <section className={classes.explorerRoot} aria-label="3D Assembly Explorer">
-      <header className={classes.headerBar}>
-        <div className={classes.titleGroup}>
-          <h1 className={classes.projectTitle}>{assembly.title}</h1>
-          <span
-            className={
-              assembly.verificationStatus === 'unverified'
-                ? `${classes.statusBadge} ${classes.statusBadgeUnverified}`
-                : classes.statusBadge
-            }>
-            {assembly.verificationStatus}
-          </span>
-          <span className={classes.orchestrationBadge} title="Live orchestration">
-            {`${assembly.orchestration.provider} · ${assembly.orchestration.executionMode}`}
-          </span>
+      <div
+        ref={mountRef}
+        className={classes.canvasMount}
+        role="region"
+        aria-label="Interactive 3D CAD Canvas"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={finishPointerDrag}
+        onLostPointerCapture={finishPointerDrag}
+      />
+      {!webglActive ? (
+        <div className={classes.fallbackHint} role="status">
+          3D rendering is unavailable in this browser.
         </div>
-        <div className={classes.providerGroup} role="group" aria-label="AI orchestrator model">
-          {SUPPORTED_AI_PROVIDERS.map((providerId) => {
-            const descriptor = getAiProviderDescriptor(providerId);
-            const active = state.selectedProvider === providerId;
-            return (
-              <button
-                key={providerId}
-                type="button"
-                className={
-                  active
-                    ? `${classes.controlButton} ${classes.controlButtonActive}`
-                    : classes.controlButton
-                }
-                aria-label={`Use ${descriptor.displayName}`}
-                aria-pressed={active}
-                onClick={() => onSelectProvider(providerId)}>
-                {descriptor.displayName}
-              </button>
-            );
-          })}
-        </div>
-      </header>
+      ) : null}
 
-      <div className={classes.workspaceGrid}>
-        <div className={classes.viewportCard}>
+      {focusedNode !== null ? (
+        <div ref={calloutRef} className={classes.calloutOverlay}>
+          <svg className={classes.calloutDrawing} width="100%" height="100%" aria-hidden="true">
+            <path ref={leaderRef} className={classes.calloutLeader} />
+            <path ref={arrowRef} className={classes.calloutArrow} />
+            <g ref={reticleRef} className={classes.calloutReticle}>
+              <circle r="7.5" />
+              <circle r="3" />
+              <circle r="1" fill="currentColor" />
+            </g>
+          </svg>
           <div
-            ref={mountRef}
-            className={classes.canvasMount}
-            role="region"
-            aria-label="Interactive 3D CAD Canvas"
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerCancel={finishPointerDrag}
-            onLostPointerCapture={finishPointerDrag}
-          />
-          {!webglActive ? (
-            <div className={classes.fallbackHint}>
-              WebGL context unavailable; deterministic CAD kinematics active
-            </div>
-          ) : null}
-          <div className={classes.viewportOverlay}>
-            <div className={classes.overlayPillGroup}>
-              <button
-                type="button"
-                className={classes.controlButton}
-                aria-label="Rotate left"
-                onClick={() =>
-                  commitCamera(orbitExplorerCamera(targetsRef.current.camera, -24, 0))
-                }>
-                Rotate L
-              </button>
-              <button
-                type="button"
-                className={classes.controlButton}
-                aria-label="Rotate right"
-                onClick={() => commitCamera(orbitExplorerCamera(targetsRef.current.camera, 24, 0))}>
-                Rotate R
-              </button>
-              <button
-                type="button"
-                className={classes.controlButton}
-                aria-label="Tilt up"
-                onClick={() => commitCamera(orbitExplorerCamera(targetsRef.current.camera, 0, 14))}>
-                Tilt +
-              </button>
-              <button
-                type="button"
-                className={classes.controlButton}
-                aria-label="Tilt down"
-                onClick={() =>
-                  commitCamera(orbitExplorerCamera(targetsRef.current.camera, 0, -14))
-                }>
-                Tilt -
-              </button>
-              <button
-                type="button"
-                className={classes.controlButton}
-                aria-label="Zoom in"
-                onClick={() => commitCamera(zoomExplorerCamera(targetsRef.current.camera, -0.08))}>
-                Zoom +
-              </button>
-              <button
-                type="button"
-                className={classes.controlButton}
-                aria-label="Zoom out"
-                onClick={() => commitCamera(zoomExplorerCamera(targetsRef.current.camera, 0.08))}>
-                Zoom -
-              </button>
-              <button
-                type="button"
-                className={classes.controlButton}
-                aria-label="Reset view"
-                onClick={() => commitCamera(computeDefaultCameraForAssembly(assembly))}>
-                Reset
-              </button>
-            </div>
-
-            <div className={classes.overlayPillGroup}>
-              <button
-                type="button"
-                className={
-                  state.explodeFactor === 0
-                    ? `${classes.controlButton} ${classes.controlButtonActive}`
-                    : classes.controlButton
-                }
-                aria-label="Collapse assembly"
-                onClick={() => changeExplodeFactor(0)}>
-                0%
-              </button>
-              <button
-                type="button"
-                className={
-                  state.explodeFactor === 0.25
-                    ? `${classes.controlButton} ${classes.controlButtonActive}`
-                    : classes.controlButton
-                }
-                aria-label="Explode 25%"
-                onClick={() => changeExplodeFactor(0.25)}>
-                25%
-              </button>
-              <button
-                type="button"
-                className={
-                  state.explodeFactor === 0.5
-                    ? `${classes.controlButton} ${classes.controlButtonActive}`
-                    : classes.controlButton
-                }
-                aria-label="Explode 50%"
-                onClick={() => changeExplodeFactor(0.5)}>
-                50%
-              </button>
-              <button
-                type="button"
-                className={
-                  state.explodeFactor === 1
-                    ? `${classes.controlButton} ${classes.controlButtonActive}`
-                    : classes.controlButton
-                }
-                aria-label="Explode 100%"
-                onClick={() => changeExplodeFactor(1)}>
-                100%
-              </button>
-            </div>
+            ref={labelRef}
+            className={classes.calloutLabel}
+            role="status"
+            aria-label="Focused component">
+            <span className={classes.calloutEyebrow}>Part</span>
+            <strong className={classes.calloutName}>{focusedNode.name}</strong>
           </div>
         </div>
+      ) : null}
 
-        <aside className={classes.sidePanel} aria-label="Assembly Manipulation Controls">
-          <div className={classes.panelSection}>
-            <p className={classes.sectionLabel}>
-              Explode ({Math.round(state.explodeFactor * 100)}%)
-            </p>
-            <input
-              type="range"
-              aria-label="Explode factor"
-              className={classes.explodeSlider}
-              min={0}
-              max={1}
-              step={0.001}
-              value={state.explodeFactor}
-              onChange={(event) => changeExplodeFactor(Number(event.target.value))}
-            />
-            <div className={classes.buttonRow}>
-              {(
-                [
-                  ['all', 'Stage All'],
-                  [1, 'Stage 1 Subsystems'],
-                  [2, 'Stage 2 Parts'],
-                  [3, 'Stage 3 Subcomponents'],
-                ] as const
-              ).map(([stageVal, label]) => (
-                <button
-                  key={String(stageVal)}
-                  type="button"
-                  className={
-                    state.activeExplodeStage === stageVal
-                      ? `${classes.controlButton} ${classes.controlButtonActive}`
-                      : classes.controlButton
-                  }
-                  aria-label={label}
-                  onClick={() => {
-                    interruptPlayback();
-                    onSetExplodeStage(stageVal);
-                  }}>
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
+      {state.viewMode.kind === 'part_focus' ? (
+        <button type="button" className={classes.backButton} onClick={exitPartFocus}>
+          <HudIcon kind="back" />
+          Back
+        </button>
+      ) : null}
 
-          <div className={classes.panelSection}>
-            <p className={classes.sectionLabel}>
-              {selectedNode !== null ? `Selected: ${selectedNode.name}` : 'Part Manipulation'}
-            </p>
-            <div className={classes.buttonRow}>
-              <button
-                type="button"
-                className={
-                  state.isolatedComponentId !== null
-                    ? `${classes.controlButton} ${classes.controlButtonActive}`
-                    : classes.controlButton
-                }
-                disabled={selectedNode === null}
-                aria-label={
-                  state.isolatedComponentId !== null ? 'Show all parts' : 'Isolate selected part'
-                }
-                onClick={() => {
-                  interruptPlayback();
-                  onToggleIsolate();
-                }}>
-                {state.isolatedComponentId !== null ? 'Show All' : 'Isolate'}
-              </button>
-              <button
-                type="button"
-                className={classes.controlButton}
-                disabled={selectedNode === null}
-                aria-label="Separate part +X"
-                onClick={() => {
-                  interruptPlayback();
-                  onSeparateComponent('x', 0.04);
-                }}>
-                +X
-              </button>
-              <button
-                type="button"
-                className={classes.controlButton}
-                disabled={selectedNode === null}
-                aria-label="Separate part +Y"
-                onClick={() => {
-                  interruptPlayback();
-                  onSeparateComponent('y', 0.04);
-                }}>
-                +Y
-              </button>
-              <button
-                type="button"
-                className={classes.controlButton}
-                disabled={selectedNode === null}
-                aria-label="Separate part +Z"
-                onClick={() => {
-                  interruptPlayback();
-                  onSeparateComponent('z', 0.04);
-                }}>
-                +Z
-              </button>
-              <button
-                type="button"
-                className={classes.controlButton}
-                disabled={selectedNode === null}
-                aria-label="Reset part position"
-                onClick={() => {
-                  interruptPlayback();
-                  onResetSeparation();
-                }}>
-                Reset Part
-              </button>
-            </div>
-          </div>
-
-          {inspectedNode !== null ? (
-            <div className={classes.panelSection} aria-label="CAD Component Inspector">
-              <p className={classes.sectionLabel}>CAD Component Inspector</p>
-              <div className={classes.inspectorCard}>
-                <div className={classes.inspectorHeader}>
-                  <span className={classes.inspectorTitle}>{inspectedNode.name}</span>
-                  <span className={classes.inspectorBadge}>{inspectedNode.level}</span>
-                </div>
-                {parentNode !== null ? (
-                  <span className={classes.provenanceMeta}>{`Parent: ${parentNode.name}`}</span>
-                ) : null}
-                <div className={classes.inspectorMetaRow}>
-                  <span className={classes.specPill}>
-                    {`${inspectedNode.dimensionsMm[0]} × ${inspectedNode.dimensionsMm[1]} × ${inspectedNode.dimensionsMm[2]} mm`}
-                  </span>
-                  <span className={classes.specPill}>{inspectedNode.materialHint}</span>
-                  {Object.entries(inspectedNode.specifications).map(([key, value]) => (
-                    <span key={key} className={classes.specPill}>
-                      {`${key}: ${String(value)}`}
-                    </span>
-                  ))}
-                </div>
-                {selectedRelationships.map((rel) => {
-                  const peerId =
-                    rel.fromComponentId === selectedNode?.id
-                      ? rel.toComponentId
-                      : rel.fromComponentId;
-                  const peerName = nodesById[peerId]?.name ?? peerId;
-                  return (
-                    <div key={rel.id} className={classes.relationshipBox}>
-                      <strong>{`${rel.connectionType} · ${peerName}`}</strong>
-                      <span>{rel.howConnected}</span>
-                      <span>{rel.whyConnected}</span>
-                    </div>
-                  );
-                })}
-                <span className={classes.provenanceMeta}>
-                  {`${inspectedNode.provenance.sourceName} · ${inspectedNode.provenance.spdxLicense}`}
-                </span>
-                <a
-                  href={inspectedNode.provenance.sourceUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={classes.provenanceLink}>
-                  {inspectedNode.provenance.sourceUrl}
-                </a>
-                <span className={classes.provenanceMeta}>
-                  {`STEP SHA-256: ${inspectedNode.provenance.stepSha256.slice(0, 12)} · Interferences: ${assembly.validation.interferenceCount}`}
-                </span>
-              </div>
-            </div>
-          ) : null}
-
-          <div className={classes.panelSection}>
-            <p className={classes.sectionLabel}>Hierarchy ({interactiveParts.length} parts)</p>
-            <div className={classes.partList}>
-              {interactiveParts.map((part) => {
-                const selected = state.selectedComponentId === part.id;
-                return (
-                  <button
-                    key={part.id}
-                    type="button"
-                    className={
-                      selected
-                        ? `${classes.partButton} ${classes.partButtonSelected}`
-                        : classes.partButton
-                    }
-                    aria-label={`Select part ${part.name}`}
-                    aria-pressed={selected}
-                    onClick={() => pickComponent(selected ? null : part.id)}>
-                    <span>{part.name}</span>
-                    <span className={classes.partMeta}>{part.provenance.spdxLicense}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </aside>
+      <div className={classes.hudBar} role="group" aria-label="Assembly controls">
+        <button
+          type="button"
+          className={classes.explodeButton}
+          aria-pressed={state.explodeFactor > 0.001}
+          onClick={() => {
+            interruptPlayback();
+            onToggleExplodePreset();
+          }}>
+          <HudIcon kind="explode" />
+          {`Explode (${explodePercent}%)`}
+        </button>
+        <input
+          type="range"
+          min={0}
+          max={1}
+          step={0.005}
+          aria-label="Explode factor"
+          aria-valuetext={`${explodePercent}%`}
+          className={classes.explodeSlider}
+          style={sliderStyle}
+          value={state.explodeFactor}
+          onChange={(event) => changeExplodeFactor(event.currentTarget.valueAsNumber)}
+        />
+        <span className={classes.hudDivider} aria-hidden="true" />
+        <button
+          type="button"
+          className={classes.zoomButton}
+          aria-label="Zoom out"
+          title="Zoom out"
+          onClick={() => commitCamera(zoomExplorerCamera(targetsRef.current.camera, 0.07))}>
+          <HudIcon kind="zoomOut" />
+        </button>
+        <button
+          type="button"
+          className={classes.zoomButton}
+          aria-label="Zoom in"
+          title="Zoom in"
+          onClick={() => commitCamera(zoomExplorerCamera(targetsRef.current.camera, -0.07))}>
+          <HudIcon kind="zoomIn" />
+        </button>
       </div>
     </section>
   );

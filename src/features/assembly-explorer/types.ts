@@ -22,6 +22,15 @@ export type ExplorerCameraState = {
   readonly targetMeters: Vector3Tuple;
 };
 
+export type ExplorerViewMode =
+  | { readonly kind: 'overview' }
+  | {
+      readonly kind: 'part_focus';
+      readonly componentId: ComponentId;
+      readonly restoreCamera: ExplorerCameraState;
+      readonly restoreExplodeFactor: number;
+    };
+
 export type AssemblyExplorerState = {
   readonly selectedProvider: AiProviderId;
   readonly lastPromptId: number | null;
@@ -32,6 +41,7 @@ export type AssemblyExplorerState = {
   readonly loadingProgress: number;
   readonly errorMessage: string | null;
   readonly camera: ExplorerCameraState;
+  readonly viewMode: ExplorerViewMode;
   readonly explodeFactor: number;
   readonly activeExplodeStage: ExplodeStageFilter;
   readonly selectedComponentId: ComponentId | null;
@@ -59,6 +69,9 @@ export type AssemblyExplorerAction =
   | { readonly type: 'resetCamera' }
   | { readonly type: 'setCamera'; readonly camera: ExplorerCameraState }
   | { readonly type: 'setExplodeFactor'; readonly explodeFactor: number }
+  | { readonly type: 'toggleExplodePreset' }
+  | { readonly type: 'focusComponent'; readonly componentId: ComponentId }
+  | { readonly type: 'exitPartFocus' }
   | { readonly type: 'setExplodeStage'; readonly stage: ExplodeStageFilter }
   | { readonly type: 'selectComponent'; readonly componentId: ComponentId | null }
   | { readonly type: 'toggleIsolateComponent' }
@@ -75,6 +88,9 @@ export type AssemblySceneProps = {
   readonly state: AssemblyExplorerState;
   readonly onSetCamera: (camera: ExplorerCameraState) => void;
   readonly onSetExplodeFactor: (explodeFactor: number) => void;
+  readonly onToggleExplodePreset: () => void;
+  readonly onFocusComponent: (componentId: ComponentId) => void;
+  readonly onExitPartFocus: () => void;
   readonly onSetExplodeStage: (stage: ExplodeStageFilter) => void;
   readonly onSelectComponent: (componentId: ComponentId | null) => void;
   readonly onToggleIsolate: () => void;

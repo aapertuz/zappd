@@ -1,4 +1,12 @@
-import type { AiProviderId, Vector3Tuple, VerifiedProjectAssembly } from '@/shared/domain';
+import { type AiProviderId } from '@/shared/domain/aiProvider';
+import {
+  type AssemblyNode,
+  type ComponentId,
+  type ExplodeStageFilter,
+  type Vector3Tuple,
+  type VerifiedProjectAssembly,
+  computeNodeWorldPositionMeters,
+} from '@/shared/domain/assembly';
 
 import type {
   AssemblyExplorerAction,
@@ -6,6 +14,8 @@ import type {
   ExplorerCameraState,
   SeparationAxis,
 } from '../types';
+
+export const DEFAULT_EXPLODE_PRESET = 0.65;
 
 export const DEFAULT_EXPLORER_CAMERA: ExplorerCameraState = {
   azimuthDeg: 38,
@@ -52,6 +62,7 @@ export const INITIAL_ASSEMBLY_EXPLORER_STATE: AssemblyExplorerState = {
   loadingProgress: 0,
   errorMessage: null,
   camera: DEFAULT_EXPLORER_CAMERA,
+  viewMode: { kind: 'overview' },
   explodeFactor: 0,
   activeExplodeStage: 'all',
   selectedComponentId: null,
@@ -110,6 +121,71 @@ export function zoomExplorerCamera(
   };
 }
 
+export function reconcileCameraTarget({
+  previousStateCamera,
+  stateCamera,
+  liveCamera,
+  lastCommittedCamera,
+  modelChanged,
+}: {
+  readonly previousStateCamera: ExplorerCameraState;
+  readonly stateCamera: ExplorerCameraState;
+  readonly liveCamera: ExplorerCameraState;
+  readonly lastCommittedCamera: ExplorerCameraState | null;
+  readonly modelChanged: boolean;
+}): {
+  readonly nextCamera: ExplorerCameraState;
+  readonly nextLastCommittedCamera: ExplorerCameraState | null;
+  readonly externalCameraChanged: boolean;
+} {
+  const fromLocalCommit = stateCamera === lastCommittedCamera && liveCamera === lastCommittedCamera;
+  const externalCameraChanged = previousStateCamera !== stateCamera && !fromLocalCommit;
+  return {
+    nextCamera: modelChanged || externalCameraChanged ? stateCamera : liveCamera,
+    nextLastCommittedCamera: stateCamera === lastCommittedCamera ? null : lastCommittedCamera,
+    externalCameraChanged,
+  };
+}
+
+export function computeFocusedCameraForComponent(
+  assembly: VerifiedProjectAssembly | null,
+  componentId: ComponentId,
+  explodeFactor: number,
+  camera: ExplorerCameraState,
+  separatedOffsets: Readonly<Record<string, Vector3Tuple>>,
+  activeExplodeStage: ExplodeStageFilter,
+): ExplorerCameraState {
+  if (assembly === null) return camera;
+
+  const nodesById: Record<string, AssemblyNode> = Object.fromEntries(
+    assembly.nodes.map((node) => [node.id, node]),
+  );
+  const node = nodesById[componentId];
+  if (node === undefined) return camera;
+
+  const diagonalMeters = Math.hypot(...node.dimensionsMm) / 1000;
+  const overviewDistance = computeDefaultCameraForAssembly(assembly).distanceMeters;
+  return {
+    azimuthDeg: camera.azimuthDeg,
+    elevationDeg:
+      camera.elevationDeg >= 10 && camera.elevationDeg <= 55
+        ? camera.elevationDeg
+        : clampNumber(camera.elevationDeg, 14, 48),
+    distanceMeters: clampNumber(
+      Math.max(diagonalMeters * 2.1, 0.12),
+      0.11,
+      Math.min(0.24, overviewDistance * 0.62),
+    ),
+    targetMeters: computeNodeWorldPositionMeters(
+      node,
+      nodesById,
+      explodeFactor,
+      separatedOffsets,
+      activeExplodeStage,
+    ),
+  };
+}
+
 export function reduceAssemblyExplorerState(
   state: AssemblyExplorerState,
   action: AssemblyExplorerAction,
@@ -163,6 +239,7 @@ export function reduceAssemblyExplorerState(
         loadingProgress: 1,
         errorMessage: null,
         camera: computeDefaultCameraForAssembly(action.assembly),
+        viewMode: { kind: 'overview' },
         explodeFactor: 0,
         activeExplodeStage: 'all',
         selectedComponentId: null,
@@ -207,6 +284,43 @@ export function reduceAssemblyExplorerState(
       return {
         ...state,
         explodeFactor: clampNumber(action.explodeFactor, 0, 1),
+      };
+    }
+    case 'toggleExplodePreset': {
+      return { ...state, explodeFactor: state.explodeFactor > 0.001 ? 0 : DEFAULT_EXPLODE_PRESET };
+    }
+    case 'focusComponent': {
+      const { componentId } = action;
+      const explodeFactor = Math.max(state.explodeFactor, DEFAULT_EXPLODE_PRESET);
+      const restore =
+        state.viewMode.kind === 'part_focus'
+          ? state.viewMode
+          : { restoreCamera: state.camera, restoreExplodeFactor: state.explodeFactor };
+      return {
+        ...state,
+        camera: computeFocusedCameraForComponent(
+          state.assembly,
+          componentId,
+          explodeFactor,
+          state.camera,
+          state.separatedOffsets,
+          state.activeExplodeStage,
+        ),
+        explodeFactor,
+        selectedComponentId: componentId,
+        isolatedComponentId: null,
+        viewMode: { ...restore, kind: 'part_focus', componentId },
+      };
+    }
+    case 'exitPartFocus': {
+      if (state.viewMode.kind !== 'part_focus') return state;
+      return {
+        ...state,
+        camera: state.viewMode.restoreCamera,
+        explodeFactor: state.viewMode.restoreExplodeFactor,
+        selectedComponentId: null,
+        isolatedComponentId: null,
+        viewMode: { kind: 'overview' },
       };
     }
     case 'setExplodeStage': {

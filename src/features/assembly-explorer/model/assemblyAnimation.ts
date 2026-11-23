@@ -34,6 +34,7 @@ export type AssemblyAnimationTargets = {
   readonly activeExplodeStage: ExplodeStageFilter;
   readonly camera: ExplorerCameraState;
   readonly isolatedComponentId: ComponentId | null;
+  readonly focusedComponentId?: ComponentId | null;
   readonly separatedOffsets: Readonly<Record<string, Vector3Tuple>>;
 };
 
@@ -418,12 +419,12 @@ export function createAssemblyAnimationController({
         previousIsolation = targets.isolatedComponentId;
       }
 
-      const isolated =
-        targets.isolatedComponentId === null ? undefined : nodePoses[targets.isolatedComponentId];
+      const trackedId = targets.isolatedComponentId ?? targets.focusedComponentId ?? null;
+      const tracked = trackedId === null ? undefined : nodePoses[trackedId];
       const cameraTarget =
-        isolated === undefined
+        tracked === undefined
           ? targets.camera
-          : { ...targets.camera, targetMeters: isolated.worldPositionMeters };
+          : { ...targets.camera, targetMeters: tracked.worldPositionMeters };
       const nextCamera = dampCamera(camera, cameraTarget, alpha);
       const cameraChanged = !camerasEqual(camera, nextCamera);
       camera = nextCamera;

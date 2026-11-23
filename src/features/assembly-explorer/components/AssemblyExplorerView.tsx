@@ -104,6 +104,7 @@ export function AssemblyExplorerView({
     (camera: ExplorerCameraState) => dispatch({ type: 'setCamera', camera }),
     [],
   );
+  const exitPartFocus = useCallback(() => dispatch({ type: 'exitPartFocus' }), []);
 
   useEffect(() => {
     dispatch({ type: 'setProvider', provider: selectedProvider });
@@ -183,11 +184,15 @@ export function AssemblyExplorerView({
   if (state.errorMessage !== null) {
     return (
       <View style={styles.statusContainer}>
-        <Text style={styles.errorText}>{state.errorMessage}</Text>
-        <ProviderSwitcher
-          selectedProvider={state.selectedProvider}
-          onSelectProvider={onSelectProvider}
-        />
+        <View style={styles.errorCard}>
+          <Text accessibilityRole="alert" style={styles.errorText}>
+            {state.errorMessage}
+          </Text>
+          <ProviderSwitcher
+            selectedProvider={state.selectedProvider}
+            onSelectProvider={onSelectProvider}
+          />
+        </View>
       </View>
     );
   }
@@ -206,6 +211,9 @@ export function AssemblyExplorerView({
         onSetExplodeFactor={(explodeFactor: number) =>
           dispatch({ type: 'setExplodeFactor', explodeFactor })
         }
+        onToggleExplodePreset={() => dispatch({ type: 'toggleExplodePreset' })}
+        onFocusComponent={(componentId) => dispatch({ type: 'focusComponent', componentId })}
+        onExitPartFocus={exitPartFocus}
         onSetExplodeStage={(stage: ExplodeStageFilter) =>
           dispatch({ type: 'setExplodeStage', stage })
         }
@@ -243,7 +251,7 @@ const styles = StyleSheet.create({
     height: 4,
     maxWidth: '100%',
     borderRadius: 2,
-    backgroundColor: '#e4e4e7',
+    backgroundColor: '#172A43',
     overflow: 'hidden',
   },
   progressOverlay: {
@@ -251,22 +259,32 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
     width: '100%',
-    height: 3,
+    height: 2,
     borderRadius: 0,
-    zIndex: 1,
+    zIndex: 26,
   },
   progressFill: {
     height: '100%',
     borderRadius: 2,
-    backgroundColor: '#52525b',
+    backgroundColor: '#38BDF8',
   },
   statusText: {
-    color: '#52525b',
+    color: '#B8C9DF',
     fontSize: 14,
     fontWeight: '500',
   },
+  errorCard: {
+    width: '100%',
+    maxWidth: 420,
+    padding: 22,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#29425E',
+    backgroundColor: '#0B1322EB',
+    boxShadow: '0 18px 56px #00000066',
+  },
   errorText: {
-    color: '#dc2626',
+    color: '#F0F6FC',
     fontSize: 14,
     fontWeight: '600',
     textAlign: 'center',
@@ -283,20 +301,20 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#d4d4d8',
-    backgroundColor: '#ffffff',
+    borderColor: '#29425E',
+    backgroundColor: '#101F33',
   },
   providerButtonActive: {
-    borderColor: '#18181b',
-    backgroundColor: '#18181b',
+    borderColor: '#38BDF8',
+    backgroundColor: '#142F45',
   },
   providerLabel: {
-    color: '#18181b',
+    color: '#B8C9DF',
     fontSize: 13,
     fontWeight: '600',
   },
   providerLabelActive: {
-    color: '#ffffff',
+    color: '#BCEAFF',
     fontSize: 13,
     fontWeight: '600',
   },

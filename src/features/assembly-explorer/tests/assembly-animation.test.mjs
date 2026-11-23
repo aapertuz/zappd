@@ -278,6 +278,41 @@ describe('assembly pose transitions', () => {
     );
   });
 
+  it('tracks the live part position during focus and subsequent explode changes', () => {
+    const node = assembly.nodes.find(({ id }) => id === 'comp_arm_fl');
+    const restingPosition = node.restPositionMeters;
+    const overview = { ...TARGETS, camera: { ...TARGETS.camera, targetMeters: restingPosition } };
+    const controller = createAssemblyAnimationController({ assembly, targets: overview });
+    settleAssemblyPlayback(controller);
+    const targets = {
+      ...overview,
+      explodeFactor: 0.65,
+      focusedComponentId: node.id,
+      camera: { ...overview.camera, distanceMeters: 0.16 },
+    };
+
+    const frames = Array.from({ length: 12 }, () => controller.step(1 / 60, targets));
+    const moving = frames.find(
+      (frame) => distance(restingPosition, frame.nodePoses[node.id].worldPositionMeters) > 0.001,
+    );
+    assert.ok(moving);
+    const cameraSlide = distance(restingPosition, moving.animatedCamera.targetMeters);
+    const partSlide = distance(restingPosition, moving.nodePoses[node.id].worldPositionMeters);
+    assert.ok(cameraSlide > 0 && cameraSlide < partSlide);
+    assert.ok(moving.animatedCamera.distanceMeters < overview.camera.distanceMeters);
+    const settled = finishAnimation(controller, targets);
+    assert.equal(settled.animatedExplodeFactor, 0.65);
+    assert.deepEqual(
+      settled.animatedCamera.targetMeters,
+      settled.nodePoses[node.id].worldPositionMeters,
+    );
+    assert.ok(distance(settled.animatedCamera.targetMeters, restingPosition) > partSlide);
+
+    const collapsed = finishAnimation(controller, { ...targets, explodeFactor: 0 });
+    assert.deepEqual(collapsed.animatedCamera.targetMeters, restingPosition);
+    assert.equal(collapsed.animatedCamera.distanceMeters, targets.camera.distanceMeters);
+  });
+
   it('starts seated and snaps to all targets in reduced motion', () => {
     const controller = createAssemblyAnimationController({
       assembly,
