@@ -10,6 +10,8 @@ import {
   defaultFirebaseEmulatorRepository,
 } from '@/shared/firebase';
 
+import { hydrateComponentLearningContext } from '@/features/learning';
+
 import type { AssemblyLoadingProgress } from '../types';
 
 export type LoadedAssemblyBundle = {
@@ -121,13 +123,11 @@ export async function loadVerifiedAssemblyForPrompt(args: {
   }
   const glbArrayBuffer = await readGlbWithProgress(glbResponse, glbFile.sizeBytes, args.onProgress);
 
-  await repository.saveProjectAssembly(
+  await hydrateComponentLearningContext({
     assembly,
-    {
-      glb: new Uint8Array(glbArrayBuffer),
-    },
-    { syncLiveEmulator: false },
-  );
+    repository,
+    binaries: { glb: new Uint8Array(glbArrayBuffer) },
+  });
 
   args.onProgress?.({ phase: 'ready', progress: 1 });
   return {
