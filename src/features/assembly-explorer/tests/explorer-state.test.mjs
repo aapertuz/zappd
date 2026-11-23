@@ -257,7 +257,6 @@ describe('assembly explorer focus mode', () => {
       type: 'selectComponent',
       componentId: motorId,
     });
-    overview = reduceAssemblyExplorerState(overview, { type: 'toggleIsolateComponent' });
     overview = reduceAssemblyExplorerState(overview, {
       type: 'separateComponentAlongAxis',
       axis: 'z',
@@ -274,7 +273,7 @@ describe('assembly explorer focus mode', () => {
     assert.ok(focused.camera.distanceMeters < overview.camera.distanceMeters / 2);
     assert.deepEqual(focused.camera.targetMeters, [0.15625, 0.0625, 0.03125]);
     assert.equal(focused.selectedComponentId, motorId);
-    assert.equal(focused.isolatedComponentId, null);
+    assert.equal(focused.isolatedComponentId, motorId);
     assert.deepEqual(focused.viewMode, {
       kind: 'part_focus',
       componentId: motorId,
@@ -294,6 +293,7 @@ describe('assembly explorer focus mode', () => {
     assert.deepEqual(nextPart.camera.targetMeters, [0, 0.0625, 0]);
     assert.ok(nextPart.camera.distanceMeters > focused.camera.distanceMeters);
     assert.equal(nextPart.selectedComponentId, plateId);
+    assert.equal(nextPart.isolatedComponentId, plateId);
     assert.deepEqual(nextPart.viewMode, { ...focused.viewMode, componentId: plateId });
 
     const restored = reduceAssemblyExplorerState(nextPart, { type: 'exitPartFocus' });
@@ -315,6 +315,7 @@ describe('assembly explorer focus mode', () => {
     const reloaded = reduceAssemblyExplorerState(focused, { ...loadAssembly, promptId: 2 });
     assert.deepEqual(reloaded.viewMode, { kind: 'overview' });
     assert.equal(reloaded.selectedComponentId, null);
+    assert.equal(reloaded.isolatedComponentId, null);
     assert.equal(reloaded.explodeFactor, 0);
     assert.deepEqual(reloaded.camera, DEFAULT_EXPLORER_CAMERA);
   });

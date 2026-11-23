@@ -308,7 +308,7 @@ export function reduceAssemblyExplorerState(
         ),
         explodeFactor,
         selectedComponentId: componentId,
-        isolatedComponentId: null,
+        isolatedComponentId: componentId,
         viewMode: { ...restore, kind: 'part_focus', componentId },
       };
     }

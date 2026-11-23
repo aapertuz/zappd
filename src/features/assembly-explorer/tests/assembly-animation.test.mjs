@@ -278,7 +278,37 @@ describe('assembly pose transitions', () => {
     );
   });
 
-  it('tracks the live part position during focus and subsequent explode changes', () => {
+  it('keeps rendering an isolation fade after the camera and parts have settled', () => {
+    const node = assembly.nodes.find(({ id }) => id === 'comp_arm_fl');
+    const overview = {
+      ...TARGETS,
+      camera: { ...TARGETS.camera, targetMeters: node.restPositionMeters },
+    };
+    const controller = createAssemblyAnimationController({ assembly, targets: overview });
+    settleAssemblyPlayback(controller);
+    controller.step(0, overview);
+    const isolated = { ...overview, isolatedComponentId: node.id };
+
+    const first = controller.step(1 / 60, isolated);
+    const second = controller.step(1 / 60, isolated);
+    assert.equal(second.cameraChanged, false);
+    assert.equal(second.isActive, true);
+    assert.equal(second.geometryChanged, true);
+    assert.ok(second.nodePoses.comp_arm_fr.opacity < first.nodePoses.comp_arm_fr.opacity);
+    const hidden = finishAnimation(controller, isolated).nodePoses.comp_arm_fr;
+    assert.equal(hidden.opacity, 0);
+    assert.equal(hidden.visible, false);
+
+    const firstRestore = controller.step(1 / 60, overview);
+    assert.equal(firstRestore.cameraChanged, false);
+    assert.equal(firstRestore.isActive, true);
+    assert.ok(firstRestore.nodePoses.comp_arm_fr.opacity > 0);
+    const restored = finishAnimation(controller, overview).nodePoses.comp_arm_fr;
+    assert.equal(restored.opacity, 1);
+    assert.equal(restored.visible, true);
+  });
+
+  it('glides to the exploded part while fading out the other parts', () => {
     const node = assembly.nodes.find(({ id }) => id === 'comp_arm_fl');
     const restingPosition = node.restPositionMeters;
     const overview = { ...TARGETS, camera: { ...TARGETS.camera, targetMeters: restingPosition } };
@@ -288,10 +318,31 @@ describe('assembly pose transitions', () => {
       ...overview,
       explodeFactor: 0.65,
       focusedComponentId: node.id,
+      isolatedComponentId: node.id,
       camera: { ...overview.camera, distanceMeters: 0.16 },
     };
 
     const frames = Array.from({ length: 12 }, () => controller.step(1 / 60, targets));
+    const interactive = createAssemblyAnimationController({ assembly, targets: overview });
+    settleAssemblyPlayback(interactive);
+    const interactiveFrames = frames.map(() =>
+      interactive.step(1 / 60, { ...overview, camera: targets.camera }),
+    );
+    const glideDistance = frames.at(-1).animatedCamera.distanceMeters;
+    const interactiveDistance = interactiveFrames.at(-1).animatedCamera.distanceMeters;
+    assert.ok(
+      glideDistance - interactiveDistance >
+        (overview.camera.distanceMeters - targets.camera.distanceMeters) / 3,
+    );
+
+    const firstFade = frames[0].nodePoses.comp_arm_fr;
+    const lastFade = frames.at(-1).nodePoses.comp_arm_fr;
+    assert.ok(firstFade.opacity > 0 && firstFade.opacity < 1);
+    assert.equal(firstFade.visible, true);
+    assert.equal(firstFade.isAnimatingOpacity, true);
+    assert.ok(lastFade.opacity > 0 && lastFade.opacity < firstFade.opacity);
+    assert.equal(frames.at(-1).geometryChanged, true);
+
     const moving = frames.find(
       (frame) => distance(restingPosition, frame.nodePoses[node.id].worldPositionMeters) > 0.001,
     );
@@ -307,10 +358,63 @@ describe('assembly pose transitions', () => {
       settled.nodePoses[node.id].worldPositionMeters,
     );
     assert.ok(distance(settled.animatedCamera.targetMeters, restingPosition) > partSlide);
+    for (const { id } of assembly.nodes) {
+      const focused = id === node.id;
+      assert.equal(settled.nodePoses[id].opacity, focused ? 1 : 0);
+      assert.equal(settled.nodePoses[id].visible, focused);
+    }
 
     const collapsed = finishAnimation(controller, { ...targets, explodeFactor: 0 });
     assert.deepEqual(collapsed.animatedCamera.targetMeters, restingPosition);
     assert.equal(collapsed.animatedCamera.distanceMeters, targets.camera.distanceMeters);
+
+    const returning = Array.from({ length: 12 }, () => controller.step(1 / 60, overview));
+    const firstRestore = returning[0].nodePoses.comp_arm_fr;
+    const lastRestore = returning.at(-1).nodePoses.comp_arm_fr;
+    assert.ok(firstRestore.opacity > 0 && firstRestore.opacity < lastRestore.opacity);
+    assert.ok(lastRestore.opacity < 1);
+    assert.equal(firstRestore.visible, true);
+    assert.equal(firstRestore.isAnimatingOpacity, true);
+    assert.ok(returning.at(-1).animatedCamera.distanceMeters > targets.camera.distanceMeters);
+    assert.ok(
+      overview.camera.distanceMeters - returning.at(-1).animatedCamera.distanceMeters >
+        (overview.camera.distanceMeters - targets.camera.distanceMeters) / 3,
+    );
+    const restored = finishAnimation(controller, overview);
+    assert.deepEqual(restored.animatedCamera, overview.camera);
+    for (const { id } of assembly.nodes) {
+      assert.equal(restored.nodePoses[id].opacity, 1);
+      assert.equal(restored.nodePoses[id].visible, true);
+      assert.equal(restored.nodePoses[id].isAnimatingOpacity, false);
+    }
+  });
+
+  it('orbits and zooms at the interactive rate as soon as the camera is moved during focus', () => {
+    const focusedComponentId = 'comp_arm_fl';
+    const targets = {
+      ...TARGETS,
+      focusedComponentId,
+      isolatedComponentId: focusedComponentId,
+      camera: { ...TARGETS.camera, distanceMeters: 0.16 },
+    };
+    const controller = createAssemblyAnimationController({ assembly, targets: TARGETS });
+    settleAssemblyPlayback(controller);
+    const gliding = controller.step(1 / 60, targets);
+    const manualCamera = {
+      ...targets.camera,
+      azimuthDeg: targets.camera.azimuthDeg + 30,
+      distanceMeters: 0.32,
+    };
+    const interactive = createAssemblyAnimationController({
+      assembly,
+      targets: { ...targets, camera: gliding.animatedCamera },
+    });
+    settleAssemblyPlayback(interactive);
+    const afterInput = { ...targets, camera: manualCamera };
+    const manual = controller.step(1 / 60, afterInput);
+    assert.deepEqual(manual.animatedCamera, interactive.step(1 / 60, afterInput).animatedCamera);
+    assert.ok(manual.animatedCamera.azimuthDeg > gliding.animatedCamera.azimuthDeg);
+    assert.ok(manual.animatedCamera.distanceMeters < gliding.animatedCamera.distanceMeters);
   });
 
   it('starts seated and snaps to all targets in reduced motion', () => {
@@ -329,6 +433,7 @@ describe('assembly pose transitions', () => {
       explodeFactor: 1,
       activeExplodeStage: 1,
       isolatedComponentId: node.id,
+      focusedComponentId: node.id,
       separatedOffsets: { [node.id]: [0.04, 0, 0] },
       camera: { ...TARGETS.camera, azimuthDeg: 0 },
     });
@@ -338,6 +443,12 @@ describe('assembly pose transitions', () => {
     assert.deepEqual(snapshot.animatedCamera.targetMeters, [x + 0.04, y, z]);
     assert.deepEqual(snapshot.nodePoses[node.id].worldPositionMeters, [x + 0.04, y, z]);
     assert.equal(snapshot.nodePoses.comp_arm_fr.visible, false);
+    assert.equal(snapshot.nodePoses.comp_arm_fr.opacity, 0);
     assert.equal(snapshot.isActive, false);
+    const restored = controller.step(0, TARGETS);
+    assert.deepEqual(restored.animatedCamera, TARGETS.camera);
+    assert.equal(restored.nodePoses.comp_arm_fr.visible, true);
+    assert.equal(restored.nodePoses.comp_arm_fr.opacity, 1);
+    assert.equal(restored.isActive, false);
   });
 });
