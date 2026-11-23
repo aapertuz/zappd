@@ -2,7 +2,7 @@ type Point = { readonly x: number; readonly y: number };
 type Size = { readonly width: number; readonly height: number };
 type Rect = Point & Size;
 
-type PartAnchors = {
+export type PartAnchors = {
   readonly center: Point;
   readonly left: Point;
   readonly right: Point;
@@ -12,7 +12,9 @@ type PartAnchors = {
 
 export type LearningCalloutPlacement = {
   readonly rect: Rect;
+  readonly anchor: Point;
   readonly leaderPath: string;
+  readonly arrowPath: string;
 };
 
 export type LearningCalloutsLayout = {
@@ -23,6 +25,7 @@ export type LearningCalloutsLayout = {
 type PositionCandidate = { readonly rect: Rect; readonly score: number };
 
 const CARD_GAP = 12;
+const DESKTOP_LEADER_STANDOFF = 54;
 
 function right(rect: Rect): number {
   return rect.x + rect.width;
@@ -119,13 +122,52 @@ function placeCallout(
       Math.hypot(a.end.x - a.start.x, a.end.y - a.start.y) -
       Math.hypot(b.end.x - b.start.x, b.end.y - b.start.y),
   )[0];
-  if (edge === undefined) return { rect, leaderPath: '' };
+  if (edge === undefined) return null;
 
-  const { start, end, horizontal } = edge;
+  const { start, end: anchor, horizontal } = edge;
   const elbow = horizontal
-    ? `H ${start.x + (end.x - start.x) / 2} V ${end.y}`
-    : `V ${start.y + (end.y - start.y) / 2} H ${end.x}`;
-  return { rect, leaderPath: `M ${start.x} ${start.y} ${elbow} L ${end.x} ${end.y}` };
+    ? {
+        x: start.x + Math.sign(anchor.x - start.x) * Math.min(22, Math.abs(anchor.x - start.x) / 3),
+        y: start.y,
+      }
+    : {
+        x: start.x,
+        y: start.y + Math.sign(anchor.y - start.y) * Math.min(22, Math.abs(anchor.y - start.y) / 3),
+      };
+  const dx = anchor.x - elbow.x;
+  const dy = anchor.y - elbow.y;
+  const distance = Math.hypot(dx, dy);
+  const unitX = dx / distance;
+  const unitY = dy / distance;
+  const tipGap = Math.min(10, distance * 0.55);
+  const arrowLength = Math.min(7, distance - tipGap);
+  const halfWidth = Math.min(3, arrowLength / 2);
+  const tip = { x: anchor.x - tipGap * unitX, y: anchor.y - tipGap * unitY };
+  const base = { x: tip.x - arrowLength * unitX, y: tip.y - arrowLength * unitY };
+
+  return {
+    rect,
+    anchor,
+    leaderPath: `M ${start.x} ${start.y} L ${elbow.x} ${elbow.y} L ${base.x} ${base.y}`,
+    arrowPath: `M ${tip.x} ${tip.y} L ${base.x - halfWidth * unitY} ${base.y + halfWidth * unitX} L ${base.x + halfWidth * unitY} ${base.y - halfWidth * unitX} Z`,
+  };
+}
+
+export type LearningCalloutsGeometryFrame = {
+  readonly viewportWidth: number;
+  readonly viewportHeight: number;
+  readonly partLabelRect: Rect | null;
+  readonly anchors: PartAnchors | null;
+  readonly answerAnchors?: PartAnchors | null;
+};
+
+function projectedPartRect(anchors: PartAnchors): Rect {
+  return {
+    x: anchors.left.x,
+    y: anchors.top.y,
+    width: anchors.right.x - anchors.left.x,
+    height: anchors.bottom.y - anchors.top.y,
+  };
 }
 
 export function computeLearningCalloutsLayout({
@@ -133,16 +175,13 @@ export function computeLearningCalloutsLayout({
   viewportHeight,
   partLabelRect,
   anchors,
+  answerAnchors = anchors,
   explanationSize,
   answerSize,
   margin = 16,
   topInset = viewportWidth <= 800 ? 122 : 84,
-  bottomInset = 194,
-}: {
-  readonly viewportWidth: number;
-  readonly viewportHeight: number;
-  readonly partLabelRect: Rect | null;
-  readonly anchors: PartAnchors;
+  bottomInset = 112,
+}: LearningCalloutsGeometryFrame & {
   readonly explanationSize: Size | null;
   readonly answerSize: Size | null;
   readonly margin?: number;
@@ -155,56 +194,68 @@ export function computeLearningCalloutsLayout({
     width: viewportWidth - margin * 2,
     height: viewportHeight - topInset - bottomInset,
   };
-  const partRect = {
-    x: anchors.left.x,
-    y: anchors.top.y,
-    width: anchors.right.x - anchors.left.x,
-    height: anchors.bottom.y - anchors.top.y,
-  };
-  const obstacles = partLabelRect === null ? [partRect] : [partRect, partLabelRect];
+  const obstacles = [
+    ...(anchors === null ? [] : [projectedPartRect(anchors)]),
+    ...(answerAnchors === null || answerAnchors === anchors
+      ? []
+      : [projectedPartRect(answerAnchors)]),
+    ...(partLabelRect === null ? [] : [partLabelRect]),
+  ];
   const mobile = viewportWidth <= 800;
   const explanationWidth = Math.min(explanationSize?.width ?? 0, bounds.width);
   const answerWidth = Math.min(answerSize?.width ?? 0, bounds.width);
-  const explanationPreferred = mobile
-    ? {
-        x: anchors.center.x - explanationWidth / 2,
-        y: anchors.top.y - (explanationSize?.height ?? 0) - CARD_GAP,
-      }
-    : { x: anchors.right.x + CARD_GAP, y: anchors.center.y - (explanationSize?.height ?? 0) / 2 };
-  const answerPreferred = mobile
-    ? { x: anchors.center.x - answerWidth / 2, y: anchors.bottom.y + CARD_GAP }
-    : {
-        x: anchors.left.x - answerWidth - CARD_GAP,
-        y: anchors.center.y - (answerSize?.height ?? 0) / 2,
-      };
+  const explanationHeight = explanationSize?.height ?? 0;
+  const explanationPreferred =
+    anchors === null
+      ? null
+      : mobile
+        ? {
+            x: anchors.center.x - explanationWidth / 2,
+            y: anchors.top.y - explanationHeight - CARD_GAP,
+          }
+        : {
+            x: anchors.left.x - explanationWidth - DESKTOP_LEADER_STANDOFF,
+            y: anchors.center.y - explanationHeight / 2,
+          };
+  const answerPreferred =
+    answerAnchors === null
+      ? null
+      : {
+          x: mobile
+            ? answerAnchors.center.x - answerWidth / 2
+            : answerAnchors.right.x + DESKTOP_LEADER_STANDOFF,
+          y: mobile ? answerAnchors.bottom.y + CARD_GAP : answerAnchors.center.y + 28,
+        };
 
-  const explanations = findCandidates(
-    explanationSize,
-    explanationPreferred,
-    bounds,
-    obstacles,
-    answerSize,
-  );
+  const explanations =
+    explanationPreferred === null
+      ? []
+      : findCandidates(explanationSize, explanationPreferred, bounds, obstacles, answerSize);
   let explanation = explanations[0];
-  let answer = findCandidates(answerSize, answerPreferred, bounds, obstacles)[0];
+  let answer =
+    answerPreferred === null
+      ? undefined
+      : findCandidates(answerSize, answerPreferred, bounds, obstacles)[0];
   let bestPairScore = Number.POSITIVE_INFINITY;
 
-  for (const candidate of explanations) {
-    if (candidate.score >= bestPairScore || answerSize === null) break;
-    const pairedAnswer = findCandidates(answerSize, answerPreferred, bounds, [
-      ...obstacles,
-      candidate.rect,
-    ])[0];
-    if (pairedAnswer !== undefined && candidate.score + pairedAnswer.score < bestPairScore) {
-      explanation = candidate;
-      answer = pairedAnswer;
-      bestPairScore = candidate.score + pairedAnswer.score;
+  if (answerPreferred !== null && answerSize !== null && answer !== undefined) {
+    for (const candidate of explanations) {
+      if (candidate.score >= bestPairScore) break;
+      const pairedAnswer = findCandidates(answerSize, answerPreferred, bounds, [
+        ...obstacles,
+        candidate.rect,
+      ])[0];
+      if (pairedAnswer !== undefined && candidate.score + pairedAnswer.score < bestPairScore) {
+        explanation = candidate;
+        answer = pairedAnswer;
+        bestPairScore = candidate.score + pairedAnswer.score;
+      }
     }
+    if (bestPairScore === Number.POSITIVE_INFINITY) explanation = undefined;
   }
-  if (explanation !== undefined && bestPairScore === Number.POSITIVE_INFINITY) answer = undefined;
 
   return {
-    explanation: placeCallout(explanation?.rect, anchors),
-    answer: placeCallout(answer?.rect, anchors),
+    explanation: anchors === null ? null : placeCallout(explanation?.rect, anchors),
+    answer: answerAnchors === null ? null : placeCallout(answer?.rect, answerAnchors),
   };
 }

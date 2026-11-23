@@ -94,7 +94,9 @@ export function classifyCanvasPrompt(
 
   if (
     target !== undefined &&
-    (focusedComponentId == null || target.archetypeId !== assembly.archetypeId)
+    (focusedComponentId == null ||
+      target.archetypeId !== assembly.archetypeId ||
+      /^(?:build|load|switch)\b(?!.*\b(?:this|current)\b)/.test(command))
   )
     return { kind: 'load_assembly' };
 

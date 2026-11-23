@@ -1,0 +1,154 @@
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 16;
+  pointer-events: none;
+}
+
+.drawing {
+  display: block;
+  position: absolute;
+  inset: 0;
+  visibility: hidden;
+  pointer-events: none;
+  color: #f5c451;
+  filter: drop-shadow(0 0 5px rgba(245, 196, 81, 0.46));
+}
+
+.leader,
+.reticle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+}
+
+.leader {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.arrow {
+  fill: currentColor;
+}
+
+.card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: min(344px, calc(100% - 32px));
+  max-height: 276px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  border: 1px solid rgba(245, 196, 81, 0.42);
+  border-radius: 9px;
+  background: rgba(18, 16, 13, 0.72);
+  backdrop-filter: blur(18px) saturate(160%);
+  box-shadow:
+    inset 0 1px 0 rgba(254, 243, 199, 0.12),
+    0 10px 32px rgba(0, 0, 0, 0.44);
+  visibility: hidden;
+  overflow-wrap: anywhere;
+  pointer-events: auto;
+  user-select: text;
+  color: #faf6ed;
+  animation: appear 180ms ease-out both;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.eyebrow,
+.source {
+  color: #f5c451;
+  font:
+    600 9px/1.2 ui-monospace,
+    monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.source {
+  flex-shrink: 0;
+  padding: 3px 5px;
+  border: 1px solid rgba(245, 196, 81, 0.24);
+  border-radius: 999px;
+  color: #e3c881;
+  letter-spacing: 0.06em;
+}
+
+.dismiss {
+  margin-inline-start: auto;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #f5c451;
+  font: 18px/1 sans-serif;
+  cursor: pointer;
+}
+
+.dismiss:hover {
+  background: rgba(245, 196, 81, 0.14);
+}
+
+.question {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #cfc4b0;
+  font-size: 12px;
+  line-height: 1.35;
+  flex-shrink: 0;
+}
+
+.body {
+  min-height: 1.45em;
+  overflow: auto;
+  overscroll-behavior: contain;
+  color: #faf6ed;
+  font-size: 13px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  scrollbar-color: #806733 transparent;
+}
+
+.cursor {
+  color: #f5c451;
+  animation: blink 880ms steps(1, end) infinite;
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 800px) {
+  .card {
+    max-height: 145px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .cursor {
+    animation: none;
+  }
+}

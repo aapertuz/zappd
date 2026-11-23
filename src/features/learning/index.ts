@@ -1,7 +1,19 @@
+export { LearningCallouts } from './components/LearningCallouts';
+export {
+  type LearningCalloutsHandle,
+  type LearningCalloutsProps,
+} from './components/calloutPresentation';
+export {
+  useComponentLearning,
+  type LearningQuestionSubmission,
+} from './hooks/useComponentLearning';
+export { useTypewriterText } from './hooks/useTypewriterText';
 export {
   computeLearningCalloutsLayout,
   type LearningCalloutPlacement,
+  type LearningCalloutsGeometryFrame,
   type LearningCalloutsLayout,
+  type PartAnchors,
 } from './model/calloutLayout';
 export { buildGroundedComponentExplanation } from './model/catalogExplanations';
 export {

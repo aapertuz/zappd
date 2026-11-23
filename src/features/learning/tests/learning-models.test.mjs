@@ -8,14 +8,10 @@ import {
   ROVER_ARCHETYPE,
 } from '@/shared/domain';
 
-import {
-  INITIAL_LEARNING_STATE,
-  advanceTypewriterProgress,
-  classifyCanvasPrompt,
-  computeLearningCalloutsLayout,
-  isTypewriterWriting,
-  reduceLearningState,
-} from '@/features/learning';
+import { computeLearningCalloutsLayout } from '../model/calloutLayout.ts';
+import { INITIAL_LEARNING_STATE, reduceLearningState } from '../model/learningState.ts';
+import { classifyCanvasPrompt } from '../model/promptRouter.ts';
+import { advanceTypewriterProgress, isTypewriterWriting } from '../model/typewriter.ts';
 
 describe('learning callout state', () => {
   it('tracks concurrent explanation and answer lifecycles by request and slot', () => {
@@ -194,6 +190,9 @@ describe('canvas prompt routing', () => {
       });
     }
     assert.deepEqual(classifyCanvasPrompt('Load a quadcopter', arm), { kind: 'load_assembly' });
+    assert.deepEqual(classifyCanvasPrompt('Build a 5-DOF SO-100 robotic arm', arm), {
+      kind: 'load_assembly',
+    });
     assert.deepEqual(classifyCanvasPrompt('Inspect a planetary rover', arm), {
       kind: 'load_assembly',
     });
@@ -314,16 +313,43 @@ function assertCollisionFree(layout, input) {
       assert.equal(overlaps(rect, other), false);
     }
   }
-  for (const { rect, leaderPath } of [layout.explanation, layout.answer]) {
-    assert.ok(rect.x >= 16);
-    assert.ok(rect.x + rect.width <= input.viewportWidth - 16);
-    assert.ok(rect.y >= (input.viewportWidth <= 800 ? 122 : 84));
-    assert.ok(rect.y + rect.height <= input.viewportHeight - 194);
-    assert.match(
-      leaderPath,
-      /^M [\d.]+ [\d.]+ (?:H [\d.]+ V [\d.]+|V [\d.]+ H [\d.]+) L [\d.]+ [\d.]+$/,
-    );
+  for (const placement of [layout.explanation, layout.answer]) {
+    assertWithinInsets(placement, input);
+    assertArrowPointsToAnchor(placement);
   }
+}
+
+function assertWithinInsets({ rect }, { viewportWidth, viewportHeight }) {
+  assert.ok(rect.x >= 16);
+  assert.ok(rect.x + rect.width <= viewportWidth - 16);
+  assert.ok(rect.y >= (viewportWidth <= 800 ? 122 : 84));
+  assert.ok(rect.y + rect.height <= viewportHeight - 112);
+}
+
+function assertArrowPointsToAnchor({ anchor, leaderPath, arrowPath }) {
+  const leader = leaderPath
+    .split(/\s+/)
+    .filter((token) => token !== 'M' && token !== 'L')
+    .map(Number);
+  const arrow = arrowPath
+    .split(/\s+/)
+    .filter((token) => token !== 'M' && token !== 'L' && token !== 'Z')
+    .map(Number);
+  assert.equal(leader.length, 6);
+  assert.equal(arrow.length, 6);
+  assert.ok(arrowPath.endsWith(' Z'));
+
+  const [leaderX, leaderY] = leader.slice(-2);
+  const [tipX, tipY, leftX, leftY, rightX, rightY] = arrow;
+  assert.ok(Math.abs(leaderX - (leftX + rightX) / 2) < 1e-6);
+  assert.ok(Math.abs(leaderY - (leftY + rightY) / 2) < 1e-6);
+
+  const dx = tipX - leaderX;
+  const dy = tipY - leaderY;
+  const anchorDx = anchor.x - tipX;
+  const anchorDy = anchor.y - tipY;
+  assert.ok(dx * anchorDx + dy * anchorDy > 0);
+  assert.ok(Math.abs(dx * anchorDy - dy * anchorDx) < 1e-6);
 }
 
 describe('learning callout layout', () => {
@@ -338,8 +364,11 @@ describe('learning callout layout', () => {
     };
     const layout = computeLearningCalloutsLayout(input);
     assertCollisionFree(layout, input);
-    assert.ok(layout.explanation.rect.x > input.anchors.center.x);
-    assert.ok(layout.answer.rect.x + layout.answer.rect.width < input.anchors.center.x);
+    assert.ok(layout.explanation.rect.x + layout.explanation.rect.width < input.anchors.left.x);
+    assert.ok(layout.answer.rect.x > input.anchors.right.x);
+    assert.ok(layout.answer.rect.y > input.anchors.center.y);
+    assert.deepEqual(layout.explanation.anchor, input.anchors.left);
+    assert.deepEqual(layout.answer.anchor, input.anchors.right);
   });
 
   it('stacks mobile cards without covering the part, HUD, or composer at and below 800px', () => {
@@ -359,17 +388,42 @@ describe('learning callout layout', () => {
     }
   });
 
-  it('keeps the explanation visible when only one card fits without overlap', () => {
-    const layout = computeLearningCalloutsLayout({
+  it('anchors an overview answer with no focused part or Part label', () => {
+    const input = {
+      viewportWidth: 430,
+      viewportHeight: 932,
+      anchors: null,
+      answerAnchors: anchorsAt(253, 491),
+      partLabelRect: null,
+      explanationSize: null,
+      answerSize: { width: 300, height: 118 },
+    };
+    const layout = computeLearningCalloutsLayout(input);
+    assert.equal(layout.explanation, null);
+    assert.ok(layout.answer);
+    assert.deepEqual(layout.answer.anchor, input.answerAnchors.bottom);
+    assertWithinInsets(layout.answer, input);
+    assertArrowPointsToAnchor(layout.answer);
+  });
+
+  it('prioritizes the answer only when both cards need the same space on a tight viewport', () => {
+    const input = {
       viewportWidth: 320,
       viewportHeight: 630,
       anchors: anchorsAt(160, 370),
       partLabelRect: null,
       explanationSize: { width: 300, height: 195 },
       answerSize: { width: 300, height: 195 },
-    });
-    assert.ok(layout.explanation);
-    assert.equal(layout.answer, null);
-    assert.equal(layout.explanation.rect.width, 288);
+    };
+    const layout = computeLearningCalloutsLayout(input);
+    assert.equal(layout.explanation, null);
+    assert.ok(layout.answer);
+    assert.equal(layout.answer.rect.width, 288);
+    assertWithinInsets(layout.answer, input);
+
+    const explanationOnly = computeLearningCalloutsLayout({ ...input, answerSize: null });
+    assert.ok(explanationOnly.explanation);
+    assert.equal(explanationOnly.answer, null);
+    assertWithinInsets(explanationOnly.explanation, input);
   });
 });
