@@ -6,6 +6,8 @@ import {
   type VerifiedProjectAssembly,
 } from '@/shared/domain';
 
+import { type LearningQuestionSubmission, type LearningState } from '@/features/learning';
+
 export type SeparationAxis = 'x' | 'y' | 'z';
 
 export type AssemblyLoadingPhase = 'idle' | 'orchestrating' | 'downloading' | 'ready' | 'error';
@@ -83,6 +85,8 @@ export type AssemblyExplorerAction =
   | { readonly type: 'resetComponentSeparation' };
 
 export type AssemblySceneProps = {
+  readonly learningState: LearningState;
+  readonly onDismissLearningAnswer: () => void;
   readonly assembly: VerifiedProjectAssembly;
   readonly glbArrayBuffer: ArrayBuffer | null;
   readonly state: AssemblyExplorerState;
@@ -99,7 +103,15 @@ export type AssemblySceneProps = {
   readonly onSelectProvider: (provider: AiProviderId) => void;
 };
 
+export type ActiveExplorerLearningContext = {
+  readonly assembly: VerifiedProjectAssembly;
+  readonly focusedComponentId: ComponentId | null;
+  readonly focusedComponentName: string | null;
+};
+
 export type AssemblyExplorerProps = {
+  readonly submittedQuestion?: LearningQuestionSubmission | null;
+  readonly onActiveLearningContextChange?: (context: ActiveExplorerLearningContext | null) => void;
   readonly submittedPrompt: { readonly id: number; readonly text: string } | null;
   readonly selectedProvider: AiProviderId;
   readonly providerExplicitlySelected: boolean;

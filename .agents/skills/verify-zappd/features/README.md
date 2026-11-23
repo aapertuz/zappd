@@ -44,4 +44,5 @@ Each feature file starts with an H1 title and one paragraph describing the user-
 - [Prompt composer](./prompt-composer.md) covers draft typing, empty/whitespace send guarding, and multiline auto-grow.
 - [Prompt submission](./prompt-submission.md) covers click and `Enter` submission, multiline height reset, `/api/orchestrate` settlement, and consecutive archetype replacement.
 - [Assembly explorer](./assembly-explorer.md) covers WebGL 3D CAD rendering, camera controls, explode stages, part selection, isolation, axis separation, CAD component inspection, AI provider switching, and responsive layout.
+- [Learning callouts](./learning.md) covers automatic part explanations, focused and overview questions, inference source badges, and answer dismissal.
 - [Native canvas](./native-canvas.md) covers iOS Simulator and Android Emulator composer input, pre-submit keyboard dismissal, and post-submit native assembly surface behind dev-build preconditions.

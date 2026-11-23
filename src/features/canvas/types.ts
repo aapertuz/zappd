@@ -6,6 +6,7 @@ export type CanvasScreenProps = {
 
 export type CanvasViewProps = {
   readonly draft: string;
+  readonly placeholder?: string;
   readonly canSubmit: boolean;
   readonly surfaceContent?: ReactNode;
   readonly onDraftChange: (text: string) => void;

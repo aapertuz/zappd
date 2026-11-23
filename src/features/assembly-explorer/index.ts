@@ -20,6 +20,7 @@ export {
   reduceAssemblyExplorerState,
 } from './model/explorerState';
 export type {
+  ActiveExplorerLearningContext,
   AssemblyExplorerAction,
   AssemblyExplorerProps,
   AssemblyExplorerState,

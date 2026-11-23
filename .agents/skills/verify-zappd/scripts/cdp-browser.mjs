@@ -278,6 +278,7 @@ async function readPageDiagnostics(cdp) {
         isLoadingAssembly,
         hasProviderToolbar,
         assembly,
+        learning: window.__zappdLearningDiagnostics ?? null,
         errors: Array.isArray(window.__zappdVerifyErrors) ? window.__zappdVerifyErrors : [],
       };
     })()`,

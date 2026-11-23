@@ -5,6 +5,7 @@ import classes from './CanvasView.module.css';
 
 export function CanvasView({
   draft,
+  placeholder = 'Describe a CAD assembly to explore...',
   canSubmit,
   surfaceContent,
   onDraftChange,
@@ -40,7 +41,7 @@ export function CanvasView({
             className={classes.input}
             rows={1}
             aria-label="Prompt input"
-            placeholder="Describe a CAD assembly to explore..."
+            placeholder={placeholder}
             value={draft}
             onChange={(event) => onDraftChange(event.target.value)}
             onKeyDown={handleKeyDown}

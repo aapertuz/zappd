@@ -19,6 +19,13 @@ import {
   isComponentId,
 } from '@/shared/domain';
 
+import {
+  LearningCallouts,
+  type LearningCalloutsHandle,
+  type LearningCalloutPlacement,
+  type PartAnchors,
+} from '@/features/learning';
+
 import classes from './AssemblyScene.web.module.css';
 import {
   type AnimatedNodePose,
@@ -209,6 +216,123 @@ function projectPart(
   return [((x + 1) * width) / 2, ((1 - y) * height) / 2];
 }
 
+function sampleMeshScreenPoints(
+  part: THREE.Object3D,
+  camera: THREE.PerspectiveCamera,
+  width: number,
+  height: number,
+  projection: THREE.Vector3,
+): { readonly x: number; readonly y: number }[] {
+  const points: { readonly x: number; readonly y: number }[] = [];
+  const meshes: THREE.Mesh[] = [];
+  part.traverse((obj) => {
+    if (obj.visible && isThreeMesh(obj)) meshes.push(obj);
+  });
+  const totalVertices = meshes.reduce(
+    (sum, mesh) => sum + (mesh.geometry.getAttribute('position')?.count ?? 0),
+    0,
+  );
+  if (totalVertices === 0) return points;
+  const stride = Math.max(1, Math.floor(totalVertices / 96));
+  for (const mesh of meshes) {
+    const position = mesh.geometry.getAttribute('position');
+    if (position === undefined) continue;
+    for (let index = 0; index < position.count; index += stride) {
+      projection
+        .set(position.getX(index), position.getY(index), position.getZ(index))
+        .applyMatrix4(mesh.matrixWorld)
+        .project(camera);
+      if (Math.abs(projection.z) > 1) continue;
+      if (projection.x < -1 || projection.x > 1 || projection.y < -1 || projection.y > 1) continue;
+      points.push({
+        x: ((projection.x + 1) * width) / 2,
+        y: ((1 - projection.y) * height) / 2,
+      });
+    }
+  }
+  return points;
+}
+
+function insetAnchorTowardCenter(
+  extreme: { readonly x: number; readonly y: number },
+  center: { readonly x: number; readonly y: number },
+): { readonly x: number; readonly y: number } {
+  return {
+    x: extreme.x + (center.x - extreme.x) * 0.14,
+    y: extreme.y + (center.y - extreme.y) * 0.14,
+  };
+}
+
+function projectPartAnchors(
+  part: THREE.Object3D,
+  camera: THREE.PerspectiveCamera,
+  { width, height }: DOMRectReadOnly,
+  bounds: THREE.Box3,
+  projection: THREE.Vector3,
+): PartAnchors | null {
+  bounds.setFromObject(part);
+  if (bounds.isEmpty()) return null;
+
+  bounds.getCenter(projection).project(camera);
+  if (Math.abs(projection.z) > 1) return null;
+  const center = {
+    x: THREE.MathUtils.clamp(((projection.x + 1) * width) / 2, 0, width),
+    y: THREE.MathUtils.clamp(((1 - projection.y) * height) / 2, 0, height),
+  };
+
+  const sampled = sampleMeshScreenPoints(part, camera, width, height, projection);
+  if (sampled.length > 0) {
+    const first = sampled[0];
+    if (first !== undefined) {
+      let left = first;
+      let right = first;
+      let top = first;
+      let bottom = first;
+      for (const point of sampled) {
+        if (point.x < left.x) left = point;
+        if (point.x > right.x) right = point;
+        if (point.y < top.y) top = point;
+        if (point.y > bottom.y) bottom = point;
+      }
+      return {
+        center,
+        left: insetAnchorTowardCenter(left, center),
+        right: insetAnchorTowardCenter(right, center),
+        top: insetAnchorTowardCenter(top, center),
+        bottom: insetAnchorTowardCenter(bottom, center),
+      };
+    }
+  }
+
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  const { min, max } = bounds;
+  for (const x of [min.x, max.x]) {
+    for (const y of [min.y, max.y]) {
+      for (const z of [min.z, max.z]) {
+        projection.set(x, y, z).project(camera);
+        if (projection.z > 1) continue;
+        minX = Math.min(minX, projection.x);
+        maxX = Math.max(maxX, projection.x);
+        minY = Math.min(minY, projection.y);
+        maxY = Math.max(maxY, projection.y);
+      }
+    }
+  }
+  if (minX > 1 || maxX < -1 || minY > 1 || maxY < -1) return null;
+  const projectX = (x: number) => ((THREE.MathUtils.clamp(x, -1, 1) + 1) * width) / 2;
+  const projectY = (y: number) => ((1 - THREE.MathUtils.clamp(y, -1, 1)) * height) / 2;
+  return {
+    center,
+    left: { x: projectX(minX), y: center.y },
+    right: { x: projectX(maxX), y: center.y },
+    top: { x: center.x, y: projectY(maxY) },
+    bottom: { x: center.x, y: projectY(minY) },
+  };
+}
+
 function updateFocusedCallout({
   overlay,
   label,
@@ -225,7 +349,7 @@ function updateFocusedCallout({
   readonly reticle: SVGGElement | null;
   readonly anchor: ScreenPoint | null;
   readonly viewport: DOMRectReadOnly;
-}): ScreenPoint | null {
+}): LearningCalloutPlacement['rect'] | null {
   if (overlay === null || label === null || leader === null || arrow === null || reticle === null) {
     return null;
   }
@@ -237,7 +361,7 @@ function updateFocusedCallout({
   const [anchorX, anchorY] = anchor;
   const labelWidth = label.offsetWidth;
   const labelHeight = label.offsetHeight;
-  const placeOnRight = anchorX <= viewport.width / 2;
+  const placeOnRight = anchorX <= viewport.width / 2 + 4;
   const labelX = THREE.MathUtils.clamp(
     placeOnRight ? anchorX + 76 : anchorX - 76 - labelWidth,
     16,
@@ -273,7 +397,7 @@ function updateFocusedCallout({
   reticle.setAttribute('transform', `translate(${anchorX} ${anchorY})`);
   label.style.transform = `translate(${labelX}px, ${labelY}px)`;
   overlay.style.visibility = 'visible';
-  return [labelX, labelY];
+  return { x: labelX, y: labelY, width: labelWidth, height: labelHeight };
 }
 
 const HUD_ICON_PATHS = {
@@ -543,7 +667,10 @@ export function AssemblyScene({
   onToggleExplodePreset,
   onFocusComponent,
   onExitPartFocus,
+  learningState,
+  onDismissLearningAnswer,
 }: AssemblySceneProps) {
+  const learningCalloutsRef = useRef<LearningCalloutsHandle>(null);
   const mountRef = useRef<HTMLDivElement>(null);
   const calloutRef = useRef<HTMLDivElement>(null);
   const labelRef = useRef<HTMLDivElement>(null);
@@ -565,7 +692,14 @@ export function AssemblyScene({
   const focusedId = state.viewMode.kind === 'part_focus' ? state.viewMode.componentId : null;
   const focusedNode =
     focusedId === null ? null : (assembly.nodes.find(({ id }) => id === focusedId) ?? null);
-  const propsRef = useRef({ assembly, glbArrayBuffer, state, leafPartIds, focusedNode });
+  const propsRef = useRef({
+    assembly,
+    glbArrayBuffer,
+    state,
+    leafPartIds,
+    focusedNode,
+    learningState,
+  });
   const lastCommittedCameraRef = useRef<ExplorerCameraState | null>(null);
   const dragRef = useRef<PointerDrag | null>(null);
   const wheelCommitRef = useRef<number | null>(null);
@@ -580,7 +714,7 @@ export function AssemblyScene({
   useLayoutEffect(() => {
     reactRenderCount.current += 1;
     const previous = propsRef.current;
-    propsRef.current = { assembly, glbArrayBuffer, state, leafPartIds, focusedNode };
+    propsRef.current = { assembly, glbArrayBuffer, state, leafPartIds, focusedNode, learningState };
     const modelChanged =
       previous.assembly !== assembly || previous.glbArrayBuffer !== glbArrayBuffer;
     const { nextCamera, nextLastCommittedCamera, externalCameraChanged } = reconcileCameraTarget({
@@ -617,7 +751,8 @@ export function AssemblyScene({
       previous.state.viewMode !== state.viewMode ||
       previous.state.isolatedComponentId !== state.isolatedComponentId ||
       previous.state.separatedOffsets !== state.separatedOffsets ||
-      previous.state.selectedProvider !== state.selectedProvider
+      previous.state.selectedProvider !== state.selectedProvider ||
+      previous.learningState !== learningState
     ) {
       runtimeRef.current?.requestRender();
     }
@@ -756,7 +891,7 @@ export function AssemblyScene({
       frameId = null;
       const dtSec = lastFrameTime === null ? 0 : (now - lastFrameTime) / 1000;
       lastFrameTime = now;
-      const { assembly, state, leafPartIds, focusedNode } = propsRef.current;
+      const { assembly, state, leafPartIds, focusedNode, learningState } = propsRef.current;
       const targets = targetsRef.current;
       const model = runtime.model;
       const snapshot = animationRef.current?.step(model?.hasPainted ? dtSec : 0, targets);
@@ -808,7 +943,7 @@ export function AssemblyScene({
         renderer !== null && focusedPart !== undefined
           ? projectPart(focusedPart, camera, viewport, partBounds, projectedPoint)
           : null;
-      const label = updateFocusedCallout({
+      const partLabelRect = updateFocusedCallout({
         overlay: calloutRef.current,
         label: labelRef.current,
         leader: leaderRef.current,
@@ -817,13 +952,45 @@ export function AssemblyScene({
         anchor,
         viewport,
       });
+      const explanationAnchors =
+        renderer !== null &&
+        focusedPart !== undefined &&
+        learningState.explanation.kind !== 'idle' &&
+        learningState.explanation.componentId === focusedNode?.id
+          ? projectPartAnchors(focusedPart, camera, viewport, partBounds, projectedPoint)
+          : null;
+      const answerId =
+        learningState.answer.kind === 'idle' ? null : learningState.answer.componentId;
+      const answerPart =
+        answerId === null || model === null || renderer === null
+          ? undefined
+          : answerId === assembly.rootNodeId && focusedNode === null
+            ? rootGroup
+            : snapshot?.nodePoses[answerId]?.visible
+              ? model.objectsById.get(answerId)
+              : undefined;
+      const answerAnchors =
+        answerPart === undefined
+          ? null
+          : answerPart === focusedPart && explanationAnchors !== null
+            ? explanationAnchors
+            : projectPartAnchors(answerPart, camera, viewport, partBounds, projectedPoint);
+
+      learningCalloutsRef.current?.syncGeometry({
+        viewportWidth: viewport.width,
+        viewportHeight: viewport.height,
+        partLabelRect,
+        anchors: explanationAnchors,
+        answerAnchors,
+      });
+
       const focusedPartCallout =
-        focusedNode !== null && anchor !== null && label !== null
+        focusedNode !== null && anchor !== null && partLabelRect !== null
           ? {
               componentId: focusedNode.id,
               name: focusedNode.name,
               anchorPx: anchor,
-              labelPx: label,
+              labelPx: [partLabelRect.x, partLabelRect.y] as const,
             }
           : null;
 
@@ -1095,6 +1262,13 @@ export function AssemblyScene({
           </div>
         </div>
       ) : null}
+
+      <LearningCallouts
+        ref={learningCalloutsRef}
+        learningState={learningState}
+        answeringInOverview={focusedId === null}
+        onDismissAnswer={onDismissLearningAnswer}
+      />
 
       {state.viewMode.kind === 'part_focus' ? (
         <button type="button" className={classes.backButton} onClick={exitPartFocus}>

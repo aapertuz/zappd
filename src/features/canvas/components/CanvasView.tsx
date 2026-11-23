@@ -32,6 +32,7 @@ const SEND_BUTTON_STYLE: UniversalStyle = {
 
 export function CanvasView({
   draft,
+  placeholder = 'Describe a CAD assembly to explore...',
   canSubmit,
   surfaceContent,
   onDraftChange,
@@ -80,6 +81,7 @@ export function CanvasView({
                 onSubmitEditing={handleSubmit}
                 cursorColor={CANVAS_COLORS.text}
                 accessibilityLabel="Prompt input"
+                placeholder={placeholder}
                 textStyle={{
                   color: CANVAS_COLORS.text,
                   fontSize: CANVAS_LAYOUT.inputFontSize,

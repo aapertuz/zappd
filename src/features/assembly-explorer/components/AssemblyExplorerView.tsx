@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useReducer } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useReducer } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { useReducedMotion } from 'react-native-reanimated';
 
@@ -10,6 +10,8 @@ import {
   getAiProviderDescriptor,
   SUPPORTED_AI_PROVIDERS,
 } from '@/shared/domain';
+
+import { useComponentLearning } from '@/features/learning';
 
 import {
   INITIAL_ASSEMBLY_EXPLORER_STATE,
@@ -90,6 +92,8 @@ function ProviderSwitcher({
 
 export function AssemblyExplorerView({
   submittedPrompt,
+  submittedQuestion = null,
+  onActiveLearningContextChange,
   selectedProvider,
   providerExplicitlySelected,
   onSelectProvider,
@@ -99,6 +103,30 @@ export function AssemblyExplorerView({
     reduceAssemblyExplorerState,
     INITIAL_ASSEMBLY_EXPLORER_STATE,
   );
+  const assembly = state.errorMessage === null ? state.assembly : null;
+  const focusedComponentId =
+    state.viewMode.kind === 'part_focus' ? state.viewMode.componentId : null;
+  const { state: learningState, dismissAnswer } = useComponentLearning({
+    assembly,
+    focusedComponentId,
+    submittedQuestion,
+    selectedProvider,
+    providerExplicitlySelected,
+  });
+
+  useLayoutEffect(() => {
+    onActiveLearningContextChange?.(
+      assembly === null
+        ? null
+        : {
+            assembly,
+            focusedComponentId,
+            focusedComponentName:
+              assembly.nodes.find(({ id }) => id === focusedComponentId)?.name ?? null,
+          },
+    );
+  }, [assembly, focusedComponentId, onActiveLearningContextChange]);
+
   const requestedProvider = providerExplicitlySelected ? selectedProvider : DEFAULT_AI_PROVIDER;
   const setCamera = useCallback(
     (camera: ExplorerCameraState) => dispatch({ type: 'setCamera', camera }),
@@ -207,6 +235,8 @@ export function AssemblyExplorerView({
         assembly={state.assembly}
         glbArrayBuffer={state.glbArrayBuffer}
         state={state}
+        learningState={learningState}
+        onDismissLearningAnswer={dismissAnswer}
         onSetCamera={setCamera}
         onSetExplodeFactor={(explodeFactor: number) =>
           dispatch({ type: 'setExplodeFactor', explodeFactor })
