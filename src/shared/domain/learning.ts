@@ -180,7 +180,7 @@ export function buildLearningPromptParts(
   const task =
     request.kind === 'explain'
       ? 'Explain the component in 2–3 sentences and about 35–65 words. Cover its purpose, how it works if documented, and its role in the project.'
-      : 'Answer the question in 2–4 sentences. Say what the records establish and identify any missing information needed to answer it.';
+      : 'Answer the question in 2–3 concise sentences and about 35–65 words. Say what the records establish and identify any missing information needed to answer it.';
 
   const systemInstruction = [
     'You are a robotics learning assistant for Zappd. Use only the component reference records in the provided JSON.',

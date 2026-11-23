@@ -11,14 +11,13 @@ import {
 } from '@/shared/domain';
 import { FirebaseEmulatorRepository, createFirebaseAiLogicLocalRunner } from '@/shared/firebase';
 
+import { POST } from '../../../app/api/learn+api.ts';
+import { buildGroundedComponentExplanation } from '../model/catalogExplanations.ts';
 import {
-  buildGroundedComponentExplanation,
   hydrateComponentLearningContext,
   retrieveComponentLearningContext,
-  runLearningRequest,
-} from '@/features/learning';
-
-import { POST } from '../../../app/api/learn+api.ts';
+} from '../services/componentContextStore.ts';
+import { runLearningRequest } from '../services/learningEngine.ts';
 
 const assembly = {
   ...QUADCOPTER_ARCHETYPE,
@@ -408,6 +407,32 @@ describe('learning inference sequence', () => {
     const result = await createFirebaseAiLogicLocalRunner()({ prompt: 'Explain the motor.' });
     assert.equal(result.available, false);
     assert.match(result.reason, /unavailable/);
+  });
+
+  it('skips on-device inference immediately when browser LanguageModel is still downloading', async () => {
+    const originalWindow = globalThis.window;
+    Object.defineProperty(globalThis, 'window', {
+      configurable: true,
+      value: {
+        LanguageModel: {
+          availability: async () => 'downloading',
+        },
+      },
+    });
+    try {
+      const result = await createFirebaseAiLogicLocalRunner()({ prompt: 'Explain the motor.' });
+      assert.equal(result.available, false);
+      assert.match(result.reason, /not ready/i);
+    } finally {
+      if (originalWindow === undefined) {
+        Reflect.deleteProperty(globalThis, 'window');
+      } else {
+        Object.defineProperty(globalThis, 'window', {
+          configurable: true,
+          value: originalWindow,
+        });
+      }
+    }
   });
 });
 

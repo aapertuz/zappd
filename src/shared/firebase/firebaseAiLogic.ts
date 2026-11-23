@@ -17,10 +17,66 @@ export type LocalInferenceRunner = (input: {
   readonly onChunk?: (chunk: string) => void;
 }) => Promise<LocalInferenceResult>;
 
+const ON_DEVICE_AVAILABILITY_TIMEOUT_MS = 1000;
+const ON_DEVICE_STREAM_START_TIMEOUT_MS = 8000;
+const READY_AVAILABILITY_STATES = new Set(['available', 'readily']);
+
+type BrowserLanguageModelApi = {
+  readonly availability?: (options?: {
+    readonly expectedInputs?: readonly { readonly type: string }[];
+  }) => Promise<unknown>;
+};
+
+function readBrowserLanguageModel(): BrowserLanguageModelApi | null {
+  if (typeof window === 'undefined' || !('LanguageModel' in window)) return null;
+  const candidate: unknown = Reflect.get(window, 'LanguageModel');
+  if (candidate === null || (typeof candidate !== 'object' && typeof candidate !== 'function')) {
+    return null;
+  }
+  const availability: unknown = Reflect.get(candidate, 'availability');
+  if (typeof availability === 'function') {
+    return {
+      availability: (options) => Promise.resolve(Reflect.apply(availability, candidate, [options])),
+    };
+  }
+  return {};
+}
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T | null> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<null>((resolve) => {
+        timer = setTimeout(() => resolve(null), timeoutMs);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function isOnDeviceModelReady(api: BrowserLanguageModelApi): Promise<boolean> {
+  if (typeof api.availability !== 'function') return true;
+  try {
+    const status = await withTimeout(
+      api.availability({ expectedInputs: [{ type: 'text' }] }),
+      ON_DEVICE_AVAILABILITY_TIMEOUT_MS,
+    );
+    return typeof status === 'string' && READY_AVAILABILITY_STATES.has(status);
+  } catch {
+    return false;
+  }
+}
+
 export function createFirebaseAiLogicLocalRunner(): LocalInferenceRunner {
   return async ({ prompt, onChunk }) => {
-    if (typeof window === 'undefined' || !('LanguageModel' in window && window.LanguageModel)) {
+    const languageModel = readBrowserLanguageModel();
+    if (languageModel === null) {
       return { available: false, reason: 'On-device AI is unavailable in this runtime.' };
+    }
+    if (!(await isOnDeviceModelReady(languageModel))) {
+      return { available: false, reason: 'On-device AI model is not ready yet.' };
     }
 
     try {
@@ -29,7 +85,14 @@ export function createFirebaseAiLogicLocalRunner(): LocalInferenceRunner {
         mode: InferenceMode.ONLY_ON_DEVICE,
         onDeviceParams: { createOptions: { expectedInputs: [{ type: 'text' }] } },
       });
-      const { stream, response } = await model.generateContentStream(prompt);
+      const streamResult = await withTimeout(
+        model.generateContentStream(prompt),
+        ON_DEVICE_STREAM_START_TIMEOUT_MS,
+      );
+      if (streamResult === null) {
+        return { available: false, reason: 'On-device AI model timed out.' };
+      }
+      const { stream, response } = streamResult;
       const finalResponse = response.then(
         (value) => value,
         () => null,
