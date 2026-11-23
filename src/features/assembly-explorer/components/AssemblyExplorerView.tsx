@@ -1,5 +1,6 @@
-import { useEffect, useReducer } from 'react';
+import { useCallback, useEffect, useReducer } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Animated, { useReducedMotion } from 'react-native-reanimated';
 
 import {
   type AiProviderId,
@@ -16,7 +17,46 @@ import {
 } from '../model/explorerState';
 import { AssemblyScene } from '../renderer/AssemblyScene';
 import { loadVerifiedAssemblyForPrompt } from '../services/assemblyRuntimeService';
-import { type AssemblyExplorerProps, type SeparationAxis } from '../types';
+import {
+  type AssemblyExplorerProps,
+  type ExplorerCameraState,
+  type SeparationAxis,
+} from '../types';
+
+const LOADING_CAPTION = 'Loading verified CAD assembly';
+
+function AssemblyLoadingBar({
+  progress,
+  overlay = false,
+}: {
+  readonly progress: number;
+  readonly overlay?: boolean;
+}) {
+  const reducedMotion = useReducedMotion();
+  const percent = Math.round(progress * 100);
+  return (
+    <View
+      accessible
+      accessibilityRole="progressbar"
+      accessibilityLabel={LOADING_CAPTION}
+      accessibilityValue={{ min: 0, max: 100, now: percent }}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={percent}
+      style={[styles.progressTrack, overlay && styles.progressOverlay]}>
+      <Animated.View
+        style={[
+          styles.progressFill,
+          {
+            width: `${progress * 100}%`,
+            transitionProperty: 'width',
+            transitionDuration: reducedMotion ? 0 : 160,
+          },
+        ]}
+      />
+    </View>
+  );
+}
 
 function ProviderSwitcher({
   selectedProvider,
@@ -60,6 +100,10 @@ export function AssemblyExplorerView({
     INITIAL_ASSEMBLY_EXPLORER_STATE,
   );
   const requestedProvider = providerExplicitlySelected ? selectedProvider : DEFAULT_AI_PROVIDER;
+  const setCamera = useCallback(
+    (camera: ExplorerCameraState) => dispatch({ type: 'setCamera', camera }),
+    [],
+  );
 
   useEffect(() => {
     dispatch({ type: 'setProvider', provider: selectedProvider });
@@ -78,6 +122,11 @@ export function AssemblyExplorerView({
       prompt: submittedPrompt.text,
       provider: requestedProvider,
       providerExplicitlySelected,
+      onProgress: (progress) => {
+        if (!cancelled) {
+          dispatch({ type: 'setLoadingProgress', promptId, ...progress });
+        }
+      },
     })
       .then((bundle) => {
         if (cancelled) {
@@ -105,10 +154,28 @@ export function AssemblyExplorerView({
     };
   }, [submittedPrompt, requestedProvider, providerExplicitlySelected, onResolveProvider]);
 
+  useEffect(() => {
+    const promptId = state.lastPromptId;
+    if (state.loadingPhase !== 'orchestrating' || promptId === null) return;
+
+    const startedAt = Date.now();
+    const interval = setInterval(() => {
+      const elapsedMs = Date.now() - startedAt;
+      dispatch({
+        type: 'setLoadingProgress',
+        promptId,
+        phase: 'orchestrating',
+        progress: 0.5 - 0.38 * Math.exp(-elapsedMs / 2500),
+      });
+    }, 120);
+    return () => clearInterval(interval);
+  }, [state.lastPromptId, state.loadingPhase]);
+
   if (state.isLoading && state.assembly === null) {
     return (
       <View style={styles.statusContainer}>
-        <Text style={styles.statusText}>Loading verified CAD assembly…</Text>
+        <Text style={styles.statusText}>{LOADING_CAPTION}…</Text>
+        <AssemblyLoadingBar progress={state.loadingProgress} />
       </View>
     );
   }
@@ -130,42 +197,68 @@ export function AssemblyExplorerView({
   }
 
   return (
-    <AssemblyScene
-      assembly={state.assembly}
-      glbArrayBuffer={state.glbArrayBuffer}
-      state={state}
-      onOrbitCamera={(deltaAzimuthDeg: number, deltaElevationDeg: number) =>
-        dispatch({ type: 'orbitCamera', deltaAzimuthDeg, deltaElevationDeg })
-      }
-      onZoomCamera={(deltaDistanceMeters: number) =>
-        dispatch({ type: 'zoomCamera', deltaDistanceMeters })
-      }
-      onResetCamera={() => dispatch({ type: 'resetCamera' })}
-      onSetExplodeFactor={(explodeFactor: number) =>
-        dispatch({ type: 'setExplodeFactor', explodeFactor })
-      }
-      onSetExplodeStage={(stage: ExplodeStageFilter) =>
-        dispatch({ type: 'setExplodeStage', stage })
-      }
-      onSelectComponent={(componentId: ComponentId | null) =>
-        dispatch({ type: 'selectComponent', componentId })
-      }
-      onToggleIsolate={() => dispatch({ type: 'toggleIsolateComponent' })}
-      onSeparateComponent={(axis: SeparationAxis, deltaMeters: number) =>
-        dispatch({ type: 'separateComponentAlongAxis', axis, deltaMeters })
-      }
-      onResetSeparation={() => dispatch({ type: 'resetComponentSeparation' })}
-      onSelectProvider={onSelectProvider}
-    />
+    <View style={styles.sceneContainer}>
+      <AssemblyScene
+        assembly={state.assembly}
+        glbArrayBuffer={state.glbArrayBuffer}
+        state={state}
+        onSetCamera={setCamera}
+        onSetExplodeFactor={(explodeFactor: number) =>
+          dispatch({ type: 'setExplodeFactor', explodeFactor })
+        }
+        onSetExplodeStage={(stage: ExplodeStageFilter) =>
+          dispatch({ type: 'setExplodeStage', stage })
+        }
+        onSelectComponent={(componentId: ComponentId | null) =>
+          dispatch({ type: 'selectComponent', componentId })
+        }
+        onToggleIsolate={() => dispatch({ type: 'toggleIsolateComponent' })}
+        onSeparateComponent={(axis: SeparationAxis, deltaMeters: number) =>
+          dispatch({ type: 'separateComponentAlongAxis', axis, deltaMeters })
+        }
+        onResetSeparation={() => dispatch({ type: 'resetComponentSeparation' })}
+        onSelectProvider={onSelectProvider}
+      />
+      {state.isLoading ? <AssemblyLoadingBar progress={state.loadingProgress} overlay /> : null}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  sceneContainer: {
+    flex: 1,
+    minHeight: 0,
+    position: 'relative',
+  },
   statusContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
+    gap: 12,
+  },
+  progressTrack: {
+    pointerEvents: 'none',
+    width: 180,
+    height: 4,
+    maxWidth: '100%',
+    borderRadius: 2,
+    backgroundColor: '#e4e4e7',
+    overflow: 'hidden',
+  },
+  progressOverlay: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    width: '100%',
+    height: 3,
+    borderRadius: 0,
+    zIndex: 1,
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 2,
+    backgroundColor: '#52525b',
   },
   statusText: {
     color: '#52525b',

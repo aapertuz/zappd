@@ -94,6 +94,10 @@
   cursor: grabbing;
 }
 
+.canvasMount canvas {
+  display: block;
+}
+
 .viewportOverlay {
   position: absolute;
   left: 12px;
@@ -183,6 +187,7 @@
 .explodeSlider {
   width: 100%;
   accent-color: #18181b;
+  cursor: ew-resize;
 }
 
 .inspectorCard {

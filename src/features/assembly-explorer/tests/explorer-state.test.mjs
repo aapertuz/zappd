@@ -106,3 +106,92 @@ describe('assembly explorer manipulation state reducer', () => {
     assert.equal(unisolated.isolatedComponentId, null);
   });
 });
+
+describe('assembly explorer loading state', () => {
+  it('reports orchestration, download and readiness in order with bounded progress', () => {
+    const initial = INITIAL_ASSEMBLY_EXPLORER_STATE;
+    assert.equal(initial.loadingPhase, 'idle');
+    assert.equal(initial.loadingProgress, 0);
+    const loading = reduceAssemblyExplorerState(initial, { type: 'startLoading', promptId: 1 });
+    assert.equal(loading.isLoading, true);
+    assert.equal(loading.loadingPhase, 'orchestrating');
+    assert.equal(loading.loadingProgress, 0.12);
+    const progressing = reduceAssemblyExplorerState(loading, {
+      type: 'setLoadingProgress',
+      promptId: 1,
+      phase: 'orchestrating',
+      progress: 0.4,
+    });
+    assert.equal(progressing.loadingProgress, 0.4);
+    const downloading = reduceAssemblyExplorerState(progressing, {
+      type: 'setLoadingProgress',
+      promptId: 1,
+      phase: 'downloading',
+      progress: 0.72,
+    });
+    assert.equal(downloading.loadingPhase, 'downloading');
+    assert.equal(downloading.loadingProgress, 0.72);
+    assert.equal(
+      reduceAssemblyExplorerState(downloading, {
+        type: 'setLoadingProgress',
+        promptId: 1,
+        phase: 'orchestrating',
+        progress: 0.49,
+      }),
+      downloading,
+    );
+    assert.equal(
+      reduceAssemblyExplorerState(downloading, {
+        type: 'setLoadingProgress',
+        promptId: 1,
+        phase: 'downloading',
+        progress: -0.5,
+      }),
+      downloading,
+    );
+    const ready = reduceAssemblyExplorerState(downloading, {
+      type: 'setLoadingProgress',
+      promptId: 1,
+      phase: 'ready',
+      progress: 2,
+    });
+    assert.equal(ready.loadingPhase, 'ready');
+    assert.equal(ready.loadingProgress, 1);
+    const loaded = reduceAssemblyExplorerState(ready, {
+      type: 'loadAssemblySuccess',
+      promptId: 1,
+      assembly: { archetypeId: 'open_source_rover_v1' },
+      glbArrayBuffer: new ArrayBuffer(0),
+    });
+    assert.equal(loaded.loadingPhase, 'ready');
+    assert.equal(loaded.loadingProgress, 1);
+    assert.equal(loaded.isLoading, false);
+  });
+
+  it('ignores superseded progress and resets the bar after a failure or new request', () => {
+    const previous = reduceAssemblyExplorerState(INITIAL_ASSEMBLY_EXPLORER_STATE, {
+      type: 'startLoading',
+      promptId: 1,
+    });
+    const current = reduceAssemblyExplorerState(previous, { type: 'startLoading', promptId: 2 });
+    const lateProgress = {
+      type: 'setLoadingProgress',
+      promptId: 1,
+      phase: 'downloading',
+      progress: 0.8,
+    };
+    assert.equal(reduceAssemblyExplorerState(current, lateProgress), current);
+    const failed = reduceAssemblyExplorerState(current, {
+      type: 'loadAssemblyError',
+      promptId: 2,
+      message: 'GLB download failed',
+    });
+    assert.equal(failed.loadingPhase, 'error');
+    assert.equal(failed.loadingProgress, 0);
+    assert.equal(failed.isLoading, false);
+    assert.equal(reduceAssemblyExplorerState(failed, { ...lateProgress, promptId: 2 }), failed);
+    const retry = reduceAssemblyExplorerState(failed, { type: 'startLoading', promptId: 3 });
+    assert.equal(retry.loadingPhase, 'orchestrating');
+    assert.equal(retry.loadingProgress, 0.12);
+  });
+});

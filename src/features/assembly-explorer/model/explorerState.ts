@@ -48,6 +48,8 @@ export const INITIAL_ASSEMBLY_EXPLORER_STATE: AssemblyExplorerState = {
   assembly: null,
   glbArrayBuffer: null,
   isLoading: false,
+  loadingPhase: 'idle',
+  loadingProgress: 0,
   errorMessage: null,
   camera: DEFAULT_EXPLORER_CAMERA,
   explodeFactor: 0,
@@ -86,6 +88,28 @@ function addAxisDelta(
   }
 }
 
+export function orbitExplorerCamera(
+  camera: ExplorerCameraState,
+  deltaAzimuthDeg: number,
+  deltaElevationDeg: number,
+): ExplorerCameraState {
+  return {
+    ...camera,
+    azimuthDeg: (((camera.azimuthDeg + deltaAzimuthDeg) % 360) + 360) % 360,
+    elevationDeg: clampNumber(camera.elevationDeg + deltaElevationDeg, -80, 85),
+  };
+}
+
+export function zoomExplorerCamera(
+  camera: ExplorerCameraState,
+  deltaDistanceMeters: number,
+): ExplorerCameraState {
+  return {
+    ...camera,
+    distanceMeters: clampNumber(camera.distanceMeters + deltaDistanceMeters, 0.08, 1.8),
+  };
+}
+
 export function reduceAssemblyExplorerState(
   state: AssemblyExplorerState,
   action: AssemblyExplorerAction,
@@ -105,8 +129,25 @@ export function reduceAssemblyExplorerState(
         ...state,
         lastPromptId: action.promptId,
         isLoading: true,
+        loadingPhase: 'orchestrating',
+        loadingProgress: 0.12,
         errorMessage: null,
       };
+    }
+    case 'setLoadingProgress': {
+      if (
+        !state.isLoading ||
+        state.lastPromptId !== action.promptId ||
+        state.loadingPhase === 'ready' ||
+        (action.phase === 'orchestrating' && state.loadingPhase !== 'orchestrating')
+      ) {
+        return state;
+      }
+      const progress = Math.max(state.loadingProgress, clampNumber(action.progress, 0, 1));
+      if (state.loadingPhase === action.phase && state.loadingProgress === progress) {
+        return state;
+      }
+      return { ...state, loadingPhase: action.phase, loadingProgress: progress };
     }
     case 'loadAssemblySuccess': {
       if (state.lastPromptId !== null && action.promptId < state.lastPromptId) {
@@ -118,6 +159,8 @@ export function reduceAssemblyExplorerState(
         assembly: action.assembly,
         glbArrayBuffer: action.glbArrayBuffer,
         isLoading: false,
+        loadingPhase: 'ready',
+        loadingProgress: 1,
         errorMessage: null,
         camera: computeDefaultCameraForAssembly(action.assembly),
         explodeFactor: 0,
@@ -134,37 +177,21 @@ export function reduceAssemblyExplorerState(
       return {
         ...state,
         isLoading: false,
+        loadingPhase: 'error',
+        loadingProgress: 0,
         errorMessage: action.message,
       };
     }
     case 'orbitCamera': {
-      const nextAzimuth = (state.camera.azimuthDeg + action.deltaAzimuthDeg + 360) % 360;
-      const nextElevation = clampNumber(
-        state.camera.elevationDeg + action.deltaElevationDeg,
-        -80,
-        85,
-      );
       return {
         ...state,
-        camera: {
-          ...state.camera,
-          azimuthDeg: nextAzimuth,
-          elevationDeg: nextElevation,
-        },
+        camera: orbitExplorerCamera(state.camera, action.deltaAzimuthDeg, action.deltaElevationDeg),
       };
     }
     case 'zoomCamera': {
-      const nextDistance = clampNumber(
-        state.camera.distanceMeters + action.deltaDistanceMeters,
-        0.08,
-        1.8,
-      );
       return {
         ...state,
-        camera: {
-          ...state.camera,
-          distanceMeters: nextDistance,
-        },
+        camera: zoomExplorerCamera(state.camera, action.deltaDistanceMeters),
       };
     }
     case 'resetCamera': {
@@ -172,6 +199,9 @@ export function reduceAssemblyExplorerState(
         ...state,
         camera: computeDefaultCameraForAssembly(state.assembly),
       };
+    }
+    case 'setCamera': {
+      return state.camera === action.camera ? state : { ...state, camera: action.camera };
     }
     case 'setExplodeFactor': {
       return {

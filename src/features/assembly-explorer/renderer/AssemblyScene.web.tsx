@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -9,13 +9,26 @@ import {
   type ComponentId,
   type ExplodeStageFilter,
   type Vector3Tuple,
-  computeNodeWorldPositionMeters,
   getAiProviderDescriptor,
   isComponentId,
 } from '@/shared/domain';
 
-import type { AssemblySceneProps } from '../types';
 import classes from './AssemblyScene.web.module.css';
+import {
+  type AnimatedNodePose,
+  type AssemblyAnimationController,
+  type AssemblyAnimationTargets,
+  type AssemblyFrameSnapshot,
+  type NodeAssemblyWindow,
+  createAssemblyAnimationController,
+  settleAssemblyPlayback,
+} from '../model/assemblyAnimation';
+import {
+  computeDefaultCameraForAssembly,
+  orbitExplorerCamera,
+  zoomExplorerCamera,
+} from '../model/explorerState';
+import type { AssemblySceneProps, ExplorerCameraState } from '../types';
 
 declare global {
   interface Window {
@@ -38,6 +51,11 @@ declare global {
       readonly separatedOffsets: Readonly<Record<string, Vector3Tuple>>;
       readonly nodePositionsMeters: Readonly<Record<string, Vector3Tuple>>;
       readonly webglActive: boolean;
+      readonly animatedExplodeFactor: number;
+      readonly assemblyStatus: AssemblyFrameSnapshot['assemblyStatus'];
+      readonly assemblyProgress: number;
+      readonly reactRenderCount: number;
+      readonly framesRendered: number;
     };
   }
 }
@@ -210,13 +228,176 @@ function buildPhysicalCadMaterial(
   });
 }
 
+type MeshBinding = {
+  readonly mesh: THREE.Mesh;
+  readonly ownerId: ComponentId;
+  readonly restScale: THREE.Vector3;
+  edgeMaterial?: THREE.LineBasicMaterial;
+};
+
+type WebAssemblyModel = {
+  readonly glbNodeIds: readonly string[];
+  readonly objectsById: ReadonlyMap<ComponentId, THREE.Object3D>;
+  readonly meshes: readonly MeshBinding[];
+  readonly edgeQueue: readonly MeshBinding[];
+  nextEdgeIndex: number;
+  hasPainted: boolean;
+  lastPoses: AssemblyFrameSnapshot['nodePoses'] | undefined;
+  selectedComponentId: ComponentId | null;
+};
+
+type SceneRuntime = {
+  readonly camera: THREE.PerspectiveCamera;
+  readonly rootGroup: THREE.Group;
+  readonly gridHelper: THREE.GridHelper;
+  readonly shadowFloor: THREE.Mesh;
+  readonly webglActive: boolean;
+  readonly requestRender: () => void;
+  model: WebAssemblyModel | null;
+  shadowDirty: boolean;
+};
+
+type PointerDrag = {
+  readonly id: number;
+  readonly startX: number;
+  readonly startY: number;
+  lastX: number;
+  lastY: number;
+  moved: boolean;
+};
+
+function separateMeshFromPartAnchor(mesh: THREE.Mesh): THREE.Group {
+  const anchor = new THREE.Group();
+  anchor.position.copy(mesh.position);
+  anchor.quaternion.copy(mesh.quaternion);
+  anchor.scale.copy(mesh.scale);
+  anchor.userData = mesh.userData;
+  mesh.parent?.add(anchor);
+  anchor.add(mesh);
+  for (const child of [...mesh.children]) {
+    anchor.add(child);
+  }
+  mesh.position.set(0, 0, 0);
+  mesh.quaternion.identity();
+  mesh.scale.set(1, 1, 1);
+  return anchor;
+}
+
+function bindAssemblyModel(
+  root: THREE.Group,
+  schedule: readonly NodeAssemblyWindow[],
+  buildEdges: boolean,
+): WebAssemblyModel {
+  const objectsById = new Map<ComponentId, THREE.Object3D>();
+  const meshes: { readonly mesh: THREE.Mesh; readonly ownerId: ComponentId }[] = [];
+  root.traverse((obj) => {
+    const id = readUserDataString(obj.userData, 'componentId');
+    if (isComponentId(id)) objectsById.set(id, obj);
+    if (!isThreeMesh(obj)) return;
+    const ownerId = findAncestorComponentId(obj);
+    if (ownerId !== null) meshes.push({ mesh: obj, ownerId });
+  });
+
+  const bindings = meshes.map(({ mesh, ownerId }): MeshBinding => {
+    const materialHint = findAncestorUserDataString(mesh, 'materialHint') ?? 'default';
+    if (objectsById.get(ownerId) === mesh) {
+      const anchor = separateMeshFromPartAnchor(mesh);
+      objectsById.set(ownerId, anchor);
+    }
+    mesh.userData.componentId = ownerId;
+    mesh.material = Array.isArray(mesh.material)
+      ? mesh.material.map((material) => buildPhysicalCadMaterial(material, materialHint))
+      : buildPhysicalCadMaterial(mesh.material, materialHint);
+    mesh.receiveShadow = true;
+    return { mesh, ownerId, restScale: mesh.scale.clone() };
+  });
+
+  const startTimes = new Map(schedule.map(({ nodeId, startSec }) => [nodeId, startSec]));
+  return {
+    glbNodeIds: [...objectsById.keys()],
+    objectsById,
+    meshes: bindings,
+    edgeQueue: buildEdges
+      ? [...bindings].sort(
+          (a, b) =>
+            (startTimes.get(a.ownerId) ?? Infinity) - (startTimes.get(b.ownerId) ?? Infinity),
+        )
+      : [],
+    nextEdgeIndex: 0,
+    hasPainted: false,
+    lastPoses: undefined,
+    selectedComponentId: null,
+  };
+}
+
+function buildQueuedEdges(model: WebAssemblyModel): void {
+  const deadline = performance.now() + 4;
+  do {
+    const binding = model.edgeQueue[model.nextEdgeIndex];
+    if (binding === undefined) return;
+    model.nextEdgeIndex += 1;
+    const geometry = new THREE.EdgesGeometry(binding.mesh.geometry, 32);
+    const material = new THREE.LineBasicMaterial({
+      color: '#18181b',
+      transparent: true,
+      depthWrite: false,
+      opacity: 0.18 * (model.lastPoses?.[binding.ownerId]?.opacity ?? 1),
+    });
+    const lines = new THREE.LineSegments(geometry, material);
+    lines.raycast = () => {};
+    binding.mesh.add(lines);
+    binding.edgeMaterial = material;
+  } while (performance.now() < deadline);
+}
+
+function applyMeshPose(binding: MeshBinding, pose: AnimatedNodePose, isSelected: boolean): void {
+  const { mesh, restScale, edgeMaterial } = binding;
+  mesh.visible = pose.visible;
+  mesh.castShadow = pose.visible && !pose.isAnimatingOpacity;
+  mesh.scale.copy(restScale).multiplyScalar(pose.scale);
+  const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+  for (const material of materials) {
+    if (material.transparent !== pose.isAnimatingOpacity) {
+      material.transparent = pose.isAnimatingOpacity;
+      material.depthWrite = !pose.isAnimatingOpacity;
+      material.needsUpdate = true;
+    }
+    const opacity = pose.isAnimatingOpacity ? pose.opacity : 1;
+    if (material.opacity !== opacity) material.opacity = opacity;
+    if (material instanceof THREE.MeshStandardMaterial) {
+      material.emissive.setHex(isSelected ? 0x6b5b00 : 0x000000);
+      material.emissiveIntensity = isSelected ? 0.85 : 0;
+    }
+  }
+  if (edgeMaterial !== undefined) edgeMaterial.opacity = 0.18 * pose.opacity;
+}
+
+function applyModelPoses(
+  model: WebAssemblyModel,
+  poses: AssemblyFrameSnapshot['nodePoses'],
+  selectedComponentId: ComponentId | null,
+): void {
+  if (model.lastPoses !== poses) {
+    for (const [id, object] of model.objectsById) {
+      const pose = poses[id];
+      if (pose !== undefined) object.position.set(...pose.localPositionMeters);
+    }
+  }
+  if (model.lastPoses !== poses || model.selectedComponentId !== selectedComponentId) {
+    for (const binding of model.meshes) {
+      const pose = poses[binding.ownerId];
+      if (pose !== undefined) applyMeshPose(binding, pose, selectedComponentId === binding.ownerId);
+    }
+  }
+  model.lastPoses = poses;
+  model.selectedComponentId = selectedComponentId;
+}
+
 export function AssemblyScene({
   assembly,
   glbArrayBuffer,
   state,
-  onOrbitCamera,
-  onZoomCamera,
-  onResetCamera,
+  onSetCamera,
   onSetExplodeFactor,
   onSetExplodeStage,
   onSelectComponent,
@@ -226,25 +407,59 @@ export function AssemblyScene({
   onSelectProvider,
 }: AssemblySceneProps) {
   const mountRef = useRef<HTMLDivElement>(null);
-  const sceneRef = useRef<THREE.Scene | null>(null);
-  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
-  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
-  const rootGroupRef = useRef<THREE.Group | null>(null);
-  const gridHelperRef = useRef<THREE.GridHelper | null>(null);
-  const shadowFloorRef = useRef<THREE.Mesh | null>(null);
-  const objectsByIdRef = useRef<Map<string, THREE.Object3D>>(new Map());
-  const meshesByIdRef = useRef<Map<string, THREE.Mesh[]>>(new Map());
-  const dragStateRef = useRef<{
-    active: boolean;
-    moved: boolean;
-    lastX: number;
-    lastY: number;
-  }>({ active: false, moved: false, lastX: 0, lastY: 0 });
-  const initialCameraRef = useRef(state.camera);
-  const initialArchetypeIdRef = useRef(assembly.archetypeId);
-
+  const runtimeRef = useRef<SceneRuntime | null>(null);
+  const animationRef = useRef<AssemblyAnimationController | null>(null);
+  const playbackInterruptedRef = useRef(false);
+  const targetsRef = useRef<AssemblyAnimationTargets>(state);
+  const propsRef = useRef({ assembly, glbArrayBuffer, state });
+  const lastCommittedCameraRef = useRef<ExplorerCameraState | null>(null);
+  const dragRef = useRef<PointerDrag | null>(null);
+  const wheelCommitRef = useRef<number | null>(null);
+  const reactRenderCount = useRef(0);
   const [webglActive, setWebglActive] = useState(true);
-  const [glbNodeIds, setGlbNodeIds] = useState<readonly string[]>([]);
+  const syncCamera = useCallback(() => {
+    const { camera } = targetsRef.current;
+    lastCommittedCameraRef.current = camera;
+    onSetCamera(camera);
+  }, [onSetCamera]);
+
+  useLayoutEffect(() => {
+    reactRenderCount.current += 1;
+    const previous = propsRef.current;
+    propsRef.current = { assembly, glbArrayBuffer, state };
+    const modelChanged =
+      previous.assembly !== assembly || previous.glbArrayBuffer !== glbArrayBuffer;
+    const externalCameraChanged =
+      previous.state.camera !== state.camera && state.camera !== lastCommittedCameraRef.current;
+    if (modelChanged) {
+      playbackInterruptedRef.current = false;
+      if (wheelCommitRef.current !== null) {
+        window.clearTimeout(wheelCommitRef.current);
+        wheelCommitRef.current = null;
+      }
+      dragRef.current = null;
+    }
+    targetsRef.current = {
+      camera: modelChanged || externalCameraChanged ? state.camera : targetsRef.current.camera,
+      explodeFactor: state.explodeFactor,
+      activeExplodeStage: state.activeExplodeStage,
+      isolatedComponentId: state.isolatedComponentId,
+      separatedOffsets: state.separatedOffsets,
+    };
+
+    if (
+      modelChanged ||
+      externalCameraChanged ||
+      previous.state.explodeFactor !== state.explodeFactor ||
+      previous.state.activeExplodeStage !== state.activeExplodeStage ||
+      previous.state.selectedComponentId !== state.selectedComponentId ||
+      previous.state.isolatedComponentId !== state.isolatedComponentId ||
+      previous.state.separatedOffsets !== state.separatedOffsets ||
+      previous.state.selectedProvider !== state.selectedProvider
+    ) {
+      runtimeRef.current?.requestRender();
+    }
+  });
 
   const nodesById = useMemo(() => {
     const map: Record<string, AssemblyNode> = {};
@@ -285,13 +500,13 @@ export function AssemblyScene({
     scene.background = new THREE.Color('#f4f3ef');
 
     const camera = new THREE.PerspectiveCamera(40, width / height, 0.008, 25);
-    updateCameraFromSpherical(camera, initialCameraRef.current);
+    updateCameraFromSpherical(camera, targetsRef.current.camera);
 
     const hemiLight = new THREE.HemisphereLight('#ffffff', '#d4d4d8', 0.65);
     const keyLight = new THREE.DirectionalLight('#fffdf8', 1.65);
     keyLight.position.set(0.8, 1.6, 1.1);
     keyLight.castShadow = true;
-    keyLight.shadow.mapSize.set(2048, 2048);
+    keyLight.shadow.mapSize.set(1024, 1024);
     keyLight.shadow.camera.near = 0.2;
     keyLight.shadow.camera.far = 5.0;
     keyLight.shadow.camera.left = -0.35;
@@ -306,25 +521,16 @@ export function AssemblyScene({
     const rimLight = new THREE.DirectionalLight('#f4f4f5', 0.5);
     rimLight.position.set(0.0, -0.9, -1.2);
 
-    const floorY = resolveStudioFloorY(initialArchetypeIdRef.current);
     const gridHelper = new THREE.GridHelper(0.7, 14, '#d4d4d8', '#e7e5e4');
-    gridHelper.position.y = floorY;
 
     const shadowPlaneGeo = new THREE.PlaneGeometry(1.2, 1.2);
     const shadowPlaneMat = new THREE.ShadowMaterial({ opacity: 0.16 });
     const shadowFloor = new THREE.Mesh(shadowPlaneGeo, shadowPlaneMat);
     shadowFloor.rotation.x = -Math.PI / 2;
-    shadowFloor.position.y = floorY + 0.0005;
     shadowFloor.receiveShadow = true;
 
     const rootGroup = new THREE.Group();
     scene.add(hemiLight, keyLight, fillLight, rimLight, gridHelper, shadowFloor, rootGroup);
-
-    sceneRef.current = scene;
-    cameraRef.current = camera;
-    rootGroupRef.current = rootGroup;
-    gridHelperRef.current = gridHelper;
-    shadowFloorRef.current = shadowFloor;
 
     let renderer: THREE.WebGLRenderer | null = null;
     let pmremGenerator: THREE.PMREMGenerator | null = null;
@@ -338,79 +544,156 @@ export function AssemblyScene({
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.08;
       renderer.shadowMap.enabled = true;
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.shadowMap.type = THREE.PCFShadowMap;
+      renderer.shadowMap.autoUpdate = false;
       pmremGenerator = new THREE.PMREMGenerator(renderer);
       roomEnvironment = new RoomEnvironment();
       envRenderTarget = pmremGenerator.fromScene(roomEnvironment, 0.04);
       scene.environment = envRenderTarget.texture;
       mount.replaceChildren(renderer.domElement);
-      rendererRef.current = renderer;
     } catch {
-      rendererRef.current = null;
-      queueMicrotask(() => setWebglActive(false));
+      renderer?.dispose();
+      renderer = null;
+      queueMicrotask(() => {
+        if (!disposed) setWebglActive(false);
+      });
     }
 
-    let animationFrameId = 0;
-    const renderLoop = () => {
-      if (rendererRef.current !== null && sceneRef.current !== null && cameraRef.current !== null) {
-        rendererRef.current.render(sceneRef.current, cameraRef.current);
-      }
-      animationFrameId = window.requestAnimationFrame(renderLoop);
+    let disposed = false;
+    let frameId: number | null = null;
+    let lastFrameTime: number | null = null;
+    let framesRendered = 0;
+    let publishedDiagnostics: Window['__zappdAssemblyDiagnostics'];
+    const runtime: SceneRuntime = {
+      camera,
+      rootGroup,
+      gridHelper,
+      shadowFloor,
+      webglActive: renderer !== null,
+      requestRender,
+      model: null,
+      shadowDirty: true,
     };
-    animationFrameId = window.requestAnimationFrame(renderLoop);
+    runtimeRef.current = runtime;
+
+    function requestRender(): void {
+      if (!disposed && frameId === null) {
+        frameId = window.requestAnimationFrame(renderFrame);
+      }
+    }
+
+    function renderFrame(now: number): void {
+      frameId = null;
+      const dtSec = lastFrameTime === null ? 0 : (now - lastFrameTime) / 1000;
+      lastFrameTime = now;
+      const { assembly, state } = propsRef.current;
+      const targets = targetsRef.current;
+      const model = runtime.model;
+      const snapshot = animationRef.current?.step(model?.hasPainted ? dtSec : 0, targets);
+      if (model !== null && snapshot !== undefined) {
+        if (model.hasPainted && model.nextEdgeIndex < model.edgeQueue.length)
+          buildQueuedEdges(model);
+        applyModelPoses(model, snapshot.nodePoses, state.selectedComponentId);
+        if (!model.hasPainted || snapshot.cameraChanged) {
+          updateCameraFromSpherical(camera, snapshot.animatedCamera);
+        }
+        model.hasPainted = true;
+      } else {
+        updateCameraFromSpherical(camera, targets.camera);
+      }
+
+      if (renderer !== null) {
+        if (runtime.shadowDirty || snapshot?.geometryChanged) {
+          renderer.shadowMap.needsUpdate = true;
+          runtime.shadowDirty = false;
+        }
+        renderer.render(scene, camera);
+        framesRendered += 1;
+      }
+
+      const nodePositionsMeters: Record<string, Vector3Tuple> = {};
+      if (snapshot !== undefined) {
+        for (const [id, pose] of Object.entries(snapshot.nodePoses)) {
+          if (pose !== undefined) nodePositionsMeters[id] = pose.worldPositionMeters;
+        }
+      }
+      publishedDiagnostics = {
+        projectId: assembly.projectId,
+        archetypeId: assembly.archetypeId,
+        title: assembly.title,
+        provider: state.selectedProvider,
+        apiFormat: assembly.orchestration.apiFormat,
+        verificationStatus: assembly.verificationStatus,
+        validationPassed: assembly.validation.valid,
+        interferenceCount: assembly.validation.interferenceCount,
+        nodeCount: assembly.nodes.length,
+        glbNodeIds: model?.glbNodeIds ?? [],
+        selectedComponentId: state.selectedComponentId,
+        isolatedComponentId: targets.isolatedComponentId,
+        explodeFactor: targets.explodeFactor,
+        activeExplodeStage: targets.activeExplodeStage,
+        camera: targets.camera,
+        separatedOffsets: targets.separatedOffsets,
+        nodePositionsMeters,
+        webglActive: runtime.webglActive,
+        animatedExplodeFactor: snapshot?.animatedExplodeFactor ?? targets.explodeFactor,
+        assemblyStatus: snapshot?.assemblyStatus ?? 'settled',
+        assemblyProgress: snapshot?.assemblyProgress ?? 1,
+        reactRenderCount: reactRenderCount.current,
+        framesRendered,
+      };
+      window.__zappdAssemblyDiagnostics = publishedDiagnostics;
+
+      if (snapshot?.isActive || (model !== null && model.nextEdgeIndex < model.edgeQueue.length)) {
+        requestRender();
+      } else {
+        lastFrameTime = null;
+      }
+    }
 
     const resizeObserver = new ResizeObserver(() => {
-      if (mountRef.current === null || cameraRef.current === null) {
-        return;
-      }
-      const nextWidth = Math.max(mountRef.current.clientWidth, 240);
-      const nextHeight = Math.max(mountRef.current.clientHeight, 220);
-      cameraRef.current.aspect = nextWidth / nextHeight;
-      cameraRef.current.updateProjectionMatrix();
-      rendererRef.current?.setSize(nextWidth, nextHeight);
+      const nextWidth = Math.max(mount.clientWidth, 240);
+      const nextHeight = Math.max(mount.clientHeight, 220);
+      camera.aspect = nextWidth / nextHeight;
+      camera.updateProjectionMatrix();
+      renderer?.setSize(nextWidth, nextHeight);
+      requestRender();
     });
     resizeObserver.observe(mount);
+    requestRender();
 
     return () => {
-      window.cancelAnimationFrame(animationFrameId);
+      disposed = true;
+      if (frameId !== null) window.cancelAnimationFrame(frameId);
       resizeObserver.disconnect();
       disposeObjectSubtree(rootGroup);
+      rootGroup.clear();
       shadowPlaneGeo.dispose();
       shadowPlaneMat.dispose();
       gridHelper.dispose();
+      keyLight.shadow.dispose();
       envRenderTarget?.dispose();
       roomEnvironment?.dispose();
       pmremGenerator?.dispose();
       renderer?.dispose();
-      rendererRef.current = null;
-      sceneRef.current = null;
-      cameraRef.current = null;
-      rootGroupRef.current = null;
-      gridHelperRef.current = null;
-      shadowFloorRef.current = null;
+      mount.replaceChildren();
+      runtimeRef.current = null;
+      if (window.__zappdAssemblyDiagnostics === publishedDiagnostics) {
+        delete window.__zappdAssemblyDiagnostics;
+      }
     };
   }, []);
 
   useEffect(() => {
-    const floorY = resolveStudioFloorY(initialArchetypeIdRef.current);
-    if (gridHelperRef.current !== null) {
-      gridHelperRef.current.position.y = floorY;
-    }
-    if (shadowFloorRef.current !== null) {
-      shadowFloorRef.current.position.y = floorY + 0.0005;
-    }
-  }, [assembly.archetypeId]);
-
-  useEffect(() => {
-    const rootGroup = rootGroupRef.current;
-    if (rootGroup === null || glbArrayBuffer === null) {
-      return;
-    }
-
-    disposeObjectSubtree(rootGroup);
-    rootGroup.clear();
-    objectsByIdRef.current.clear();
-    meshesByIdRef.current.clear();
+    const runtime = runtimeRef.current;
+    if (runtime === null) return;
+    const { rootGroup, gridHelper, shadowFloor } = runtime;
+    const floorY = resolveStudioFloorY(assembly.archetypeId);
+    gridHelper.position.y = floorY;
+    shadowFloor.position.y = floorY + 0.0005;
+    runtime.shadowDirty = true;
+    runtime.requestRender();
+    if (glbArrayBuffer === null) return;
 
     let cancelled = false;
     const loader = new GLTFLoader();
@@ -422,183 +705,139 @@ export function AssemblyScene({
           disposeObjectSubtree(gltf.scene);
           return;
         }
-        const discoveredIds: string[] = [];
-        gltf.scene.traverse((obj) => {
-          const cid = readUserDataString(obj.userData, 'componentId');
-          if (cid !== null) {
-            objectsByIdRef.current.set(cid, obj);
-            discoveredIds.push(cid);
-          }
-          if (isThreeMesh(obj)) {
-            const ownerId = findAncestorComponentId(obj);
-            if (ownerId !== null) {
-              obj.userData.componentId = ownerId;
-              const materialHint = findAncestorUserDataString(obj, 'materialHint') ?? 'default';
-              if (!Array.isArray(obj.material)) {
-                obj.material = buildPhysicalCadMaterial(obj.material, materialHint);
-              }
-              obj.castShadow = true;
-              obj.receiveShadow = true;
-
-              const edgeGeometry = new THREE.EdgesGeometry(obj.geometry, 32);
-              const edgeMaterial = new THREE.LineBasicMaterial({
-                color: '#18181b',
-                transparent: true,
-                opacity: 0.18,
-              });
-              const edgeLines = new THREE.LineSegments(edgeGeometry, edgeMaterial);
-              edgeLines.raycast = () => {};
-              obj.add(edgeLines);
-
-              const existingList = meshesByIdRef.current.get(ownerId) ?? [];
-              existingList.push(obj);
-              meshesByIdRef.current.set(ownerId, existingList);
-            }
-          }
+        const animation = createAssemblyAnimationController({
+          assembly,
+          targets: targetsRef.current,
+          prefersReducedMotion:
+            !runtime.webglActive || window.matchMedia('(prefers-reduced-motion: reduce)').matches,
         });
+        if (playbackInterruptedRef.current) settleAssemblyPlayback(animation);
+        animationRef.current = animation;
+        runtime.model = bindAssemblyModel(gltf.scene, animation.schedule, runtime.webglActive);
         rootGroup.add(gltf.scene);
-        setGlbNodeIds(discoveredIds);
+        runtime.shadowDirty = true;
+        runtime.requestRender();
       },
-      () => {
-        if (!cancelled) {
-          setGlbNodeIds([]);
-        }
-      },
+      () => runtime.requestRender(),
     );
 
     return () => {
       cancelled = true;
+      animationRef.current = null;
+      runtime.model = null;
+      disposeObjectSubtree(rootGroup);
+      rootGroup.clear();
     };
-  }, [glbArrayBuffer]);
+  }, [assembly, glbArrayBuffer]);
 
   useEffect(() => {
-    const worldPositions: Record<string, Vector3Tuple> = {};
-    for (const node of assembly.nodes) {
-      const worldPos = computeNodeWorldPositionMeters(
-        node,
-        nodesById,
-        state.explodeFactor,
-        state.separatedOffsets,
-        state.activeExplodeStage,
-      );
-      worldPositions[node.id] = worldPos;
+    const mount = mountRef.current;
+    if (mount === null) return;
+
+    function handleWheel(event: WheelEvent) {
+      event.preventDefault();
+      targetsRef.current = {
+        ...targetsRef.current,
+        camera: zoomExplorerCamera(targetsRef.current.camera, event.deltaY * 0.0005),
+      };
+      runtimeRef.current?.requestRender();
+      if (wheelCommitRef.current !== null) window.clearTimeout(wheelCommitRef.current);
+      wheelCommitRef.current = window.setTimeout(() => {
+        wheelCommitRef.current = null;
+        syncCamera();
+      }, 100);
     }
 
-    if (cameraRef.current !== null) {
-      const isolatedTarget =
-        state.isolatedComponentId !== null ? worldPositions[state.isolatedComponentId] : undefined;
-      const effectiveCamera =
-        isolatedTarget !== undefined
-          ? { ...state.camera, targetMeters: isolatedTarget }
-          : state.camera;
-      updateCameraFromSpherical(cameraRef.current, effectiveCamera);
-    }
-
-    for (const node of assembly.nodes) {
-      const obj = objectsByIdRef.current.get(node.id);
-      const worldPos = worldPositions[node.id];
-      if (obj !== undefined && worldPos !== undefined) {
-        const parentWorld =
-          node.parentId !== null ? (worldPositions[node.parentId] ?? [0, 0, 0]) : [0, 0, 0];
-        obj.position.set(
-          worldPos[0] - parentWorld[0],
-          worldPos[1] - parentWorld[1],
-          worldPos[2] - parentWorld[2],
-        );
+    mount.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      mount.removeEventListener('wheel', handleWheel);
+      if (wheelCommitRef.current !== null) {
+        window.clearTimeout(wheelCommitRef.current);
+        wheelCommitRef.current = null;
       }
-
-      const meshes = meshesByIdRef.current.get(node.id) ?? [];
-      const isSelected = state.selectedComponentId === node.id;
-      const isHiddenByIsolation =
-        state.isolatedComponentId !== null && state.isolatedComponentId !== node.id;
-
-      for (const mesh of meshes) {
-        mesh.visible = !isHiddenByIsolation;
-        if (mesh.material instanceof THREE.MeshStandardMaterial) {
-          mesh.material.emissive.setHex(isSelected ? 0x6b5b00 : 0x000000);
-          mesh.material.emissiveIntensity = isSelected ? 0.85 : 0;
-        }
-      }
-    }
-
-    window.__zappdAssemblyDiagnostics = {
-      projectId: assembly.projectId,
-      archetypeId: assembly.archetypeId,
-      title: assembly.title,
-      provider: state.selectedProvider,
-      apiFormat: assembly.orchestration.apiFormat,
-      verificationStatus: assembly.verificationStatus,
-      validationPassed: assembly.validation.valid,
-      interferenceCount: assembly.validation.interferenceCount,
-      nodeCount: assembly.nodes.length,
-      glbNodeIds,
-      selectedComponentId: state.selectedComponentId,
-      isolatedComponentId: state.isolatedComponentId,
-      explodeFactor: state.explodeFactor,
-      activeExplodeStage: state.activeExplodeStage,
-      camera: state.camera,
-      separatedOffsets: state.separatedOffsets,
-      nodePositionsMeters: worldPositions,
-      webglActive,
     };
-  }, [assembly, glbNodeIds, nodesById, state, webglActive]);
+  }, [syncCamera]);
+
+  function setLiveCamera(camera: ExplorerCameraState) {
+    targetsRef.current = { ...targetsRef.current, camera };
+    runtimeRef.current?.requestRender();
+  }
+
+  function commitCamera(camera: ExplorerCameraState) {
+    setLiveCamera(camera);
+    syncCamera();
+  }
+
+  function interruptPlayback() {
+    playbackInterruptedRef.current = true;
+    if (animationRef.current !== null) settleAssemblyPlayback(animationRef.current);
+    runtimeRef.current?.requestRender();
+  }
+
+  function changeExplodeFactor(explodeFactor: number) {
+    targetsRef.current = { ...targetsRef.current, explodeFactor };
+    interruptPlayback();
+    onSetExplodeFactor(explodeFactor);
+  }
+
+  function pickComponent(componentId: ComponentId | null) {
+    interruptPlayback();
+    onSelectComponent(componentId);
+  }
 
   function handlePointerDown(event: React.PointerEvent<HTMLDivElement>) {
-    dragStateRef.current = {
-      active: true,
+    if (!event.isPrimary || event.button !== 0) return;
+    const { clientX, clientY, pointerId } = event;
+    dragRef.current = {
+      id: pointerId,
+      startX: clientX,
+      startY: clientY,
+      lastX: clientX,
+      lastY: clientY,
       moved: false,
-      lastX: event.clientX,
-      lastY: event.clientY,
     };
+    event.currentTarget.setPointerCapture(pointerId);
   }
 
   function handlePointerMove(event: React.PointerEvent<HTMLDivElement>) {
-    if (!dragStateRef.current.active) {
-      return;
-    }
-    const dx = event.clientX - dragStateRef.current.lastX;
-    const dy = event.clientY - dragStateRef.current.lastY;
-    if (Math.abs(dx) > 2 || Math.abs(dy) > 2) {
-      dragStateRef.current.moved = true;
-    }
-    dragStateRef.current.lastX = event.clientX;
-    dragStateRef.current.lastY = event.clientY;
-    onOrbitCamera(-dx * 0.5, dy * 0.4);
+    const drag = dragRef.current;
+    if (drag?.id !== event.pointerId) return;
+    const { clientX, clientY } = event;
+    drag.moved ||= Math.hypot(clientX - drag.startX, clientY - drag.startY) > 2;
+    if (!drag.moved) return;
+    setLiveCamera(
+      orbitExplorerCamera(
+        targetsRef.current.camera,
+        (drag.lastX - clientX) * 0.5,
+        (clientY - drag.lastY) * 0.4,
+      ),
+    );
+    drag.lastX = clientX;
+    drag.lastY = clientY;
+  }
+
+  function finishPointerDrag(event: React.PointerEvent<HTMLDivElement>) {
+    const drag = dragRef.current;
+    if (drag?.id !== event.pointerId) return null;
+    dragRef.current = null;
+    if (drag.moved) syncCamera();
+    return drag;
   }
 
   function handlePointerUp(event: React.PointerEvent<HTMLDivElement>) {
-    const wasDrag = dragStateRef.current.moved;
-    dragStateRef.current.active = false;
-    if (wasDrag) {
-      return;
-    }
-    const mount = mountRef.current;
-    const camera = cameraRef.current;
-    const rootGroup = rootGroupRef.current;
-    if (mount === null || camera === null || rootGroup === null) {
-      return;
-    }
-    const rect = mount.getBoundingClientRect();
-    if (rect.width <= 0 || rect.height <= 0) {
-      return;
-    }
+    const drag = finishPointerDrag(event);
+    if (drag === null || drag.moved || runtimeRef.current === null) return;
+
+    const { camera, rootGroup } = runtimeRef.current;
+    const rect = event.currentTarget.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return;
     const ndcX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     const ndcY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
     const raycaster = new THREE.Raycaster();
     raycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), camera);
     const hits = raycaster.intersectObjects(rootGroup.children, true);
-    const visibleHit = hits.find((hit) => hit.object.visible);
-    if (visibleHit === undefined) {
-      onSelectComponent(null);
-      return;
-    }
-    const pickedId = findAncestorComponentId(visibleHit.object);
-    onSelectComponent(pickedId);
-  }
-
-  function handleWheel(event: React.WheelEvent<HTMLDivElement>) {
-    event.preventDefault();
-    onZoomCamera(event.deltaY * 0.0005);
+    const hit = hits.find(({ object }) => object.visible && isThreeMesh(object));
+    pickComponent(hit === undefined ? null : findAncestorComponentId(hit.object));
   }
 
   const parentNode =
@@ -656,7 +895,8 @@ export function AssemblyScene({
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
-            onWheel={handleWheel}
+            onPointerCancel={finishPointerDrag}
+            onLostPointerCapture={finishPointerDrag}
           />
           {!webglActive ? (
             <div className={classes.fallbackHint}>
@@ -669,49 +909,53 @@ export function AssemblyScene({
                 type="button"
                 className={classes.controlButton}
                 aria-label="Rotate left"
-                onClick={() => onOrbitCamera(-24, 0)}>
+                onClick={() =>
+                  commitCamera(orbitExplorerCamera(targetsRef.current.camera, -24, 0))
+                }>
                 Rotate L
               </button>
               <button
                 type="button"
                 className={classes.controlButton}
                 aria-label="Rotate right"
-                onClick={() => onOrbitCamera(24, 0)}>
+                onClick={() => commitCamera(orbitExplorerCamera(targetsRef.current.camera, 24, 0))}>
                 Rotate R
               </button>
               <button
                 type="button"
                 className={classes.controlButton}
                 aria-label="Tilt up"
-                onClick={() => onOrbitCamera(0, 14)}>
+                onClick={() => commitCamera(orbitExplorerCamera(targetsRef.current.camera, 0, 14))}>
                 Tilt +
               </button>
               <button
                 type="button"
                 className={classes.controlButton}
                 aria-label="Tilt down"
-                onClick={() => onOrbitCamera(0, -14)}>
+                onClick={() =>
+                  commitCamera(orbitExplorerCamera(targetsRef.current.camera, 0, -14))
+                }>
                 Tilt -
               </button>
               <button
                 type="button"
                 className={classes.controlButton}
                 aria-label="Zoom in"
-                onClick={() => onZoomCamera(-0.08)}>
+                onClick={() => commitCamera(zoomExplorerCamera(targetsRef.current.camera, -0.08))}>
                 Zoom +
               </button>
               <button
                 type="button"
                 className={classes.controlButton}
                 aria-label="Zoom out"
-                onClick={() => onZoomCamera(0.08)}>
+                onClick={() => commitCamera(zoomExplorerCamera(targetsRef.current.camera, 0.08))}>
                 Zoom -
               </button>
               <button
                 type="button"
                 className={classes.controlButton}
                 aria-label="Reset view"
-                onClick={onResetCamera}>
+                onClick={() => commitCamera(computeDefaultCameraForAssembly(assembly))}>
                 Reset
               </button>
             </div>
@@ -725,7 +969,7 @@ export function AssemblyScene({
                     : classes.controlButton
                 }
                 aria-label="Collapse assembly"
-                onClick={() => onSetExplodeFactor(0)}>
+                onClick={() => changeExplodeFactor(0)}>
                 0%
               </button>
               <button
@@ -736,7 +980,7 @@ export function AssemblyScene({
                     : classes.controlButton
                 }
                 aria-label="Explode 25%"
-                onClick={() => onSetExplodeFactor(0.25)}>
+                onClick={() => changeExplodeFactor(0.25)}>
                 25%
               </button>
               <button
@@ -747,7 +991,7 @@ export function AssemblyScene({
                     : classes.controlButton
                 }
                 aria-label="Explode 50%"
-                onClick={() => onSetExplodeFactor(0.5)}>
+                onClick={() => changeExplodeFactor(0.5)}>
                 50%
               </button>
               <button
@@ -758,7 +1002,7 @@ export function AssemblyScene({
                     : classes.controlButton
                 }
                 aria-label="Explode 100%"
-                onClick={() => onSetExplodeFactor(1)}>
+                onClick={() => changeExplodeFactor(1)}>
                 100%
               </button>
             </div>
@@ -776,9 +1020,9 @@ export function AssemblyScene({
               className={classes.explodeSlider}
               min={0}
               max={1}
-              step={0.05}
+              step={0.001}
               value={state.explodeFactor}
-              onChange={(event) => onSetExplodeFactor(Number(event.target.value))}
+              onChange={(event) => changeExplodeFactor(Number(event.target.value))}
             />
             <div className={classes.buttonRow}>
               {(
@@ -798,7 +1042,10 @@ export function AssemblyScene({
                       : classes.controlButton
                   }
                   aria-label={label}
-                  onClick={() => onSetExplodeStage(stageVal)}>
+                  onClick={() => {
+                    interruptPlayback();
+                    onSetExplodeStage(stageVal);
+                  }}>
                   {label}
                 </button>
               ))}
@@ -821,7 +1068,10 @@ export function AssemblyScene({
                 aria-label={
                   state.isolatedComponentId !== null ? 'Show all parts' : 'Isolate selected part'
                 }
-                onClick={onToggleIsolate}>
+                onClick={() => {
+                  interruptPlayback();
+                  onToggleIsolate();
+                }}>
                 {state.isolatedComponentId !== null ? 'Show All' : 'Isolate'}
               </button>
               <button
@@ -829,7 +1079,10 @@ export function AssemblyScene({
                 className={classes.controlButton}
                 disabled={selectedNode === null}
                 aria-label="Separate part +X"
-                onClick={() => onSeparateComponent('x', 0.04)}>
+                onClick={() => {
+                  interruptPlayback();
+                  onSeparateComponent('x', 0.04);
+                }}>
                 +X
               </button>
               <button
@@ -837,7 +1090,10 @@ export function AssemblyScene({
                 className={classes.controlButton}
                 disabled={selectedNode === null}
                 aria-label="Separate part +Y"
-                onClick={() => onSeparateComponent('y', 0.04)}>
+                onClick={() => {
+                  interruptPlayback();
+                  onSeparateComponent('y', 0.04);
+                }}>
                 +Y
               </button>
               <button
@@ -845,7 +1101,10 @@ export function AssemblyScene({
                 className={classes.controlButton}
                 disabled={selectedNode === null}
                 aria-label="Separate part +Z"
-                onClick={() => onSeparateComponent('z', 0.04)}>
+                onClick={() => {
+                  interruptPlayback();
+                  onSeparateComponent('z', 0.04);
+                }}>
                 +Z
               </button>
               <button
@@ -853,7 +1112,10 @@ export function AssemblyScene({
                 className={classes.controlButton}
                 disabled={selectedNode === null}
                 aria-label="Reset part position"
-                onClick={onResetSeparation}>
+                onClick={() => {
+                  interruptPlayback();
+                  onResetSeparation();
+                }}>
                 Reset Part
               </button>
             </div>
@@ -928,7 +1190,7 @@ export function AssemblyScene({
                     }
                     aria-label={`Select part ${part.name}`}
                     aria-pressed={selected}
-                    onClick={() => onSelectComponent(selected ? null : part.id)}>
+                    onClick={() => pickComponent(selected ? null : part.id)}>
                     <span>{part.name}</span>
                     <span className={classes.partMeta}>{part.provenance.spdxLicense}</span>
                   </button>

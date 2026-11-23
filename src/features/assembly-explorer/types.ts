@@ -8,6 +8,13 @@ import {
 
 export type SeparationAxis = 'x' | 'y' | 'z';
 
+export type AssemblyLoadingPhase = 'idle' | 'orchestrating' | 'downloading' | 'ready' | 'error';
+
+export type AssemblyLoadingProgress = {
+  readonly phase: Exclude<AssemblyLoadingPhase, 'idle' | 'error'>;
+  readonly progress: number;
+};
+
 export type ExplorerCameraState = {
   readonly azimuthDeg: number;
   readonly elevationDeg: number;
@@ -21,6 +28,8 @@ export type AssemblyExplorerState = {
   readonly assembly: VerifiedProjectAssembly | null;
   readonly glbArrayBuffer: ArrayBuffer | null;
   readonly isLoading: boolean;
+  readonly loadingPhase: AssemblyLoadingPhase;
+  readonly loadingProgress: number;
   readonly errorMessage: string | null;
   readonly camera: ExplorerCameraState;
   readonly explodeFactor: number;
@@ -33,6 +42,7 @@ export type AssemblyExplorerState = {
 export type AssemblyExplorerAction =
   | { readonly type: 'setProvider'; readonly provider: AiProviderId }
   | { readonly type: 'startLoading'; readonly promptId: number }
+  | ({ readonly type: 'setLoadingProgress'; readonly promptId: number } & AssemblyLoadingProgress)
   | {
       readonly type: 'loadAssemblySuccess';
       readonly promptId: number;
@@ -47,6 +57,7 @@ export type AssemblyExplorerAction =
     }
   | { readonly type: 'zoomCamera'; readonly deltaDistanceMeters: number }
   | { readonly type: 'resetCamera' }
+  | { readonly type: 'setCamera'; readonly camera: ExplorerCameraState }
   | { readonly type: 'setExplodeFactor'; readonly explodeFactor: number }
   | { readonly type: 'setExplodeStage'; readonly stage: ExplodeStageFilter }
   | { readonly type: 'selectComponent'; readonly componentId: ComponentId | null }
@@ -62,9 +73,7 @@ export type AssemblySceneProps = {
   readonly assembly: VerifiedProjectAssembly;
   readonly glbArrayBuffer: ArrayBuffer | null;
   readonly state: AssemblyExplorerState;
-  readonly onOrbitCamera: (deltaAzimuthDeg: number, deltaElevationDeg: number) => void;
-  readonly onZoomCamera: (deltaDistanceMeters: number) => void;
-  readonly onResetCamera: () => void;
+  readonly onSetCamera: (camera: ExplorerCameraState) => void;
   readonly onSetExplodeFactor: (explodeFactor: number) => void;
   readonly onSetExplodeStage: (stage: ExplodeStageFilter) => void;
   readonly onSelectComponent: (componentId: ComponentId | null) => void;
