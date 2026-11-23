@@ -91,7 +91,7 @@ modules/
 
 ## CAD and Asset Pipeline
 
-- **Geometry authoring:** build123d on top of OpenCascade, executed on a backend.
+- **Geometry authoring (Phase 2 only):** build123d on top of OpenCascade, executed on a backend. Do not use build123d or procedural fallback synthesis in Phase 1.
 - Preserve original parametric/CAD definitions and use **STEP** for precise engineering geometry interchange.
 - Export or convert geometry into **GLB** for web/Android and **USDZ** for iOS; preserve part boundaries and stable IDs for selection.
 - **Firebase Storage** holds source CAD artifacts, STEP files, generated render assets, and versioned asset manifests.

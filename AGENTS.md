@@ -46,7 +46,7 @@ Run lint and typecheck before declaring any task done.
 - Follow the three-tier platform split in `architecture.md` behind shared typed contracts inside the owning feature; evaluate splits per component and ask when ambiguous.
 - Treat Firestore's component hierarchy, stable IDs, relationships, and assembly steps as the domain model, never mesh names or a single 3D file.
 - Treat source CAD as engineering truth; GLB/USDZ are derived render assets. Do not mistake successful rendering for validated engineering.
-- Respect Phase 1's verified CAD assemblies; do not introduce custom CAD generation unless the task explicitly requires Phase 2.
+- Respect Phase 1's verified CAD assemblies; do not introduce custom CAD generation, procedural primitive fallbacks, or fabricated/unfetched source URLs (build123d authoring is Phase 2 only). Every catalog `sourceUrl` must resolve to a real upstream CAD file with a pinned SHA-256 digest.
 
 ## Enforce Rules, Don't Just Describe Them
 
@@ -62,7 +62,7 @@ Run lint and typecheck before declaring any task done.
 - For any web UI change, verify the rendered screen and interactions in Google Chrome using the verify-zappd skill (.agents/skills/verify-zappd/scripts/zappd-verify.mjs) even if the prompt does not mention the browser; do not use T3 Preview (preview_* tools) for verification, and clean up temporary Chrome/Metro sessions when done.
 - Add or update tests for changed behavior; every bug fix needs a regression test.
 - Prioritize tests for component identity/relationships, assembly steps, asset manifests, offline cache/sync, and local AI-to-cloud fallback.
-- Verify user-visible 3D interactions and platform-specific UI on affected targets; use screenshots or recordings when useful.
+- Verify user-visible 3D interactions and platform-specific UI on affected targets; always visually inspect captured screenshots (`read_file` on PNG evidence) rather than relying on DOM/ARIA or JSON diagnostics alone.
 - Run the repository's lint, typecheck, and relevant test/build scripts before completion; add missing checks where warranted, never claim unrun checks passed.
 - Validate local AI only where supported; offline behavior must degrade gracefully without assuming connectivity or model availability.
 - Report what changed, verification performed, and any remaining failures or untested platforms.
