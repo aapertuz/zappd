@@ -70,7 +70,7 @@ export function CanvasView({
         )}
         <View style={styles.composerDock}>
           <View style={styles.composer}>
-            <Host style={styles.inputHost} matchContents={{ vertical: true }} colorScheme="light">
+            <Host style={styles.inputHost} matchContents={{ vertical: true }} colorScheme="dark">
               <TextInput
                 ref={setTextInput}
                 value={textState}
@@ -90,7 +90,7 @@ export function CanvasView({
             </Host>
             <Host
               matchContents
-              colorScheme="light"
+              colorScheme="dark"
               accessibilityRole="button"
               accessibilityLabel="Send">
               <Row alignment="center" onPress={handleSubmit} style={SEND_BUTTON_STYLE}>

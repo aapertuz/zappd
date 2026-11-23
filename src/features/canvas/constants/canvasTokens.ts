@@ -1,14 +1,14 @@
 export const CANVAS_COLORS = {
-  background: '#F7F7F5',
-  composerSurface: '#FFFFFF',
-  composerBorder: '#E5E5E0',
-  composerBorderFocused: '#C9C9C2',
-  text: '#18181B',
-  primaryButton: '#FFE500',
-  primaryButtonPressed: '#F0D800',
-  buttonIcon: '#18181B',
-  buttonIconMuted: '#857B20',
-  composerShadow: '#18181B0F',
+  background: '#050912',
+  composerSurface: '#0B1322',
+  composerBorder: '#1E3A5F',
+  composerBorderFocused: '#38BDF8',
+  text: '#F0F6FC',
+  primaryButton: '#38BDF8',
+  primaryButtonPressed: '#0EA5E9',
+  buttonIcon: '#04101D',
+  buttonIconMuted: '#64748B',
+  composerShadow: '#00000080',
 } as const;
 
 export const CANVAS_LAYOUT = {

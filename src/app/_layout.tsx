@@ -8,7 +8,7 @@ import { CANVAS_COLORS } from '@/features/canvas';
 export default function RootLayout() {
   return (
     <>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
       <Stack
         screenOptions={{
           headerShown: false,

@@ -40,6 +40,7 @@ export function CanvasView({
             className={classes.input}
             rows={1}
             aria-label="Prompt input"
+            placeholder="Describe a CAD assembly to explore..."
             value={draft}
             onChange={(event) => onDraftChange(event.target.value)}
             onKeyDown={handleKeyDown}
