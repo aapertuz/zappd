@@ -13,7 +13,7 @@ from geometry_pipeline import run_cad_pipeline
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Zappd OpenCascade & build123d CAD pipeline CLI")
+    parser = argparse.ArgumentParser(description="Zappd OpenCascade Phase 1 CAD pipeline CLI")
     parser.add_argument("--archetype", required=False, default="quadcopter_drone_v1")
     parser.add_argument("--all-archetypes", action="store_true")
     parser.add_argument("--output-dir", required=False)

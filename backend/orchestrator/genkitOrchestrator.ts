@@ -65,7 +65,6 @@ export type ComponentRetrievalSummary = {
   readonly title: string;
   readonly totalNodes: number;
   readonly openCatalogCount: number;
-  readonly fallbackCount: number;
   readonly relationshipsCount: number;
   readonly assemblyStepsCount: number;
 };
@@ -218,15 +217,11 @@ async function runComponentRetrieval(archetypeId: string): Promise<ComponentRetr
   const openCatalogCount = archetype.nodes.filter(
     (node) => node.origin === 'open_step_catalog',
   ).length;
-  const fallbackCount = archetype.nodes.filter(
-    (node) => node.origin === 'build123d_fallback',
-  ).length;
   return {
     archetypeId: archetype.archetypeId,
     title: archetype.title,
     totalNodes: archetype.nodes.length,
     openCatalogCount,
-    fallbackCount,
     relationshipsCount: archetype.relationships.length,
     assemblyStepsCount: archetype.assemblySteps.length,
   };
@@ -267,10 +262,7 @@ async function runCadAssemblyAndValidation(args: {
   const workerResult = parseCadWorkerPayload(rawJson);
 
   const status =
-    workerResult.verificationStatus === 'sourced_verified' ||
-    workerResult.verificationStatus === 'synthesized_verified'
-      ? workerResult.verificationStatus
-      : 'unverified';
+    workerResult.verificationStatus === 'sourced_verified' ? 'sourced_verified' : 'unverified';
   const mappingOk = verifyOneToOneNodeMapping(
     workerResult.nodes,
     workerResult.glbNodeIds,

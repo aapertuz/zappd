@@ -9,9 +9,9 @@ export type CatalogArchetypeId = string & { readonly __brand: 'CatalogArchetypeI
 
 export type Vector3Tuple = readonly [number, number, number];
 
-export type VerificationStatus = 'sourced_verified' | 'synthesized_verified' | 'unverified';
+export type VerificationStatus = 'sourced_verified' | 'unverified';
 
-export type GeometryOrigin = 'open_step_catalog' | 'build123d_fallback';
+export type GeometryOrigin = 'open_step_catalog';
 
 export type HierarchyLevel = 'project' | 'subsystem' | 'component' | 'subcomponent';
 
@@ -188,7 +188,7 @@ export function toCatalogArchetypeId(value: string): CatalogArchetypeId {
 }
 
 export function isVerificationStatus(value: unknown): value is VerificationStatus {
-  return value === 'sourced_verified' || value === 'synthesized_verified' || value === 'unverified';
+  return value === 'sourced_verified' || value === 'unverified';
 }
 
 export function canClassifyAsVerified(
@@ -407,7 +407,7 @@ function parseHierarchyLevel(value: unknown): HierarchyLevel {
 }
 
 function parseGeometryOrigin(value: unknown): GeometryOrigin {
-  if (value === 'open_step_catalog' || value === 'build123d_fallback') {
+  if (value === 'open_step_catalog') {
     return value;
   }
   throw new Error(`Invalid GeometryOrigin: ${String(value)}`);

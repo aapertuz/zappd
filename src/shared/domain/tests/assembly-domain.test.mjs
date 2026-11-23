@@ -12,6 +12,7 @@ import {
   computeExplodeStageWeight,
   computeNodeWorldPositionMeters,
   hasVerifiedUpstreamProvenance,
+  isVerificationStatus,
   toComponentId,
   verifyOneToOneNodeMapping,
 } from '../assembly.ts';
@@ -63,10 +64,10 @@ describe('shared domain contracts', () => {
       failures: [],
     };
     assert.equal(canClassifyAsVerified(validReport, 'sourced_verified'), true);
-    assert.equal(canClassifyAsVerified(validReport, 'synthesized_verified'), true);
     assert.equal(canClassifyAsVerified(validReport, 'unverified'), false);
+    assert.equal(isVerificationStatus('synthesized_verified'), false);
     assert.equal(
-      canClassifyAsVerified({ ...validReport, interferenceCount: 1 }, 'synthesized_verified'),
+      canClassifyAsVerified({ ...validReport, interferenceCount: 1 }, 'sourced_verified'),
       false,
     );
     assert.equal(
@@ -90,14 +91,14 @@ describe('shared domain contracts', () => {
     }));
     assert.equal(hasVerifiedUpstreamProvenance(validNodes), true);
 
-    const fallbackNodes = validNodes.map((n, index) =>
-      index === 0 ? { ...n, provenance: { ...n.provenance, origin: 'build123d_fallback' } } : n,
+    const unverifiedNodes = validNodes.map((n, index) =>
+      index === 0 ? { ...n, provenance: { ...n.provenance, verificationStatus: 'unverified' } } : n,
     );
-    assert.equal(hasVerifiedUpstreamProvenance(fallbackNodes), false);
+    assert.equal(hasVerifiedUpstreamProvenance(unverifiedNodes), false);
 
     const localUrlNodes = validNodes.map((n, index) =>
       index === 0
-        ? { ...n, provenance: { ...n.provenance, sourceUrl: 'local://build123d/fallback/test' } }
+        ? { ...n, provenance: { ...n.provenance, sourceUrl: 'local://unverified/test' } }
         : n,
     );
     assert.equal(hasVerifiedUpstreamProvenance(localUrlNodes), false);
