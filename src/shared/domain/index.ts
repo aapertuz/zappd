@@ -65,3 +65,20 @@ export {
   type CatalogArchetypeDefinition,
   type CatalogComponentBlueprint,
 } from './catalog';
+export {
+  buildLearningPromptParts,
+  parseComponentExplanationRecord,
+  parseLearningCloudRequest,
+  parseLearningCloudResponse,
+  parseProjectLearningDocuments,
+  type ComponentExplanationRecord,
+  type ComponentLearningContext,
+  type LearningCloudRequest,
+  type LearningCloudResponse,
+  type LearningContextSource,
+  type LearningInferenceSource,
+  type LearningRequest,
+  type LearningRequestKind,
+  type ProjectLearningDocuments,
+  type ResolvedComponentRelationship,
+} from './learning';

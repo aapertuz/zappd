@@ -10,3 +10,4 @@ export {
   type StoredBinaryFormat,
   type StoredStorageObject,
 } from './emulatorStore';
+export { createFirebaseAiLogicLocalRunner, type LocalInferenceRunner } from './firebaseAiLogic';

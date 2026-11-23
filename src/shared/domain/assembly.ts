@@ -18,7 +18,12 @@ export type HierarchyLevel = 'project' | 'subsystem' | 'component' | 'subcompone
 export type ExplodeStageFilter = 'all' | 1 | 2 | 3;
 
 export type RelationshipConnectionType =
-  'rigid_fastener' | 'axial_mount' | 'electrical_bus' | 'power_bus' | 'revolute_joint';
+  | 'assembly_mount'
+  | 'rigid_fastener'
+  | 'axial_mount'
+  | 'electrical_bus'
+  | 'power_bus'
+  | 'revolute_joint';
 
 export type AssetFileFormat = 'step' | 'glb' | 'usdz';
 
@@ -413,8 +418,9 @@ function parseGeometryOrigin(value: unknown): GeometryOrigin {
   throw new Error(`Invalid GeometryOrigin: ${String(value)}`);
 }
 
-function parseConnectionType(value: unknown): RelationshipConnectionType {
+export function parseConnectionType(value: unknown): RelationshipConnectionType {
   if (
+    value === 'assembly_mount' ||
     value === 'rigid_fastener' ||
     value === 'axial_mount' ||
     value === 'electrical_bus' ||
@@ -463,12 +469,12 @@ function parseSpecifications(raw: unknown): Readonly<Record<string, string | num
   return parsed;
 }
 
-function parseAssemblyNode(raw: unknown): AssemblyNode {
+export function parseAssemblyNode(raw: unknown): AssemblyNode {
   if (!isObjectRecord(raw)) {
     throw new Error('Expected AssemblyNode object');
   }
-  const rawParentId = raw.parentId;
-  const parentId = rawParentId === null ? null : toComponentId(String(rawParentId));
+  const parentId =
+    raw.parentId === null ? null : toComponentId(readRequiredString(raw, 'parentId'));
   return {
     id: toComponentId(readRequiredString(raw, 'id')),
     parentId,
@@ -489,7 +495,7 @@ function parseAssemblyNode(raw: unknown): AssemblyNode {
   };
 }
 
-function parseRelationship(raw: unknown): ComponentRelationship {
+export function parseRelationship(raw: unknown): ComponentRelationship {
   if (!isObjectRecord(raw)) {
     throw new Error('Expected ComponentRelationship object');
   }
@@ -503,7 +509,7 @@ function parseRelationship(raw: unknown): ComponentRelationship {
   };
 }
 
-function parseInstructionStep(raw: unknown): AssemblyInstructionStep {
+export function parseInstructionStep(raw: unknown): AssemblyInstructionStep {
   if (!isObjectRecord(raw)) {
     throw new Error('Expected AssemblyInstructionStep object');
   }

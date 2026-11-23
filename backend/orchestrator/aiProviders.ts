@@ -136,9 +136,13 @@ function resolveEnvApiKey(envKeyName: ProviderEnvKeyName): string | undefined {
   return toNonEmptyTrimmed(process.env[envKeyName]) ?? readDotEnvLocalKey(envKeyName);
 }
 
+export function resolveProviderApiKey(provider: AiProviderId): string | undefined {
+  return resolveEnvApiKey(getAiProviderDescriptor(provider).envKeyName);
+}
+
 export function listConfiguredAiProviders(): readonly AiProviderId[] {
   return CONFIGURED_PROVIDER_PRIORITY.filter(
-    (provider) => resolveEnvApiKey(getAiProviderDescriptor(provider).envKeyName) !== undefined,
+    (provider) => resolveProviderApiKey(provider) !== undefined,
   );
 }
 
@@ -224,68 +228,64 @@ function buildPlannerSystemInstruction(): string {
   return `You are the Zappd Phase 1 CAD project planning agent. Return strict JSON with keys: archetypeId (one of ${supportedIds}), projectTitle (string), plannedSubsystems (string[]), rationale (string).`;
 }
 
-async function invokeOpenAiCompatiblePlanner(args: {
+type ProviderTextRequest = {
+  readonly provider: AiProviderId;
+  readonly systemInstruction: string;
   readonly prompt: string;
-  readonly model: string;
-  readonly baseUrl: string;
   readonly apiKey: string;
-}): Promise<ProjectPlanOutput> {
-  const endpoint = `${args.baseUrl.replace(/\/+$/, '')}/chat/completions`;
-  const systemInstruction = buildPlannerSystemInstruction();
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${args.apiKey}`,
-    },
-    body: JSON.stringify({
-      model: args.model,
-      temperature: 0,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: systemInstruction },
-        { role: 'user', content: args.prompt },
-      ],
-    }),
-  });
-  if (!response.ok) {
-    throw new Error(`OpenAI-compatible endpoint failed with HTTP ${response.status}`);
-  }
-  const jsonPayload: unknown = await response.json();
-  const content = extractFirstChoiceContent(jsonPayload);
-  return parseJsonPlan(content, args.prompt);
-}
+  readonly model?: string;
+  readonly baseUrl?: string;
+  readonly temperature: number;
+  readonly responseFormat: 'json' | 'text';
+  readonly signal?: AbortSignal;
+};
 
-async function invokeGeminiPlanner(args: {
-  readonly prompt: string;
-  readonly model: string;
-  readonly baseUrl: string;
-  readonly apiKey: string;
-}): Promise<ProjectPlanOutput> {
-  const endpoint = `${args.baseUrl.replace(/\/+$/, '')}/v1beta/models/${args.model}:generateContent?key=${encodeURIComponent(args.apiKey)}`;
-  const systemInstruction = buildPlannerSystemInstruction();
-  const response = await fetch(endpoint, {
+export async function generateProviderText(args: ProviderTextRequest): Promise<string> {
+  const descriptor = getAiProviderDescriptor(args.provider);
+  const baseUrl = (args.baseUrl ?? descriptor.defaultBaseUrl).replace(/\/+$/, '');
+  const model = args.model ?? descriptor.rawModelName;
+
+  if (descriptor.apiFormat === 'openai_compatible') {
+    const response = await fetch(`${baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${args.apiKey}`,
+      },
+      signal: args.signal,
+      body: JSON.stringify({
+        model,
+        temperature: args.temperature,
+        response_format: args.responseFormat === 'json' ? { type: 'json_object' } : undefined,
+        messages: [
+          { role: 'system', content: args.systemInstruction },
+          { role: 'user', content: args.prompt },
+        ],
+      }),
+    });
+    if (!response.ok) {
+      throw new Error(`OpenAI-compatible endpoint failed with HTTP ${response.status}`);
+    }
+    return extractFirstChoiceContent(await response.json());
+  }
+
+  const response = await fetch(`${baseUrl}/v1beta/models/${model}:generateContent`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': args.apiKey },
+    signal: args.signal,
     body: JSON.stringify({
-      contents: [
-        {
-          role: 'user',
-          parts: [{ text: `${systemInstruction}\n\nUser request: ${args.prompt}` }],
-        },
-      ],
+      systemInstruction: { parts: [{ text: args.systemInstruction }] },
+      contents: [{ role: 'user', parts: [{ text: args.prompt }] }],
       generationConfig: {
-        temperature: 0,
-        responseMimeType: 'application/json',
+        temperature: args.temperature,
+        responseMimeType: args.responseFormat === 'json' ? 'application/json' : undefined,
       },
     }),
   });
   if (!response.ok) {
     throw new Error(`Gemini endpoint failed with HTTP ${response.status}`);
   }
-  const jsonPayload: unknown = await response.json();
-  const content = extractGeminiTextContent(jsonPayload);
-  return parseJsonPlan(content, args.prompt);
+  return extractGeminiTextContent(await response.json());
 }
 
 export async function planProjectWithProvider(
@@ -294,36 +294,24 @@ export async function planProjectWithProvider(
   const descriptor = getAiProviderDescriptor(request.provider);
   const resolvedBaseUrl = request.baseUrl ?? descriptor.defaultBaseUrl;
   const resolvedModel = request.modelName ?? descriptor.rawModelName;
-  const resolvedApiKey = request.apiKey ?? resolveEnvApiKey(descriptor.envKeyName);
+  const resolvedApiKey = request.apiKey ?? resolveProviderApiKey(request.provider);
 
   if (resolvedApiKey === undefined && request.requireLiveApiKey === true) {
     throw new Error(describeMissingProviderKey(descriptor));
   }
 
   if (resolvedApiKey !== undefined) {
-    if (descriptor.apiFormat === 'openai_compatible') {
-      const livePlan = await invokeOpenAiCompatiblePlanner({
-        prompt: request.prompt,
-        model: resolvedModel,
-        baseUrl: resolvedBaseUrl,
-        apiKey: resolvedApiKey,
-      });
-      return {
-        ...livePlan,
-        provider: descriptor.provider,
-        modelId: descriptor.modelId,
-        apiFormat: descriptor.apiFormat,
-        baseUrl: resolvedBaseUrl,
-        executionMode: 'live_api',
-      };
-    }
-
-    const livePlan = await invokeGeminiPlanner({
+    const text = await generateProviderText({
+      provider: request.provider,
+      systemInstruction: buildPlannerSystemInstruction(),
       prompt: request.prompt,
       model: resolvedModel,
       baseUrl: resolvedBaseUrl,
       apiKey: resolvedApiKey,
+      temperature: 0,
+      responseFormat: 'json',
     });
+    const livePlan = parseJsonPlan(text, request.prompt);
     return {
       ...livePlan,
       provider: descriptor.provider,
