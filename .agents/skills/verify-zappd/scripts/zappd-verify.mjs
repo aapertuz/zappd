@@ -795,6 +795,8 @@ async function handleBrowserAct(flags) {
     action,
     role: flags.role,
     name: flags.name,
+    x: flags.x === undefined ? undefined : Number(flags.x.trim() || NaN),
+    y: flags.y === undefined ? undefined : Number(flags.y.trim() || NaN),
     text: flags.text,
     clear: Boolean(flags.clear),
     key: flags.key,
@@ -807,8 +809,17 @@ async function handleBrowserAct(flags) {
     },
   };
 
-  if (action === 'click' && (!options.role || !options.name)) {
-    fail('click action requires --role and --name');
+  if (action === 'click') {
+    const hasCoordinates = options.x !== undefined || options.y !== undefined;
+    if (hasCoordinates && (!Number.isFinite(options.x) || !Number.isFinite(options.y))) {
+      fail('Coordinate click requires finite --x and --y');
+    }
+    if (hasCoordinates && (options.role !== undefined || options.name !== undefined)) {
+      fail('Choose --x and --y or --role and --name for a click');
+    }
+    if (!hasCoordinates && (!options.role || !options.name)) {
+      fail('click action requires --role and --name or --x and --y');
+    }
   }
   if (action === 'type' && (!options.role || !options.name)) {
     fail('type action requires --role and --name');

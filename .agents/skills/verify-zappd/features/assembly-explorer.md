@@ -1,67 +1,50 @@
 # Assembly explorer
 
-Assembly explorer renders a verified multi-part CAD assembly in an interactive Three.js WebGL studio viewport alongside camera controls, exploded-view and stage controls, part selection, isolation, axis separation, a CAD Component Inspector, and an AI provider switcher.
+Assembly explorer renders a verified multi-part CAD assembly in a full-viewport Three.js WebGL studio canvas behind a floating Stark-style HUD with a top-right explode toggle, continuous explode slider, zoom icon buttons, click-to-focus part inspection with a live 3D-anchored name callout and top-center `Back` button, and a floating bottom prompt composer.
 
 ## Sub-features
 
-- `explorer-3d-render` loads the verified GLB into WebGL with studio PBR materials and edge creases (`webglActive === true`, `glbNodeCount === nodeCount`, `verificationStatus === "sourced_verified"`, `interferenceCount === 0`).
-- `explorer-camera` updates spherical camera angles and distance via `Rotate left`, `Rotate right`, `Tilt up`, `Tilt down`, `Zoom in`, `Zoom out`, and restores defaults via `Reset view`.
-- `explorer-explode-stages` separates assembly hierarchy layers with `Explode 25%`, `Explode 50%`, `Explode 100%`, `Collapse assembly`, `Explode factor` slider, and `Stage All` / `Stage 1 Subsystems` / `Stage 2 Parts` / `Stage 3 Subcomponents`.
-- `explorer-part-inspector` selects a component from the Hierarchy list, displays its dimensions, material hint, specifications, relationships, and upstream CAD provenance in `CAD Component Inspector`, enables axis separation (`+X`, `+Y`, `+Z`, `Reset Part`), and isolates or restores visibility (`Isolate selected part` / `Show all parts`).
-- `explorer-provider-switch` switches AI orchestrator models (`Use Google Gemini`, `Use DeepSeek`, `Use OpenAI`), surfaces missing-key errors with `ProviderSwitcher` for unconfigured providers, and recovers when selecting a configured provider.
-- `explorer-mobile-layout` stacks the 3D viewport and manipulation panel vertically below `820px` width without horizontal overflow (`overflowX === false`).
+- `explorer-3d-render` loads the verified GLB into a full-bleed WebGL canvas (`webglActive === true`, `glbNodeCount === nodeCount`, `verificationStatus === "sourced_verified"`, `interferenceCount === 0`) without header or sidebar chrome.
+- `explorer-explode-hud` toggles `Explode (0%)` to `Explode (65%)` (`explodeFactor === 0.65`) and back to `0%`, supports continuous dragging via the `Explode factor` slider, and zooms via icon-only `Zoom in` and `Zoom out` buttons.
+- `explorer-part-focus` clicks a 3D piece on the canvas to explode the assembly to at least `65%`, smoothly zoom and center the camera on the piece, show the top-center `Back` button, and render a live 3D-anchored callout label with an arrow pointing at the piece (`viewMode === "part_focus"`, `focusedPartCallout !== null`).
+- `explorer-back-restore` clicks the top-center `Back` button (or presses `Escape`) to restore the overview camera and previous explode factor (`viewMode === "overview"`, `selectedComponentId === null`, `focusedPartCallout === null`).
+- `explorer-mobile-layout` keeps the full-viewport 3D canvas, top-right HUD bar, part-focus callout, and floating bottom composer usable at `430x932` without horizontal overflow (`overflowX === false`).
 
 ## How to get to it (user POV)
 
 - Submit a robotics project prompt (such as `"Inspect quadcopter drone"` or `"Build a 5-DOF SO-100 robotic arm"`) in `Prompt input` on `/` with at least one AI provider key configured in `.env.local` or the environment.
-- Click camera, explode, stage, part hierarchy, manipulation, or AI provider buttons inside the `3D Assembly Explorer` region.
+- Click `Explode (0%)`, drag `Explode factor`, click `Zoom in` or `Zoom out`, drag the canvas to orbit, click any 3D piece to focus it, and click `Back` (or press `Escape`) to return to overview.
 
 ## Driving it with Chrome (zappd-verify)
 
 Preconditions:
 
 - Zappd Metro server and Chrome session are healthy (`doctor --run-id <run-id>` exits `0` with `orchestrateEndpoint` reporting at least one provider in `configuredProviders` and `browserAlive` `ok: true`). If `configuredProviders` is empty, live 3D loading is `verified-unreachable` due to missing live API key configuration.
-- A verified assembly is loaded in the active Chrome tab (for example `quadcopter_drone_v1` via `prompt-submission`).
+- A verified assembly is loaded and settled in the active Chrome tab (for example `quadcopter_drone_v1` via `prompt-submission`).
 
-- **Camera, explode, and stage filter proof.** Orbit, zoom, explode to 100%, filter to Stage 2, and capture proof:
-  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action click --role button --name "Rotate right"`
+- **Explode 65% preset and zoom icon buttons proof.** Toggle the top-right explode preset, zoom in and out, then collapse:
+  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action click --role button --name "Explode (0%)"`
+  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-snapshot --run-id <run-id> --feature assembly-explorer --step 01-exploded-65 --entry-point "Click Explode (0%)" --note "WebGL active; explodeFactor=0.65; button shows Explode (65%); 0 errors"`
+    Diagnostics confirm `assembly.webglActive === true`, `assembly.glbNodeCount === assembly.nodeCount`, `assembly.explodeFactor === 0.65`, `ariaLines` shows `button "Explode (65%)"`, and `errors: []`.
   - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action click --role button --name "Zoom in"`
-  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action click --role button --name "Explode 100%"`
-  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action click --role button --name "Stage 2 Parts"`
-  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-snapshot --run-id <run-id> --feature assembly-explorer --step 01-exploded-stage2 --entry-point "Click Rotate right, Zoom in, Explode 100%, Stage 2 Parts" --note "WebGL active; camera moved; explodeFactor=1; stage=2; 0 errors"`
-    Diagnostics confirm `assembly.webglActive === true`, `assembly.glbNodeCount > 0`, `assembly.explodeFactor === 1`, `assembly.activeExplodeStage === 2`, `assembly.camera.azimuthDeg === 62`, `assembly.camera.distanceMeters === 0.3`, and `errors: []`.
-- **Part selection, inspector, and axis separation proof.** Select a part from the hierarchy list, shift it along `+X`, and capture proof:
-  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action click --role button --name "Select part Front Left Brushless Motor"`
-  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action click --role button --name "Separate part +X"`
-  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-snapshot --run-id <run-id> --feature assembly-explorer --step 02-part-selected --entry-point "Select Front Left Brushless Motor and click Separate part +X" --note "Inspector shows motor specs, relationships, and provenance; +X offset recorded; 0 errors"`
-    Diagnostics confirm `assembly.selectedComponentId !== null`, `assembly.separatedOffsets[selectedComponentId][0] === 0.04`, `ariaLines` shows `Parent: Brushless Propulsion Subsystem`, `axial_mount`, and `STEP SHA-256`, and `errors: []`.
-- **Part isolation and reset proof.** Isolate the selected part, capture proof, then restore visibility, part offset, collapse, and camera:
-  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action click --role button --name "Isolate selected part"`
-  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-snapshot --run-id <run-id> --feature assembly-explorer --step 03-part-isolated --entry-point "Click Isolate selected part" --note "Single motor isolated; Show all parts button active; 0 errors"`
-    Diagnostics confirm `assembly.isolatedComponentId === assembly.selectedComponentId`, `ariaLines` shows `button "Show all parts"`, and `errors: []`.
-  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action click --role button --name "Show all parts"`
-  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action click --role button --name "Reset part position"`
-  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action click --role button --name "Collapse assembly"`
-  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action click --role button --name "Reset view"`
-    Diagnostics confirm `assembly.isolatedComponentId === null`, `assembly.explodeFactor === 0`, `assembly.separatedOffsets` is `{}`, and `assembly.camera.azimuthDeg === 38`.
-- **Provider error and recovery proof.** When an unconfigured provider exists (for example Google Gemini when only `deepseek` is configured), click it, verify the error and `ProviderSwitcher`, then click the configured provider to recover:
-  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action click --role button --name "Use Google Gemini"`
-  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-wait --run-id <run-id> --text "Missing GEMINI_API_KEY" --timeout-ms 15000`
-  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-snapshot --run-id <run-id> --feature assembly-explorer --step 04-provider-missing-key --entry-point "Click Use Google Gemini" --note "Missing key error and ProviderSwitcher rendered; 0 JS errors"`
-    Diagnostics confirm `hasProviderToolbar === true` and `errors: []`.
-  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action click --role button --name "Use DeepSeek"`
-  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-wait --run-id <run-id> --archetype quadcopter_drone_v1 --provider deepseek --timeout-ms 25000`
-  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-snapshot --run-id <run-id> --feature assembly-explorer --step 05-provider-recovered --entry-point "Click Use DeepSeek in ProviderSwitcher" --note "Recovered 3D Assembly Explorer with DeepSeek; 0 errors"`
-    Diagnostics confirm `assembly.provider === "deepseek"`, `assembly.webglActive === true`, `assembly.glbNodeCount > 0`, and `errors: []`.
+  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action click --role button --name "Zoom out"`
+  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action click --role button --name "Explode (65%)"`
+    Diagnostics confirm `assembly.explodeFactor === 0` and `errors: []`.
+- **Piece click focus mode and Back restoration proof.** Read a visible leaf piece coordinate from `diagnostics.assembly.nodeScreenPositions` (for example `subcomp_prop_fr`), dispatch a real canvas click, capture the focused state, then click `Back` and verify overview restoration:
+  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action click --x <x> --y <y>`
+  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-snapshot --run-id <run-id> --feature assembly-explorer --step 02-part-focused --entry-point "Click 3D piece on canvas" --note "Assembly exploded to 65%, camera zoomed on piece, Back button and arrow callout visible; 0 errors"`
+    Diagnostics confirm `assembly.viewMode === "part_focus"`, `assembly.explodeFactor >= 0.65`, `assembly.selectedComponentId !== null`, `assembly.focusedPartCallout !== null`, `ariaLines` includes `button "Back"` and `status "Focused component"`, and `errors: []`.
+  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action click --role button --name "Back"`
+  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-snapshot --run-id <run-id> --feature assembly-explorer --step 03-after-back --entry-point "Click top-center Back button" --note "Overview camera and explodeFactor restored; Back and callout removed; 0 errors"`
+    Diagnostics confirm `assembly.viewMode === "overview"`, `assembly.selectedComponentId === null`, `assembly.explodeFactor === 0`, `assembly.camera.distanceMeters === 0.38`, `assembly.focusedPartCallout === null`, and `errors: []`.
 - **Responsive mobile layout proof.** Resize the active explorer to mobile dimensions, capture proof, and restore desktop:
   - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action resize --width 430 --height 932`
-  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-snapshot --run-id <run-id> --feature assembly-explorer --step 06-mobile-explorer --entry-point "Resize active Assembly Explorer to 430x932" --note "Stacked mobile layout with overflowX=false; 0 errors"`
+  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-snapshot --run-id <run-id> --feature assembly-explorer --step 04-mobile-explorer --entry-point "Resize active Assembly Explorer to 430x932" --note "Mobile full-screen 3D canvas with overflowX=false; 0 errors"`
   - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action resize --width 1280 --height 800`
     Diagnostics confirm `viewportWidth === 430`, `overflowX === false`, and `errors: []`.
 
 ## Gotchas
 
 - `cdp-browser.mjs` launches Chrome with `--use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader` so WebGL renders real shaded GLB frames in headless mode. If `diagnostics.assembly.webglActive` is `false`, inspect `chrome.log`.
-- Part names in the Hierarchy list depend on the active archetype (`Front Left Brushless Motor` exists on `quadcopter_drone_v1`; `Main Base Housing` exists on `robotic_arm_3dof_v1`). Match the part name to the loaded archetype.
-- `Part Manipulation` buttons (`Isolate`, `+X`, `+Y`, `+Z`, `Reset Part`) remain disabled until a part is selected. Clicking an already-selected part button toggles selection off.
-- `browser-act --action click` on a provider button triggers a fresh `POST /api/orchestrate` request; always follow it with `browser-wait` before snapshotting.
+- Wait for the initial assembly playback to settle (`assemblyStatus === "settled"`) before reading `nodeScreenPositions` for canvas clicks.
+- Coordinate clicks (`--action click --x <x> --y <y>`) dispatch real CDP mouse events into the Three.js raycaster on the `<canvas>`; always verify the clicked piece via `diagnostics.assembly.selectedComponentId` and visual PNG inspection.

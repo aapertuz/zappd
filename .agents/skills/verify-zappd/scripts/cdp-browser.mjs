@@ -241,7 +241,13 @@ async function readPageDiagnostics(cdp) {
             glbNodeCount: Array.isArray(rawAssembly.glbNodeIds) ? rawAssembly.glbNodeIds.length : 0,
             selectedComponentId: rawAssembly.selectedComponentId ?? null,
             isolatedComponentId: rawAssembly.isolatedComponentId ?? null,
+            viewMode: rawAssembly.viewMode ?? null,
+            focusedPartCallout: rawAssembly.focusedPartCallout ?? null,
+            nodeScreenPositions: rawAssembly.nodeScreenPositions ?? {},
             explodeFactor: rawAssembly.explodeFactor ?? null,
+            animatedExplodeFactor: rawAssembly.animatedExplodeFactor ?? null,
+            assemblyStatus: rawAssembly.assemblyStatus ?? null,
+            assemblyProgress: rawAssembly.assemblyProgress ?? null,
             activeExplodeStage: rawAssembly.activeExplodeStage ?? null,
             camera: rawAssembly.camera ?? null,
             separatedOffsets: rawAssembly.separatedOffsets ?? {},
@@ -355,6 +361,10 @@ async function clickBackendNode(cdp, backendDOMNodeId) {
   }
   const x = (content[0] + content[2] + content[4] + content[6]) / 4;
   const y = (content[1] + content[3] + content[5] + content[7]) / 4;
+  await clickPoint(cdp, x, y);
+}
+
+async function clickPoint(cdp, x, y) {
   await cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x, y });
   await cdp.send('Input.dispatchMouseEvent', {
     type: 'mousePressed',
@@ -581,6 +591,10 @@ export async function performBrowserAction(pageWsUrl, options) {
         break;
       }
       case 'click': {
+        if (options.x !== undefined && options.y !== undefined) {
+          await clickPoint(cdp, options.x, options.y);
+          break;
+        }
         const { nodes } = await cdp.send('Accessibility.getFullAXTree');
         const targetNode = findAxNode(nodes, options.role, options.name);
         if (!targetNode) {
