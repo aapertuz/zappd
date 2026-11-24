@@ -52,3 +52,57 @@ An orientation-only normalization was tested on the unplaced 1.0.2 `head_face` d
 The integration therefore remains a rejected candidate import. Completing registration and render assets requires a valid authoritative export or a demonstrated geometry-preserving correction for those faces. None of the checked exports meets that requirement in the installed importer.
 
 Assembly coverage was checked independently on the 1.0.2 import. All 49 assembly definitions have a one-to-one match between their direct compound children and the placed shapes of their XCAF component references (`IsSame`, including locations). No unreferenced geometry owned directly by an assembly was found in this source. The importer continues to treat assembly nodes as hierarchy and leaf nodes as geometry; this check does not establish support for arbitrary mixed-geometry assemblies from other sources.
+
+## Topology investigation beyond orientation
+
+The repeatable diagnostic is `backend/cad_worker/diagnose_poppy_head.py`.
+It verifies the original release digest, reads the unplaced `1_28_5` definition,
+inspects the invalid faces and their edge parameterizations, and compares independent
+copies after forced same-parameter repair, general shape healing, and sewing.
+Run it with the pinned STEP path and an output JSON path. No repaired geometry is
+published by this diagnostic.
+
+Both faces 86 and 489 have cylindrical support surfaces and exactly zero axial
+extent. Their UV bounds span one revolution in U and have identical V bounds,
+`-4.29999999999999`. Each boundary consists of two nondegenerate semicircular
+edges. Neither edge is a seam; both carry the same-parameter flag and edge tolerance
+`1e-7 mm`. The original face area is exactly zero. This is a collapsed cylindrical
+trim, rather than a shell placement or face direction problem. Flipping its wire
+cannot introduce a second axial boundary. Expanding the trim would add surface
+geometry; replacing the cylindrical support with a disk would change the source
+surface. Deleting these faces is excluded by the requested repair constraints.
+
+OCCT's [ShapeFix_Face reference](https://occt3d.com/dev/doc/refman/html/class_shape_fix___face.html)
+explains that missing-seam repair handles separated closed wires on periodic
+surfaces. These faces each have one wire, with no axial separation. The installed
+OCCT is 7.8.1.1; its
+[BRepCheck_Face implementation](https://github.com/Open-Cascade-SAS/OCCT/blob/V7_8_1/src/BRepCheck/BRepCheck_Face.cxx)
+provides the orientation and wire classification checks used in the investigation.
+The source-dependent regression can be run with `ZAPPD_POPPY_SOURCE=<STEP path>`
+and `pytest backend/cad_worker/tests/test_poppy_topology.py`; it checks the actual
+pinned source, including both collapsed trim intervals and zero areas.
+
+Measured on the original head, the area is `42036.764425808164 mm²` and the
+signed-volume integral is `40084.05972663066 mm³`. These integrals describe an
+invalid BRep and do not establish its physical volume. General shape healing and
+sewing retained all 796 faces, the same bounds, area, integral, and maximum edge
+tolerance, but both results remained invalid. Forced same-parameter repair also
+retained 796 faces and remained invalid; its area changed to
+`42035.53649003103 mm²`, integral to `40116.15982863602 mm³`, and maximum edge
+tolerance increased from `0.018265205479867694` to `0.019178273971137264 mm`.
+It therefore supplies neither validity nor demonstrated preservation.
+
+On both rejected faces, five samples per edge agree between the 3D edge and its
+surface-evaluated pcurve within `1.78e-15 mm`. Each edge belongs to two faces.
+`ShapeFix_Wire.FixEdgeCurves` reports a change, but rebuilding a face on the original
+support with the resulting wire still gives zero area and fails validation.
+`FixPeriodicDegenerated` and `FixMissingSeam` both report no change.
+These measurements do not prove that every possible CAD repair is impossible.
+They rule out the tested curve, seam, parameter, sewing, and general healing paths
+as valid face-preserving repairs. Catalog registration remains incomplete.
+
+The captured run is in
+[`poppy-head-topology.json`](cad_worker/tests/evidence/poppy-head-topology.json).
+It records the source digest, original and resulting bounds, counts, integrals,
+tolerances, sampled pcurves, and validity results. The diagnostic works on copies
+and does not write STEP fixtures or change the transactional importer cache.

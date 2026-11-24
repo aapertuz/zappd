@@ -1,0 +1,228 @@
+{
+  "sourceSha256": "10e9d997f82787d4069f7edd4b88ec3ab6dcc51cb1686d761d84add709d38266",
+  "occurrence": "1_28_5",
+  "original": {
+    "valid": false,
+    "faces": 796,
+    "areaMm2": 42036.764425808164,
+    "signedVolumeMm3": 40084.05972663066,
+    "boundsMm": [
+      [-66.58495517072348, -16.76838153552537, -16.994473717932404],
+      [66.58495517072355, 97.22288031068007, 49.60400912394523]
+    ],
+    "maxEdgeToleranceMm": 0.018265205479867694
+  },
+  "defects": [
+    {
+      "face": 86,
+      "surface": "GeomAbs_SurfaceType.GeomAbs_Cylinder",
+      "uvBounds": [0.0, 6.283185307179586, -4.29999999999999, -4.29999999999999],
+      "metrics": {
+        "valid": false,
+        "faces": 1,
+        "areaMm2": 0.0,
+        "signedVolumeMm3": 0.0,
+        "boundsMm": [
+          [45.15000000000002, 9.60043868867327, 29.19022053633747],
+          [47.85000000000001, 12.264454281808005, 29.629561997543775]
+        ],
+        "maxEdgeToleranceMm": 1e-7
+      },
+      "edges": [
+        {
+          "curve": "GeomAbs_CurveType.GeomAbs_Circle",
+          "degenerate": false,
+          "seam": false,
+          "sameParameter": true,
+          "pcurveSamples": [
+            [0.0, -4.29999999999999],
+            [0.7853981633974483, -4.29999999999999],
+            [1.5707963267948966, -4.29999999999999],
+            [2.356194490192345, -4.29999999999999],
+            [3.141592653589793, -4.29999999999999]
+          ],
+          "surfaceResidualMm": 1.7763568394002505e-15,
+          "adjacentFaces": 2
+        },
+        {
+          "curve": "GeomAbs_CurveType.GeomAbs_Circle",
+          "degenerate": false,
+          "seam": false,
+          "sameParameter": true,
+          "pcurveSamples": [
+            [3.141592653589793, -4.29999999999999],
+            [3.9269908169872414, -4.29999999999999],
+            [4.71238898038469, -4.29999999999999],
+            [5.497787143782138, -4.29999999999999],
+            [6.283185307179586, -4.29999999999999]
+          ],
+          "surfaceResidualMm": 1.7763568394002505e-15,
+          "adjacentFaces": 2
+        }
+      ],
+      "faceHealing": {
+        "valid": false,
+        "faces": 1,
+        "areaMm2": 0.0,
+        "signedVolumeMm3": 0.0,
+        "boundsMm": [
+          [45.15000000000002, 9.60043868867327, 29.19022053633747],
+          [47.85000000000001, 12.264454281808005, 29.629561997543775]
+        ],
+        "maxEdgeToleranceMm": 1e-7
+      },
+      "wireEdgeCurveFix": [
+        {
+          "changed": true,
+          "result": {
+            "valid": false,
+            "faces": 1,
+            "areaMm2": 0.0,
+            "signedVolumeMm3": 0.0,
+            "boundsMm": [
+              [45.15000000000002, 9.60043868867327, 29.19022053633747],
+              [47.85000000000001, 12.264454281808005, 29.629561997543775]
+            ],
+            "maxEdgeToleranceMm": 1e-7
+          }
+        }
+      ],
+      "periodicDegeneratedChanged": false,
+      "missingSeamChanged": false,
+      "seamHealing": {
+        "valid": false,
+        "faces": 1,
+        "areaMm2": 0.0,
+        "signedVolumeMm3": 0.0,
+        "boundsMm": [
+          [45.15000000000002, 9.60043868867327, 29.19022053633747],
+          [47.85000000000001, 12.264454281808005, 29.629561997543775]
+        ],
+        "maxEdgeToleranceMm": 1e-7
+      }
+    },
+    {
+      "face": 489,
+      "surface": "GeomAbs_SurfaceType.GeomAbs_Cylinder",
+      "uvBounds": [-3.141592653589793, 3.141592653589793, -4.29999999999999, -4.29999999999999],
+      "metrics": {
+        "valid": false,
+        "faces": 1,
+        "areaMm2": 0.0,
+        "signedVolumeMm3": 0.0,
+        "boundsMm": [
+          [-47.85000000000001, 9.60043868867327, 29.19022053633747],
+          [-45.15000000000002, 12.264454281808005, 29.629561997543775]
+        ],
+        "maxEdgeToleranceMm": 1e-7
+      },
+      "edges": [
+        {
+          "curve": "GeomAbs_CurveType.GeomAbs_Circle",
+          "degenerate": false,
+          "seam": false,
+          "sameParameter": true,
+          "pcurveSamples": [
+            [0.0, -4.29999999999999],
+            [-0.7853981633974483, -4.29999999999999],
+            [-1.5707963267948966, -4.29999999999999],
+            [-2.356194490192345, -4.29999999999999],
+            [-3.141592653589793, -4.29999999999999]
+          ],
+          "surfaceResidualMm": 1.7763568394002505e-15,
+          "adjacentFaces": 2
+        },
+        {
+          "curve": "GeomAbs_CurveType.GeomAbs_Circle",
+          "degenerate": false,
+          "seam": false,
+          "sameParameter": true,
+          "pcurveSamples": [
+            [3.141592653589793, -4.29999999999999],
+            [2.356194490192345, -4.29999999999999],
+            [1.5707963267948966, -4.29999999999999],
+            [0.7853981633974483, -4.29999999999999],
+            [0.0, -4.29999999999999]
+          ],
+          "surfaceResidualMm": 1.7763568394002505e-15,
+          "adjacentFaces": 2
+        }
+      ],
+      "faceHealing": {
+        "valid": false,
+        "faces": 1,
+        "areaMm2": 0.0,
+        "signedVolumeMm3": 0.0,
+        "boundsMm": [
+          [-47.85000000000001, 9.60043868867327, 29.19022053633747],
+          [-45.15000000000002, 12.264454281808005, 29.629561997543775]
+        ],
+        "maxEdgeToleranceMm": 1e-7
+      },
+      "wireEdgeCurveFix": [
+        {
+          "changed": true,
+          "result": {
+            "valid": false,
+            "faces": 1,
+            "areaMm2": 0.0,
+            "signedVolumeMm3": 0.0,
+            "boundsMm": [
+              [-47.85000000000001, 9.60043868867327, 29.19022053633747],
+              [-45.15000000000002, 12.264454281808005, 29.629561997543775]
+            ],
+            "maxEdgeToleranceMm": 1e-7
+          }
+        }
+      ],
+      "periodicDegeneratedChanged": false,
+      "missingSeamChanged": false,
+      "seamHealing": {
+        "valid": false,
+        "faces": 1,
+        "areaMm2": 0.0,
+        "signedVolumeMm3": 0.0,
+        "boundsMm": [
+          [-47.85000000000001, 9.60043868867327, 29.19022053633747],
+          [-45.15000000000002, 12.264454281808005, 29.629561997543775]
+        ],
+        "maxEdgeToleranceMm": 1e-7
+      }
+    }
+  ],
+  "attempts": {
+    "forcedSameParameter": {
+      "valid": false,
+      "faces": 796,
+      "areaMm2": 42035.53649003103,
+      "signedVolumeMm3": 40116.15982863602,
+      "boundsMm": [
+        [-66.58495517072326, -16.76838153552537, -16.994473717932404],
+        [66.58495517072353, 97.22288031068018, 49.60400912394523]
+      ],
+      "maxEdgeToleranceMm": 0.019178273971137264
+    },
+    "shapeHealing": {
+      "valid": false,
+      "faces": 796,
+      "areaMm2": 42036.764425808164,
+      "signedVolumeMm3": 40084.05972663066,
+      "boundsMm": [
+        [-66.58495517072348, -16.76838153552537, -16.994473717932404],
+        [66.58495517072355, 97.22288031068007, 49.60400912394523]
+      ],
+      "maxEdgeToleranceMm": 0.018265205479867694
+    },
+    "sewing": {
+      "valid": false,
+      "faces": 796,
+      "areaMm2": 42036.764425808164,
+      "signedVolumeMm3": 40084.05972663066,
+      "boundsMm": [
+        [-66.58495517072348, -16.76838153552537, -16.994473717932404],
+        [66.58495517072355, 97.22288031068007, 49.60400912394523]
+      ],
+      "maxEdgeToleranceMm": 0.018265205479867694
+    }
+  }
+}
