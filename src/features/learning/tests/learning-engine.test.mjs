@@ -211,6 +211,32 @@ describe('component learning context', () => {
     assert.equal(cached.storedExplanation.summary, storedExplanation.summary);
   });
 
+  it('persists and reads learning context for a composed component', async () => {
+    const composedAssembly = {
+      ...assembly,
+      projectId: 'proj_composed_learning',
+      verificationStatus: 'composed_validated',
+      nodes: assembly.nodes.map((node) =>
+        node.id === componentId
+          ? {
+              ...node,
+              provenance: {
+                ...node.provenance,
+                origin: 'kicad_pcb_step',
+                sourceUrl: 'kicad://test/board',
+                verificationStatus: 'composed_validated',
+              },
+            }
+          : node,
+      ),
+    };
+    const context = await createLearningContext(composedAssembly, componentId);
+
+    assert.equal(context.component.provenance.verificationStatus, 'composed_validated');
+    assert.equal(context.storedExplanation.verificationStatus, 'composed_validated');
+    assert.deepEqual(parseLearningCloudRequest({ kind: 'explain', context }).context, context);
+  });
+
   it('uses memory when the browser blocks storage and rejects malformed cached records', async () => {
     const memoryProject = { ...assembly, projectId: 'proj_learning_memory' };
     const blocked = {

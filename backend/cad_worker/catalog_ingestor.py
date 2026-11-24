@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import shutil
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal, TypedDict
 
 from OCP.BRepCheck import BRepCheck_Analyzer
 from OCP.IFSelect import IFSelect_RetDone
@@ -14,6 +14,31 @@ from OCP.TopExp import TopExp_Explorer
 
 REPO_STEP_CACHE_DIR = Path(__file__).resolve().parents[1] / "data" / "open_step_cache"
 MIN_CAD_BREP_FACES = 4
+
+
+class GeometryOriginPolicy(TypedDict):
+    allowedUriPrefixes: tuple[str, ...]
+    targetVerifiedStatus: Literal["sourced_verified", "composed_validated"]
+
+
+GEOMETRY_ORIGIN_POLICY: dict[str, GeometryOriginPolicy] = {
+    "open_step_catalog": {
+        "allowedUriPrefixes": ("https://",),
+        "targetVerifiedStatus": "sourced_verified",
+    },
+    "cots_library_step": {
+        "allowedUriPrefixes": ("https://",),
+        "targetVerifiedStatus": "sourced_verified",
+    },
+    "kicad_pcb_step": {
+        "allowedUriPrefixes": ("https://", "kicad://"),
+        "targetVerifiedStatus": "composed_validated",
+    },
+    "procedural_harness": {
+        "allowedUriPrefixes": ("https://", "harness://"),
+        "targetVerifiedStatus": "composed_validated",
+    },
+}
 
 
 def count_brep_faces(shape: Any) -> int:
@@ -61,23 +86,34 @@ def read_and_validate_step(
     return shape, sha256_hex, face_count
 
 
+def _node_provenance_failure(
+    node_spec: dict[str, Any], policy: GeometryOriginPolicy
+) -> str | None:
+    source_url = node_spec.get("sourceUrl")
+    if not isinstance(source_url, str) or not source_url.startswith(policy["allowedUriPrefixes"]):
+        return f"Node {node_spec['id']} has disallowed sourceUrl for origin {node_spec['origin']}"
+    spdx_license = node_spec.get("spdxLicense")
+    if not isinstance(spdx_license, str) or not spdx_license.strip():
+        return f"Node {node_spec['id']} lacks SPDX license identifier"
+    return None
+
+
 def resolve_component_step(node_spec: dict[str, Any], cache_dir: Path) -> dict[str, Any]:
+    origin = node_spec.get("origin")
+    if not isinstance(origin, str) or origin not in GEOMETRY_ORIGIN_POLICY:
+        raise RuntimeError(f"Node {node_spec['id']} uses disallowed origin {origin!r}")
+
+    policy = GEOMETRY_ORIGIN_POLICY[origin]
+    provenance_failure = _node_provenance_failure(node_spec, policy)
     fixture_name = node_spec.get("stepFixtureName")
     if fixture_name is None:
-        return {"hasGeometry": False}
-
-    origin = node_spec.get("origin")
-    source_url = str(node_spec.get("sourceUrl", ""))
-    spdx_license = str(node_spec.get("spdxLicense", ""))
-
-    if origin != "open_step_catalog":
-        raise RuntimeError(
-            f"Component {node_spec['id']} uses disallowed origin '{origin}'; Phase 1 requires open_step_catalog"
-        )
-    if not source_url.startswith("https://") or not spdx_license.strip():
-        raise RuntimeError(
-            f"Component {node_spec['id']} is missing verified HTTPS sourceUrl or SPDX license"
-        )
+        return {
+            "hasGeometry": False,
+            "provenanceFailure": provenance_failure,
+            "targetVerifiedStatus": policy["targetVerifiedStatus"],
+        }
+    if provenance_failure is not None:
+        raise RuntimeError(provenance_failure)
 
     cache_dir.mkdir(parents=True, exist_ok=True)
     step_path = cache_dir / str(fixture_name)
@@ -86,10 +122,9 @@ def resolve_component_step(node_spec: dict[str, Any], cache_dir: Path) -> dict[s
         if repo_step_path.exists() and repo_step_path.resolve() != step_path.resolve():
             shutil.copy2(repo_step_path, step_path)
 
-    expected_sha = node_spec.get("expectedStepSha256")
     shape, sha256_hex, face_count = read_and_validate_step(
         step_path,
-        expected_sha256=str(expected_sha) if expected_sha else None,
+        expected_sha256=node_spec.get("expectedStepSha256"),
     )
 
     return {
@@ -99,5 +134,5 @@ def resolve_component_step(node_spec: dict[str, Any], cache_dir: Path) -> dict[s
         "sha256": sha256_hex,
         "faceCount": face_count,
         "initialStatus": "unverified",
-        "targetVerifiedStatus": "sourced_verified",
+        "targetVerifiedStatus": policy["targetVerifiedStatus"],
     }

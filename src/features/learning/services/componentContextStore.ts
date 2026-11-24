@@ -6,6 +6,7 @@ import {
   type ResolvedComponentRelationship,
   type VerifiedProjectAssembly,
   getCatalogArchetypeById,
+  isVerifiedStatus,
   parseProjectLearningDocuments,
 } from '@/shared/domain';
 import {
@@ -127,8 +128,8 @@ function resolveContext(
     (record) => record.componentId === componentId,
   );
   if (
-    component?.provenance.verificationStatus !== 'sourced_verified' ||
-    storedExplanation?.verificationStatus !== 'sourced_verified'
+    !isVerifiedStatus(component?.provenance.verificationStatus) ||
+    !isVerifiedStatus(storedExplanation?.verificationStatus)
   )
     return null;
 

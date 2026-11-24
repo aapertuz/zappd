@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { describe, it } from 'node:test';
 
 import {
@@ -9,12 +9,21 @@ import {
   parseAiProviderId,
 } from '../aiProvider.ts';
 import {
+  GEOMETRY_ORIGINS,
   canClassifyAsVerified,
   computeExplodeStageWeight,
   computeNodeWorldPositionMeters,
   hasVerifiedUpstreamProvenance,
+  isGeometryOrigin,
+  isPortId,
   isVerificationStatus,
+  isVerifiedStatus,
+  parseAssemblyNode,
+  parseConnectorPort,
+  parseGeometryOrigin,
+  parseRelationship,
   toComponentId,
+  toPortId,
   verifyOneToOneNodeMapping,
 } from '../assembly.ts';
 import {
@@ -24,21 +33,16 @@ import {
 } from '../catalog.ts';
 
 describe('shared domain contracts', () => {
-  it('keeps the app and CAD worker colors identical for every catalog component', () => {
-    const workerSource = readFileSync(
-      new URL('../../../../backend/cad_worker/catalog_specs.py', import.meta.url),
-      'utf8',
-    );
-    const workerColors = Object.fromEntries(
-      [...workerSource.matchAll(/_node\(\s*"([^"]+)",\n(?:[^\n]*\n){5}\s*"(#[0-9a-f]{6})"/g)].map(
-        ([, componentId, color]) => [componentId, color],
-      ),
-    );
-    const appColors = Object.fromEntries(
-      CATALOG_ARCHETYPES.flatMap(({ nodes }) => nodes.map(({ id, colorHex }) => [id, colorHex])),
-    );
+  it('loads the same complete catalog specs as the CAD worker', () => {
+    const catalogDirectory = new URL('../catalog/assemblies/', import.meta.url);
+    const workerSpecFiles = readdirSync(catalogDirectory).filter((file) => file.endsWith('.json'));
+    const appSpecFiles = CATALOG_ARCHETYPES.map(({ archetypeId }) => `${archetypeId}.json`);
 
-    assert.deepEqual(appColors, workerColors);
+    assert.deepEqual(appSpecFiles.toSorted(), workerSpecFiles.toSorted());
+    for (const specFile of workerSpecFiles) {
+      const workerSpec = JSON.parse(readFileSync(new URL(specFile, catalogDirectory), 'utf8'));
+      assert.deepEqual(getCatalogArchetypeById(workerSpec.archetypeId), workerSpec);
+    }
   });
 
   it('routes gemini via google_genai and both openai and deepseek via openai_compatible api', () => {
@@ -82,8 +86,12 @@ describe('shared domain contracts', () => {
       failures: [],
     };
     assert.equal(canClassifyAsVerified(validReport, 'sourced_verified'), true);
+    assert.equal(canClassifyAsVerified(validReport, 'composed_validated'), true);
     assert.equal(canClassifyAsVerified(validReport, 'unverified'), false);
     assert.equal(isVerificationStatus('synthesized_verified'), false);
+    assert.equal(isVerificationStatus('composed_validated'), true);
+    assert.equal(isVerifiedStatus('composed_validated'), true);
+    assert.equal(isVerifiedStatus('unverified'), false);
     assert.equal(
       canClassifyAsVerified({ ...validReport, interferenceCount: 1 }, 'sourced_verified'),
       false,
@@ -92,34 +100,153 @@ describe('shared domain contracts', () => {
       canClassifyAsVerified({ ...validReport, maxDimensionalErrorMm: 0.15 }, 'sourced_verified'),
       false,
     );
+    assert.equal(
+      canClassifyAsVerified({ ...validReport, nodeMappingComplete: false }, 'composed_validated'),
+      false,
+    );
+  });
 
-    const drone = matchProjectArchetypeFromPrompt('quadcopter');
-    const validNodes = drone.nodes.map((bp) => ({
-      ...bp,
+  it('requires each geometry origin to have its own allowed URI and verification status', () => {
+    const cases = [
+      ['open_step_catalog', 'sourced_verified', ['https://'], ['kicad://', 'harness://']],
+      ['cots_library_step', 'sourced_verified', ['https://'], ['kicad://', 'harness://']],
+      ['kicad_pcb_step', 'composed_validated', ['https://', 'kicad://'], ['harness://']],
+      ['procedural_harness', 'composed_validated', ['https://', 'harness://'], ['kicad://']],
+    ];
+    const nodeWithProvenance = (provenance) => ({
+      provenance: { spdxLicense: 'MIT', stepSha256: 'a'.repeat(64), ...provenance },
+    });
+    const hasProvenance = (provenance) =>
+      hasVerifiedUpstreamProvenance([nodeWithProvenance(provenance)]);
+
+    assert.deepEqual(
+      GEOMETRY_ORIGINS,
+      cases.map(([origin]) => origin),
+    );
+    assert.equal(hasVerifiedUpstreamProvenance([]), false);
+    assert.equal(isGeometryOrigin('build123d_fallback'), false);
+    assert.throws(() => parseGeometryOrigin('build123d_fallback'));
+
+    const validNodes = [];
+    for (const [origin, verificationStatus, allowed, denied] of cases) {
+      assert.equal(isGeometryOrigin(origin), true);
+      assert.equal(parseGeometryOrigin(origin), origin);
+      for (const prefix of allowed) {
+        const provenance = { origin, verificationStatus, sourceUrl: `${prefix}example.test/part` };
+        assert.equal(hasProvenance(provenance), true);
+        validNodes.push(nodeWithProvenance(provenance));
+      }
+      for (const prefix of [...denied, 'http://', 'local://']) {
+        assert.equal(
+          hasProvenance({ origin, verificationStatus, sourceUrl: `${prefix}example.test/part` }),
+          false,
+        );
+      }
+      for (const invalidStatus of ['sourced_verified', 'composed_validated', 'unverified'].filter(
+        (status) => status !== verificationStatus,
+      )) {
+        assert.equal(
+          hasProvenance({
+            origin,
+            verificationStatus: invalidStatus,
+            sourceUrl: 'https://example.test/part',
+          }),
+          false,
+        );
+      }
+    }
+    assert.equal(hasVerifiedUpstreamProvenance(validNodes), true);
+    assert.equal(hasVerifiedUpstreamProvenance(validNodes, 'composed_validated'), true);
+    assert.equal(hasVerifiedUpstreamProvenance(validNodes, 'sourced_verified'), false);
+    const sourcedOnlyNodes = validNodes.filter(
+      ({ provenance }) => provenance.verificationStatus === 'sourced_verified',
+    );
+    assert.equal(hasVerifiedUpstreamProvenance(sourcedOnlyNodes, 'sourced_verified'), true);
+    assert.equal(hasVerifiedUpstreamProvenance(sourcedOnlyNodes, 'composed_validated'), false);
+    const reference = validNodes[0].provenance;
+    assert.equal(hasProvenance({ ...reference, origin: 'build123d_fallback' }), false);
+    assert.equal(hasProvenance({ ...reference, spdxLicense: '  ' }), false);
+    assert.equal(hasProvenance({ ...reference, stepSha256: 'g'.repeat(64) }), false);
+  });
+
+  it('parses connector ports and preserves optional ports only on nodes that have them', () => {
+    const port = {
+      portId: 'port_motor_power',
+      label: 'Motor power',
+      connectorType: 'XT30',
+      busKind: 'dc_power',
+      localPositionMeters: [0.01, 0, 0],
+      exitDirection: [1, 0, 0],
+    };
+    assert.equal(isPortId(port.portId), true);
+    assert.equal(toPortId(port.portId), port.portId);
+    assert.equal(isPortId('Invalid Port'), false);
+    assert.throws(() => toPortId('Invalid Port'));
+    assert.deepEqual(parseConnectorPort(port), port);
+    const wiredPort = {
+      ...port,
+      wireGaugeAwg: 18,
+      wireColorsHex: ['#ff0000', '#000000'],
+      nominalVoltageV: 12,
+    };
+    assert.deepEqual(parseConnectorPort(wiredPort), wiredPort);
+    for (const invalidFields of [
+      { portId: '' },
+      { label: ' ' },
+      { busKind: 'analog' },
+      { localPositionMeters: [0, 0] },
+      { exitDirection: [0, 0, 0] },
+      { exitDirection: [1, 0, Infinity] },
+      { wireColorsHex: ['red'] },
+      { wireGaugeAwg: NaN },
+    ]) {
+      assert.throws(() => parseConnectorPort({ ...port, ...invalidFields }));
+    }
+
+    const blueprint = getCatalogArchetypeById('quadcopter_drone_v1').nodes[0];
+    const node = {
+      ...blueprint,
       provenance: {
-        origin: bp.origin,
+        origin: blueprint.origin,
         verificationStatus: 'sourced_verified',
-        spdxLicense: bp.spdxLicense,
-        sourceUrl: bp.sourceUrl,
-        sourceName: bp.sourceName,
+        spdxLicense: blueprint.spdxLicense,
+        sourceUrl: blueprint.sourceUrl,
+        sourceName: blueprint.sourceName,
         stepSha256: 'a'.repeat(64),
       },
-      glbNodeName: bp.id,
-      usdzPrimPath: `/World/${bp.id}`,
-    }));
-    assert.equal(hasVerifiedUpstreamProvenance(validNodes), true);
+      glbNodeName: blueprint.id,
+      usdzPrimPath: `/World/${blueprint.id}`,
+    };
+    assert.equal(Object.hasOwn(parseAssemblyNode(node), 'ports'), false);
+    assert.deepEqual(parseAssemblyNode({ ...node, ports: [wiredPort] }).ports, [wiredPort]);
+    assert.throws(() => parseAssemblyNode({ ...node, ports: [null] }));
+  });
 
-    const unverifiedNodes = validNodes.map((n, index) =>
-      index === 0 ? { ...n, provenance: { ...n.provenance, verificationStatus: 'unverified' } } : n,
-    );
-    assert.equal(hasVerifiedUpstreamProvenance(unverifiedNodes), false);
-
-    const localUrlNodes = validNodes.map((n, index) =>
-      index === 0
-        ? { ...n, provenance: { ...n.provenance, sourceUrl: 'local://unverified/test' } }
-        : n,
-    );
-    assert.equal(hasVerifiedUpstreamProvenance(localUrlNodes), false);
+  it('parses electrical routing with a complete port pair and positive finite bundle diameter', () => {
+    const relationship = {
+      id: 'rel_motor_power',
+      fromComponentId: 'comp_motor',
+      toComponentId: 'comp_controller',
+      connectionType: 'power_bus',
+      howConnected: 'XT30',
+      whyConnected: 'Powers the motor',
+    };
+    assert.deepEqual(parseRelationship(relationship), relationship);
+    const routed = {
+      ...relationship,
+      fromPortId: 'port_motor_power',
+      toPortId: 'port_controller_out',
+      routingWaypointsMeters: [[0.01, 0.02, 0.03]],
+      wireBundleDiameterMm: 5,
+    };
+    assert.deepEqual(parseRelationship(routed), routed);
+    assert.throws(() => parseRelationship({ ...relationship, fromPortId: routed.fromPortId }));
+    assert.throws(() => parseRelationship({ ...relationship, toPortId: routed.toPortId }));
+    assert.throws(() => parseRelationship({ ...routed, toPortId: 'Invalid Port' }));
+    assert.throws(() => parseRelationship({ ...routed, routingWaypointsMeters: [[0, 0]] }));
+    for (const wireBundleDiameterMm of [0, -1, Infinity, NaN, '5']) {
+      assert.throws(() => parseRelationship({ ...routed, wireBundleDiameterMm }));
+    }
   });
 
   it('computes hierarchical constraint-axis explosion by assembly depth without axial drift', () => {

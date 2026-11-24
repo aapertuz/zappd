@@ -567,19 +567,6 @@ def parse_usdz_prim_paths(usdz_path: Path) -> str:
         return zf.read("model.usda").decode("utf-8")
 
 
-def _validate_node_provenance(node_spec: dict[str, Any]) -> str | None:
-    cid = node_spec["id"]
-    if node_spec.get("origin") != "open_step_catalog":
-        return f"Node {cid} origin is not open_step_catalog"
-    source_url = str(node_spec.get("sourceUrl", ""))
-    if not source_url.startswith("https://"):
-        return f"Node {cid} lacks verified HTTPS sourceUrl"
-    spdx_license = str(node_spec.get("spdxLicense", "")).strip()
-    if not spdx_license:
-        return f"Node {cid} lacks SPDX license identifier"
-    return None
-
-
 def run_cad_pipeline(
     archetype_spec: dict[str, Any],
     output_dir: Path,
@@ -590,7 +577,7 @@ def run_cad_pipeline(
     nodes_spec = list(archetype_spec["nodes"])
     failures: list[str] = []
 
-    ingested: dict[str, dict[str, Any]] = {}
+    resolved_by_id: dict[str, dict[str, Any]] = {}
     placed_solids: dict[str, Any] = {}
     geometry_by_id: dict[str, MeshGeometry] = {}
     max_dim_err_mm = 0.0
@@ -602,11 +589,12 @@ def run_cad_pipeline(
 
     for idx, node_spec in enumerate(nodes_spec):
         cid = node_spec["id"]
-        provenance_failure = _validate_node_provenance(node_spec)
+        resolved = resolve_component_step(node_spec, cache_dir)
+        resolved_by_id[cid] = resolved
+        provenance_failure = resolved.get("provenanceFailure")
         if provenance_failure is not None:
             failures.append(provenance_failure)
 
-        resolved = resolve_component_step(node_spec, cache_dir)
         if not resolved["hasGeometry"]:
             continue
 
@@ -645,8 +633,6 @@ def run_cad_pipeline(
                 failures.append(f"Dimensional tolerance exceeded for {cid}: {err_mm:.4f} mm > 0.1 mm")
 
             geometry_by_id[cid] = MeshGeometry(verts, norms, idxs, metric_uvs)
-        ingested[cid] = resolved
-
     interference_count = 0
     solid_ids = list(placed_solids.keys())
     for i in range(len(solid_ids)):
@@ -682,7 +668,12 @@ def run_cad_pipeline(
     step_writer.Write(str(step_out))
 
     all_checks_ok = brep_valid and interference_count == 0 and max_dim_err_mm <= 0.1 and len(failures) == 0
-    project_status = "sourced_verified" if all_checks_ok else "unverified"
+    target_status = (
+        "composed_validated"
+        if any(node["targetVerifiedStatus"] == "composed_validated" for node in resolved_by_id.values())
+        else "sourced_verified"
+    )
+    project_status = target_status if all_checks_ok else "unverified"
 
     exported_glb_ids = export_hierarchical_glb(nodes_spec, geometry_by_id, project_status, glb_out)
     prim_paths = export_usdz_archive(nodes_spec, geometry_by_id, usdz_out)
@@ -698,7 +689,7 @@ def run_cad_pipeline(
         failures.append("Incomplete 1:1 componentId mapping across Firestore, GLB, and USDZ")
 
     valid = all_checks_ok and node_mapping_complete
-    final_status = "sourced_verified" if valid else "unverified"
+    final_status = target_status if valid else "unverified"
 
     step_bytes = step_out.read_bytes()
     glb_bytes = glb_out.read_bytes()
@@ -713,12 +704,9 @@ def run_cad_pipeline(
     enriched_nodes: list[dict[str, Any]] = []
     for node_spec in nodes_spec:
         cid = node_spec["id"]
-        if cid in ingested:
-            node_status = ingested[cid]["targetVerifiedStatus"] if valid else "unverified"
-            node_sha = ingested[cid]["sha256"]
-        else:
-            node_status = final_status
-            node_sha = step_sha
+        resolved = resolved_by_id[cid]
+        node_status = resolved["targetVerifiedStatus"] if valid else "unverified"
+        node_sha = resolved.get("sha256", step_sha)
 
         enriched_nodes.append(
             {
@@ -735,6 +723,7 @@ def run_cad_pipeline(
                 "explodeDistanceMeters": node_spec["explodeDistanceMeters"],
                 "materialHint": node_spec["materialHint"],
                 "specifications": node_spec["specifications"],
+                **({"ports": node_spec["ports"]} if "ports" in node_spec else {}),
                 "provenance": {
                     "origin": node_spec["origin"],
                     "verificationStatus": node_status,

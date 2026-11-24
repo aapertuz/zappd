@@ -17,6 +17,7 @@ import {
   isProjectId,
   isRelationshipId,
   isVerificationStatus,
+  isVerifiedStatus,
   parseAssemblyNode,
   parseConnectionType,
   parseInstructionStep,
@@ -119,7 +120,7 @@ const contextSchema = z
   .refine(
     (context) =>
       hasVerifiedUpstreamProvenance([context.component]) &&
-      context.storedExplanation.verificationStatus === 'sourced_verified' &&
+      isVerifiedStatus(context.storedExplanation.verificationStatus) &&
       context.storedExplanation.componentId === context.component.id,
     'Expected a verified component and its verified explanation',
   );

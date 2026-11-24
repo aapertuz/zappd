@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import json
 import re
 import struct
 import sys
@@ -15,7 +16,8 @@ from pygltflib import FLOAT, GLTF2
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from catalog_specs import CATALOG_SPECS
+from catalog_ingestor import resolve_component_step
+from catalog_specs import CATALOG_SPECS, resolve_catalog_spec
 from geometry_pipeline import parse_glb_diagnostics, parse_usdz_prim_paths, run_cad_pipeline
 from material_skins import resolve_material_skin, srgb_hex_to_linear_rgba
 
@@ -25,6 +27,22 @@ EXPECTED_NODE_COUNTS = {
     "robotic_arm_3dof_v1": 24,
     "open_source_rover_v1": 15,
 }
+
+
+def test_worker_loads_complete_shared_catalog_specs() -> None:
+    catalog_dir = Path(__file__).resolve().parents[3] / "src" / "shared" / "domain" / "catalog" / "assemblies"
+    specs_from_disk = {
+        path.stem: json.loads(path.read_text(encoding="utf-8"))
+        for path in catalog_dir.glob("*.json")
+    }
+    assert list(CATALOG_SPECS) == list(EXPECTED_NODE_COUNTS)
+    assert CATALOG_SPECS == specs_from_disk
+    for archetype_id, spec in specs_from_disk.items():
+        assert resolve_catalog_spec(archetype_id) == spec
+        assert resolve_catalog_spec(archetype_id, str(catalog_dir / f"{archetype_id}.json")) == spec
+        for node in spec["nodes"]:
+            if node["stepFixtureName"] is not None:
+                assert re.fullmatch(r"[a-f0-9]{64}", node["expectedStepSha256"])
 
 
 @pytest.mark.parametrize(
@@ -160,6 +178,7 @@ def test_all_robotics_categories_pass_opencascade_validation(tmp_path: Path) -> 
         result = run_cad_pipeline(spec, output_dir=out_dir, cache_dir=cache_dir)
 
         assert len(result["nodes"]) == EXPECTED_NODE_COUNTS[archetype_id]
+        assert result["verificationStatus"] == "sourced_verified"
         validation = result["validation"]
         assert validation["valid"] is True, f"{archetype_id} failed: {validation['failures']}"
         assert validation["brepValid"] is True
@@ -211,13 +230,79 @@ def test_collision_injection_rejects_and_marks_unverified(tmp_path: Path) -> Non
         assert node["provenance"]["verificationStatus"] == "unverified"
 
 
-def test_disallowed_fallback_origin_is_rejected(tmp_path: Path) -> None:
+@pytest.mark.parametrize("has_geometry", [True, False])
+def test_disallowed_fallback_origin_is_rejected(tmp_path: Path, has_geometry: bool) -> None:
     cache_dir = tmp_path / "step_cache"
     out_dir = tmp_path / "invalid_origin_export"
     tampered = copy.deepcopy(CATALOG_SPECS["open_source_rover_v1"])
     for node in tampered["nodes"]:
-        if node.get("stepFixtureName"):
+        if bool(node.get("stepFixtureName")) == has_geometry:
             node["origin"] = "build123d_fallback"
             break
     with pytest.raises(RuntimeError, match="disallowed origin"):
         run_cad_pipeline(tampered, output_dir=out_dir, cache_dir=cache_dir)
+
+
+@pytest.mark.parametrize(
+    ("origin", "source_url", "expected_status"),
+    [
+        ("open_step_catalog", "https://example.test/catalog.step", "sourced_verified"),
+        ("cots_library_step", "https://example.test/connector.step", "sourced_verified"),
+        ("kicad_pcb_step", "kicad://board/revision", "composed_validated"),
+        ("kicad_pcb_step", "https://example.test/board.step", "composed_validated"),
+        ("procedural_harness", "harness://catalog/route", "composed_validated"),
+        ("procedural_harness", "https://example.test/harness.step", "composed_validated"),
+        ("open_step_catalog", "kicad://board/revision", None),
+        ("cots_library_step", "http://example.test/connector.step", None),
+        ("kicad_pcb_step", "harness://catalog/route", None),
+        ("procedural_harness", "kicad://board/revision", None),
+    ],
+)
+def test_step_ingestion_enforces_origin_uri_and_status(
+    tmp_path: Path, origin: str, source_url: str, expected_status: str | None
+) -> None:
+    rover_nodes = CATALOG_SPECS["open_source_rover_v1"]["nodes"]
+    fixture_node = next(node for node in rover_nodes if node.get("stepFixtureName"))
+    node = {**fixture_node, "origin": origin, "sourceUrl": source_url}
+    if expected_status is None:
+        with pytest.raises(RuntimeError, match="disallowed sourceUrl"):
+            resolve_component_step(node, tmp_path)
+    else:
+        resolved = resolve_component_step(node, tmp_path)
+        assert resolved["targetVerifiedStatus"] == expected_status
+        assert resolved["sha256"] == node["expectedStepSha256"]
+
+
+def test_mixed_geometry_uses_per_node_status_and_preserves_ports(tmp_path: Path) -> None:
+    spec = copy.deepcopy(CATALOG_SPECS["open_source_rover_v1"])
+    by_id = {node["id"]: node for node in spec["nodes"]}
+    ports = [
+        {
+            "portId": "port_camera_usb",
+            "label": "Camera data",
+            "connectorType": "USB-C",
+            "busKind": "usb_data",
+            "localPositionMeters": [0.01, 0.02, 0],
+            "exitDirection": [1, 0, 0],
+        }
+    ]
+    by_id["comp_zed2i_stereo_camera"].update(
+        origin="kicad_pcb_step", sourceUrl="kicad://test/board", ports=ports
+    )
+    by_id["sub_perception_avionics"].update(
+        origin="procedural_harness", sourceUrl="harness://test/route"
+    )
+
+    result = run_cad_pipeline(spec, output_dir=tmp_path / "exports", cache_dir=tmp_path / "cache")
+
+    assert result["validation"]["valid"] is True
+    assert result["verificationStatus"] == "composed_validated"
+    output_nodes = {node["id"]: node for node in result["nodes"]}
+    assert output_nodes["comp_zed2i_stereo_camera"]["ports"] == ports
+    for node_id, output_node in output_nodes.items():
+        expected = "composed_validated" if node_id in {
+            "comp_zed2i_stereo_camera", "sub_perception_avionics"
+        } else "sourced_verified"
+        assert output_node["provenance"]["verificationStatus"] == expected
+        if node_id != "comp_zed2i_stereo_camera":
+            assert "ports" not in output_node

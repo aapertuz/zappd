@@ -107,8 +107,7 @@ export async function loadVerifiedAssemblyForPrompt(args: {
   const assembly = parseVerifiedProjectAssembly(await orchestrationResponse.json());
   if (
     !canClassifyAsVerified(assembly.validation, assembly.verificationStatus) ||
-    (assembly.verificationStatus === 'sourced_verified' &&
-      !hasVerifiedUpstreamProvenance(assembly.nodes))
+    !hasVerifiedUpstreamProvenance(assembly.nodes, assembly.verificationStatus)
   ) {
     throw new Error(`Assembly ${assembly.archetypeId} failed OpenCascade validation checks`);
   }
