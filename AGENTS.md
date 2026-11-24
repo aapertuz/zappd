@@ -67,3 +67,4 @@ Run lint and typecheck before declaring any task done.
 - Validate local AI only where supported; offline behavior must degrade gracefully without assuming connectivity or model availability.
 - Report what changed, verification performed, and any remaining failures or untested platforms.
 - Before finishing any task, verify all changes (`pnpm run check` and any relevant target tests) and commit them in logical commits grouped by context following Conventional Commits (enforced by commitlint; non-conforming commits are rejected).
+- After verifying and committing changes on a feature or worktree branch, push the branch to `origin` and open a pull request using T3 Code's `pull_request_create` tool (or update the existing PR if one is already open for the branch); skip PR creation for read-only/question threads or direct `main` edits unless explicitly asked.
