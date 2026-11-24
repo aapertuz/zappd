@@ -65,9 +65,9 @@ A successful import writes a candidate catalog to `backend/data/poppy-catalog.js
 
 The pinned source fails the existing OpenCascade BRep topology check at occurrence `poppy_1_28_5`, the `head_face` product beneath the head assembly. The import stops without publishing a candidate catalog. Source geometry is not repaired, replaced, or fabricated to pass validation.
 
-The import reached 188 cached part occurrences before this failure. These partial fixtures are not a validated assembly and must not be published as one. No GLB, USDZ, frontend catalog entry, build instructions, or engineering verification is supplied by this integration.
+The import reached 188 cached part occurrences before this failure. These historical partial fixtures were not a validated assembly. The current partial inspection integration supplies GLB, USDZ, and a frontend catalog entry with unavailable geometry identified. It supplies no build instructions or engineering verification.
 
-A source correction must preserve the upstream assembly identity and geometry and pass the existing topology, interference, dimensional, and node mapping checks before catalog registration. A successful render alone does not establish mechanical safety or correctness.
+Registration as an engineering-verified catalog requires an authoritative source correction that preserves assembly identity and geometry and passes topology, interference, dimensional, and node mapping checks. Partial source inspection registration retains unavailable geometry and unverified provenance explicitly. A successful render alone does not establish mechanical safety or correctness.
 
 ## Source investigation, 2026-11-24
 
@@ -89,7 +89,7 @@ The remaining `1.0rc4` tag (`b83ec0b9e34c42d2dcea7dff78ca3ff2820efb7b`) also has
 
 An orientation-only normalization was tested on the unplaced 1.0.2 `head_face` definition. `ShapeFix_Shell.FixFaceOrientation` retained all 796 faces but returned false, and the shell remained invalid. The two rejected subshapes are faces 86 and 489. `ShapeFix_Face.FixOrientation` returned false for both; both faces and the reconstructed shape remained invalid. No normalization was applied to production source geometry. Broader healing, deleting faces, remeshing, or substituting another head would not establish geometry preservation.
 
-The integration therefore remains a rejected candidate import. Completing registration and render assets requires a valid authoritative export or a demonstrated geometry-preserving correction for those faces. None of the checked exports meets that requirement in the installed importer.
+Full-assembly engineering verification remains rejected. Partial source inspection registration and render assets are available with head_face excluded. Including that geometry requires a valid authoritative export or a demonstrated geometry-preserving correction. None of the checked exports meets that requirement in the installed importer.
 
 Assembly coverage was checked independently on the 1.0.2 import. All 49 assembly definitions have a one-to-one match between their direct compound children and the placed shapes of their XCAF component references (`IsSame`, including locations). No unreferenced geometry owned directly by an assembly was found in this source. The importer continues to treat assembly nodes as hierarchy and leaf nodes as geometry; this check does not establish support for arbitrary mixed-geometry assemblies from other sources.
 
@@ -139,7 +139,7 @@ support with the resulting wire still gives zero area and fails validation.
 `FixPeriodicDegenerated` and `FixMissingSeam` both report no change.
 These measurements do not prove that every possible CAD repair is impossible.
 They rule out the tested curve, seam, parameter, sewing, and general healing paths
-as valid face-preserving repairs. Catalog registration remains incomplete.
+as valid face-preserving repairs. Full-assembly engineering verification remains incomplete; partial inspection catalog registration is complete.
 
 The captured run is in
 [`poppy-head-topology.json`](cad_worker/tests/evidence/poppy-head-topology.json).
@@ -158,10 +158,45 @@ false. It cannot be treated as a closed solid. Adding a finite wall or cap would
 supply geometry absent from the STEP, while merging the circle into the
 neighboring plane would remove the 2.7 mm boundary.
 
-The CLI reproduction stops at `poppy_1_28_5 (head_face)` with
+The historical strict-import CLI reproduction stopped at `poppy_1_28_5 (head_face)` with
 `Invalid BRep topology before writing poppy_1_28_5.step`. The staged fixture
 directory is removed, leaving no candidate catalog. The original signed-volume
 integral is `40084.05972663066 mm³`; after face removal it is
 `40084.40497993639 mm³`. Both measurements describe an invalid or open shape,
 so the integral difference is not a physical volume change. The diagnostic and
 source-backed test record these limits without treating removal as a repair.
+
+## Dimensional bounds investigation
+
+`diagnose_poppy_dimensions.py` compares triangulation-independent `AddOptimal`
+bounds with freshly generated meshes at 0.2, 0.02, and 0.002 mm deflection.
+It records fixture digests, per-face discrepancies, mesher status, and missing
+triangulations. Run it with the fixture cache and an output JSON path.
+The diagnostic does not change the source fixtures or published assets.
+
+On `poppy_1_10`, the 19.5609 mm discrepancy persists at 0.002 mm deflection.
+All faces have triangulations and the mesher status is zero.
+BSpline face 51 has an `AddOptimal` maximum X of 36.5004117154 mm.
+Its five boundary edges have a maximum X of 16.9186334047 mm.
+A 151 by 151 UV grid, filtered through `BRepClass_FaceClassifier`, reaches
+16.9186188964 mm. The same grid without trim classification reaches
+36.50042246 mm. The reported bound therefore matches the underlying UV
+rectangle outside the trimmed face. This supports a trim-related overestimate,
+rather than a missing triangulation or a control-point hull alone.
+Finite samples do not certify the global trimmed-surface extrema.
+The complete part mesh reaches X = 16.9395440663 mm, with other faces included.
+The mirrored foot has the same discrepancy on its minimum X bound.
+
+The 0.3500 mm discrepancy on each motor occurrence also persists after finer
+meshing. These measurements rule out ordinary mesh resolution as the explanation
+for those four failures. A replacement bounds algorithm must establish trimmed
+surface extrema independently of the render mesh before these failures can be
+cleared. The diagnostic retains all five failures; no tolerance is relaxed.
+The source geometry, IDs, catalog dimensions, and published assets are unchanged.
+
+The captured [dimensional report](cad_worker/tests/evidence/poppy-dimensions.json)
+shows all five discrepancies on BSpline faces. At 0.002 mm deflection, the
+component discrepancies are 19.56086755, 19.56086755, 0.34999897,
+0.34999897, and 0.15180649 mm, respectively. Every run has mesher status zero
+and no missing triangulations. The report uses double-precision CAD coordinates;
+the production check uses float32 render coordinates, so their last digits differ.
