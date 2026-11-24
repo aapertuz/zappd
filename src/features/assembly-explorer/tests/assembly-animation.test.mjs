@@ -5,6 +5,8 @@ import { getCatalogArchetypeById } from '../../../shared/domain/catalog.ts';
 import {
   buildAssemblySchedule,
   createAssemblyAnimationController,
+  FOCUS_IN_DURATION_SEC,
+  FOCUS_OUT_DURATION_SEC,
   settleAssemblyPlayback,
   stepSpringScalar,
 } from '../model/assemblyAnimation.ts';
@@ -322,18 +324,7 @@ describe('assembly pose transitions', () => {
       camera: { ...overview.camera, distanceMeters: 0.16 },
     };
 
-    const frames = Array.from({ length: 12 }, () => controller.step(1 / 60, targets));
-    const interactive = createAssemblyAnimationController({ assembly, targets: overview });
-    settleAssemblyPlayback(interactive);
-    const interactiveFrames = frames.map(() =>
-      interactive.step(1 / 60, { ...overview, camera: targets.camera }),
-    );
-    const glideDistance = frames.at(-1).animatedCamera.distanceMeters;
-    const interactiveDistance = interactiveFrames.at(-1).animatedCamera.distanceMeters;
-    assert.ok(
-      glideDistance - interactiveDistance >
-        (overview.camera.distanceMeters - targets.camera.distanceMeters) / 3,
-    );
+    const frames = Array.from({ length: 24 }, () => controller.step(1 / 60, targets));
 
     const firstFade = frames[0].nodePoses.comp_arm_fr;
     const lastFade = frames.at(-1).nodePoses.comp_arm_fr;
@@ -368,7 +359,7 @@ describe('assembly pose transitions', () => {
     assert.deepEqual(collapsed.animatedCamera.targetMeters, restingPosition);
     assert.equal(collapsed.animatedCamera.distanceMeters, targets.camera.distanceMeters);
 
-    const returning = Array.from({ length: 12 }, () => controller.step(1 / 60, overview));
+    const returning = Array.from({ length: 18 }, () => controller.step(1 / 60, overview));
     const firstRestore = returning[0].nodePoses.comp_arm_fr;
     const lastRestore = returning.at(-1).nodePoses.comp_arm_fr;
     assert.ok(firstRestore.opacity > 0 && firstRestore.opacity < lastRestore.opacity);
@@ -376,10 +367,6 @@ describe('assembly pose transitions', () => {
     assert.equal(firstRestore.visible, true);
     assert.equal(firstRestore.isAnimatingOpacity, true);
     assert.ok(returning.at(-1).animatedCamera.distanceMeters > targets.camera.distanceMeters);
-    assert.ok(
-      overview.camera.distanceMeters - returning.at(-1).animatedCamera.distanceMeters >
-        (overview.camera.distanceMeters - targets.camera.distanceMeters) / 3,
-    );
     const restored = finishAnimation(controller, overview);
     assert.deepEqual(restored.animatedCamera, overview.camera);
     for (const { id } of assembly.nodes) {
@@ -387,6 +374,82 @@ describe('assembly pose transitions', () => {
       assert.equal(restored.nodePoses[id].visible, true);
       assert.equal(restored.nodePoses[id].isAnimatingOpacity, false);
     }
+  });
+
+  it('eases in for 1.1 seconds and returns in 0.65 seconds along the shortest arc', () => {
+    const node = assembly.nodes.find(({ id }) => id === 'comp_arm_fl');
+    const overview = {
+      ...TARGETS,
+      camera: { ...TARGETS.camera, azimuthDeg: 358, elevationDeg: 20, distanceMeters: 1 },
+    };
+    const focused = {
+      ...overview,
+      focusedComponentId: node.id,
+      camera: {
+        azimuthDeg: 2,
+        elevationDeg: 40,
+        distanceMeters: 0.2,
+        targetMeters: node.restPositionMeters,
+      },
+    };
+    const controller = createAssemblyAnimationController({ assembly, targets: overview });
+    settleAssemblyPlayback(controller);
+    const start = controller.step(0, focused);
+    assert.equal(start.isActive, true);
+    assert.deepEqual(start.animatedCamera, overview.camera);
+
+    const first = controller.step(0.05, focused);
+    assert.ok(
+      first.animatedCamera.distanceMeters < 1 && first.animatedCamera.distanceMeters > 0.999,
+    );
+    assert.ok(first.animatedCamera.azimuthDeg > 358 && first.animatedCamera.azimuthDeg < 359);
+    let midpoint = first;
+    for (let elapsed = 0.05; elapsed < 0.549; elapsed += 0.05) {
+      midpoint = controller.step(0.05, focused);
+    }
+    assert.equal(FOCUS_IN_DURATION_SEC, 1.1);
+    assert.ok(Math.abs(midpoint.animatedCamera.distanceMeters - 0.6) < 1e-9);
+    assert.ok(Math.abs(midpoint.animatedCamera.elevationDeg - 30) < 1e-9);
+    assert.ok(Math.abs(midpoint.animatedCamera.azimuthDeg - 360) < 1e-9);
+    const midpointTarget = node.restPositionMeters.map(
+      (value, axis) => (value + overview.camera.targetMeters[axis]) / 2,
+    );
+    assert.ok(distance(midpoint.animatedCamera.targetMeters, midpointTarget) < 1e-9);
+    let nearEnd = midpoint;
+    for (let count = 0; count < 10; count += 1) nearEnd = controller.step(0.05, focused);
+    assert.equal(nearEnd.isActive, true);
+    const end = controller.step(0.05, focused);
+    assert.equal(end.isActive, false);
+    assert.deepEqual(end.animatedCamera, focused.camera);
+
+    assert.equal(FOCUS_OUT_DURATION_SEC, 0.65);
+    const firstReturn = controller.step(0.025, overview);
+    assert.ok(firstReturn.animatedCamera.distanceMeters > 0.2);
+    assert.ok(firstReturn.animatedCamera.distanceMeters < 0.201);
+    let halfwayBack = firstReturn;
+    for (let count = 0; count < 6; count += 1) halfwayBack = controller.step(0.05, overview);
+    assert.ok(Math.abs(halfwayBack.animatedCamera.distanceMeters - 0.6) < 1e-9);
+    let almostBack = halfwayBack;
+    for (let count = 0; count < 6; count += 1) almostBack = controller.step(0.05, overview);
+    assert.equal(almostBack.isActive, true);
+    const back = controller.step(0.025, overview);
+    assert.equal(back.isActive, false);
+    assert.deepEqual(back.animatedCamera, overview.camera);
+  });
+
+  it('keeps an unchanged camera transition active for the full duration', () => {
+    const node = assembly.nodes.find(({ id }) => id === 'comp_arm_fl');
+    const overview = {
+      ...TARGETS,
+      camera: { ...TARGETS.camera, targetMeters: node.restPositionMeters },
+    };
+    const controller = createAssemblyAnimationController({ assembly, targets: overview });
+    settleAssemblyPlayback(controller);
+    const focused = { ...overview, focusedComponentId: node.id };
+    const next = controller.step(1 / 60, focused);
+    assert.equal(next.cameraChanged, false);
+    assert.equal(next.isActive, true);
+    assert.equal(finishAnimation(controller, focused).isActive, false);
   });
 
   it('orbits and zooms at the interactive rate as soon as the camera is moved during focus', () => {

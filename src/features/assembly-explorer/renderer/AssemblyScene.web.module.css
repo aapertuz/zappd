@@ -21,7 +21,12 @@
   user-select: none;
 }
 
-.canvasMount:active {
+.canvasMount[data-hovering='true'] {
+  cursor: pointer;
+}
+
+.canvasMount:active,
+.canvasMount[data-hovering='true']:active {
   cursor: grabbing;
 }
 
