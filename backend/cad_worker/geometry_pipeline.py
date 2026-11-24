@@ -47,6 +47,7 @@ from pygltflib import (
     TextureInfo,
 )
 
+from cable_router import route_harness_for_node, write_colored_step
 from catalog_ingestor import MIN_CAD_BREP_FACES, read_xcaf_face_colors, resolve_component_step
 from material_skins import (
     FAMILY_DEFAULTS,
@@ -184,7 +185,7 @@ def tessellate_shape_meters_y_up(
 
 def tessellate_step_geometry(shape: Any, step_path: Path, origin: str) -> MeshGeometry:
     face_colors = read_xcaf_face_colors(step_path)
-    if origin not in {"cots_library_step", "kicad_pcb_step"} and len({
+    if origin not in {"cots_library_step", "kicad_pcb_step", "procedural_harness"} and len({
         color for _, color in face_colors if color is not None
     }) < 2:
         return MeshGeometry(*tessellate_shape_meters_y_up(shape))
@@ -693,7 +694,20 @@ def run_cad_pipeline(
 
     for idx, node_spec in enumerate(nodes_spec):
         cid = node_spec["id"]
-        resolved = resolve_component_step(node_spec, cache_dir)
+        if (
+            node_spec["origin"] == "procedural_harness"
+            and node_spec.get("stepFixtureName") is not None
+            and "relationshipId" in node_spec.get("specifications", {})
+        ):
+            resolved = route_harness_for_node(node_spec, archetype_spec, cache_dir)
+            node_spec = {
+                **node_spec,
+                "restPositionMeters": resolved["restPositionMeters"],
+                "dimensionsMm": resolved["dimensionsMm"],
+            }
+            nodes_spec[idx] = node_spec
+        else:
+            resolved = resolve_component_step(node_spec, cache_dir)
         resolved_by_id[cid] = resolved
         provenance_failure = resolved.get("provenanceFailure")
         if provenance_failure is not None:
@@ -768,9 +782,15 @@ def run_cad_pipeline(
     glb_out = output_dir / "model.glb"
     usdz_out = output_dir / "model.usdz"
 
-    step_writer = STEPControl_Writer()
-    step_writer.Transfer(compound, STEPControl_AsIs)
-    step_writer.Write(str(step_out))
+    if any("conductorColors" in resolved for resolved in resolved_by_id.values()):
+        write_colored_step(step_out, [
+            (cid, shape, resolved_by_id[cid].get("conductorColors", ()))
+            for cid, shape in placed_solids.items()
+        ])
+    else:
+        step_writer = STEPControl_Writer()
+        step_writer.Transfer(compound, STEPControl_AsIs)
+        step_writer.Write(str(step_out))
 
     all_checks_ok = brep_valid and interference_count == 0 and max_dim_err_mm <= 0.1 and len(failures) == 0
     target_status = (

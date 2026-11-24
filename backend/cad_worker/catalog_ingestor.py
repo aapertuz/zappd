@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import hashlib
+import re
 import shutil
+from functools import cache
+from itertools import count
 from pathlib import Path
 from typing import Any, Literal, TypedDict
 
@@ -24,6 +27,12 @@ from OCP.collections import IndexedMap_TopoDS_Shape, Sequence_TDF_Label
 REPO_STEP_CACHE_DIR = Path(__file__).resolve().parents[1] / "data" / "open_step_cache"
 REPO_COTS_LIBRARY_DIR = REPO_STEP_CACHE_DIR.with_name("cots_library")
 MIN_CAD_BREP_FACES = 4
+STEP_PRESENTATION = "MECHANICAL_DESIGN_GEOMETRIC_PRESENTATION_REPRESENTATION("
+STEP_PRESENTATION_START = re.compile(rf"^#(\d+) = {STEP_PRESENTATION[:-1]}\(", re.MULTILINE)
+STEP_ENTITY = re.compile(r"^#(\d+) = ", re.MULTILINE)
+STEP_TOKENS = re.compile(r"'(?:[^']|'')*'|#(\d+)|\s+")
+STEP_OCCURRENCE = re.compile(r"(?<=NEXT_ASSEMBLY_USAGE_OCCURRENCE\()'\d+'")
+STEP_PRESENTATION_ITEMS = re.compile(r"(?<=,\()#\d+(?:,#\d+)*(?=\),#\d+\);$)")
 
 
 class GeometryOriginPolicy(TypedDict):
@@ -58,6 +67,74 @@ def count_brep_faces(shape: Any) -> int:
         count += 1
         explorer.Next()
     return count
+
+
+def stabilize_step_presentation(path: Path) -> None:
+    source = path.read_text(encoding="ascii")
+    presentation = STEP_PRESENTATION_START.search(source)
+    if presentation is None:
+        raise RuntimeError(f"Missing STEP presentation records in {path}")
+    first_style = int(presentation[1])
+    geometry = source[:presentation.start()]
+    occurrence_ids = count(1)
+    geometry = STEP_OCCURRENCE.sub(lambda _: f"'{next(occurrence_ids)}'", geometry)
+    if any(int(match[1]) >= first_style for match in re.finditer(r"#(\d+)", geometry)):
+        raise RuntimeError(f"STEP geometry references presentation entities in {path}")
+
+    styles, ending = source[presentation.start():].split("ENDSEC;", 1)
+    fields = STEP_ENTITY.split(styles)
+    entities = {
+        int(number): STEP_TOKENS.sub(lambda token: "" if token[0].isspace() else token[0], expression)
+        for number, expression in zip(fields[1::2], fields[2::2])
+    }
+    roots = [number for number, expression in entities.items() if expression.startswith(STEP_PRESENTATION)]
+
+    @cache
+    def style_key(number: int) -> str:
+        return STEP_TOKENS.sub(
+            lambda token: style_key(int(token[1])) if token[1] and int(token[1]) >= first_style else token[0],
+            entities[number],
+        )
+
+    for root in roots:
+        entities[root] = STEP_PRESENTATION_ITEMS.sub(
+            lambda items: ",".join(sorted(items[0].split(","), key=lambda item: style_key(int(item[1:])))),
+            entities[root],
+        )
+
+    numbers_by_style: dict[str, int] = {}
+    ordered_styles: dict[int, str] = {}
+    reached: set[int] = set()
+
+    def renumber(number: int) -> int:
+        if number < first_style:
+            return number
+        reached.add(number)
+        key = style_key(number)
+        if key in numbers_by_style:
+            return numbers_by_style[key]
+        stable_number = first_style + len(numbers_by_style)
+        numbers_by_style[key] = stable_number
+        ordered_styles[stable_number] = STEP_TOKENS.sub(
+            lambda token: f"#{renumber(int(token[1]))}" if token[1] else token[0],
+            entities[number],
+        )
+        return stable_number
+
+    for root in sorted(roots, key=style_key):
+        renumber(root)
+    if {style_key(number) for number in entities.keys() - reached} - numbers_by_style.keys():
+        raise RuntimeError(f"Unreferenced STEP presentation entities in {path}")
+
+    def wrap_items(items: re.Match[str]) -> str:
+        references = items[0].split(",")
+        return ",\n  ".join(",".join(references[start:start + 12]) for start in range(0, len(references), 12))
+
+    lines = [
+        f"#{number} = {STEP_PRESENTATION_ITEMS.sub(wrap_items, expression)}\n"
+        for number, expression in sorted(ordered_styles.items())
+    ]
+    path.write_text(geometry + "".join(lines) + "ENDSEC;" + ending, encoding="ascii")
 
 
 def read_xcaf_document(step_path: Path) -> TDocStd_Document:
@@ -161,7 +238,7 @@ def read_and_validate_step(
     return shape, sha256_hex, face_count
 
 
-def _node_provenance_failure(
+def node_provenance_failure(
     node_spec: dict[str, Any], policy: GeometryOriginPolicy
 ) -> str | None:
     source_url = node_spec.get("sourceUrl")
@@ -179,7 +256,7 @@ def resolve_component_step(node_spec: dict[str, Any], cache_dir: Path) -> dict[s
         raise RuntimeError(f"Node {node_spec['id']} uses disallowed origin {origin!r}")
 
     policy = GEOMETRY_ORIGIN_POLICY[origin]
-    provenance_failure = _node_provenance_failure(node_spec, policy)
+    provenance_failure = node_provenance_failure(node_spec, policy)
     fixture_name = node_spec.get("stepFixtureName")
     if fixture_name is None:
         return {

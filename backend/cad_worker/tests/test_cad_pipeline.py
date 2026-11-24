@@ -13,11 +13,13 @@ import numpy as np
 import pytest
 from PIL import Image
 from OCP.BRepCheck import BRepCheck_Analyzer
+from OCP.TopAbs import TopAbs_SOLID
+from OCP.TopExp import TopExp_Explorer
 from pygltflib import FLOAT, GLTF2
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from catalog_ingestor import read_xcaf_face_colors, resolve_component_step
+from catalog_ingestor import count_brep_faces, read_and_validate_step, read_xcaf_face_colors, resolve_component_step
 from catalog_specs import CATALOG_SPECS, resolve_catalog_spec
 from geometry_pipeline import parse_glb_diagnostics, parse_usdz_prim_paths, run_cad_pipeline, shape_bounds_mm
 from material_skins import build_skin_texture_set, resolve_material_skin, srgb_hex_to_linear_rgba
@@ -434,3 +436,156 @@ def test_mixed_geometry_uses_per_node_status_and_preserves_ports(tmp_path: Path)
         assert output_node["provenance"]["verificationStatus"] == expected
         if node_id != "comp_zed2i_stereo_camera":
             assert "ports" not in output_node
+
+
+@pytest.fixture
+def harness_spec(cots_parts: dict):
+    template = CATALOG_SPECS["open_source_rover_v1"]
+    root = template["nodes"][0]
+    component = next(node for node in template["nodes"] if node.get("stepFixtureName"))
+
+    def board(cots_id: str, cid: str, position: list[float]) -> dict:
+        return {
+            **component, **cots_parts[cots_id], "id": cid, "parentId": root["id"],
+            "level": "component", "depth": 1, "restPositionMeters": position,
+        }
+
+    def build(bus: str, collision: bool = False) -> dict:
+        if bus == "usb_data":
+            start = board("kicad_quad_flight_controller", "comp_from", [-0.055, 0, 0])
+            end = board("kicad_so100_bus_servo_adapter", "comp_to", [0.055, 0, 0])
+            from_port = to_port = "port_usb"
+            waypoint = [0, 0.002, 0.05]
+        elif bus == "dc_power":
+            start = board("kicad_quad_4in1_esc", "comp_from", [-0.045, 0, 0])
+            end = board("cots_battery_3s_18650", "comp_to", [0.090, 0.060, -0.008255])
+            from_port, to_port = "port_dc_in", "port_tab_1"
+            waypoint = [0.005, 0.030, 0.011]
+        else:
+            start = board("kicad_so100_bus_servo_adapter", "comp_from", [-0.050, 0, 0])
+            end = board("kicad_so100_bus_servo_adapter", "comp_to", [0.060, 0, 0])
+            from_port = to_port = "port_servo_1"
+            waypoint = [0, 0.038, -0.0090875]
+        relationship = {
+            "id": "rel_cable", "fromComponentId": start["id"], "toComponentId": end["id"],
+            "fromPortId": from_port, "toPortId": to_port,
+            "connectionType": "power_bus" if bus == "dc_power" else "electrical_bus",
+            "routingWaypointsMeters": [waypoint, [waypoint[0] + 0.0001, *waypoint[1:]]],
+            "wireBundleDiameterMm": 3.5,
+        }
+        cable = {
+            **component, "id": "comp_cable", "parentId": root["id"], "depth": 1,
+            "level": "component", "origin": "procedural_harness", "sourceUrl": "harness://test/cable",
+            "spdxLicense": "MIT", "stepFixtureName": "routed-cable.step", "expectedStepSha256": None,
+            "colorHex": "#2468ac", "materialHint": "silicone_wire", "specifications": {"relationshipId": "rel_cable"},
+            "restPositionMeters": [0.5, 0.5, 0.5], "dimensionsMm": [1, 1, 1],
+        }
+        nodes = [root, start, end, cable]
+        if collision:
+            crossbar = next(node for node in template["nodes"] if node["id"] == "subcomp_rover_crossbar")
+            nodes.append({
+                **crossbar, "id": "comp_obstruction", "parentId": root["id"],
+                "level": "component", "depth": 1, "restPositionMeters": waypoint,
+            })
+        return {**template, "nodes": nodes, "relationships": [relationship]}
+
+    return build
+
+
+@pytest.mark.parametrize(("bus", "colors"), [
+    ("usb_data", ["#2468ac"]),
+    ("dc_power", ["#cc2929", "#222428"]),
+    ("ttl_serial", ["#cc2929", "#222428", "#e5c158"]),
+])
+def test_routed_harness_exports_valid_colored_solids(harness_spec, bus, colors, tmp_path: Path) -> None:
+    spec = harness_spec(bus)
+    out = tmp_path / "exports"
+    cache = tmp_path / "cache"
+    result = run_cad_pipeline(spec, out, cache)
+    validation = result["validation"]
+    assert validation["valid"] is True, validation["failures"]
+    assert validation["brepValid"] is True
+    assert validation["interferenceCount"] == 0
+    assert validation["maxDimensionalErrorMm"] <= 0.1
+    assert validation["nodeMappingComplete"] is True
+    assert result["verificationStatus"] == "composed_validated"
+    node = next(node for node in result["nodes"] if node["id"] == "comp_cable")
+    assert node["provenance"]["verificationStatus"] == "composed_validated"
+    assert node["restPositionMeters"] != spec["nodes"][-1]["restPositionMeters"]
+
+    step_path = cache / "routed-cable.step"
+    step, digest, _ = read_and_validate_step(step_path)
+    assert digest == node["provenance"]["stepSha256"]
+    lower, upper = np.asarray(shape_bounds_mm(step))
+    assert lower + upper == pytest.approx([0, 0, 0], abs=0.002)
+    assert upper - lower == pytest.approx(node["dimensionsMm"], abs=0.002)
+    solids = TopExp_Explorer(step, TopAbs_SOLID)
+    solid_count = 0
+    while solids.More():
+        solid = solids.Current()
+        assert BRepCheck_Analyzer(solid).IsValid()
+        assert count_brep_faces(solid) >= 4
+        solid_count += 1
+        solids.Next()
+    assert solid_count == len(colors)
+    assert {color for _, color in read_xcaf_face_colors(step_path)} == set(colors)
+    assert {color for _, color in read_xcaf_face_colors(out / "model.step") if color} == set(colors)
+
+    gltf = GLTF2.load_binary(str(out / "model.glb"))
+    glb_cable, = (item for item in gltf.nodes if item.extras["componentId"] == "comp_cable")
+    assert glb_cable.translation == pytest.approx(node["restPositionMeters"], abs=1e-6)
+    primitives = gltf.meshes[glb_cable.mesh].primitives
+    assert len(primitives) == len(colors)
+    glb_tints = [gltf.materials[primitive.material].pbrMetallicRoughness.baseColorFactor for primitive in primitives]
+    expected_tints = [srgb_hex_to_linear_rgba(color) for color in colors]
+    assert {tuple(tint) for tint in glb_tints} == {tuple(tint) for tint in expected_tints}
+
+    usda = parse_usdz_prim_paths(out / "model.usdz")
+    cable, = re.findall(r'def Xform "comp_cable"\n        \{(.*?)\n        \}', usda, re.S)
+    assert cable.count('custom string componentId = "comp_cable"') == 2
+    translation, = re.findall(r"double3 xformOp:translate = \((.*?)\)", cable)
+    assert list(map(float, translation.split(", "))) == pytest.approx(node["restPositionMeters"], abs=1e-6)
+    assert cable.count("def GeomSubset") == len(colors)
+    for index, tint in enumerate(glb_tints):
+        material_id = f"mat_comp_cable_{index}"
+        assert f"rel material:binding = </World/Materials/{material_id}>" in cable
+        material, = re.findall(rf'def Material "{material_id}"\n        \{{(.*?)\n        \}}', usda, re.S)
+        albedo, = re.findall(r'def Shader "Albedo"\s*\{(.*?)\n            \}', material, re.S)
+        scale, = re.findall(r"float4 inputs:scale = \((.*?)\)", albedo)
+        assert list(map(float, scale.split(", "))) == pytest.approx(tint)
+
+    repeated = run_cad_pipeline(spec, out, cache)
+    repeat_node = next(item for item in repeated["nodes"] if item["id"] == node["id"])
+    assert repeat_node["provenance"]["stepSha256"] == digest
+    assert repeated["manifest"]["files"]["step"]["sha256"] == result["manifest"]["files"]["step"]["sha256"]
+
+
+def test_routed_harness_interference_fails_validation(harness_spec, tmp_path: Path) -> None:
+    result = run_cad_pipeline(harness_spec("ttl_serial", collision=True), tmp_path / "exports", tmp_path / "cache")
+    assert result["verificationStatus"] == "unverified"
+    assert result["validation"]["valid"] is False
+    assert result["validation"]["brepValid"] is True
+    assert result["validation"]["interferenceCount"] == 1
+    assert any(
+        "Volumetric interference between comp_cable and comp_obstruction" in failure
+        for failure in result["validation"]["failures"]
+    )
+
+
+@pytest.mark.parametrize(("target", "field", "value", "failure"), [
+    ("relationship", "fromPortId", None, "missing fromPortId"),
+    ("relationship", "toPortId", "port_usb_missing", "no matching port on component 'comp_to'"),
+    ("relationship", "connectionType", "assembly_mount", "requires an electrical relationship"),
+    ("node", "specifications", {"relationshipId": "rel_missing"}, "no matching electrical relationship"),
+    ("node", "sourceUrl", "kicad://test/cable", "disallowed sourceUrl"),
+    ("node", "spdxLicense", "", "lacks SPDX license identifier"),
+    ("node", "expectedStepSha256", "0" * 64, "STEP SHA-256 mismatch"),
+])
+def test_routed_harness_rejects_invalid_input(harness_spec, target, field, value, failure, tmp_path: Path) -> None:
+    spec = harness_spec("usb_data")
+    record = spec["relationships"][0] if target == "relationship" else spec["nodes"][-1]
+    record[field] = value
+    cache = tmp_path / "cache"
+    with pytest.raises(RuntimeError, match=failure):
+        run_cad_pipeline(spec, tmp_path / "exports", cache)
+    assert not (cache / "routed-cable.step").exists()
