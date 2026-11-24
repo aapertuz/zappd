@@ -452,3 +452,32 @@ describe('assembly pose transitions', () => {
     assert.equal(restored.isActive, false);
   });
 });
+
+it('explodes Poppy inspection with stable identities and restores source placements', () => {
+  const assembly = getCatalogAssembly('poppy_humanoid_v1');
+  const controller = createAssemblyAnimationController({
+    assembly,
+    targets: TARGETS,
+    prefersReducedMotion: true,
+  });
+  const rest = controller.step(0, TARGETS);
+  const middle = controller.step(0, { ...TARGETS, explodeFactor: 0.5 });
+  const full = controller.step(0, { ...TARGETS, explodeFactor: 1 });
+  assert.deepEqual(Object.keys(full.nodePoses), Object.keys(rest.nodePoses));
+  for (const node of assembly.nodes.filter((node) => node.stepFixtureName !== null)) {
+    assert.equal(distance(rest.nodePoses[node.id].worldPositionMeters, node.restPositionMeters), 0);
+    assert.ok(
+      distance(full.nodePoses[node.id].worldPositionMeters, node.restPositionMeters) > 0.001,
+    );
+  }
+  assert.ok(
+    assembly.nodes.some(
+      (node) =>
+        distance(
+          middle.nodePoses[node.id].worldPositionMeters,
+          full.nodePoses[node.id].worldPositionMeters,
+        ) > 0.001,
+    ),
+  );
+  assert.deepEqual(controller.step(0, TARGETS).nodePoses, rest.nodePoses);
+});

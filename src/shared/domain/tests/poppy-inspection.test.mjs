@@ -14,7 +14,11 @@ it('matches Poppy and preserves hierarchy without invented instructions', () => 
   assert.equal(catalog.nodes.filter((node) => node.parentId === null).length, 1);
   const ids = new Set(catalog.nodes.map((node) => node.id));
   assert.ok(catalog.nodes.every((node) => node.parentId === null || ids.has(node.parentId)));
-  assert.ok(catalog.nodes.every((node) => node.explodeDistanceMeters === 0));
+  assert.ok(
+    catalog.nodes
+      .filter((node) => node.parentId !== null)
+      .every((node) => node.explodeDistanceMeters > 0),
+  );
   assert.deepEqual(catalog.assemblySteps, []);
   assert.deepEqual(catalog.relationships, []);
   const rejected = catalog.nodes.filter(
