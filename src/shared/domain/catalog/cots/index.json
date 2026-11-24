@@ -7,8 +7,8 @@
     "sourceUrl": "kicad://zappd/kicad_so100_bus_servo_adapter",
     "sourceName": "Zappd kicad_so100_bus_servo_adapter.kicad_pcb with KiCad kicad-packages3D models",
     "stepFixtureName": "kicad_so100_bus_servo_adapter.step",
-    "expectedStepSha256": "d60c9e4ec6574c9e71b160e44d522927a4779166e4ab64d3e63b16b6efc90317",
-    "dimensionsMm": [36.6, 44.175, 14.6],
+    "expectedStepSha256": "915f69472d58e5ac5b9ad13fa0e80e30009b29b1d86b0d9f15c232aa6c67a478",
+    "dimensionsMm": [36.6, 14.6, 44.175],
     "materialHint": "fr4_pcb",
     "colorHex": "#247052",
     "specifications": {
@@ -25,15 +25,15 @@
         "label": "USB data",
         "connectorType": "USB-C",
         "busKind": "usb_data",
-        "localPositionMeters": [0.0053, -0.00175, 0.0220875],
-        "exitDirection": [0.0, 0.0, 1.0]
+        "localPositionMeters": [0.0053, 0.0220875, 0.00175],
+        "exitDirection": [0.0, 1.0, 0.0]
       },
       {
         "portId": "port_dc_in",
         "label": "DC power input",
         "connectorType": "DC barrel jack",
         "busKind": "dc_power",
-        "localPositionMeters": [-0.0183, 0.003, 0.0074125],
+        "localPositionMeters": [-0.0183, 0.0074125, -0.003],
         "exitDirection": [-1.0, 0.0, -0.0]
       },
       {
@@ -41,16 +41,16 @@
         "label": "Servo bus 1",
         "connectorType": "JST-PH 3-pin",
         "busKind": "ttl_serial",
-        "localPositionMeters": [-0.0087, 0.0026, -0.0090875],
-        "exitDirection": [0.0, 1.0, -0.0]
+        "localPositionMeters": [-0.0087, -0.0090875, -0.0026],
+        "exitDirection": [0.0, 0.0, -1.0]
       },
       {
         "portId": "port_servo_2",
         "label": "Servo bus 2",
         "connectorType": "JST-PH 3-pin",
         "busKind": "ttl_serial",
-        "localPositionMeters": [0.0043, 0.0026, -0.0090875],
-        "exitDirection": [0.0, 1.0, -0.0]
+        "localPositionMeters": [0.0043, -0.0090875, -0.0026],
+        "exitDirection": [0.0, 0.0, -1.0]
       }
     ]
   },

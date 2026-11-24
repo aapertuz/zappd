@@ -33,7 +33,7 @@ from OCP.TDocStd import TDocStd_Document
 from OCP.TopLoc import TopLoc_Location
 from OCP.TopoDS import TopoDS_Compound, TopoDS_Iterator, TopoDS_Shape, TopoDS_Wire
 from OCP.XCAFDoc import XCAFDoc_ColorGen, XCAFDoc_DocumentTool
-from OCP.collections import Array1_gp_Pnt, HArray1_gp_Pnt
+from OCP.collections import Array1_gp_Pnt, HArray1_double, HArray1_gp_Pnt
 from OCP.gp import gp_Ax2, gp_Circ, gp_Dir, gp_Pnt, gp_Vec
 
 from catalog_ingestor import (
@@ -129,20 +129,25 @@ def _ribbon_axes(
     return axes
 
 
-def _spline(points: list[np.ndarray], start_exit: np.ndarray, end_exit: np.ndarray) -> Geom_BSplineCurve:
+def _spline(
+    points: list[np.ndarray], start_exit: np.ndarray, end_exit: np.ndarray,
+    parameters: HArray1_double | None = None,
+) -> Geom_BSplineCurve:
     array = Array1_gp_Pnt(1, len(points))
     for index, point in enumerate(points, start=1):
         array.SetValue(index, gp_Pnt(*point))
-    approximation = GeomAPI_PointsToBSpline(array, 3, 8, Tol3D=_SPLINE_TOLERANCE_MM)
-    if approximation.IsDone():
-        curve = approximation.Curve()
-        start_tangent = gp_Dir(curve.DN(curve.FirstParameter(), 1))
-        end_tangent = gp_Dir(curve.DN(curve.LastParameter(), 1))
-        if start_tangent.IsEqual(gp_Dir(*start_exit), 1e-4) and end_tangent.IsEqual(gp_Dir(*-end_exit), 1e-4):
-            return curve
-
-    interpolation = GeomAPI_Interpolate(HArray1_gp_Pnt(array), False, 1e-7)
-    interpolation.Load(gp_Vec(*start_exit), gp_Vec(*-end_exit))
+    if parameters is None:
+        approximation = GeomAPI_PointsToBSpline(array, 3, 8, Tol3D=_SPLINE_TOLERANCE_MM)
+        if approximation.IsDone():
+            curve = approximation.Curve()
+            start_tangent = gp_Dir(curve.DN(curve.FirstParameter(), 1))
+            end_tangent = gp_Dir(curve.DN(curve.LastParameter(), 1))
+            if start_tangent.IsEqual(gp_Dir(*start_exit), 1e-4) and end_tangent.IsEqual(gp_Dir(*-end_exit), 1e-4):
+                return curve
+        interpolation = GeomAPI_Interpolate(HArray1_gp_Pnt(array), False, 1e-7)
+    else:
+        interpolation = GeomAPI_Interpolate(HArray1_gp_Pnt(array), parameters, False, 1e-7)
+    interpolation.Load(gp_Vec(*start_exit), gp_Vec(*-end_exit), parameters is None)
     interpolation.Perform()
     if not interpolation.IsDone():
         raise RuntimeError("Could not interpolate the cable centerline")
@@ -150,7 +155,12 @@ def _spline(points: list[np.ndarray], start_exit: np.ndarray, end_exit: np.ndarr
 
 
 def _sweep_conductor(curve: Geom_BSplineCurve, radius_mm: float) -> tuple[TopoDS_Wire, TopoDS_Shape]:
-    spine = BRepBuilderAPI_MakeWire(BRepBuilderAPI_MakeEdge(curve).Edge()).Wire()
+    route = BRepBuilderAPI_MakeWire()
+    for knot in range(1, curve.NbKnots()):
+        span = curve.Copy()
+        span.Segment(curve.Knot(knot), curve.Knot(knot + 1))
+        route.Add(BRepBuilderAPI_MakeEdge(span).Edge())
+    spine = route.Wire()
     start_parameter = curve.FirstParameter()
     tangent = gp_Dir(curve.DN(start_parameter, 1))
     profile = gp_Circ(gp_Ax2(curve.Value(start_parameter), tangent), radius_mm)
@@ -282,11 +292,15 @@ def route_harness_for_node(
         conductors = [_sweep_conductor(_spline(points, start_exit, end_exit), diameter_mm / 2)]
     else:
         axes = _ribbon_axes(points, start_exit, end_exit)
+        parameters = HArray1_double(1, len(points))
+        parameters.SetValue(1, 0.0)
+        for index, (before, after) in enumerate(zip(points, points[1:]), start=2):
+            parameters.SetValue(index, parameters.Value(index - 1) + np.linalg.norm(after - before))
         conductors = []
         for index in range(len(colors)):
             offset = (index - (len(colors) - 1) / 2) * (diameter_mm + _WIRE_GAP_MM)
             wire_points = [point + offset * axis for point, axis in zip(points, axes)]
-            curve = _spline(wire_points, start_exit, end_exit)
+            curve = _spline(wire_points, start_exit, end_exit, parameters)
             conductors.append(_sweep_conductor(curve, diameter_mm / 2))
         _validate_conductor_clearance(conductors, diameter_mm)
 
@@ -314,7 +328,7 @@ def route_harness_for_node(
         "sha256": sha,
         "faceCount": face_count,
         "restPositionMeters": [x / 1000, z / 1000, -y / 1000],
-        "dimensionsMm": [hi - lo for lo, hi in zip(lower, upper)],
+        "dimensionsMm": [upper[axis] - lower[axis] for axis in (0, 2, 1)],
         "targetVerifiedStatus": policy["targetVerifiedStatus"],
         "provenanceFailure": provenance_failure,
         "conductorColors": colors,

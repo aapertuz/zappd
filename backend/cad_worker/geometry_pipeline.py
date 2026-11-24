@@ -19,11 +19,13 @@ from OCP.BRepCheck import BRepCheck_Analyzer
 from OCP.BRepGProp import BRepGProp
 from OCP.BRepMesh import BRepMesh_IncrementalMesh
 from OCP.GProp import GProp_GProps
+from OCP.IMeshTools import IMeshTools_Parameters
 from OCP.STEPControl import STEPControl_AsIs, STEPControl_Writer
 from OCP.TopAbs import TopAbs_FACE
 from OCP.TopExp import TopExp_Explorer
 from OCP.TopLoc import TopLoc_Location
-from OCP.TopoDS import TopoDS, TopoDS_Compound
+from OCP.TopoDS import TopoDS, TopoDS_Compound, TopoDS_Shape
+from OCP.collections import List_TopoDS_Shape
 from OCP.gp import gp_Trsf, gp_Vec
 from pygltflib import (
     ARRAY_BUFFER,
@@ -81,6 +83,7 @@ class MeshGeometry:
 _UV_AXES = ((2, 1), (0, 2), (0, 1))
 _ZIP_LOCAL_HEADER_BYTES = 30
 _USDZ_ALIGNMENT_BYTES = 64
+_HARNESS_MIN_MESH_SIZE_MM = 0.2
 
 
 def world_rest_to_cad_mm(rest_m: list[float] | tuple[float, float, float]) -> tuple[float, float, float]:
@@ -100,6 +103,22 @@ def shape_bounds_mm(shape) -> tuple[tuple[float, float, float], tuple[float, flo
     cmin = box.CornerMin()
     cmax = box.CornerMax()
     return (cmin.X(), cmin.Y(), cmin.Z()), (cmax.X(), cmax.Y(), cmax.Z())
+
+
+def interference_volume_mm3(first: TopoDS_Shape, second: TopoDS_Shape) -> float:
+    arguments = List_TopoDS_Shape()
+    arguments.Append(first)
+    tools = List_TopoDS_Shape()
+    tools.Append(second)
+    common = BRepAlgoAPI_Common()
+    common.SetArguments(arguments)
+    common.SetTools(tools)
+    common.SetUseOBB(True)
+    common.SetRunParallel(True)
+    common.Build()
+    properties = GProp_GProps()
+    BRepGProp.VolumeProperties_s(common.Shape(), properties)
+    return float(properties.Mass())
 
 
 def _project_face(
@@ -137,8 +156,14 @@ def tessellate_shape_meters_y_up(
     shape,
     linear_deflection: float = 0.2,
     angular_deflection: float = 0.4,
+    min_mesh_size_mm: float = -1.0,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    BRepMesh_IncrementalMesh(shape, linear_deflection, False, angular_deflection, True)
+    parameters = IMeshTools_Parameters()
+    parameters.Deflection = linear_deflection
+    parameters.Angle = angular_deflection
+    parameters.MinSize = min_mesh_size_mm
+    parameters.InParallel = True
+    BRepMesh_IncrementalMesh(shape, parameters)
     vertices: list[np.ndarray] = []
     normals: list[np.ndarray] = []
     indices: list[np.ndarray] = []
@@ -199,8 +224,11 @@ def tessellate_step_geometry(shape: Any, step_path: Path, origin: str) -> MeshGe
         builder.Add(groups[color], face)
 
     primitives: list[MeshPrimitiveGeometry] = []
+    min_mesh_size_mm = _HARNESS_MIN_MESH_SIZE_MM if origin == "procedural_harness" else -1.0
     for color, group in groups.items():
-        arrays = tessellate_shape_meters_y_up(group, linear_deflection=0.03, angular_deflection=0.15)
+        arrays = tessellate_shape_meters_y_up(
+            group, linear_deflection=0.03, angular_deflection=0.15, min_mesh_size_mm=min_mesh_size_mm,
+        )
         if len(arrays[2]):
             primitives.append(MeshPrimitiveGeometry(*arrays, color_hex=color))
 
@@ -754,12 +782,13 @@ def run_cad_pipeline(
             geometry_by_id[cid] = geometry
     interference_count = 0
     solid_ids = list(placed_solids.keys())
+    bounds_by_id = {cid: shape_bounds_mm(shape) for cid, shape in placed_solids.items()}
     for i in range(len(solid_ids)):
         for j in range(i + 1, len(solid_ids)):
             id_a = solid_ids[i]
             id_b = solid_ids[j]
-            bmin_a, bmax_a = shape_bounds_mm(placed_solids[id_a])
-            bmin_b, bmax_b = shape_bounds_mm(placed_solids[id_b])
+            bmin_a, bmax_a = bounds_by_id[id_a]
+            bmin_b, bmax_b = bounds_by_id[id_b]
             if (
                 bmin_a[0] >= bmax_b[0]
                 or bmax_a[0] <= bmin_b[0]
@@ -769,10 +798,7 @@ def run_cad_pipeline(
                 or bmax_a[2] <= bmin_b[2]
             ):
                 continue
-            common = BRepAlgoAPI_Common(placed_solids[id_a], placed_solids[id_b]).Shape()
-            props = GProp_GProps()
-            BRepGProp.VolumeProperties_s(common, props)
-            vol = float(props.Mass())
+            vol = interference_volume_mm3(placed_solids[id_a], placed_solids[id_b])
             if vol > 1e-3:
                 interference_count += 1
                 failures.append(f"Volumetric interference between {id_a} and {id_b}: {vol:.4f} mm^3")

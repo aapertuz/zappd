@@ -23,7 +23,7 @@ from OCP.TopExp import TopExp_Explorer
 from OCP.TopLoc import TopLoc_Location
 from OCP.XCAFDoc import XCAFDoc_DocumentTool
 from OCP.collections import Sequence_TDF_Label
-from OCP.gp import gp_Pnt, gp_Trsf, gp_Vec
+from OCP.gp import gp_Ax1, gp_Dir, gp_Identity, gp_Pnt, gp_Translation, gp_Trsf, gp_Vec
 
 from catalog_ingestor import (
     REPO_COTS_LIBRARY_DIR,
@@ -170,6 +170,7 @@ class Board:
     footprints: tuple[Footprint, ...]
     mounting_pitch: tuple[float, float] | None = None
     mounting_diameter: float = 2.5
+    rotation_x_degrees: float = 0
 
 
 def usb_port(label: str) -> Port:
@@ -197,6 +198,7 @@ BOARDS = (
             Footprint("C1", 0, -17, CAPACITOR),
         ),
         (29, 37),
+        rotation_x_degrees=-90,
     ),
     Board(
         "kicad_quad_4in1_esc", "Quadcopter 4-in-1 brushless ESC", 36, 36,
@@ -365,20 +367,23 @@ def write_board(board: Board, libraries: dict[Model, str], directory: Path) -> P
     return path
 
 
-def center_step(source: Path, target: Path, min_colors: int) -> tuple[Vector, Vector, str, int, int]:
+def center_step(
+    source: Path, target: Path, min_colors: int, rotation_x_degrees: float = 0,
+) -> tuple[gp_Trsf, Vector, str, int, int]:
     shape, _, _ = read_and_validate_step(source)
     lower, upper = shape_bounds_mm(shape)
-    x, y, z = (-(low + high) / 2 for low, high in zip(lower, upper))
-    offset = (x, y, z)
+    offset = gp_Vec(*(-(low + high) / 2 for low, high in zip(lower, upper)))
     transform = gp_Trsf()
-    transform.SetTranslation(gp_Vec(*offset))
-    translation = TopLoc_Location(transform)
+    if rotation_x_degrees:
+        transform.SetRotation(gp_Ax1(gp_Pnt(), gp_Dir(1, 0, 0)), math.radians(rotation_x_degrees))
+    transform.SetTranslationPart(offset.Transformed(transform))
+    placement = TopLoc_Location(transform)
     document = read_xcaf_document(source)
     tool = XCAFDoc_DocumentTool.ShapeTool_s(document.Main())
     roots = Sequence_TDF_Label()
     tool.GetFreeShapes(roots)
     for root in roots:
-        location = translation.Multiplied(tool.GetLocation_s(root))
+        location = placement.Multiplied(tool.GetLocation_s(root))
         if not tool.SetLocation(root, location, TDF_Label()):
             raise RuntimeError(f"Could not center XCAF root from {source}")
     tool.UpdateAssemblies()
@@ -400,7 +405,7 @@ def center_step(source: Path, target: Path, min_colors: int) -> tuple[Vector, Ve
     if len(colors) < min_colors:
         raise RuntimeError(f"Expected at least {min_colors} XCAF colors in {target}, got {len(colors)}")
     dimensions = tuple(round(hi - lo, 4) for lo, hi in zip(low, high))
-    return offset, dimensions, digest, face_count, len(colors)
+    return transform, dimensions, digest, face_count, len(colors)
 
 
 def registry_port(port: Port, point_mm: Vector, exit_direction: Vector | None = None) -> dict:
@@ -433,7 +438,9 @@ def pad_surface_z(shape, x: float, y: float) -> float:
     return max(heights)
 
 
-def footprint_ports(board_file: Path, step_file: Path, footprints: tuple[Footprint, ...], offset: Vector) -> list[dict]:
+def footprint_ports(
+    board_file: Path, step_file: Path, footprints: tuple[Footprint, ...], placement: gp_Trsf,
+) -> list[dict]:
     placements = {
         reference: (float(x) - BOARD_ORIGIN_MM, BOARD_ORIGIN_MM - float(y))
         for x, y, reference in re.findall(
@@ -478,7 +485,11 @@ def footprint_ports(board_file: Path, step_file: Path, footprints: tuple[Footpri
             vector = gp_Vec(*port.model_exit).Transformed(transform)
             x, y, z = point.X(), point.Y(), point.Z()
             direction = (vector.X(), vector.Y(), vector.Z())
-        ports.append(registry_port(port, (x + offset[0], y + offset[1], z + offset[2]), direction))
+        point = gp_Pnt(x, y, z).Transformed(placement)
+        if placement.Form() not in (gp_Identity, gp_Translation):
+            vector = gp_Vec(*direction).Transformed(placement)
+            direction = (round(vector.X(), 7), round(vector.Y(), 7), round(vector.Z(), 7))
+        ports.append(registry_port(port, (point.X(), point.Y(), point.Z()), direction))
     return ports
 
 
@@ -505,7 +516,9 @@ def build_board(board: Board, libraries: dict[Model, str], work: Path) -> dict:
         check=True,
     )
     centered = work / "centered" / raw.name
-    offset, dimensions, digest, faces, colors = center_step(raw, centered, min_colors=3)
+    placement, dimensions, digest, faces, colors = center_step(
+        raw, centered, min_colors=3, rotation_x_degrees=board.rotation_x_degrees,
+    )
     print(f"{board.id}: valid BRep, {faces} faces, {colors} XCAF colors", flush=True)
     return {
         "cotsId": board.id,
@@ -527,7 +540,7 @@ def build_board(board: Board, libraries: dict[Model, str], work: Path) -> dict:
             "xcafColors": colors,
             "referenceLayout": True,
         },
-        "ports": footprint_ports(path, raw, board.footprints, offset),
+        "ports": footprint_ports(path, raw, board.footprints, placement),
     }
 
 
