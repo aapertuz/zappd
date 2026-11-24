@@ -42,6 +42,7 @@ from pygltflib import (
 )
 
 from catalog_ingestor import MIN_CAD_BREP_FACES, resolve_component_step
+from trimmed_bounds import trimmed_shape_bounds_mm
 
 
 MATERIAL_PBR_TABLE: dict[str, tuple[float, float]] = {
@@ -501,7 +502,7 @@ def run_cad_pipeline(
         if len(verts) == 0 or len(idxs) == 0:
             failures.append(f"Empty triangulation for {cid}")
         else:
-            bmin_mm, bmax_mm = shape_bounds_mm(shape)
+            bmin_mm, bmax_mm = trimmed_shape_bounds_mm(shape)
             mesh_min_mm = np.array([verts[:, 0].min(), -verts[:, 2].max(), verts[:, 1].min()]) * 1000.0
             mesh_max_mm = np.array([verts[:, 0].max(), -verts[:, 2].min(), verts[:, 1].max()]) * 1000.0
             step_min_mm = np.array([bmin_mm[0], bmin_mm[1], bmin_mm[2]])

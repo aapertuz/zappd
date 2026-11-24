@@ -200,3 +200,36 @@ component discrepancies are 19.56086755, 19.56086755, 0.34999897,
 0.34999897, and 0.15180649 mm, respectively. Every run has mesher status zero
 and no missing triangulations. The report uses double-precision CAD coordinates;
 the production check uses float32 render coordinates, so their last digits differ.
+
+## Inspection explosion
+
+Poppy inspection offsets are generated from component source centers relative to
+sibling centers. Assembly centers are computed recursively from their children.
+The shared animation adds each ancestor's offset to the original world placement.
+Coincident centers use a deterministic SHA-256 direction keyed by occurrence ID.
+These offsets are visualization controls, not mechanical assembly instructions.
+The catalog retains empty assembly steps and relationships and unavailable head geometry.
+
+An exterior-plane distance prototype using OCCT `BRepExtrema_DistShapeShape`
+removed the false foot X extrema and motor discrepancies, but returned foot Y
+bounds that disagree with existing mesh vertices by 0.166262 mm. Moving the plane
+from 100 mm to 1 mm outside the conservative box produced the same result.
+This rejects the tested solver as a reliable replacement for the bounds check.
+The recorded candidate bounds are in `cad_worker/tests/evidence/poppy-plane-prototype.json`.
+The production check now combines independent trimmed-edge bounds and exterior-plane
+extrema with face-interior stationary points. For BSpline faces, it solves each
+coordinate gradient using analytic first and second derivatives, with nine seeds
+per knot span, at most 40 Newton iterations, and a gradient tolerance of 1e-8.
+Only converged points classified inside or on the trimmed face contribute bounds.
+This is a numerical extrema calculation, not a certified global optimization proof.
+The 0.1 mm render comparison remains unchanged. CAD centering and source fixtures
+still use the original conservative bounds and remain byte-for-byte unchanged.
+
+The five cached source-part render discrepancies after correction are 0.030718,
+0.030699, 0.0000012, 0.0000012, and 0.001302 mm. An analytic trimmed BSpline with
+a known interior maximum checks the CAD calculation without a mesh reference.
+A shifted render mesh still fails the pipeline dimensional check.
+All 201 available source components pass the unchanged 0.1 mm dimensional check.
+The complete-catalog maximum is 0.0563 mm. Export metadata has been refreshed.
+The head remains unavailable, engineering validation remains unverified, and
+interference analysis remains unperformed.
