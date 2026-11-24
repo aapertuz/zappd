@@ -46,7 +46,9 @@ Run lint and typecheck before declaring any task done.
 - Follow the three-tier platform split in `architecture.md` behind shared typed contracts inside the owning feature; evaluate splits per component and ask when ambiguous.
 - Treat Firestore's component hierarchy, stable IDs, relationships, and assembly steps as the domain model, never mesh names or a single 3D file.
 - Treat source CAD as engineering truth; GLB/USDZ are derived render assets. Do not mistake successful rendering for validated engineering.
-- Respect Phase 1's verified CAD assemblies; do not introduce custom CAD generation, procedural primitive fallbacks, or fabricated/unfetched source URLs (build123d authoring is Phase 2 only). Every catalog `sourceUrl` must resolve to a real upstream CAD file with a pinned SHA-256 digest.
+- Edit assembly specs in `src/shared/domain/catalog/assemblies/`. The TypeScript app and Python CAD worker use those JSON files as their shared catalog.
+- Use `open_step_catalog` or `cots_library_step` with HTTPS provenance for `sourced_verified` geometry. Use `kicad_pcb_step` with HTTPS or `kicad://` provenance, or `procedural_harness` with HTTPS or `harness://` provenance, for `composed_validated` geometry. Both statuses require an SPDX license, a STEP SHA-256 digest, and passing CAD validation.
+- Pin every sourced STEP fixture to its real upstream CAD file and SHA-256 digest. Do not introduce fabricated or unfetched source URLs, procedural primitive fallbacks, or custom CAD generation in Phase 1. Build123d authoring is Phase 2 only.
 
 ## Enforce Rules, Don't Just Describe Them
 
