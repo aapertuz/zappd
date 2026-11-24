@@ -20,6 +20,7 @@ from OCP.TopLoc import TopLoc_Location
 from OCP.XCAFDoc import XCAFDoc_DocumentTool
 
 from ingest_upstream_catalog import center_and_write_step, exact_bounds_mm
+from poppy_explode import assign_inspection_offsets
 
 POPPY_SOURCE_URL = "https://github.com/poppy-project/poppy-humanoid/releases/download/1.0.2/Poppy_Humanoid.STEP"
 POPPY_SOURCE_SHA256 = "10e9d997f82787d4069f7edd4b88ec3ab6dcc51cb1686d761d84add709d38266"
@@ -152,4 +153,5 @@ def _import_poppy(source_path: Path, cache_dir: Path) -> dict:
         return bounds_min, bounds_max
 
     visit(roots.Value(1), None, str(roots.Value(1).Tag()), TopLoc_Location(), 0)
+    assign_inspection_offsets(nodes)
     return {"archetypeId": "poppy_humanoid_v1", "nodes": nodes}
