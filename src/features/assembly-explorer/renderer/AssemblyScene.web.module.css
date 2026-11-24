@@ -59,6 +59,7 @@
 }
 
 .explodeButton,
+.wiringButton,
 .zoomButton,
 .backButton {
   display: inline-flex;
@@ -77,6 +78,7 @@
 }
 
 .explodeButton,
+.wiringButton,
 .zoomButton {
   border: 1px solid transparent;
   border-radius: 999px;
@@ -91,7 +93,17 @@
   font-variant-numeric: tabular-nums;
 }
 
-.explodeButton[aria-pressed='true'] {
+.wiringButton {
+  min-width: 96px;
+  padding: 0 8px;
+}
+
+.wiringButton[data-wiring-mode='hide'] {
+  color: var(--hud-muted);
+}
+
+.explodeButton[aria-pressed='true'],
+.wiringButton[aria-pressed='true'] {
   color: #fde68a;
   background: rgba(245, 196, 81, 0.12);
   border-color: rgba(245, 196, 81, 0.3);
@@ -112,6 +124,7 @@
 }
 
 .explodeButton:hover,
+.wiringButton:hover,
 .zoomButton:hover,
 .backButton:hover {
   background-color: rgba(245, 196, 81, 0.15);
@@ -120,6 +133,7 @@
 }
 
 .explodeButton:focus-visible,
+.wiringButton:focus-visible,
 .zoomButton:focus-visible,
 .backButton:focus-visible,
 .explodeSlider:focus-visible {
@@ -305,10 +319,29 @@
     flex-basis: 82px;
     margin-left: 4px;
   }
+
+  .wiringButton {
+    min-width: 88px;
+    gap: 4px;
+    padding: 0 5px;
+  }
+}
+
+@media (max-width: 360px) {
+  .hudBar:has(.wiringButton) .explodeButton,
+  .wiringButton {
+    min-width: 0;
+  }
+
+  .hudBar:has(.wiringButton) .explodeButton .hudIcon,
+  .wiringButton .hudIcon {
+    display: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .explodeButton,
+  .wiringButton,
   .zoomButton,
   .backButton {
     transition: none;

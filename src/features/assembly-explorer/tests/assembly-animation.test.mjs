@@ -168,6 +168,110 @@ describe('assembly playback', () => {
   });
 });
 
+describe('wiring visibility transitions', () => {
+  const assembly = getCatalogAssembly('quadcopter_drone_v1');
+  const cable = 'comp_quad_cable_battery_esc';
+  const battery = 'comp_quad_battery_pack';
+  const esc = 'comp_quad_4in1_esc';
+  const plate = 'comp_base_plate_upper';
+  const otherCable = 'comp_quad_cable_fc_esc';
+  const auto = { ...TARGETS, wiringVisibility: 'auto' };
+
+  function settledController(targets) {
+    const controller = createAssemblyAnimationController({ assembly, targets });
+    settleAssemblyPlayback(controller);
+    return controller;
+  }
+
+  it('fades wiring through partial opacity during an automatic explode', () => {
+    const controller = settledController(auto);
+    const initial = controller.step(0, auto);
+    assert.equal(initial.nodePoses[cable].opacity, 1);
+    assert.equal(initial.nodePoses[cable].visible, true);
+
+    const exploding = { ...auto, explodeFactor: 0.65 };
+    const transition = Array.from({ length: 25 }, () => controller.step(1 / 60, exploding));
+    assert.ok(
+      transition.some(({ geometryChanged, nodePoses }) => {
+        const { opacity } = nodePoses[cable];
+        return geometryChanged && opacity > 0 && opacity < 1;
+      }),
+    );
+    const exploded = finishAnimation(controller, exploding);
+    assert.equal(exploded.nodePoses[cable].opacity, 0);
+    assert.equal(exploded.nodePoses[cable].visible, false);
+    assert.equal(exploded.nodePoses[plate].opacity, 1);
+    assert.equal(controller.step(1 / 60, exploding).geometryChanged, false);
+
+    const halfway = { ...auto, explodeFactor: 0.4, activeExplodeStage: 1 };
+    assert.ok(Math.abs(finishAnimation(controller, halfway).nodePoses[cable].opacity - 0.5) < 1e-9);
+    assert.equal(finishAnimation(controller, auto).nodePoses[cable].opacity, 1);
+  });
+
+  it('shows wiring while exploded and hides it while assembled in manual modes', () => {
+    const exploded = { ...auto, explodeFactor: 0.65 };
+    const controller = settledController(exploded);
+    assert.equal(controller.step(0, exploded).nodePoses[cable].opacity, 0);
+
+    const shown = { ...exploded, wiringVisibility: 'show' };
+    const fadeIn = controller.step(1 / 60, shown);
+    assert.equal(fadeIn.isActive, true);
+    assert.equal(fadeIn.geometryChanged, true);
+    assert.ok(fadeIn.nodePoses[cable].opacity > 0 && fadeIn.nodePoses[cable].opacity < 1);
+    assert.equal(finishAnimation(controller, shown).nodePoses[cable].opacity, 1);
+
+    const resting = { ...shown, explodeFactor: 0 };
+    assert.equal(finishAnimation(controller, resting).nodePoses[cable].opacity, 1);
+    const hidden = { ...resting, wiringVisibility: 'hide' };
+    assert.equal(finishAnimation(controller, hidden).nodePoses[cable].opacity, 0);
+    assert.equal(controller.step(1 / 60, hidden).geometryChanged, false);
+  });
+
+  it('keeps traced cables and electrical counterparts visible in auto mode while honoring hidden wiring', () => {
+    const explodedAuto = { ...auto, explodeFactor: 0.65 };
+    const controller = settledController(explodedAuto);
+    const focused = { ...explodedAuto, isolatedComponentId: battery, focusedComponentId: battery };
+    assert.equal(finishAnimation(controller, focused).nodePoses[esc].opacity, 0);
+
+    const circuitHighlightIds = new Set([battery, cable, esc]);
+    const tracing = { ...focused, circuitHighlightIds };
+    const first = controller.step(1 / 60, tracing);
+    assert.equal(first.geometryChanged, true);
+    assert.equal(first.isActive, true);
+    const settled = finishAnimation(controller, tracing);
+    assert.equal(settled.nodePoses[battery].opacity, 1);
+    assert.equal(settled.nodePoses[cable].opacity, 0.85);
+    assert.equal(settled.nodePoses[esc].opacity, 0.38);
+    assert.equal(settled.nodePoses[otherCable].opacity, 0);
+    assert.equal(settled.nodePoses[plate].opacity, 0);
+    assert.equal(controller.step(1 / 60, tracing).geometryChanged, false);
+
+    const overview = finishAnimation(controller, { ...explodedAuto, circuitHighlightIds });
+    assert.equal(overview.nodePoses[cable].opacity, 1);
+    assert.equal(overview.nodePoses[otherCable].opacity, 0);
+
+    const hiddenFocused = finishAnimation(controller, { ...tracing, wiringVisibility: 'hide' });
+    assert.equal(hiddenFocused.nodePoses[battery].opacity, 1);
+    assert.equal(hiddenFocused.nodePoses[esc].opacity, 0.38);
+    assert.equal(hiddenFocused.nodePoses[cable].opacity, 0);
+    assert.equal(hiddenFocused.nodePoses[otherCable].opacity, 0);
+
+    const hiddenOverview = finishAnimation(controller, {
+      ...auto,
+      wiringVisibility: 'hide',
+      circuitHighlightIds,
+    });
+    assert.equal(hiddenOverview.nodePoses[cable].opacity, 0);
+
+    const focusedCable = finishAnimation(controller, {
+      ...auto,
+      wiringVisibility: 'hide',
+      isolatedComponentId: cable,
+    });
+    assert.equal(focusedCable.nodePoses[cable].opacity, 1);
+  });
+});
+
 describe('assembly pose transitions', () => {
   const assembly = getCatalogAssembly('quadcopter_drone_v1');
 

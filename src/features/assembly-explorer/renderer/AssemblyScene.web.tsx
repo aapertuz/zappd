@@ -40,13 +40,14 @@ import {
   type AssemblyBoundingBoxMeters,
   computeAssemblyBoundingBoxMeters,
   computeCameraZoomLimits,
+  computeCircuitComponentIds,
   computeFramedCameraForBoundingBox,
   DEFAULT_EXPLORER_CAMERA,
   orbitExplorerCamera,
   reconcileCameraTarget,
   zoomExplorerCamera,
 } from '../model/explorerState';
-import type { AssemblySceneProps, ExplorerCameraState } from '../types';
+import type { AssemblySceneProps, ExplorerCameraState, WiringVisibilityMode } from '../types';
 
 type ScreenPoint = CalloutAnchor;
 
@@ -79,6 +80,8 @@ declare global {
       readonly isolatedComponentId: string | null;
       readonly explodeFactor: number;
       readonly activeExplodeStage: ExplodeStageFilter;
+      readonly wiringVisibility: WiringVisibilityMode;
+      readonly circuitHighlightIds: readonly ComponentId[];
       readonly camera: AssemblySceneProps['state']['camera'];
       readonly separatedOffsets: Readonly<Record<string, Vector3Tuple>>;
       readonly nodePositionsMeters: Readonly<Record<string, Vector3Tuple>>;
@@ -154,6 +157,8 @@ const SURFACE_PROFILES: Readonly<Partial<Record<string, PhysicalSurfaceProfile>>
 const CAD_EDGE_COLOR = '#cbd5e1';
 const CAD_EDGE_OPACITY = 0.11;
 const HOVER_COLOR = '#f5c451';
+const CIRCUIT_HIGHLIGHT_COLOR = '#38bdf8';
+const EMPTY_CIRCUIT_IDS: ReadonlySet<ComponentId> = new Set();
 const HSL_SCRATCH = { h: 0, s: 0, l: 0 };
 
 function isThreeMesh(obj: THREE.Object3D): obj is THREE.Mesh {
@@ -443,9 +448,16 @@ function updatePartCallout({
 const HUD_ICON_PATHS = {
   back: 'm13 4-6 6 6 6M7 10h10',
   explode: 'M7.5 3.5h-4v4m9-4h4v4m0 5v4h-4m-5 0h-4v-4m0-9 4 4m9-4-4 4m4 9-4-4m-9 4 4-4',
+  wiring: 'M6 14h3l2-8h3M6 14a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM18 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z',
   zoomIn: 'M14.5 14.5 18 18M6.5 9.5h6m-3-3v6M15.5 9.5a6 6 0 1 1-12 0 6 6 0 0 1 12 0Z',
   zoomOut: 'M14.5 14.5 18 18M6.5 9.5h6m3 0a6 6 0 1 1-12 0 6 6 0 0 1 12 0Z',
 };
+
+const WIRING_HUD_LABELS = {
+  auto: { text: 'Wiring', label: 'Wiring visibility: Auto' },
+  show: { text: 'Wiring on', label: 'Wiring visibility: Shown' },
+  hide: { text: 'Wiring off', label: 'Wiring visibility: Hidden' },
+} satisfies Record<WiringVisibilityMode, { readonly text: string; readonly label: string }>;
 
 function HudIcon({ kind }: { readonly kind: keyof typeof HUD_ICON_PATHS }) {
   return (
@@ -614,6 +626,7 @@ type WebAssemblyModel = {
   lastPoses: AssemblyFrameSnapshot['nodePoses'] | undefined;
   selectedComponentId: ComponentId | null;
   hoveredComponentId: ComponentId | null;
+  circuitHighlightIds: ReadonlySet<ComponentId>;
 };
 
 type SceneRuntime = {
@@ -738,13 +751,28 @@ function bindAssemblyModel(
     lastPoses: undefined,
     selectedComponentId: null,
     hoveredComponentId: null,
+    circuitHighlightIds: EMPTY_CIRCUIT_IDS,
   };
 }
 
-function edgeOpacity(isSelected: boolean, isHovered: boolean, isDimmed: boolean): number {
-  if (isSelected) return 0.8;
-  if (isHovered) return 0.85;
-  return isDimmed ? CAD_EDGE_OPACITY * 0.55 : CAD_EDGE_OPACITY;
+const EDGE_HIGHLIGHTS = {
+  selected: { color: HOVER_COLOR, opacity: 0.8 },
+  hovered: { color: HOVER_COLOR, opacity: 0.85 },
+  circuit: { color: CIRCUIT_HIGHLIGHT_COLOR, opacity: 0.62 },
+  dimmed: { color: CAD_EDGE_COLOR, opacity: CAD_EDGE_OPACITY * 0.55 },
+  normal: { color: CAD_EDGE_COLOR, opacity: CAD_EDGE_OPACITY },
+};
+
+function getMeshHighlight(
+  ownerId: ComponentId,
+  selectedComponentId: ComponentId | null,
+  hoveredComponentId: ComponentId | null,
+  circuitHighlightIds: ReadonlySet<ComponentId>,
+): keyof typeof EDGE_HIGHLIGHTS {
+  if (selectedComponentId === ownerId) return 'selected';
+  if (hoveredComponentId === ownerId) return 'hovered';
+  if (circuitHighlightIds.has(ownerId)) return 'circuit';
+  return hoveredComponentId !== null || circuitHighlightIds.size > 0 ? 'dimmed' : 'normal';
 }
 
 function buildQueuedEdges(model: WebAssemblyModel): void {
@@ -754,15 +782,18 @@ function buildQueuedEdges(model: WebAssemblyModel): void {
     if (binding === undefined) return;
     model.nextEdgeIndex += 1;
     const geometry = new THREE.EdgesGeometry(binding.mesh.geometry, 32);
-    const selected = model.selectedComponentId === binding.ownerId;
-    const hovered = model.hoveredComponentId === binding.ownerId;
-    const dimmed = model.hoveredComponentId !== null && !hovered;
+    const highlight = getMeshHighlight(
+      binding.ownerId,
+      model.selectedComponentId,
+      model.hoveredComponentId,
+      model.circuitHighlightIds,
+    );
+    const { color, opacity } = EDGE_HIGHLIGHTS[highlight];
     const material = new THREE.LineBasicMaterial({
-      color: selected || hovered ? HOVER_COLOR : CAD_EDGE_COLOR,
+      color,
       transparent: true,
       depthWrite: false,
-      opacity:
-        edgeOpacity(selected, hovered, dimmed) * (model.lastPoses?.[binding.ownerId]?.opacity ?? 1),
+      opacity: opacity * (model.lastPoses?.[binding.ownerId]?.opacity ?? 1),
     });
     const lines = new THREE.LineSegments(geometry, material);
     lines.raycast = () => {};
@@ -776,11 +807,15 @@ function applyMeshPose(
   pose: AnimatedNodePose,
   selectedComponentId: ComponentId | null,
   hoveredComponentId: ComponentId | null,
+  circuitHighlightIds: ReadonlySet<ComponentId>,
 ): void {
   const { mesh, ownerId, restScale, materials, edgeMaterial } = binding;
-  const isSelected = selectedComponentId === ownerId;
-  const isHovered = hoveredComponentId === ownerId;
-  const isDimmed = hoveredComponentId !== null && !isHovered;
+  const highlight = getMeshHighlight(
+    ownerId,
+    selectedComponentId,
+    hoveredComponentId,
+    circuitHighlightIds,
+  );
   mesh.visible = pose.visible;
   mesh.castShadow = pose.visible && !pose.isAnimatingOpacity;
   mesh.scale.copy(restScale).multiplyScalar(pose.scale);
@@ -792,7 +827,7 @@ function applyMeshPose(
     material.depthWrite = !pose.isAnimatingOpacity;
     const opacity = pose.isAnimatingOpacity ? pose.opacity : 1;
     if (material.opacity !== opacity) material.opacity = opacity;
-    if (isDimmed) {
+    if (highlight === 'dimmed') {
       const { h, s, l } = color.getHSL(HSL_SCRATCH);
       material.color.setHSL(h, s * 0.82, l * 0.8);
       material.envMapIntensity = envMapIntensity * 0.78;
@@ -800,17 +835,21 @@ function applyMeshPose(
       material.color.copy(color);
       material.envMapIntensity = envMapIntensity;
     }
-    if (isHovered) {
+    if (highlight === 'hovered' || highlight === 'selected') {
       material.emissive.set(HOVER_COLOR);
       material.emissiveIntensity = 0.24;
+    } else if (highlight === 'circuit') {
+      material.emissive.set(CIRCUIT_HIGHLIGHT_COLOR);
+      material.emissiveIntensity = 0.18;
     } else {
       material.emissive.copy(emissive);
       material.emissiveIntensity = emissiveIntensity;
     }
   }
   if (edgeMaterial !== undefined) {
-    edgeMaterial.color.set(isSelected || isHovered ? HOVER_COLOR : CAD_EDGE_COLOR);
-    edgeMaterial.opacity = edgeOpacity(isSelected, isHovered, isDimmed) * pose.opacity;
+    const { color, opacity } = EDGE_HIGHLIGHTS[highlight];
+    edgeMaterial.color.set(color);
+    edgeMaterial.opacity = opacity * pose.opacity;
   }
 }
 
@@ -819,6 +858,7 @@ function applyModelPoses(
   poses: AssemblyFrameSnapshot['nodePoses'],
   selectedComponentId: ComponentId | null,
   hoveredComponentId: ComponentId | null,
+  circuitHighlightIds: ReadonlySet<ComponentId>,
 ): void {
   if (model.lastPoses !== poses) {
     for (const [id, object] of model.objectsById) {
@@ -829,16 +869,20 @@ function applyModelPoses(
   if (
     model.lastPoses !== poses ||
     model.selectedComponentId !== selectedComponentId ||
-    model.hoveredComponentId !== hoveredComponentId
+    model.hoveredComponentId !== hoveredComponentId ||
+    model.circuitHighlightIds !== circuitHighlightIds
   ) {
     for (const binding of model.meshes) {
       const pose = poses[binding.ownerId];
-      if (pose !== undefined) applyMeshPose(binding, pose, selectedComponentId, hoveredComponentId);
+      if (pose !== undefined) {
+        applyMeshPose(binding, pose, selectedComponentId, hoveredComponentId, circuitHighlightIds);
+      }
     }
   }
   model.lastPoses = poses;
   model.selectedComponentId = selectedComponentId;
   model.hoveredComponentId = hoveredComponentId;
+  model.circuitHighlightIds = circuitHighlightIds;
 }
 
 export function AssemblyScene({
@@ -848,6 +892,7 @@ export function AssemblyScene({
   onSetCamera,
   onSetExplodeFactor,
   onToggleExplodePreset,
+  onCycleWiringVisibility,
   onFocusComponent,
   onExitPartFocus,
   learningState,
@@ -883,7 +928,16 @@ export function AssemblyScene({
       )
       .map(({ id }) => id);
   }, [assembly.nodes]);
+  const hasWiring = useMemo(
+    () => assembly.nodes.some(({ category }) => category === 'wiring'),
+    [assembly.nodes],
+  );
   const focusedId = state.viewMode.kind === 'part_focus' ? state.viewMode.componentId : null;
+  const activeCircuitId = focusedId ?? hoveredComponentId;
+  const circuitHighlightIds = useMemo(() => {
+    const ids = computeCircuitComponentIds(assembly, activeCircuitId);
+    return ids.size === 0 ? EMPTY_CIRCUIT_IDS : ids;
+  }, [assembly, activeCircuitId]);
   const focusedNode =
     focusedId === null ? null : (assembly.nodes.find(({ id }) => id === focusedId) ?? null);
   const hoveredNode =
@@ -977,6 +1031,7 @@ export function AssemblyScene({
     if (modelChanged || focusedId !== null || state.selectedComponentId !== null) {
       updateHoveredComponent(null);
     }
+    const circuitChanged = targetsRef.current.circuitHighlightIds !== circuitHighlightIds;
     targetsRef.current = {
       camera: nextCamera,
       explodeFactor: state.explodeFactor,
@@ -984,13 +1039,17 @@ export function AssemblyScene({
       isolatedComponentId: state.isolatedComponentId,
       focusedComponentId: focusedId,
       separatedOffsets: state.separatedOffsets,
+      wiringVisibility: state.wiringVisibility,
+      circuitHighlightIds,
     };
 
     if (
       modelChanged ||
       externalCameraChanged ||
+      circuitChanged ||
       previous.state.explodeFactor !== state.explodeFactor ||
       previous.state.activeExplodeStage !== state.activeExplodeStage ||
+      previous.state.wiringVisibility !== state.wiringVisibility ||
       previous.state.selectedComponentId !== state.selectedComponentId ||
       previous.state.viewMode !== state.viewMode ||
       previous.state.isolatedComponentId !== state.isolatedComponentId ||
@@ -1188,6 +1247,7 @@ export function AssemblyScene({
       const { assembly, state, leafPartIds, focusedNode, calloutNode, learningState } =
         propsRef.current;
       const targets = targetsRef.current;
+      const circuitHighlightIds = targets.circuitHighlightIds ?? EMPTY_CIRCUIT_IDS;
       const model = runtime.model;
       const hoveredComponentId =
         state.viewMode.kind === 'overview' && state.selectedComponentId === null
@@ -1195,9 +1255,15 @@ export function AssemblyScene({
           : null;
       const snapshot = animationRef.current?.step(model?.hasPainted ? dtSec : 0, targets);
       if (model !== null && snapshot !== undefined) {
+        applyModelPoses(
+          model,
+          snapshot.nodePoses,
+          state.selectedComponentId,
+          hoveredComponentId,
+          circuitHighlightIds,
+        );
         if (model.hasPainted && model.nextEdgeIndex < model.edgeQueue.length)
           buildQueuedEdges(model);
-        applyModelPoses(model, snapshot.nodePoses, state.selectedComponentId, hoveredComponentId);
         if (!model.hasPainted || snapshot.cameraChanged) {
           updateCameraFromSpherical(camera, snapshot.animatedCamera);
         }
@@ -1352,6 +1418,8 @@ export function AssemblyScene({
         isolatedComponentId: targets.isolatedComponentId,
         explodeFactor: targets.explodeFactor,
         activeExplodeStage: targets.activeExplodeStage,
+        wiringVisibility: state.wiringVisibility,
+        circuitHighlightIds: [...circuitHighlightIds],
         camera: targets.camera,
         separatedOffsets: targets.separatedOffsets,
         nodePositionsMeters,
@@ -1578,6 +1646,7 @@ export function AssemblyScene({
   }
 
   const explodePercent = Math.round(state.explodeFactor * 100);
+  const wiringLabels = WIRING_HUD_LABELS[state.wiringVisibility];
   const sliderStyle: CSSProperties & { readonly '--explode-progress': string } = {
     '--explode-progress': `${state.explodeFactor * 100}%`,
   };
@@ -1665,6 +1734,18 @@ export function AssemblyScene({
           onChange={(event) => changeExplodeFactor(event.currentTarget.valueAsNumber)}
         />
         <span className={classes.hudDivider} aria-hidden="true" />
+        {hasWiring ? (
+          <button
+            type="button"
+            className={classes.wiringButton}
+            aria-label={wiringLabels.label}
+            aria-pressed={state.wiringVisibility === 'show'}
+            data-wiring-mode={state.wiringVisibility}
+            onClick={onCycleWiringVisibility}>
+            <HudIcon kind="wiring" />
+            {wiringLabels.text}
+          </button>
+        ) : null}
         <button
           type="button"
           className={classes.zoomButton}

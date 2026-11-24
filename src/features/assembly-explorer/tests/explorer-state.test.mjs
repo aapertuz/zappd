@@ -4,11 +4,12 @@ import { describe, it } from 'node:test';
 import { Box3, PerspectiveCamera, Vector3 } from 'three';
 
 import { toComponentId } from '../../../shared/domain/assembly.ts';
-import { CATALOG_ARCHETYPES } from '../../../shared/domain/catalog.ts';
+import { CATALOG_ARCHETYPES, getCatalogArchetypeById } from '../../../shared/domain/catalog.ts';
 import { computePartCalloutRect } from '../model/calloutPlacement.ts';
 import {
   computeAssemblyBoundingBoxMeters,
   computeCameraZoomLimits,
+  computeCircuitComponentIds,
   computeDefaultCameraForAssembly,
   computeFocusedCameraForComponent,
   DEFAULT_EXPLORER_CAMERA,
@@ -367,6 +368,115 @@ describe('assembly explorer manipulation state reducer', () => {
 
     const unisolated = reduceAssemblyExplorerState(resetPart, { type: 'toggleIsolateComponent' });
     assert.equal(unisolated.isolatedComponentId, null);
+  });
+});
+
+describe('wiring visibility', () => {
+  it('cycles through auto, show, and hide', () => {
+    let state = INITIAL_ASSEMBLY_EXPLORER_STATE;
+    assert.equal(state.wiringVisibility, 'auto');
+    for (const mode of ['show', 'hide', 'auto']) {
+      state = reduceAssemblyExplorerState(state, { type: 'cycleWiringVisibility' });
+      assert.equal(state.wiringVisibility, mode);
+    }
+  });
+
+  it('sets a mode directly and resets to auto when an assembly loads', () => {
+    const state = reduceAssemblyExplorerState(INITIAL_ASSEMBLY_EXPLORER_STATE, {
+      type: 'setWiringVisibility',
+      mode: 'hide',
+    });
+    assert.equal(state.wiringVisibility, 'hide');
+    const loaded = reduceAssemblyExplorerState(state, {
+      type: 'loadAssemblySuccess',
+      promptId: 1,
+      assembly: CATALOG_ARCHETYPES[0],
+      glbArrayBuffer: new ArrayBuffer(0),
+    });
+    assert.equal(loaded.wiringVisibility, 'auto');
+  });
+});
+
+describe('electrical circuits', () => {
+  const cases = [
+    [
+      'robotic_arm_3dof_v1',
+      'comp_base_servo',
+      [
+        'comp_base_servo',
+        'comp_waveshare_bus_adapter',
+        'comp_shoulder_servo',
+        'comp_so100_cable_bus_1',
+        'comp_so100_cable_bus_2',
+      ],
+    ],
+    [
+      'robotic_arm_3dof_v1',
+      'comp_so100_cable_bus_1',
+      ['comp_so100_cable_bus_1', 'comp_waveshare_bus_adapter', 'comp_base_servo'],
+    ],
+    [
+      'quadcopter_drone_v1',
+      'comp_quad_flight_controller',
+      [
+        'comp_quad_flight_controller',
+        'comp_quad_4in1_esc',
+        'comp_quad_elrs_receiver',
+        'comp_quad_cable_fc_esc',
+        'comp_quad_cable_rx_fc',
+      ],
+    ],
+    [
+      'quadcopter_drone_v1',
+      'comp_quad_battery_pack',
+      ['comp_quad_battery_pack', 'comp_quad_4in1_esc', 'comp_quad_cable_battery_esc'],
+    ],
+    ['quadcopter_drone_v1', 'subcomp_standoff_1', []],
+    [
+      'open_source_rover_v1',
+      'comp_nova2_cable_zed_usb',
+      ['comp_nova2_cable_zed_usb', 'comp_zed2i_stereo_camera', 'comp_nova2_jetson_carrier'],
+    ],
+    [
+      'open_source_rover_v1',
+      'comp_steering_servo_left',
+      ['comp_steering_servo_left', 'comp_nova2_jetson_carrier', 'comp_nova2_cable_servo_left'],
+    ],
+    ['open_source_rover_v1', 'comp_rover_base_plate', []],
+  ];
+
+  for (const [archetypeId, componentId, expectedIds] of cases) {
+    it(`traces ${componentId} in ${archetypeId}`, () => {
+      const assembly = getCatalogArchetypeById(archetypeId);
+      assert.ok(assembly.nodes.some(({ id }) => id === componentId));
+      assert.deepEqual(computeCircuitComponentIds(assembly, componentId), new Set(expectedIds));
+    });
+  }
+
+  it('follows direct electrical links to and from a wiring node', () => {
+    const assembly = getCatalogArchetypeById('quadcopter_drone_v1');
+    const battery = 'comp_quad_battery_pack';
+    const cable = 'comp_quad_cable_battery_esc';
+    const esc = 'comp_quad_4in1_esc';
+    const receiver = 'comp_quad_elrs_receiver';
+    const directRelationship = {
+      id: 'rel_direct_cable_receiver',
+      fromComponentId: cable,
+      toComponentId: receiver,
+      connectionType: 'electrical_bus',
+    };
+    const withDirectLink = {
+      ...assembly,
+      relationships: [...assembly.relationships, directRelationship],
+    };
+    assert.deepEqual(
+      computeCircuitComponentIds(withDirectLink, cable),
+      new Set([cable, battery, esc, receiver]),
+    );
+    assert.deepEqual(
+      computeCircuitComponentIds({ ...assembly, relationships: [directRelationship] }, receiver),
+      new Set([receiver, cable]),
+    );
   });
 });
 
