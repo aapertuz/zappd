@@ -14,13 +14,13 @@ import {
 } from './calloutPresentation';
 import classes from './LearningCallouts.web.module.css';
 import {
+  type CalloutRect,
   computeLearningCalloutsLayout,
   type LearningCalloutPlacement,
   type LearningCalloutsGeometryFrame,
 } from '../model/calloutLayout';
 import { type LearningCalloutSlotState } from '../model/learningState';
 
-type PlacementRect = LearningCalloutPlacement['rect'];
 type CalloutPresentation = ReturnType<typeof useCalloutPresentation>;
 type CalloutDiagnostics = {
   readonly kind: Exclude<LearningCalloutSlotState['kind'], 'idle'>;
@@ -33,7 +33,7 @@ type CalloutDiagnostics = {
   readonly isWriting: boolean;
   readonly visibleText: string;
 };
-type DiagnosticsSnapshot = (CalloutDiagnostics & { readonly rect: PlacementRect | null }) | null;
+type DiagnosticsSnapshot = (CalloutDiagnostics & { readonly rect: CalloutRect | null }) | null;
 
 declare global {
   interface Window {
@@ -173,6 +173,7 @@ function Annotation({
 
 export function LearningCallouts({
   learningState,
+  explanationIsOverview,
   answeringInOverview,
   onDismissAnswer,
   ref,
@@ -188,7 +189,10 @@ export function LearningCallouts({
     explanation: null,
     answer: null,
   });
-  const explanationPresentation = useCalloutPresentation(explanation, 'Retrieving specs…');
+  const explanationPresentation = useCalloutPresentation(
+    explanation,
+    explanationIsOverview ? 'Putting together a quick overview…' : 'Getting a simple explanation…',
+  );
   const answerPresentation = useCalloutPresentation(answer, 'Looking up an answer…');
 
   const syncGeometry = useCallback(
@@ -201,17 +205,17 @@ export function LearningCallouts({
       });
       positionAnnotation(explanationElements, layout.explanation);
       positionAnnotation(answerElements, layout.answer);
+      const explanationRect = layout.explanation?.rect ?? null;
+      const answerRect = layout.answer?.rect ?? null;
       const { explanation, answer } = snapshots.current;
       Object.defineProperty(window, '__zappdLearningDiagnostics', {
         configurable: true,
         value: {
-          explanation:
-            explanation === null
-              ? null
-              : { ...explanation, rect: layout.explanation?.rect ?? null },
-          answer: answer === null ? null : { ...answer, rect: layout.answer?.rect ?? null },
+          explanation: explanation === null ? null : { ...explanation, rect: explanationRect },
+          answer: answer === null ? null : { ...answer, rect: answerRect },
         },
       });
+      return { explanationRect, answerRect };
     },
     [answerElements, explanationElements],
   );
@@ -261,7 +265,7 @@ export function LearningCallouts({
     <div className={classes.overlay}>
       {hasExplanation ? (
         <Annotation
-          title="Explanation"
+          title={explanationIsOverview ? 'Overview' : 'Explanation'}
           label="Component explanation"
           elements={explanationElements}
           presentation={explanationPresentation}

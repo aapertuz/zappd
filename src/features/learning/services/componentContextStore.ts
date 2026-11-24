@@ -34,7 +34,7 @@ function getBrowserStorage(): LearningOfflineStorage | undefined {
 }
 
 function cacheKey({ projectId, manifest }: VerifiedProjectAssembly): string {
-  return `zappd:learning:v1:${projectId}:${manifest.manifestHash}`;
+  return `zappd:learning:v2:${projectId}:${manifest.manifestHash}`;
 }
 
 function readCache(

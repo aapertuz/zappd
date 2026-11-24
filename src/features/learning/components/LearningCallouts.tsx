@@ -49,7 +49,7 @@ function Callout({
   if (slot.kind === 'idle') return null;
 
   return (
-    <View style={styles.card} aria-label={label}>
+    <View style={styles.card} role="status" aria-label={label}>
       <View style={styles.header}>
         <Text style={styles.eyebrow}>{title}</Text>
         {sourceLabel !== null ? <Text style={styles.source}>{sourceLabel}</Text> : null}
@@ -81,6 +81,7 @@ function Callout({
 
 export function LearningCallouts({
   learningState,
+  explanationIsOverview,
   answeringInOverview,
   onDismissAnswer,
 }: LearningCalloutsProps & { readonly ref?: Ref<LearningCalloutsHandle> }) {
@@ -90,9 +91,13 @@ export function LearningCallouts({
   return (
     <View style={styles.callouts}>
       <Callout
-        title="Explanation"
+        title={explanationIsOverview ? 'Overview' : 'Explanation'}
         label="Component explanation"
-        loadingText="Retrieving specs…"
+        loadingText={
+          explanationIsOverview
+            ? 'Putting together a quick overview…'
+            : 'Getting a simple explanation…'
+        }
         slot={explanation}
       />
       <Callout

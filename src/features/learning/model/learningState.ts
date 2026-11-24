@@ -24,11 +24,15 @@ type CalloutText = {
   | { readonly inferenceSource: 'offline_cache'; readonly fallbackReason: string }
 );
 
+type CachedExplanationEntry = Pick<IdentifiedCallout, 'componentId' | 'componentName'> &
+  CalloutText;
+
 export type LearningCalloutSlotState<Question extends string | undefined = string | undefined> =
   | { readonly kind: 'idle' }
   | (IdentifiedCallout & { readonly question: Question } & (
         | { readonly kind: 'loading' }
-        | ({ readonly kind: 'writing' | 'ready' } & CalloutText)
+        | ({ readonly kind: 'writing' } & CalloutText)
+        | ({ readonly kind: 'ready'; readonly restoredFromCache?: true } & CalloutText)
         | { readonly kind: 'error'; readonly message: string }
       ));
 
@@ -38,6 +42,7 @@ export type AnswerSlotState = LearningCalloutSlotState<string>;
 export type LearningState = {
   readonly explanation: ExplanationSlotState;
   readonly answer: AnswerSlotState;
+  readonly cachedExplanations: Readonly<Record<string, CachedExplanationEntry>>;
   readonly nextRequestId: number;
 };
 
@@ -53,11 +58,18 @@ type UpdateAction = { readonly slot: SlotKind; readonly requestId: number } & (
 );
 
 export type LearningAction =
-  StartAction | UpdateAction | { readonly type: 'reset'; readonly slot?: SlotKind };
+  | StartAction
+  | UpdateAction
+  | ({ readonly type: 'activateExplanation' } & Pick<
+      IdentifiedCallout,
+      'componentId' | 'componentName'
+    >)
+  | { readonly type: 'reset'; readonly slot?: SlotKind };
 
 export const INITIAL_LEARNING_STATE: LearningState = {
   explanation: { kind: 'idle' },
   answer: { kind: 'idle' },
+  cachedExplanations: {},
   nextRequestId: 1,
 };
 
@@ -93,33 +105,54 @@ export function reduceLearningState(state: LearningState, action: LearningAction
         ...state,
         explanation: action.slot === 'answer' ? state.explanation : { kind: 'idle' },
         answer: action.slot === 'explanation' ? state.answer : { kind: 'idle' },
+        cachedExplanations: action.slot === undefined ? {} : state.cachedExplanations,
       };
+    case 'activateExplanation':
     case 'start': {
       const { componentId, componentName } = action;
+      const requestId = state.nextRequestId;
+      const nextRequestId = requestId + 1;
       const loading = {
         kind: 'loading',
-        requestId: state.nextRequestId,
+        requestId,
         componentId,
         componentName,
-      } as const;
-      return action.slot === 'explanation'
-        ? {
-            ...state,
-            explanation: { ...loading, question: undefined },
-            nextRequestId: state.nextRequestId + 1,
-          }
-        : {
-            ...state,
-            answer: { ...loading, question: action.question },
-            nextRequestId: state.nextRequestId + 1,
-          };
+      } satisfies IdentifiedCallout & { readonly kind: 'loading' };
+      if (action.type === 'start' && action.slot === 'answer') {
+        return { ...state, answer: { ...loading, question: action.question }, nextRequestId };
+      }
+
+      const cached =
+        action.type === 'activateExplanation' &&
+        Object.hasOwn(state.cachedExplanations, componentId)
+          ? state.cachedExplanations[componentId]
+          : undefined;
+      const explanation: ExplanationSlotState =
+        cached === undefined
+          ? { ...loading, question: undefined }
+          : { ...cached, kind: 'ready', requestId, question: undefined, restoredFromCache: true };
+      return { ...state, explanation, nextRequestId };
     }
     case 'write':
     case 'complete':
     case 'fail': {
       if (action.slot === 'explanation') {
         const explanation = updateSlot(state.explanation, action);
-        return explanation === state.explanation ? state : { ...state, explanation };
+        if (explanation === state.explanation) return state;
+        if (explanation.kind !== 'ready') return { ...state, explanation };
+
+        const {
+          kind: _kind,
+          requestId: _requestId,
+          question: _question,
+          restoredFromCache: _restoredFromCache,
+          ...cached
+        } = explanation;
+        return {
+          ...state,
+          explanation,
+          cachedExplanations: { ...state.cachedExplanations, [cached.componentId]: cached },
+        };
       }
       const answer = updateSlot(state.answer, action);
       return answer === state.answer ? state : { ...state, answer };

@@ -14,6 +14,80 @@ import { classifyCanvasPrompt } from '../model/promptRouter.ts';
 import { advanceTypewriterProgress, isTypewriterWriting } from '../model/typewriter.ts';
 
 describe('learning callout state', () => {
+  it('restores completed overview and part explanations until the project resets', () => {
+    const root = {
+      type: 'activateExplanation',
+      componentId: QUADCOPTER_ARCHETYPE.rootNodeId,
+      componentName: QUADCOPTER_ARCHETYPE.title,
+    };
+    const part = {
+      ...root,
+      componentId: 'comp_motor_rr',
+      componentName: 'Rear Right Brushless Motor',
+    };
+    const overview = reduceLearningState(INITIAL_LEARNING_STATE, root);
+    assert.equal(overview.explanation.kind, 'loading');
+    assert.equal(overview.explanation.componentId, root.componentId);
+    const metadata = { contextSource: 'offline_cache', inferenceSource: 'on_device' };
+    const complete = (state, text) =>
+      reduceLearningState(state, {
+        type: 'complete',
+        slot: 'explanation',
+        requestId: state.explanation.requestId,
+        text,
+        ...metadata,
+      });
+
+    const overviewText = 'This drone uses four propellers.';
+    const partText = 'This motor turns the rear right propeller.';
+    const completedOverview = complete(overview, overviewText);
+    assert.deepEqual(completedOverview.cachedExplanations[root.componentId], {
+      componentId: root.componentId,
+      componentName: root.componentName,
+      text: overviewText,
+      ...metadata,
+    });
+    const firstFocus = reduceLearningState(completedOverview, part);
+    assert.equal(firstFocus.explanation.kind, 'loading');
+    const restored = reduceLearningState(firstFocus, root);
+    assert.deepEqual(restored.explanation, {
+      kind: 'ready',
+      requestId: firstFocus.nextRequestId,
+      componentId: root.componentId,
+      componentName: root.componentName,
+      question: undefined,
+      restoredFromCache: true,
+      text: overviewText,
+      ...metadata,
+    });
+    assert.equal(
+      reduceLearningState(restored, {
+        type: 'complete',
+        slot: 'explanation',
+        requestId: firstFocus.explanation.requestId,
+        text: partText,
+        ...metadata,
+      }),
+      restored,
+    );
+
+    const secondFocus = reduceLearningState(restored, part);
+    assert.equal(secondFocus.explanation.kind, 'loading');
+    const completedPart = complete(secondFocus, partText);
+    const secondOverview = reduceLearningState(completedPart, root);
+    for (const slot of ['answer', 'explanation']) {
+      const resetSlot = reduceLearningState(secondOverview, { type: 'reset', slot });
+      const cachedPart = reduceLearningState(resetSlot, part);
+      assert.equal(cachedPart.explanation.kind, 'ready');
+      assert.equal(cachedPart.explanation.restoredFromCache, true);
+      assert.equal(cachedPart.explanation.text, partText);
+    }
+
+    const nextProject = reduceLearningState(completedPart, { type: 'reset' });
+    assert.deepEqual(nextProject.cachedExplanations, {});
+    assert.equal(reduceLearningState(nextProject, root).explanation.kind, 'loading');
+  });
+
   it('tracks concurrent explanation and answer lifecycles by request and slot', () => {
     const componentId = 'comp_motor_fl';
     const componentName = 'Front Left Motor';
@@ -405,6 +479,53 @@ describe('learning callout layout', () => {
     assertWithinInsets(layout.answer, input);
     assertArrowPointsToAnchor(layout.answer);
   });
+
+  for (const [viewportWidth, viewportHeight] of [
+    [1280, 800],
+    [390, 844],
+  ]) {
+    it(`keeps the overview and answer clear of the HUD and hover label at ${viewportWidth}×${viewportHeight}`, () => {
+      const anchors = anchorsAt(viewportWidth / 2, 360);
+      const answerAnchors = anchorsAt(viewportWidth / 2 + 30, 398);
+      const hud = { x: 16, y: 140, width: viewportWidth - 32, height: 114 };
+      const hoverLabel =
+        viewportWidth > 800
+          ? { x: viewportWidth / 2 - 346, y: 305, width: 230, height: 90 }
+          : { x: 116, y: 454, width: 190, height: 48 };
+      const input = {
+        viewportWidth,
+        viewportHeight,
+        anchors,
+        answerAnchors,
+        partLabelRect: null,
+        explanationSize: { width: 245, height: 80 },
+        answerSize: { width: 245, height: 110 },
+      };
+      const unobstructed = computeLearningCalloutsLayout(input);
+      assert.ok(
+        [unobstructed.explanation, unobstructed.answer].some(
+          ({ rect }) => overlaps(rect, hoverLabel) || overlaps(rect, hud),
+        ),
+      );
+      const layout = computeLearningCalloutsLayout({ ...input, obstacles: [hud, hoverLabel] });
+      assert.ok(layout.explanation);
+      assert.ok(layout.answer);
+      assert.equal(overlaps(layout.explanation.rect, layout.answer.rect), false);
+      const projectedParts = [anchors, answerAnchors].map(({ left, right, top, bottom }) => ({
+        x: left.x,
+        y: top.y,
+        width: right.x - left.x,
+        height: bottom.y - top.y,
+      }));
+      for (const placement of [layout.explanation, layout.answer]) {
+        for (const obstacle of [hud, hoverLabel, ...projectedParts]) {
+          assert.equal(overlaps(placement.rect, obstacle), false);
+        }
+        assertWithinInsets(placement, input);
+        assertArrowPointsToAnchor(placement);
+      }
+    });
+  }
 
   it('prioritizes the answer only when both cards need the same space on a tight viewport', () => {
     const input = {

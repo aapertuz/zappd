@@ -1,6 +1,11 @@
 type Point = { readonly x: number; readonly y: number };
 type Size = { readonly width: number; readonly height: number };
-type Rect = Point & Size;
+export type CalloutRect = {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+};
 
 export type PartAnchors = {
   readonly center: Point;
@@ -11,7 +16,7 @@ export type PartAnchors = {
 };
 
 export type LearningCalloutPlacement = {
-  readonly rect: Rect;
+  readonly rect: CalloutRect;
   readonly anchor: Point;
   readonly leaderPath: string;
   readonly arrowPath: string;
@@ -22,16 +27,16 @@ export type LearningCalloutsLayout = {
   readonly answer: LearningCalloutPlacement | null;
 };
 
-type PositionCandidate = { readonly rect: Rect; readonly score: number };
+type PositionCandidate = { readonly rect: CalloutRect; readonly score: number };
 
 const CARD_GAP = 12;
 const DESKTOP_LEADER_STANDOFF = 54;
 
-function right(rect: Rect): number {
+function right(rect: CalloutRect): number {
   return rect.x + rect.width;
 }
 
-function bottom(rect: Rect): number {
+function bottom(rect: CalloutRect): number {
   return rect.y + rect.height;
 }
 
@@ -39,7 +44,7 @@ function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
-function overlaps(rect: Rect, obstacle: Rect): boolean {
+function overlaps(rect: CalloutRect, obstacle: CalloutRect): boolean {
   return (
     rect.x < right(obstacle) + CARD_GAP &&
     right(rect) + CARD_GAP > obstacle.x &&
@@ -51,8 +56,8 @@ function overlaps(rect: Rect, obstacle: Rect): boolean {
 function findCandidates(
   size: Size | null,
   preferred: Point,
-  bounds: Rect,
-  obstacles: readonly Rect[],
+  bounds: CalloutRect,
+  obstacles: readonly CalloutRect[],
   nextSize?: Size | null,
 ): readonly PositionCandidate[] {
   if (
@@ -98,7 +103,7 @@ function findCandidates(
 }
 
 function placeCallout(
-  rect: Rect | undefined,
+  rect: CalloutRect | undefined,
   anchors: PartAnchors,
 ): LearningCalloutPlacement | null {
   if (rect === undefined) return null;
@@ -156,12 +161,13 @@ function placeCallout(
 export type LearningCalloutsGeometryFrame = {
   readonly viewportWidth: number;
   readonly viewportHeight: number;
-  readonly partLabelRect: Rect | null;
+  readonly partLabelRect: CalloutRect | null;
   readonly anchors: PartAnchors | null;
   readonly answerAnchors?: PartAnchors | null;
+  readonly obstacles?: readonly CalloutRect[];
 };
 
-function projectedPartRect(anchors: PartAnchors): Rect {
+function projectedPartRect(anchors: PartAnchors): CalloutRect {
   return {
     x: anchors.left.x,
     y: anchors.top.y,
@@ -176,6 +182,7 @@ export function computeLearningCalloutsLayout({
   partLabelRect,
   anchors,
   answerAnchors = anchors,
+  obstacles = [],
   explanationSize,
   answerSize,
   margin = 16,
@@ -194,7 +201,8 @@ export function computeLearningCalloutsLayout({
     width: viewportWidth - margin * 2,
     height: viewportHeight - topInset - bottomInset,
   };
-  const obstacles = [
+  const occupiedRects = [
+    ...obstacles,
     ...(anchors === null ? [] : [projectedPartRect(anchors)]),
     ...(answerAnchors === null || answerAnchors === anchors
       ? []
@@ -230,19 +238,19 @@ export function computeLearningCalloutsLayout({
   const explanations =
     explanationPreferred === null
       ? []
-      : findCandidates(explanationSize, explanationPreferred, bounds, obstacles, answerSize);
+      : findCandidates(explanationSize, explanationPreferred, bounds, occupiedRects, answerSize);
   let explanation = explanations[0];
   let answer =
     answerPreferred === null
       ? undefined
-      : findCandidates(answerSize, answerPreferred, bounds, obstacles)[0];
+      : findCandidates(answerSize, answerPreferred, bounds, occupiedRects)[0];
   let bestPairScore = Number.POSITIVE_INFINITY;
 
   if (answerPreferred !== null && answerSize !== null && answer !== undefined) {
     for (const candidate of explanations) {
       if (candidate.score >= bestPairScore) break;
       const pairedAnswer = findCandidates(answerSize, answerPreferred, bounds, [
-        ...obstacles,
+        ...occupiedRects,
         candidate.rect,
       ])[0];
       if (pairedAnswer !== undefined && candidate.score + pairedAnswer.score < bestPairScore) {
