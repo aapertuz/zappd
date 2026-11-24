@@ -609,3 +609,32 @@ def test_routed_harness_rejects_invalid_input(harness_spec, target, field, value
     with pytest.raises(RuntimeError, match=failure):
         run_cad_pipeline(spec, tmp_path / "exports", cache)
     assert not (cache / "routed-cable.step").exists()
+
+
+def test_interference_volume_raises_when_boolean_op_fails(monkeypatch: pytest.MonkeyPatch) -> None:
+    from OCP.BRepPrimAPI import BRepPrimAPI_MakeBox
+    from backend.cad_worker import geometry_pipeline
+
+    class FailingCommon:
+        def SetArguments(self, _args) -> None:
+            return None
+
+        def SetTools(self, _tools) -> None:
+            return None
+
+        def SetUseOBB(self, _enabled: bool) -> None:
+            return None
+
+        def SetRunParallel(self, _enabled: bool) -> None:
+            return None
+
+        def Build(self) -> None:
+            return None
+
+        def IsDone(self) -> bool:
+            return False
+
+    monkeypatch.setattr(geometry_pipeline, "BRepAlgoAPI_Common", FailingCommon)
+    box = BRepPrimAPI_MakeBox(10.0, 10.0, 10.0).Shape()
+    with pytest.raises(RuntimeError, match="OpenCascade boolean interference check failed"):
+        geometry_pipeline.interference_volume_mm3(box, box)

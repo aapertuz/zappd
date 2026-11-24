@@ -116,6 +116,8 @@ def interference_volume_mm3(first: TopoDS_Shape, second: TopoDS_Shape) -> float:
     common.SetUseOBB(True)
     common.SetRunParallel(True)
     common.Build()
+    if not common.IsDone():
+        raise RuntimeError("OpenCascade boolean interference check failed")
     properties = GProp_GProps()
     BRepGProp.VolumeProperties_s(common.Shape(), properties)
     return float(properties.Mass())
