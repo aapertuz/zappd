@@ -4,7 +4,13 @@
   height: 100dvh;
   min-height: 100dvh;
   overflow: hidden;
-  background: radial-gradient(ellipse 74% 66% at 50% 45%, #1a1712 0%, #0d0c0a 56%, #070708 100%);
+  background: radial-gradient(
+    ellipse 72% 64% at 50% 46%,
+    #2c2822 0%,
+    #171512 46%,
+    #0c0b0a 78%,
+    #070708 100%
+  );
 }
 
 .surface {
