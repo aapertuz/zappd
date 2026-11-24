@@ -10,6 +10,8 @@ import { type LearningQuestionSubmission, type LearningState } from '@/features/
 
 export type SeparationAxis = 'x' | 'y' | 'z';
 
+export type WiringVisibilityMode = 'auto' | 'show' | 'hide';
+
 export type AssemblyLoadingPhase = 'idle' | 'orchestrating' | 'downloading' | 'ready' | 'error';
 
 export type AssemblyLoadingProgress = {
@@ -46,6 +48,7 @@ export type AssemblyExplorerState = {
   readonly viewMode: ExplorerViewMode;
   readonly explodeFactor: number;
   readonly activeExplodeStage: ExplodeStageFilter;
+  readonly wiringVisibility: WiringVisibilityMode;
   readonly selectedComponentId: ComponentId | null;
   readonly isolatedComponentId: ComponentId | null;
   readonly separatedOffsets: Readonly<Record<string, Vector3Tuple>>;
@@ -72,6 +75,8 @@ export type AssemblyExplorerAction =
   | { readonly type: 'setCamera'; readonly camera: ExplorerCameraState }
   | { readonly type: 'setExplodeFactor'; readonly explodeFactor: number }
   | { readonly type: 'toggleExplodePreset' }
+  | { readonly type: 'cycleWiringVisibility' }
+  | { readonly type: 'setWiringVisibility'; readonly mode: WiringVisibilityMode }
   | { readonly type: 'focusComponent'; readonly componentId: ComponentId }
   | { readonly type: 'exitPartFocus' }
   | { readonly type: 'setExplodeStage'; readonly stage: ExplodeStageFilter }
@@ -93,6 +98,7 @@ export type AssemblySceneProps = {
   readonly onSetCamera: (camera: ExplorerCameraState) => void;
   readonly onSetExplodeFactor: (explodeFactor: number) => void;
   readonly onToggleExplodePreset: () => void;
+  readonly onCycleWiringVisibility: () => void;
   readonly onFocusComponent: (componentId: ComponentId) => void;
   readonly onExitPartFocus: () => void;
   readonly onSetExplodeStage: (stage: ExplodeStageFilter) => void;

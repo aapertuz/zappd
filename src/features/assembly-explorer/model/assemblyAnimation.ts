@@ -6,7 +6,7 @@ import type {
   VerifiedProjectAssembly,
 } from '@/shared/domain';
 
-import type { ExplorerCameraState } from '../types';
+import type { ExplorerCameraState, WiringVisibilityMode } from '../types';
 
 export type SpringConfig = {
   readonly stiffness: number;
@@ -45,6 +45,8 @@ export type AssemblyAnimationTargets = {
   readonly camera: ExplorerCameraState;
   readonly isolatedComponentId: ComponentId | null;
   readonly focusedComponentId?: ComponentId | null;
+  readonly wiringVisibility?: WiringVisibilityMode;
+  readonly circuitHighlightIds?: ReadonlySet<ComponentId>;
   readonly separatedOffsets: Readonly<Record<string, Vector3Tuple>>;
 };
 
@@ -83,7 +85,7 @@ type AnimationNode = Pick<
   | 'restPositionMeters'
   | 'explodeDirection'
   | 'explodeDistanceMeters'
->;
+> & { readonly category?: AssemblyNode['category'] };
 
 type AnimationAssembly = {
   readonly nodes: readonly AnimationNode[];
@@ -102,9 +104,9 @@ const ANGLE_EPSILON_DEG = 0.01;
 const DAMPING_RATE = 14;
 export const FOCUS_IN_DURATION_SEC = 1.1;
 export const FOCUS_OUT_DURATION_SEC = 0.65;
-const ISOLATION_FADE_OUT_RATE = 4.2;
-const ISOLATION_FADE_IN_RATE = 6.5;
-const ISOLATION_OPACITY_EPSILON = 0.02;
+const VISIBILITY_FADE_OUT_RATE = 4.2;
+const VISIBILITY_FADE_IN_RATE = 6.5;
+const VISIBILITY_OPACITY_EPSILON = 0.02;
 
 function clamp01(value: number): number {
   return Math.min(1, Math.max(0, value));
@@ -113,6 +115,26 @@ function clamp01(value: number): number {
 function smoothstep(value: number): number {
   const u = clamp01(value);
   return u * u * (3 - 2 * u);
+}
+
+function autoWiringOpacity(explodeFactor: number): number {
+  return 1 - smoothstep((explodeFactor - 0.25) / 0.3);
+}
+
+function nodeVisibilityTarget(
+  node: AnimationNode,
+  { isolatedComponentId, circuitHighlightIds, wiringVisibility }: AssemblyAnimationTargets,
+  autoOpacity: number,
+): number {
+  if (node.id === isolatedComponentId) return 1;
+  const inCircuit = circuitHighlightIds?.has(node.id) === true;
+  if (node.category !== 'wiring') {
+    return isolatedComponentId === null ? 1 : inCircuit ? 0.38 : 0;
+  }
+  if (wiringVisibility === 'hide') return 0;
+  if (isolatedComponentId !== null) return inCircuit ? 0.85 : 0;
+  if (inCircuit || wiringVisibility === 'show') return 1;
+  return autoOpacity;
 }
 
 function smootherstep(u: number): number {
@@ -365,13 +387,11 @@ export function createAssemblyAnimationController({
   const schedule = buildAssemblySchedule(assembly);
   const windowsById = new Map(schedule.map((window) => [window.nodeId, window]));
   const nodesById = new Map(assembly.nodes.map((node) => [node.id, node]));
+  let previousAutoOpacity = autoWiringOpacity(initialTargets.explodeFactor);
   const nodes = assembly.nodes.map((node) => ({
     node,
     chain: getAncestorChain(node, nodesById),
-    isolationVisibility:
-      initialTargets.isolatedComponentId === null || initialTargets.isolatedComponentId === node.id
-        ? 1
-        : 0,
+    visibility: nodeVisibilityTarget(node, initialTargets, previousAutoOpacity),
   }));
   const totalDurationSec = schedule.at(-1)?.endSec ?? 0;
   let phase: AssemblyPlaybackPhase =
@@ -382,8 +402,8 @@ export function createAssemblyAnimationController({
   let spring: SpringScalarState = { value: initialTargets.explodeFactor, velocity: 0 };
   let multipliers = stageMultipliers(initialTargets.activeExplodeStage);
   let previousWeights: Vector3Tuple = ZERO;
-  let previousIsolation = initialTargets.isolatedComponentId;
-  let isolationFading = false;
+  let previousTargets = initialTargets;
+  let visibilityFading = false;
   const liveOffsets = new Map<ComponentId, Vector3Tuple>();
   let camera = initialTargets.camera;
   let previousFocusedId = initialTargets.focusedComponentId ?? null;
@@ -412,6 +432,7 @@ export function createAssemblyAnimationController({
       const targetMultipliers = stageMultipliers(targets.activeExplodeStage);
       multipliers = dampVector(multipliers, targetMultipliers, alpha);
       const weights = explodeWeights(spring.value, multipliers);
+      const autoOpacity = autoWiringOpacity(spring.value);
       let offsetsChanged = false;
       let offsetsMoving = false;
       for (const { node } of nodes) {
@@ -430,34 +451,40 @@ export function createAssemblyAnimationController({
         phase !== previousPhase ||
         !vectorsEqual(weights, previousWeights) ||
         offsetsChanged ||
-        isolationFading ||
-        targets.isolatedComponentId !== previousIsolation
+        visibilityFading ||
+        targets.isolatedComponentId !== previousTargets.isolatedComponentId ||
+        targets.wiringVisibility !== previousTargets.wiringVisibility ||
+        targets.circuitHighlightIds !== previousTargets.circuitHighlightIds ||
+        autoOpacity !== previousAutoOpacity
       ) {
         const fadeInAlpha = prefersReducedMotion
           ? 1
-          : 1 - Math.exp(-ISOLATION_FADE_IN_RATE * dampingDelta);
+          : 1 - Math.exp(-VISIBILITY_FADE_IN_RATE * dampingDelta);
         const fadeOutAlpha = prefersReducedMotion
           ? 1
-          : 1 - Math.exp(-ISOLATION_FADE_OUT_RATE * dampingDelta);
-        isolationFading = false;
+          : 1 - Math.exp(-VISIBILITY_FADE_OUT_RATE * dampingDelta);
+        visibilityFading = false;
         const worldPoses: Record<string, Omit<AnimatedNodePose, 'localPositionMeters'>> = {};
         for (const part of nodes) {
           const { node, chain } = part;
-          const isolationTarget =
-            targets.isolatedComponentId === null || targets.isolatedComponentId === node.id ? 1 : 0;
-          part.isolationVisibility = damp(
-            part.isolationVisibility,
-            isolationTarget,
-            isolationTarget === 0 ? fadeOutAlpha : fadeInAlpha,
-            ISOLATION_OPACITY_EPSILON,
+          const visibilityTarget = nodeVisibilityTarget(node, targets, autoOpacity);
+          part.visibility = damp(
+            part.visibility,
+            visibilityTarget,
+            node.category === 'wiring'
+              ? alpha
+              : visibilityTarget < part.visibility
+                ? fadeOutAlpha
+                : fadeInAlpha,
+            VISIBILITY_OPACITY_EPSILON,
           );
-          isolationFading ||= part.isolationVisibility !== isolationTarget;
+          visibilityFading ||= part.visibility !== visibilityTarget;
           const {
             approach,
             opacity: arrivalOpacity,
             scale,
           } = partArrival(windowsById.get(node.id), phase);
-          const opacity = arrivalOpacity * part.isolationVisibility;
+          const opacity = arrivalOpacity * part.visibility;
           worldPoses[node.id] = {
             worldPositionMeters: computeWorldPosition(node, chain, weights, liveOffsets, approach),
             opacity,
@@ -487,7 +514,8 @@ export function createAssemblyAnimationController({
         nodePoses = nextPoses;
         previousPhase = phase;
         previousWeights = weights;
-        previousIsolation = targets.isolatedComponentId;
+        previousTargets = targets;
+        previousAutoOpacity = autoOpacity;
       }
 
       const focusedId = targets.focusedComponentId ?? null;
@@ -542,7 +570,7 @@ export function createAssemblyAnimationController({
           spring.velocity !== 0 ||
           !vectorsEqual(multipliers, targetMultipliers) ||
           offsetsMoving ||
-          isolationFading ||
+          visibilityFading ||
           !cameraSettled,
         geometryChanged,
         cameraChanged,

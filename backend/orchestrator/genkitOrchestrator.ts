@@ -10,10 +10,12 @@ import { z } from 'genkit';
 import {
   type AiProviderId,
   type AssemblyNode,
+  type VerificationStatus,
   type VerifiedProjectAssembly,
   canClassifyAsVerified,
   getCatalogArchetypeById,
   hasVerifiedUpstreamProvenance,
+  isVerifiedStatus,
   matchProjectArchetypeFromPrompt,
   parseVerifiedProjectAssembly,
   toCatalogArchetypeId,
@@ -71,7 +73,7 @@ export type ComponentRetrievalSummary = {
 
 type CadWorkerPayload = {
   readonly archetypeId: string;
-  readonly verificationStatus: string;
+  readonly verificationStatus: VerificationStatus;
   readonly nodes: readonly AssemblyNode[];
   readonly manifest: VerifiedProjectAssembly['manifest'];
   readonly validation: VerifiedProjectAssembly['validation'];
@@ -160,13 +162,13 @@ async function tryReuseVerifiedExports(args: {
       await fs.readFile(path.join(precomputedDir, 'pipeline_result.json'), 'utf8'),
     );
     const workerResult = parseCadWorkerPayload(rawJson);
-    if (workerResult.verificationStatus !== 'sourced_verified') {
+    if (!isVerifiedStatus(workerResult.verificationStatus)) {
       return null;
     }
-    if (!canClassifyAsVerified(workerResult.validation, 'sourced_verified')) {
+    if (!canClassifyAsVerified(workerResult.validation, workerResult.verificationStatus)) {
       return null;
     }
-    if (!hasVerifiedUpstreamProvenance(workerResult.nodes)) {
+    if (!hasVerifiedUpstreamProvenance(workerResult.nodes, workerResult.verificationStatus)) {
       return null;
     }
     const expectedIds = new Set(catalogArchetype.nodes.map((node) => node.id));
@@ -261,16 +263,18 @@ async function runCadAssemblyAndValidation(args: {
   const rawJson: unknown = JSON.parse(await fs.readFile(jsonOutPath, 'utf8'));
   const workerResult = parseCadWorkerPayload(rawJson);
 
-  const status =
-    workerResult.verificationStatus === 'sourced_verified' ? 'sourced_verified' : 'unverified';
+  const { verificationStatus, validation, nodes } = workerResult;
   const mappingOk = verifyOneToOneNodeMapping(
-    workerResult.nodes,
+    nodes,
     workerResult.glbNodeIds,
     workerResult.usdzPrimPaths,
   );
-  const provenanceOk =
-    status === 'sourced_verified' ? hasVerifiedUpstreamProvenance(workerResult.nodes) : false;
-  if (!canClassifyAsVerified(workerResult.validation, status) || !mappingOk || !provenanceOk) {
+  if (
+    !isVerifiedStatus(verificationStatus) ||
+    !canClassifyAsVerified(validation, verificationStatus) ||
+    !mappingOk ||
+    !hasVerifiedUpstreamProvenance(nodes, verificationStatus)
+  ) {
     throw new Error(
       `OpenCascade validation rejected assembly "${args.archetypeId}": ${workerResult.validation.failures.join('; ')}`,
     );
@@ -321,9 +325,6 @@ async function executeProjectOrchestration(
       getCatalogArchetypeById(retrieval.archetypeId) ??
       matchProjectArchetypeFromPrompt(args.prompt);
 
-    const verificationStatus =
-      cadResult.verificationStatus === 'sourced_verified' ? 'sourced_verified' : 'unverified';
-
     const assembly: VerifiedProjectAssembly = {
       projectId: toProjectId(
         `proj_${archetype.archetypeId}_${cadResult.manifest.manifestHash.slice(0, 8)}`,
@@ -331,7 +332,7 @@ async function executeProjectOrchestration(
       archetypeId: toCatalogArchetypeId(archetype.archetypeId),
       title: plan.projectTitle,
       userPrompt: args.prompt,
-      verificationStatus,
+      verificationStatus: cadResult.verificationStatus,
       rootNodeId: archetype.rootNodeId,
       nodes: cadResult.nodes,
       relationships: archetype.relationships,

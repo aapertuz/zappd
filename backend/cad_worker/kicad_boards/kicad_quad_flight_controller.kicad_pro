@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "filename": "kicad_quad_flight_controller.kicad_pro",
+    "version": 1
+  },
+  "text_variables": {
+    "ZAPPD_KICAD_MODELS": "${KIPRJMOD}/../../data/cots_library/kicad_3d"
+  },
+  "board": {
+    "design_settings": {
+      "rules": {
+        "min_hole_clearance": 0.19
+      }
+    }
+  }
+}

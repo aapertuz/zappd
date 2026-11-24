@@ -1,0 +1,1265 @@
+{
+  "archetypeId": "robotic_arm_3dof_v1",
+  "title": "SO-ARM100 5-DOF Robotic Manipulator Assembly",
+  "summary": "Open-source TheRobotStudio SO-ARM100 follower manipulator with STS3215 serial bus servos, shoulder yaw turntable, upper/lower links, wrist differential clevis, and articulated gripper.",
+  "keywords": [
+    "arm",
+    "robot",
+    "robotic",
+    "manipulator",
+    "dof",
+    "gripper",
+    "servo",
+    "joint",
+    "so100"
+  ],
+  "rootNodeId": "proj_robotic_arm",
+  "nodes": [
+    {
+      "id": "proj_robotic_arm",
+      "parentId": null,
+      "name": "SO-ARM100 5-DOF Robotic Manipulator Assembly",
+      "level": "project",
+      "depth": 0,
+      "category": "project",
+      "colorHex": "#3f4652",
+      "dimensionsMm": [110.9, 217.1, 171.6],
+      "restPositionMeters": [0.0, 0.0, 0.0],
+      "explodeDirection": [0.0, 0.0, 0.0],
+      "explodeDistanceMeters": 0.0,
+      "materialHint": "assembly_root",
+      "origin": "open_step_catalog",
+      "spdxLicense": "Apache-2.0",
+      "sourceUrl": "https://github.com/TheRobotStudio/SO-ARM100/blob/main/STEP/SO100/Follower_Specific/SO_5DOF_ARM100_Assembly.step",
+      "sourceName": "TheRobotStudio SO-ARM100 Follower STEP Assembly",
+      "stepFixtureName": null,
+      "specifications": {
+        "degreesOfFreedom": 5,
+        "actuators": "6x STS3215",
+        "sourceParts": 19
+      }
+    },
+    {
+      "id": "sub_base_turntable",
+      "parentId": "proj_robotic_arm",
+      "name": "Base and Yaw Drive Subsystem",
+      "level": "subsystem",
+      "depth": 1,
+      "category": "subsystem",
+      "colorHex": "#d8dce2",
+      "dimensionsMm": [110.9, 87.0, 74.0],
+      "restPositionMeters": [0.0, 0.0, 0.0],
+      "explodeDirection": [0.0, 0.0, 0.0],
+      "explodeDistanceMeters": 0.0,
+      "materialHint": "pla_3d_printed",
+      "origin": "open_step_catalog",
+      "spdxLicense": "Apache-2.0",
+      "sourceUrl": "https://github.com/TheRobotStudio/SO-ARM100/blob/main/STEP/SO100/Base_08q.step",
+      "sourceName": "SO-ARM100 Base Housing & Controller Mount",
+      "stepFixtureName": null,
+      "specifications": {
+        "yawRangeDeg": 220
+      }
+    },
+    {
+      "id": "sub_shoulder_upper_arm",
+      "parentId": "proj_robotic_arm",
+      "name": "Shoulder and Upper Arm Subsystem",
+      "level": "subsystem",
+      "depth": 1,
+      "category": "subsystem",
+      "colorHex": "#e08e1b",
+      "dimensionsMm": [70.0, 142.0, 102.0],
+      "restPositionMeters": [0.0, 0.0, 0.0],
+      "explodeDirection": [0.0, 1.0, 0.0],
+      "explodeDistanceMeters": 0.03,
+      "materialHint": "pla_3d_printed",
+      "origin": "open_step_catalog",
+      "spdxLicense": "Apache-2.0",
+      "sourceUrl": "https://github.com/TheRobotStudio/SO-ARM100/blob/main/STEP/SO100/SO_ARM100_08k%20(1).step",
+      "sourceName": "SO-ARM100 Shoulder Pitch & Upper Link",
+      "stepFixtureName": null,
+      "specifications": {
+        "linkLengthMm": 141.94
+      }
+    },
+    {
+      "id": "sub_elbow_forearm",
+      "parentId": "proj_robotic_arm",
+      "name": "Elbow and Forearm Subsystem",
+      "level": "subsystem",
+      "depth": 1,
+      "category": "subsystem",
+      "colorHex": "#d99b26",
+      "dimensionsMm": [60.0, 130.7, 116.7],
+      "restPositionMeters": [0.0, 0.0, 0.0],
+      "explodeDirection": [0.0, 1.0, -0.5],
+      "explodeDistanceMeters": 0.05,
+      "materialHint": "pla_3d_printed",
+      "origin": "open_step_catalog",
+      "spdxLicense": "Apache-2.0",
+      "sourceUrl": "https://github.com/TheRobotStudio/SO-ARM100/blob/main/STEP/SO100/SO_ARM100_08k%20(2).step",
+      "sourceName": "SO-ARM100 Elbow Actuator & Forearm Link",
+      "stepFixtureName": null,
+      "specifications": {
+        "linkLengthMm": 130.67
+      }
+    },
+    {
+      "id": "sub_wrist_gripper",
+      "parentId": "proj_robotic_arm",
+      "name": "Wrist Differential and Gripper Subsystem",
+      "level": "subsystem",
+      "depth": 1,
+      "category": "subsystem",
+      "colorHex": "#c97816",
+      "dimensionsMm": [65.2, 92.0, 115.0],
+      "restPositionMeters": [0.0, 0.0, 0.0],
+      "explodeDirection": [0.0, 0.0, 1.0],
+      "explodeDistanceMeters": 0.06,
+      "materialHint": "pla_3d_printed",
+      "origin": "open_step_catalog",
+      "spdxLicense": "Apache-2.0",
+      "sourceUrl": "https://github.com/TheRobotStudio/SO-ARM100/blob/main/STEP/SO100/Follower_Specific/Wrist_Roll_08c%20v1.step",
+      "sourceName": "SO-ARM100 Wrist Differential & Parallel Jaw",
+      "stepFixtureName": null,
+      "specifications": {
+        "wristAxes": 2
+      }
+    },
+    {
+      "id": "comp_base_housing",
+      "parentId": "sub_base_turntable",
+      "name": "Main Base Housing",
+      "level": "component",
+      "depth": 2,
+      "category": "structure",
+      "colorHex": "#d8dce2",
+      "dimensionsMm": [110.93, 87.0, 74.0],
+      "restPositionMeters": [0.0, 0.037, 0.0275],
+      "explodeDirection": [0.0, -1.0, 0.0],
+      "explodeDistanceMeters": 0.025,
+      "materialHint": "pla_3d_printed",
+      "origin": "open_step_catalog",
+      "spdxLicense": "Apache-2.0",
+      "sourceUrl": "https://github.com/TheRobotStudio/SO-ARM100/blob/main/STEP/SO100/Base_08q.step",
+      "sourceName": "SO-ARM100 Base_08q.step",
+      "stepFixtureName": "so100_base_housing.step",
+      "specifications": {
+        "brepFaces": 653,
+        "footprintMm": 110.9
+      },
+      "expectedStepSha256": "8e98ae733a5774147a9b2c54260c65f5029157944cec059ad76be7ff5b754229"
+    },
+    {
+      "id": "subcomp_base_clamp",
+      "parentId": "comp_base_housing",
+      "name": "Base Mounting Clamp",
+      "level": "subcomponent",
+      "depth": 3,
+      "category": "fastener",
+      "colorHex": "#c6ccd4",
+      "dimensionsMm": [28.83, 9.0, 15.4],
+      "restPositionMeters": [0.0, 0.0101, 0.0547],
+      "explodeDirection": [0.0, 0.0, 1.0],
+      "explodeDistanceMeters": 0.035,
+      "materialHint": "pla_3d_printed",
+      "origin": "open_step_catalog",
+      "spdxLicense": "Apache-2.0",
+      "sourceUrl": "https://github.com/TheRobotStudio/SO-ARM100/blob/main/STEP/SO100/Base_attachment.step",
+      "sourceName": "SO-ARM100 Base_attachment.step",
+      "stepFixtureName": "so100_base_attachment.step",
+      "specifications": {
+        "brepFaces": 26
+      },
+      "expectedStepSha256": "0d7495d383f33c109a78eafdb1f9468ea545135489d9fbbdd193b519de4b4186"
+    },
+    {
+      "id": "subcomp_motor1_holder",
+      "parentId": "comp_base_housing",
+      "name": "Base Servo Bracket",
+      "level": "subcomponent",
+      "depth": 3,
+      "category": "structure",
+      "colorHex": "#bfc7d2",
+      "dimensionsMm": [44.7, 80.2, 31.4],
+      "restPositionMeters": [0.0, 0.0538, 0.0193],
+      "explodeDirection": [0.0, 1.0, 0.0],
+      "explodeDistanceMeters": 0.035,
+      "materialHint": "pla_3d_printed",
+      "origin": "open_step_catalog",
+      "spdxLicense": "Apache-2.0",
+      "sourceUrl": "https://github.com/TheRobotStudio/SO-ARM100/blob/main/STEP/SO100/Motor1_holder.step",
+      "sourceName": "SO-ARM100 Motor1_holder.step",
+      "stepFixtureName": "so100_motor1_holder.step",
+      "specifications": {
+        "brepFaces": 135
+      },
+      "expectedStepSha256": "515ed5774b9b685b6dddd5319047767562a25b000c0d9100f41a918f8e6d8af2"
+    },
+    {
+      "id": "subcomp_waveshare_mount",
+      "parentId": "comp_base_housing",
+      "name": "WaveShare Bus Controller Plate",
+      "level": "subcomponent",
+      "depth": 3,
+      "category": "avionics",
+      "colorHex": "#1f7a49",
+      "dimensionsMm": [42.0, 7.6, 51.0],
+      "restPositionMeters": [0.0, 0.06265, -0.0211],
+      "explodeDirection": [0.0, 0.0, -1.0],
+      "explodeDistanceMeters": 0.04,
+      "materialHint": "fr4_pcb",
+      "origin": "open_step_catalog",
+      "spdxLicense": "Apache-2.0",
+      "sourceUrl": "https://github.com/TheRobotStudio/SO-ARM100/blob/main/STEP/SO100/Follower_Specific/SO_5DOF_ARM100_Assembly.step",
+      "sourceName": "SO-ARM100 WaveShare_Mounting_Plate_01d",
+      "stepFixtureName": "so100_waveshare_mount.step",
+      "specifications": {
+        "brepFaces": 37
+      },
+      "expectedStepSha256": "28052ff29d861ff5c8c887d9d28bfe52c9ffad0e48c11529599e3790497204f7"
+    },
+    {
+      "id": "subcomp_passive_horn",
+      "parentId": "comp_base_housing",
+      "name": "Base Passive Bearing Horn",
+      "level": "subcomponent",
+      "depth": 3,
+      "category": "bearing",
+      "colorHex": "#a8b2c0",
+      "dimensionsMm": [20.0, 20.0, 3.1],
+      "restPositionMeters": [0.0, 0.01805, 0.0452],
+      "explodeDirection": [0.0, 1.0, 0.0],
+      "explodeDistanceMeters": 0.02,
+      "materialHint": "machined_aluminum",
+      "origin": "open_step_catalog",
+      "spdxLicense": "Apache-2.0",
+      "sourceUrl": "https://github.com/TheRobotStudio/SO-ARM100/blob/main/STEP/SO100/Passive_Horn_01.step",
+      "sourceName": "SO-ARM100 Passive_Horn_01.step",
+      "stepFixtureName": "so100_passive_horn.step",
+      "specifications": {
+        "diameterMm": 20.0,
+        "brepFaces": 6
+      },
+      "expectedStepSha256": "5fc3e69d20d0005ff9d8eb7b014a5041f6439e27ed7e01a1e846167d5b686712"
+    },
+    {
+      "id": "comp_base_servo",
+      "parentId": "sub_base_turntable",
+      "name": "Base Yaw STS3215 Servo",
+      "level": "component",
+      "depth": 2,
+      "category": "actuator",
+      "colorHex": "#3f4652",
+      "dimensionsMm": [24.8, 45.4, 39.6],
+      "restPositionMeters": [0.0, 0.0465, 0.0327],
+      "explodeDirection": [0.0, 1.0, 0.0],
+      "explodeDistanceMeters": 0.04,
+      "materialHint": "servo_housing",
+      "origin": "open_step_catalog",
+      "spdxLicense": "Apache-2.0",
+      "sourceUrl": "https://github.com/TheRobotStudio/SO-ARM100/blob/main/STEP/SO100/STS3215_03a.step",
+      "sourceName": "SO-ARM100 STS3215_03a.step",
+      "stepFixtureName": "so100_base_servo.step",
+      "specifications": {
+        "torqueKgCm": 30,
+        "bus": "TTL Serial",
+        "brepFaces": 182
+      },
+      "expectedStepSha256": "a911808be63dd36e2ec821770a7363ea90b5389383946c7c5dbb7d566466eab5",
+      "ports": [
+        {
+          "portId": "port_ttl_in",
+          "label": "TTL bus input",
+          "connectorType": "5264-3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0124, -0.0138, -0.0047],
+          "exitDirection": [-1, 0, 0]
+        },
+        {
+          "portId": "port_ttl_out",
+          "label": "TTL bus pass-through",
+          "connectorType": "5264-3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0124, -0.0098, 0.0113],
+          "exitDirection": [-1, 0, 0]
+        }
+      ]
+    },
+    {
+      "id": "comp_shoulder_turntable",
+      "parentId": "sub_shoulder_upper_arm",
+      "name": "Shoulder Yaw Turntable",
+      "level": "component",
+      "depth": 2,
+      "category": "linkage",
+      "colorHex": "#e08e1b",
+      "dimensionsMm": [46.0, 59.8, 85.9],
+      "restPositionMeters": [0.0, 0.05985, 0.0631],
+      "explodeDirection": [0.0, 1.0, 0.0],
+      "explodeDistanceMeters": 0.03,
+      "materialHint": "pla_3d_printed",
+      "origin": "open_step_catalog",
+      "spdxLicense": "Apache-2.0",
+      "sourceUrl": "https://github.com/TheRobotStudio/SO-ARM100/blob/main/STEP/SO100/Rotation_Pitch_08i.step",
+      "sourceName": "SO-ARM100 Rotation_Pitch_08i.step",
+      "stepFixtureName": "so100_shoulder_turntable.step",
+      "specifications": {
+        "brepFaces": 288
+      },
+      "expectedStepSha256": "eb41cb31ac7f5b0799fb458dc3abc4a38629aee5b9e69ac9ca042716b10b3dd4"
+    },
+    {
+      "id": "subcomp_shoulder_clip",
+      "parentId": "comp_shoulder_turntable",
+      "name": "Shoulder Asymmetric Mirror Clip",
+      "level": "subcomponent",
+      "depth": 3,
+      "category": "fastener",
+      "colorHex": "#e8ab2e",
+      "dimensionsMm": [52.4, 36.9, 28.0],
+      "restPositionMeters": [-0.0001, 0.0888, 0.07755],
+      "explodeDirection": [0.0, 0.0, 1.0],
+      "explodeDistanceMeters": 0.03,
+      "materialHint": "pla_3d_printed",
+      "origin": "open_step_catalog",
+      "spdxLicense": "Apache-2.0",
+      "sourceUrl": "https://github.com/TheRobotStudio/SO-ARM100/blob/main/STEP/SO100/SO_ARM100_08k.step",
+      "sourceName": "SO-ARM100 SO_ARM100_08k.step",
+      "stepFixtureName": "so100_shoulder_clip.step",
+      "specifications": {
+        "brepFaces": 175
+      },
+      "expectedStepSha256": "f9f77932846da0f889f05832850371e164aff4db78b63295c6be2714daf5b4d4"
+    },
+    {
+      "id": "comp_shoulder_servo",
+      "parentId": "sub_shoulder_upper_arm",
+      "name": "Shoulder Pitch STS3215 Servo",
+      "level": "component",
+      "depth": 2,
+      "category": "actuator",
+      "colorHex": "#3f4652",
+      "dimensionsMm": [39.6, 24.8, 45.4],
+      "restPositionMeters": [0.0, 0.1065, 0.0758],
+      "explodeDirection": [0.0, 0.0, 1.0],
+      "explodeDistanceMeters": 0.04,
+      "materialHint": "servo_housing",
+      "origin": "open_step_catalog",
+      "spdxLicense": "Apache-2.0",
+      "sourceUrl": "https://github.com/TheRobotStudio/SO-ARM100/blob/main/STEP/SO100/STS3215_03a.step",
+      "sourceName": "SO-ARM100 STS3215_03a.step",
+      "stepFixtureName": "so100_shoulder_servo.step",
+      "specifications": {
+        "torqueKgCm": 30,
+        "brepFaces": 229
+      },
+      "expectedStepSha256": "210ef9bdf810193e0cc72618990e18a56c715e661bb6ba06258eda06c8a5bdcf",
+      "ports": [
+        {
+          "portId": "port_ttl_in",
+          "label": "TTL bus input",
+          "connectorType": "5264-3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0166, -0.0015, 0.0026],
+          "exitDirection": [-1, 0, 0]
+        },
+        {
+          "portId": "port_ttl_out",
+          "label": "TTL bus pass-through",
+          "connectorType": "5264-3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0166, -0.0007, 0.0056],
+          "exitDirection": [-1, 0, 0]
+        }
+      ]
+    },
+    {
+      "id": "comp_upper_arm_link",
+      "parentId": "sub_shoulder_upper_arm",
+      "name": "Upper Arm Main Link",
+      "level": "component",
+      "depth": 2,
+      "category": "linkage",
+      "colorHex": "#e08e1b",
+      "dimensionsMm": [70.0, 141.94, 47.17],
+      "restPositionMeters": [-0.0002, 0.107416, 0.01683],
+      "explodeDirection": [0.0, 1.0, -0.4],
+      "explodeDistanceMeters": 0.045,
+      "materialHint": "pla_3d_printed",
+      "origin": "open_step_catalog",
+      "spdxLicense": "Apache-2.0",
+      "sourceUrl": "https://github.com/TheRobotStudio/SO-ARM100/blob/main/STEP/SO100/SO_ARM100_08k%20(1).step",
+      "sourceName": "SO-ARM100 SO_ARM100_08k (1).step",
+      "stepFixtureName": "so100_upper_arm_link.step",
+      "specifications": {
+        "brepFaces": 340
+      },
+      "expectedStepSha256": "c09b38b07f444e77210342d0d8b3dd753c8c8ca70af973ec6182cacd1210d679"
+    },
+    {
+      "id": "comp_elbow_servo",
+      "parentId": "sub_elbow_forearm",
+      "name": "Elbow Flexion STS3215 Servo",
+      "level": "component",
+      "depth": 2,
+      "category": "actuator",
+      "colorHex": "#3f4652",
+      "dimensionsMm": [39.6, 31.77, 48.28],
+      "restPositionMeters": [-0.0001, 0.113638, -0.037603],
+      "explodeDirection": [0.0, 0.0, -1.0],
+      "explodeDistanceMeters": 0.04,
+      "materialHint": "servo_housing",
+      "origin": "open_step_catalog",
+      "spdxLicense": "Apache-2.0",
+      "sourceUrl": "https://github.com/TheRobotStudio/SO-ARM100/blob/main/STEP/SO100/STS3215_03a.step",
+      "sourceName": "SO-ARM100 STS3215_03a.step",
+      "stepFixtureName": "so100_elbow_servo.step",
+      "specifications": {
+        "torqueKgCm": 30,
+        "brepFaces": 182
+      },
+      "expectedStepSha256": "b966a9a70bb9592af02924219ea38730ab2b4608884e14f0d640c5d813ca522a",
+      "ports": [
+        {
+          "portId": "port_ttl_in",
+          "label": "TTL bus input",
+          "connectorType": "5264-3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0166, -0.00214, -0.00589],
+          "exitDirection": [-1, 0, 0]
+        },
+        {
+          "portId": "port_ttl_out",
+          "label": "TTL bus pass-through",
+          "connectorType": "5264-3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0138, 0.01386, -0.01527],
+          "exitDirection": [0, 0, -1]
+        }
+      ]
+    },
+    {
+      "id": "comp_lower_forearm_link",
+      "parentId": "sub_elbow_forearm",
+      "name": "Lower Forearm Link",
+      "level": "component",
+      "depth": 2,
+      "category": "linkage",
+      "colorHex": "#d99b26",
+      "dimensionsMm": [60.0, 130.67, 42.12],
+      "restPositionMeters": [-0.0052, 0.135098, 0.01335],
+      "explodeDirection": [0.0, 1.0, 0.0],
+      "explodeDistanceMeters": 0.045,
+      "materialHint": "pla_3d_printed",
+      "origin": "open_step_catalog",
+      "spdxLicense": "Apache-2.0",
+      "sourceUrl": "https://github.com/TheRobotStudio/SO-ARM100/blob/main/STEP/SO100/SO_ARM100_08k%20(2).step",
+      "sourceName": "SO-ARM100 SO_ARM100_08k (2).step",
+      "stepFixtureName": "so100_lower_forearm_link.step",
+      "specifications": {
+        "brepFaces": 266
+      },
+      "expectedStepSha256": "0bb493f9bbdc28430e26a87e42645280a04b83559a6575cc410a3017bcde86bf"
+    },
+    {
+      "id": "subcomp_elbow_clip",
+      "parentId": "comp_lower_forearm_link",
+      "name": "Elbow Servo Mirror Clip",
+      "level": "subcomponent",
+      "depth": 3,
+      "category": "fastener",
+      "colorHex": "#e8ab2e",
+      "dimensionsMm": [52.4, 32.97, 40.71],
+      "restPositionMeters": [-0.0002, 0.146018, 0.062964],
+      "explodeDirection": [0.0, 1.0, 0.5],
+      "explodeDistanceMeters": 0.035,
+      "materialHint": "pla_3d_printed",
+      "origin": "open_step_catalog",
+      "spdxLicense": "Apache-2.0",
+      "sourceUrl": "https://github.com/TheRobotStudio/SO-ARM100/blob/main/STEP/SO100/SO_ARM100_08k.step",
+      "sourceName": "SO-ARM100 SO_ARM100_08k.step",
+      "stepFixtureName": "so100_elbow_clip.step",
+      "specifications": {
+        "brepFaces": 163
+      },
+      "expectedStepSha256": "09bbf1b56f31b0ae0ad624ba9b6af730785da83c396e9fa88b9c8c850d83fb42"
+    },
+    {
+      "id": "comp_wrist_pitch_servo",
+      "parentId": "sub_wrist_gripper",
+      "name": "Wrist Pitch STS3215 Servo",
+      "level": "component",
+      "depth": 2,
+      "category": "actuator",
+      "colorHex": "#3f4652",
+      "dimensionsMm": [39.6, 47.98, 30.88],
+      "restPositionMeters": [-0.0001, 0.150372, 0.079973],
+      "explodeDirection": [0.0, 1.0, 0.0],
+      "explodeDistanceMeters": 0.04,
+      "materialHint": "servo_housing",
+      "origin": "open_step_catalog",
+      "spdxLicense": "Apache-2.0",
+      "sourceUrl": "https://github.com/TheRobotStudio/SO-ARM100/blob/main/STEP/SO100/STS3215_03a.step",
+      "sourceName": "SO-ARM100 STS3215_03a.step",
+      "stepFixtureName": "so100_wrist_pitch_servo.step",
+      "specifications": {
+        "torqueKgCm": 30,
+        "brepFaces": 182
+      },
+      "expectedStepSha256": "1c1f1866b7bdae1035bd8933791723d4b83d90a3324c5c9dfdd1bc177a9b672c",
+      "ports": [
+        {
+          "portId": "port_ttl_in",
+          "label": "TTL bus input",
+          "connectorType": "5264-3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0166, 0.00656, -0.00199],
+          "exitDirection": [-1, 0, 0]
+        },
+        {
+          "portId": "port_ttl_out",
+          "label": "TTL bus pass-through",
+          "connectorType": "5264-3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0138, 0.01423, 0.01001],
+          "exitDirection": [0, 1, 0]
+        }
+      ]
+    },
+    {
+      "id": "comp_wrist_clevis",
+      "parentId": "sub_wrist_gripper",
+      "name": "Wrist Pitch-Roll Differential Clevis",
+      "level": "component",
+      "depth": 2,
+      "category": "linkage",
+      "colorHex": "#e8ab2e",
+      "dimensionsMm": [63.28, 49.17, 75.21],
+      "restPositionMeters": [-0.00376, 0.126828, 0.104993],
+      "explodeDirection": [0.0, 0.6, 0.8],
+      "explodeDistanceMeters": 0.035,
+      "materialHint": "pla_3d_printed",
+      "origin": "open_step_catalog",
+      "spdxLicense": "Apache-2.0",
+      "sourceUrl": "https://github.com/TheRobotStudio/SO-ARM100/blob/main/STEP/SO100/Wrist_Roll_Pitch_08i.step",
+      "sourceName": "SO-ARM100 Wrist_Roll_Pitch_08i.step",
+      "stepFixtureName": "so100_wrist_clevis.step",
+      "specifications": {
+        "brepFaces": 336
+      },
+      "expectedStepSha256": "a8941911ef46100bb2e6f0fe5b180f312e4c8eebf99833a311e3c74c984191b3"
+    },
+    {
+      "id": "subcomp_wrist_roll_servo",
+      "parentId": "comp_wrist_clevis",
+      "name": "Wrist Roll STS3215 Servo",
+      "level": "subcomponent",
+      "depth": 3,
+      "category": "actuator",
+      "colorHex": "#3f4652",
+      "dimensionsMm": [45.4, 34.86, 42.3],
+      "restPositionMeters": [-0.0127, 0.11322, 0.108388],
+      "explodeDirection": [-1.0, 0.0, 0.0],
+      "explodeDistanceMeters": 0.035,
+      "materialHint": "servo_housing",
+      "origin": "open_step_catalog",
+      "spdxLicense": "Apache-2.0",
+      "sourceUrl": "https://github.com/TheRobotStudio/SO-ARM100/blob/main/STEP/SO100/Follower_Specific/SO_5DOF_ARM100_Assembly.step",
+      "sourceName": "SO-ARM100 STS3215_03a_Wrist_Roll",
+      "stepFixtureName": "so100_wrist_roll_servo.step",
+      "specifications": {
+        "torqueKgCm": 30,
+        "brepFaces": 174
+      },
+      "expectedStepSha256": "6aa65e9524415d70654149dffd408a5f5124d62ae5f8178f9b7e3a7a0ad1a208",
+      "ports": [
+        {
+          "portId": "port_ttl_in",
+          "label": "TTL bus input",
+          "connectorType": "5264-3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0227, 0.00885, -0.00343],
+          "exitDirection": [-1, 0, 0]
+        },
+        {
+          "portId": "port_ttl_out",
+          "label": "TTL bus pass-through",
+          "connectorType": "5264-3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0227, -0.00715, 0.00457],
+          "exitDirection": [-1, 0, 0]
+        }
+      ]
+    },
+    {
+      "id": "comp_wrist_roll_palm",
+      "parentId": "sub_wrist_gripper",
+      "name": "Fixed Gripper Palm and Roll Body",
+      "level": "component",
+      "depth": 2,
+      "category": "effector",
+      "colorHex": "#c97816",
+      "dimensionsMm": [65.2, 61.56, 103.26],
+      "restPositionMeters": [-0.0028, 0.049659, 0.126781],
+      "explodeDirection": [0.0, -0.5, 0.86],
+      "explodeDistanceMeters": 0.045,
+      "materialHint": "pla_3d_printed",
+      "origin": "open_step_catalog",
+      "spdxLicense": "Apache-2.0",
+      "sourceUrl": "https://github.com/TheRobotStudio/SO-ARM100/blob/main/STEP/SO100/Follower_Specific/Wrist_Roll_08c%20v1.step",
+      "sourceName": "SO-ARM100 Wrist_Roll_08c v1.step",
+      "stepFixtureName": "so100_wrist_roll_palm.step",
+      "specifications": {
+        "brepFaces": 275
+      },
+      "expectedStepSha256": "2137cd69f521acd4c10f3e08a8dbffef5ae69e07a83611e59482f26b7d7205b1"
+    },
+    {
+      "id": "subcomp_gripper_servo",
+      "parentId": "comp_wrist_roll_palm",
+      "name": "Gripper Jaw STS3215 Servo",
+      "level": "subcomponent",
+      "depth": 3,
+      "category": "actuator",
+      "colorHex": "#3f4652",
+      "dimensionsMm": [45.4, 42.3, 34.86],
+      "restPositionMeters": [0.0075, 0.074127, 0.124224],
+      "explodeDirection": [0.0, 1.0, 0.0],
+      "explodeDistanceMeters": 0.035,
+      "materialHint": "servo_housing",
+      "origin": "open_step_catalog",
+      "spdxLicense": "Apache-2.0",
+      "sourceUrl": "https://github.com/TheRobotStudio/SO-ARM100/blob/main/STEP/SO100/STS3215_03a.step",
+      "sourceName": "SO-ARM100 STS3215_03a.step",
+      "stepFixtureName": "so100_gripper_servo.step",
+      "specifications": {
+        "torqueKgCm": 30,
+        "brepFaces": 182
+      },
+      "expectedStepSha256": "82c20c3bcda82aecd36c607819fd42dfb17c688c544901da9eb10037b8f6084b",
+      "ports": [
+        {
+          "portId": "port_ttl_in",
+          "label": "TTL bus input",
+          "connectorType": "5264-3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0227, 0.00057, -0.00315],
+          "exitDirection": [-1, 0, 0]
+        },
+        {
+          "portId": "port_ttl_out",
+          "label": "TTL bus pass-through",
+          "connectorType": "5264-3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0227, 0.00057, 0.00485],
+          "exitDirection": [-1, 0, 0]
+        }
+      ]
+    },
+    {
+      "id": "subcomp_moving_jaw",
+      "parentId": "comp_wrist_roll_palm",
+      "name": "Follower Moving Jaw Finger",
+      "level": "subcomponent",
+      "depth": 3,
+      "category": "effector",
+      "colorHex": "#f0c446",
+      "dimensionsMm": [22.3, 58.05, 93.33],
+      "restPositionMeters": [0.01885, 0.044714, 0.128606],
+      "explodeDirection": [1.0, 0.0, 0.0],
+      "explodeDistanceMeters": 0.045,
+      "materialHint": "pla_3d_printed",
+      "origin": "open_step_catalog",
+      "spdxLicense": "Apache-2.0",
+      "sourceUrl": "https://github.com/TheRobotStudio/SO-ARM100/blob/main/STEP/SO100/Follower_Specific/Moving_Jaw_08d%20v1.step",
+      "sourceName": "SO-ARM100 Moving_Jaw_08d v1.step",
+      "stepFixtureName": "so100_moving_jaw.step",
+      "specifications": {
+        "brepFaces": 176
+      },
+      "expectedStepSha256": "86ca7321f7205c8263f556e9698dfcfcfddcce8ed5fe46e41f9e7b9678877b4d"
+    },
+    {
+      "id": "comp_waveshare_bus_adapter",
+      "parentId": "sub_base_turntable",
+      "name": "SO-100 bus servo adapter",
+      "level": "component",
+      "depth": 2,
+      "category": "electronics",
+      "restPositionMeters": [0.0, 0.06265, -0.0322],
+      "explodeDirection": [0, 0, -1],
+      "explodeDistanceMeters": 0.032,
+      "origin": "kicad_pcb_step",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "kicad://zappd/kicad_so100_bus_servo_adapter",
+      "sourceName": "Zappd kicad_so100_bus_servo_adapter.kicad_pcb with KiCad kicad-packages3D models",
+      "stepFixtureName": "kicad_so100_bus_servo_adapter.step",
+      "expectedStepSha256": "915f69472d58e5ac5b9ad13fa0e80e30009b29b1d86b0d9f15c232aa6c67a478",
+      "dimensionsMm": [36.6, 44.175, 14.6],
+      "materialHint": "fr4_pcb",
+      "colorHex": "#247052",
+      "specifications": {
+        "pcbWidthMm": 36,
+        "pcbLengthMm": 44,
+        "pcbThicknessMm": 1.6,
+        "brepFaces": 2066,
+        "xcafColors": 11,
+        "referenceLayout": true
+      },
+      "ports": [
+        {
+          "portId": "port_usb",
+          "label": "USB data",
+          "connectorType": "USB-C",
+          "busKind": "usb_data",
+          "localPositionMeters": [0.0053, 0.0220875, 0.00175],
+          "exitDirection": [0.0, 1.0, 0.0]
+        },
+        {
+          "portId": "port_dc_in",
+          "label": "DC power input",
+          "connectorType": "DC barrel jack",
+          "busKind": "dc_power",
+          "localPositionMeters": [-0.0183, 0.0074125, -0.003],
+          "exitDirection": [-1.0, 0.0, -0.0]
+        },
+        {
+          "portId": "port_servo_1",
+          "label": "Servo bus 1",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0087, -0.0090875, -0.0026],
+          "exitDirection": [0.0, 0.0, -1.0]
+        },
+        {
+          "portId": "port_servo_2",
+          "label": "Servo bus 2",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.0043, -0.0090875, -0.0026],
+          "exitDirection": [0.0, 0.0, -1.0]
+        }
+      ]
+    },
+    {
+      "id": "comp_so100_cable_bus_1",
+      "parentId": "sub_base_turntable",
+      "name": "Base yaw servo TTL cable",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [45.28654770287835, 23.056245152127094, 78.49234038194342],
+      "restPositionMeters": [-0.029567869564556745, 0.04268517245100802, -0.010021991065324433],
+      "explodeDirection": [-1, 0, 0],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/robotic_arm_3dof_v1/rel_so100_ttl_bus_1",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_so100_cable_bus_1.step",
+      "specifications": {
+        "relationshipId": "rel_so100_ttl_bus_1",
+        "brepFaces": 60
+      },
+      "expectedStepSha256": "733850f5fa36d65676b8c7993300f5783078bd3ac73f60a43254745072f53756"
+    },
+    {
+      "id": "comp_so100_cable_bus_2",
+      "parentId": "sub_base_turntable",
+      "name": "Shoulder servo TTL cable",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [33.96300023657832, 70.22623739269258, 37.116438182712294],
+      "restPositionMeters": [-0.03018150001828915, 0.07125993053698801, 0.06098740805486328],
+      "explodeDirection": [-1, 0, 0],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/robotic_arm_3dof_v1/rel_so100_ttl_bus_2",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_so100_cable_bus_2.step",
+      "specifications": {
+        "relationshipId": "rel_so100_ttl_bus_2",
+        "brepFaces": 54
+      },
+      "expectedStepSha256": "94317aad4d4d71d6e61fa1b46af42e5efb059294af9db3428c15615c064424f3"
+    },
+    {
+      "id": "comp_so100_cable_bus_3",
+      "parentId": "sub_base_turntable",
+      "name": "Elbow servo TTL cable",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [33.89326253622691, 13.140541057689973, 130.98494954629922],
+      "restPositionMeters": [-0.03434663116811345, 0.1118281111402759, 0.020134656457183032],
+      "explodeDirection": [-1, 0, 0],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/robotic_arm_3dof_v1/rel_so100_ttl_bus_3",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_so100_cable_bus_3.step",
+      "specifications": {
+        "relationshipId": "rel_so100_ttl_bus_3",
+        "brepFaces": 60
+      },
+      "expectedStepSha256": "da0fddce335483e1549db409aa676c75cd43731e6e90898b74a91b4ccd84a14c"
+    },
+    {
+      "id": "comp_so100_cable_bus_4",
+      "parentId": "sub_base_turntable",
+      "name": "Wrist pitch servo TTL cable",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [37.00896108596646, 36.05354024176383, 146.00953365707431],
+      "restPositionMeters": [-0.030513819880648312, 0.14488326933317439, 0.006347334599617831],
+      "explodeDirection": [-1, 0, 0],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/robotic_arm_3dof_v1/rel_so100_ttl_bus_4",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_so100_cable_bus_4.step",
+      "specifications": {
+        "relationshipId": "rel_so100_ttl_bus_4",
+        "brepFaces": 66
+      },
+      "expectedStepSha256": "739f82b5a32f5348fc2fb28b4522ad2533b051c1f40e21aed2124e41ec860d44"
+    },
+    {
+      "id": "comp_so100_cable_bus_5",
+      "parentId": "sub_base_turntable",
+      "name": "Wrist roll servo TTL cable",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [39.44709875339561, 56.18190687571385, 18.036021342739417],
+      "restPositionMeters": [-0.032733753153618095, 0.1486575292477937, 0.09736569935078182],
+      "explodeDirection": [-1, 0, 0],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/robotic_arm_3dof_v1/rel_so100_ttl_bus_5",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_so100_cable_bus_5.step",
+      "specifications": {
+        "relationshipId": "rel_so100_ttl_bus_5",
+        "brepFaces": 48
+      },
+      "expectedStepSha256": "ea313ac5ec581b52b15e5b9e1b67af304620f3b268a8019ddf262110c82303bc"
+    },
+    {
+      "id": "comp_so100_cable_bus_6",
+      "parentId": "sub_base_turntable",
+      "name": "Gripper servo TTL cable",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [36.55133201886947, 33.17399994696973, 11.375897685817819],
+      "restPositionMeters": [-0.03427566590943475, 0.09027044325811358, 0.11701896324669334],
+      "explodeDirection": [-1, 0, 0],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/robotic_arm_3dof_v1/rel_so100_ttl_bus_6",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_so100_cable_bus_6.step",
+      "specifications": {
+        "relationshipId": "rel_so100_ttl_bus_6",
+        "brepFaces": 42
+      },
+      "expectedStepSha256": "55adedb32853cccf172173c232b9829c750bec6b91dcd244a9eb7868812a79aa"
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel_so100_yaw_drive",
+      "fromComponentId": "comp_shoulder_turntable",
+      "toComponentId": "comp_base_servo",
+      "connectionType": "revolute_joint",
+      "howConnected": "Dual-sided STS3215 output spline bolted into the yaw turntable base pocket",
+      "whyConnected": "Transmits 30 kg\u00b7cm yaw rotation torque from the grounded base into the shoulder stage."
+    },
+    {
+      "id": "rel_so100_shoulder_pitch",
+      "fromComponentId": "comp_upper_arm_link",
+      "toComponentId": "comp_shoulder_servo",
+      "connectionType": "revolute_joint",
+      "howConnected": "M2.5 servo horn bolts clamping the upper arm yoke onto the shoulder actuator",
+      "whyConnected": "Elevates the 141.9mm upper arm link across the workspace elevation range."
+    },
+    {
+      "id": "rel_so100_elbow_flex",
+      "fromComponentId": "comp_lower_forearm_link",
+      "toComponentId": "comp_elbow_servo",
+      "connectionType": "revolute_joint",
+      "howConnected": "Elbow STS3215 actuator seated between upper arm yoke and forearm horn bracket",
+      "whyConnected": "Articulates the 130.7mm forearm link relative to the upper boom."
+    },
+    {
+      "id": "rel_so100_wrist_pitch",
+      "fromComponentId": "comp_wrist_clevis",
+      "toComponentId": "comp_wrist_pitch_servo",
+      "connectionType": "revolute_joint",
+      "howConnected": "Mirror clip and splined horn coupling wrist differential clevis to wrist servo",
+      "whyConnected": "Maintains end-effector pitch orientation across arm reach trajectories."
+    },
+    {
+      "id": "rel_so100_gripper_jaw",
+      "fromComponentId": "subcomp_moving_jaw",
+      "toComponentId": "comp_wrist_roll_palm",
+      "connectionType": "revolute_joint",
+      "howConnected": "Direct-drive STS3215 jaw horn pivoting moving finger against fixed palm jaw",
+      "whyConnected": "Closes the follower gripper jaws symmetrically around manipulation payloads."
+    },
+    {
+      "id": "rel_so100_base_servo_housing",
+      "fromComponentId": "comp_base_servo",
+      "toComponentId": "comp_base_housing",
+      "connectionType": "assembly_mount",
+      "howConnected": "Installed inside the base housing during base assembly",
+      "whyConnected": "Houses the yaw actuator at the grounded base."
+    },
+    {
+      "id": "rel_so100_base_clamp",
+      "fromComponentId": "subcomp_base_clamp",
+      "toComponentId": "comp_base_housing",
+      "connectionType": "assembly_mount",
+      "howConnected": "Listed under the base housing in the grounded base assembly step",
+      "whyConnected": "Provides the mounting clamp for the base."
+    },
+    {
+      "id": "rel_so100_base_servo_bracket",
+      "fromComponentId": "subcomp_motor1_holder",
+      "toComponentId": "comp_base_housing",
+      "connectionType": "assembly_mount",
+      "howConnected": "Listed as a subcomponent of the housing that holds the base yaw servo",
+      "whyConnected": "Provides the base servo mounting bracket."
+    },
+    {
+      "id": "rel_so100_controller_mount",
+      "fromComponentId": "subcomp_waveshare_mount",
+      "toComponentId": "comp_base_housing",
+      "connectionType": "assembly_mount",
+      "howConnected": "Installed with the yaw actuator in the base housing",
+      "whyConnected": "Provides a mounting plate for the WaveShare bus controller."
+    },
+    {
+      "id": "rel_so100_base_bearing_horn",
+      "fromComponentId": "subcomp_passive_horn",
+      "toComponentId": "comp_base_housing",
+      "connectionType": "assembly_mount",
+      "howConnected": "Installed in the base housing during the grounded base assembly step",
+      "whyConnected": "Provides the passive bearing horn at the base yaw stage."
+    },
+    {
+      "id": "rel_so100_shoulder_clip",
+      "fromComponentId": "subcomp_shoulder_clip",
+      "toComponentId": "comp_shoulder_turntable",
+      "connectionType": "assembly_mount",
+      "howConnected": "Listed under the shoulder turntable in the shoulder mounting step",
+      "whyConnected": "Places the mirror clip in the shoulder assembly."
+    },
+    {
+      "id": "rel_so100_elbow_clip",
+      "fromComponentId": "subcomp_elbow_clip",
+      "toComponentId": "comp_lower_forearm_link",
+      "connectionType": "assembly_mount",
+      "howConnected": "Attached with the lower forearm link during elbow assembly",
+      "whyConnected": "Places the mirror clip at the forearm connection to the elbow."
+    },
+    {
+      "id": "rel_so100_wrist_roll_servo",
+      "fromComponentId": "subcomp_wrist_roll_servo",
+      "toComponentId": "comp_wrist_clevis",
+      "connectionType": "assembly_mount",
+      "howConnected": "Installed with the differential clevis during wrist assembly",
+      "whyConnected": "Provides the wrist roll actuator in the differential assembly."
+    },
+    {
+      "id": "rel_so100_jaw_servo_drive",
+      "fromComponentId": "subcomp_gripper_servo",
+      "toComponentId": "subcomp_moving_jaw",
+      "connectionType": "revolute_joint",
+      "howConnected": "Direct-drive STS3215 jaw horn pivots the moving jaw",
+      "whyConnected": "Actuates the moving jaw against the fixed palm jaw."
+    },
+    {
+      "id": "rel_so100_bus_adapter_mount",
+      "fromComponentId": "comp_waveshare_bus_adapter",
+      "toComponentId": "subcomp_waveshare_mount",
+      "connectionType": "assembly_mount",
+      "howConnected": "The adapter PCB sits against the rear face of the controller mount.",
+      "whyConnected": "The mount keeps the controller accessible at the base of the arm."
+    },
+    {
+      "id": "rel_so100_ttl_bus_1",
+      "fromComponentId": "comp_waveshare_bus_adapter",
+      "toComponentId": "comp_base_servo",
+      "connectionType": "electrical_bus",
+      "howConnected": "Base yaw servo TTL cable connects the two labeled ports.",
+      "whyConnected": "The shared serial bus carries power and control signals to the base yaw actuator.",
+      "fromPortId": "port_servo_1",
+      "toPortId": "port_ttl_in",
+      "routingWaypointsMeters": [
+        [-0.024, 0.047, -0.047],
+        [-0.045, 0.038, -0.03],
+        [-0.051, 0.033, -0.008],
+        [-0.046, 0.0327, 0.015],
+        [-0.036, 0.0327, 0.026],
+        [-0.028, 0.0327, 0.028]
+      ],
+      "wireBundleDiameterMm": 2.4
+    },
+    {
+      "id": "rel_so100_ttl_bus_1_harness",
+      "fromComponentId": "comp_so100_cable_bus_1",
+      "toComponentId": "comp_waveshare_bus_adapter",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable plugs into the host at the start of the route.",
+      "whyConnected": "The host locates the cable at its first connection."
+    },
+    {
+      "id": "rel_so100_ttl_bus_2",
+      "fromComponentId": "comp_base_servo",
+      "toComponentId": "comp_shoulder_servo",
+      "connectionType": "electrical_bus",
+      "howConnected": "Shoulder servo TTL cable connects the two labeled ports.",
+      "whyConnected": "The shared serial bus carries power and control signals to the shoulder actuator.",
+      "fromPortId": "port_ttl_out",
+      "toPortId": "port_ttl_in",
+      "routingWaypointsMeters": [
+        [-0.043, 0.047, 0.045],
+        [-0.046, 0.071, 0.053],
+        [-0.046, 0.091, 0.069],
+        [-0.042, 0.103, 0.077],
+        [-0.032, 0.105, 0.0784]
+      ],
+      "wireBundleDiameterMm": 2.4
+    },
+    {
+      "id": "rel_so100_ttl_bus_2_harness",
+      "fromComponentId": "comp_so100_cable_bus_2",
+      "toComponentId": "comp_base_servo",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable plugs into the host at the start of the route.",
+      "whyConnected": "The host locates the cable at its first connection."
+    },
+    {
+      "id": "rel_so100_ttl_bus_3",
+      "fromComponentId": "comp_shoulder_servo",
+      "toComponentId": "comp_elbow_servo",
+      "connectionType": "electrical_bus",
+      "howConnected": "Elbow servo TTL cable connects the two labeled ports.",
+      "whyConnected": "The shared serial bus carries power and control signals to the elbow actuator.",
+      "fromPortId": "port_ttl_out",
+      "toPortId": "port_ttl_in",
+      "routingWaypointsMeters": [
+        [-0.04, 0.109, 0.084],
+        [-0.049, 0.117, 0.063],
+        [-0.049, 0.112, 0.024],
+        [-0.049, 0.11, -0.019],
+        [-0.046, 0.1105, -0.036],
+        [-0.036, 0.111498, -0.04349]
+      ],
+      "wireBundleDiameterMm": 2.4
+    },
+    {
+      "id": "rel_so100_ttl_bus_3_harness",
+      "fromComponentId": "comp_so100_cable_bus_3",
+      "toComponentId": "comp_shoulder_servo",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable plugs into the host at the start of the route.",
+      "whyConnected": "The host locates the cable at its first connection."
+    },
+    {
+      "id": "rel_so100_ttl_bus_4",
+      "fromComponentId": "comp_elbow_servo",
+      "toComponentId": "comp_wrist_pitch_servo",
+      "connectionType": "electrical_bus",
+      "howConnected": "Wrist pitch servo TTL cable connects the two labeled ports.",
+      "whyConnected": "The shared serial bus carries power and control signals to the wrist pitch actuator.",
+      "fromPortId": "port_ttl_out",
+      "toPortId": "port_ttl_in",
+      "routingWaypointsMeters": [
+        [-0.023, 0.131, -0.065],
+        [-0.042, 0.142, -0.061],
+        [-0.048, 0.151, -0.031],
+        [-0.047, 0.16, 0.02],
+        [-0.045, 0.161, 0.053],
+        [-0.039, 0.158, 0.072],
+        [-0.032, 0.15693, 0.077984]
+      ],
+      "wireBundleDiameterMm": 2.4
+    },
+    {
+      "id": "rel_so100_ttl_bus_4_harness",
+      "fromComponentId": "comp_so100_cable_bus_4",
+      "toComponentId": "comp_elbow_servo",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable plugs into the host at the start of the route.",
+      "whyConnected": "The host locates the cable at its first connection."
+    },
+    {
+      "id": "rel_so100_ttl_bus_5",
+      "fromComponentId": "comp_wrist_pitch_servo",
+      "toComponentId": "subcomp_wrist_roll_servo",
+      "connectionType": "electrical_bus",
+      "howConnected": "Wrist roll servo TTL cable connects the two labeled ports.",
+      "whyConnected": "The shared serial bus carries power and control signals to the wrist roll actuator.",
+      "fromPortId": "port_ttl_out",
+      "toPortId": "port_ttl_in",
+      "routingWaypointsMeters": [
+        [-0.025, 0.176, 0.092],
+        [-0.046, 0.17, 0.096],
+        [-0.051, 0.149, 0.102],
+        [-0.049, 0.128, 0.105]
+      ],
+      "wireBundleDiameterMm": 2.4
+    },
+    {
+      "id": "rel_so100_ttl_bus_5_harness",
+      "fromComponentId": "comp_so100_cable_bus_5",
+      "toComponentId": "comp_wrist_pitch_servo",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable plugs into the host at the start of the route.",
+      "whyConnected": "The host locates the cable at its first connection."
+    },
+    {
+      "id": "rel_so100_ttl_bus_6",
+      "fromComponentId": "subcomp_wrist_roll_servo",
+      "toComponentId": "subcomp_gripper_servo",
+      "connectionType": "electrical_bus",
+      "howConnected": "Gripper servo TTL cable connects the two labeled ports.",
+      "whyConnected": "The shared serial bus carries power and control signals to the gripper actuator.",
+      "fromPortId": "port_ttl_out",
+      "toPortId": "port_ttl_in",
+      "routingWaypointsMeters": [
+        [-0.051, 0.099, 0.113],
+        [-0.049, 0.084, 0.116],
+        [-0.035, 0.075, 0.121]
+      ],
+      "wireBundleDiameterMm": 2.4
+    },
+    {
+      "id": "rel_so100_ttl_bus_6_harness",
+      "fromComponentId": "comp_so100_cable_bus_6",
+      "toComponentId": "subcomp_wrist_roll_servo",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable plugs into the host at the start of the route.",
+      "whyConnected": "The host locates the cable at its first connection."
+    }
+  ],
+  "assemblySteps": [
+    {
+      "id": "step_arm_1",
+      "order": 1,
+      "title": "Assemble Grounded Base and Yaw Servo",
+      "summary": "Install the base STS3215 actuator inside the base housing with the WaveShare controller mount and passive bearing horn.",
+      "componentIds": [
+        "comp_base_housing",
+        "subcomp_base_clamp",
+        "subcomp_motor1_holder",
+        "subcomp_waveshare_mount",
+        "subcomp_passive_horn",
+        "comp_base_servo"
+      ],
+      "relationshipIds": [
+        "rel_so100_yaw_drive",
+        "rel_so100_base_servo_housing",
+        "rel_so100_base_clamp",
+        "rel_so100_base_servo_bracket",
+        "rel_so100_controller_mount",
+        "rel_so100_base_bearing_horn"
+      ]
+    },
+    {
+      "id": "step_arm_2",
+      "order": 2,
+      "title": "Mount Shoulder Turntable and Upper Arm",
+      "summary": "Seat the shoulder pitch servo in the yaw turntable and fasten the 141.9mm upper arm link.",
+      "componentIds": [
+        "comp_shoulder_turntable",
+        "subcomp_shoulder_clip",
+        "comp_shoulder_servo",
+        "comp_upper_arm_link"
+      ],
+      "relationshipIds": ["rel_so100_shoulder_pitch", "rel_so100_shoulder_clip"]
+    },
+    {
+      "id": "step_arm_3",
+      "order": 3,
+      "title": "Join Elbow Actuator and Lower Forearm",
+      "summary": "Couple the elbow STS3215 servo and attach the 130.7mm lower forearm link with its mirror clip.",
+      "componentIds": ["comp_elbow_servo", "comp_lower_forearm_link", "subcomp_elbow_clip"],
+      "relationshipIds": ["rel_so100_elbow_flex", "rel_so100_elbow_clip"]
+    },
+    {
+      "id": "step_arm_4",
+      "order": 4,
+      "title": "Assemble Wrist Differential and Gripper Jaws",
+      "summary": "Attach the wrist pitch/roll servos, differential clevis, fixed palm housing, and moving gripper jaw.",
+      "componentIds": [
+        "comp_wrist_pitch_servo",
+        "comp_wrist_clevis",
+        "subcomp_wrist_roll_servo",
+        "comp_wrist_roll_palm",
+        "subcomp_gripper_servo",
+        "subcomp_moving_jaw"
+      ],
+      "relationshipIds": [
+        "rel_so100_wrist_pitch",
+        "rel_so100_gripper_jaw",
+        "rel_so100_wrist_roll_servo",
+        "rel_so100_jaw_servo_drive"
+      ]
+    },
+    {
+      "id": "step_arm_5",
+      "order": 5,
+      "title": "Mount Bus Servo Controller and Route Servo Daisy Chain",
+      "summary": "Fit the controller to the rear mount. Follow the six TTL cables from the base yaw servo through to the gripper.",
+      "componentIds": [
+        "comp_waveshare_bus_adapter",
+        "comp_so100_cable_bus_1",
+        "comp_so100_cable_bus_2",
+        "comp_so100_cable_bus_3",
+        "comp_so100_cable_bus_4",
+        "comp_so100_cable_bus_5",
+        "comp_so100_cable_bus_6"
+      ],
+      "relationshipIds": [
+        "rel_so100_bus_adapter_mount",
+        "rel_so100_ttl_bus_1",
+        "rel_so100_ttl_bus_1_harness",
+        "rel_so100_ttl_bus_2",
+        "rel_so100_ttl_bus_2_harness",
+        "rel_so100_ttl_bus_3",
+        "rel_so100_ttl_bus_3_harness",
+        "rel_so100_ttl_bus_4",
+        "rel_so100_ttl_bus_4_harness",
+        "rel_so100_ttl_bus_5",
+        "rel_so100_ttl_bus_5_harness",
+        "rel_so100_ttl_bus_6",
+        "rel_so100_ttl_bus_6_harness"
+      ]
+    }
+  ]
+}

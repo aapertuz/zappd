@@ -6,6 +6,7 @@ import {
   type Vector3Tuple,
   type VerifiedProjectAssembly,
   computeNodeWorldPositionMeters,
+  isRelationshipId,
 } from '@/shared/domain/assembly';
 
 import type {
@@ -13,6 +14,7 @@ import type {
   AssemblyExplorerState,
   ExplorerCameraState,
   SeparationAxis,
+  WiringVisibilityMode,
 } from '../types';
 
 export const DEFAULT_EXPLODE_PRESET = 0.65;
@@ -37,6 +39,11 @@ const DESKTOP_V_HALF_TAN = Math.tan(Math.PI / 9);
 const MOBILE_H_HALF_TAN = Math.tan((17 * Math.PI) / 180);
 const MOBILE_V_HALF_TAN = MOBILE_H_HALF_TAN / (390 / 844);
 const DEFAULT_ZOOM_LIMITS = { minDistanceMeters: 0.08, maxDistanceMeters: 1.8 };
+const NEXT_WIRING_VISIBILITY: Readonly<Record<WiringVisibilityMode, WiringVisibilityMode>> = {
+  auto: 'show',
+  show: 'hide',
+  hide: 'auto',
+};
 
 function halfExtentMeters(dimensionMm: number): number {
   return Math.max(dimensionMm / 2000, MIN_HALF_EXTENT_METERS);
@@ -150,6 +157,7 @@ export const INITIAL_ASSEMBLY_EXPLORER_STATE: AssemblyExplorerState = {
   viewMode: { kind: 'overview' },
   explodeFactor: 0,
   activeExplodeStage: 'all',
+  wiringVisibility: 'auto',
   selectedComponentId: null,
   isolatedComponentId: null,
   separatedOffsets: {},
@@ -297,6 +305,45 @@ export function computeFocusedCameraForComponent(
   };
 }
 
+export function computeCircuitComponentIds(
+  assembly: VerifiedProjectAssembly | null,
+  activeComponentId: ComponentId | null,
+): ReadonlySet<ComponentId> {
+  if (assembly === null || activeComponentId === null) return new Set();
+  const activeNode = assembly.nodes.find(({ id }) => id === activeComponentId);
+  if (activeNode === undefined) return new Set();
+
+  const drivingRelationshipId =
+    activeNode.category === 'wiring' ? activeNode.specifications.relationshipId : undefined;
+  const electricalRelationships = assembly.relationships.filter(
+    ({ id, connectionType, fromComponentId, toComponentId }) =>
+      (connectionType === 'electrical_bus' || connectionType === 'power_bus') &&
+      (id === drivingRelationshipId ||
+        fromComponentId === activeComponentId ||
+        toComponentId === activeComponentId),
+  );
+  const circuitIds = new Set([activeComponentId]);
+  for (const { fromComponentId, toComponentId } of electricalRelationships) {
+    circuitIds.add(fromComponentId);
+    circuitIds.add(toComponentId);
+  }
+  if (activeNode.category !== 'wiring') {
+    const relationshipIds = new Set(electricalRelationships.map(({ id }) => id));
+    for (const { id, category, specifications } of assembly.nodes) {
+      const { relationshipId } = specifications;
+      if (
+        category === 'wiring' &&
+        isRelationshipId(relationshipId) &&
+        relationshipIds.has(relationshipId)
+      ) {
+        circuitIds.add(id);
+      }
+    }
+  }
+  if (circuitIds.size < 2) circuitIds.clear();
+  return circuitIds;
+}
+
 export function reduceAssemblyExplorerState(
   state: AssemblyExplorerState,
   action: AssemblyExplorerAction,
@@ -353,6 +400,7 @@ export function reduceAssemblyExplorerState(
         viewMode: { kind: 'overview' },
         explodeFactor: 0,
         activeExplodeStage: 'all',
+        wiringVisibility: 'auto',
         selectedComponentId: null,
         isolatedComponentId: null,
         separatedOffsets: {},
@@ -403,6 +451,14 @@ export function reduceAssemblyExplorerState(
     }
     case 'toggleExplodePreset': {
       return { ...state, explodeFactor: state.explodeFactor > 0.001 ? 0 : DEFAULT_EXPLODE_PRESET };
+    }
+    case 'cycleWiringVisibility': {
+      return { ...state, wiringVisibility: NEXT_WIRING_VISIBILITY[state.wiringVisibility] };
+    }
+    case 'setWiringVisibility': {
+      return state.wiringVisibility === action.mode
+        ? state
+        : { ...state, wiringVisibility: action.mode };
     }
     case 'focusComponent': {
       const { componentId } = action;

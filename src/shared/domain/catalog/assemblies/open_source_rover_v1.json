@@ -1,0 +1,912 @@
+{
+  "archetypeId": "open_source_rover_v1",
+  "title": "NOVA2 Open-Source Rover CAD Assembly",
+  "summary": "AstroX NOVA2 autonomous planetary ground rover with modular chassis tub, Jetson Nano compute bay, dual steering wheel brackets, Dynamixel XL430 actuators, rigid flange couplings, and ZED 2i stereo depth camera.",
+  "keywords": [
+    "rover",
+    "ugv",
+    "car",
+    "wheel",
+    "mars",
+    "mobile",
+    "chassis",
+    "nova2",
+    "ground",
+    "vehicle"
+  ],
+  "rootNodeId": "proj_open_rover",
+  "nodes": [
+    {
+      "id": "proj_open_rover",
+      "parentId": null,
+      "name": "NOVA2 Open-Source Rover Assembly",
+      "level": "project",
+      "depth": 0,
+      "category": "project",
+      "colorHex": "#485263",
+      "dimensionsMm": [255.0, 151.5, 130.0],
+      "restPositionMeters": [0.0, 0.0, 0.0],
+      "explodeDirection": [0.0, 0.0, 0.0],
+      "explodeDistanceMeters": 0.0,
+      "materialHint": "assembly_root",
+      "origin": "open_step_catalog",
+      "spdxLicense": "CC-BY-NC-SA-4.0",
+      "sourceUrl": "https://github.com/AstroX-OpenRover/NOVA2",
+      "sourceName": "AstroX-OpenRover NOVA2 CAD Repository",
+      "stepFixtureName": null,
+      "specifications": {
+        "driveType": "Ackermann / Swerve",
+        "compute": "Jetson Orin Nano",
+        "sourceParts": 11
+      }
+    },
+    {
+      "id": "sub_chassis_compute",
+      "parentId": "proj_open_rover",
+      "name": "Chassis and Compute Bay Subsystem",
+      "level": "subsystem",
+      "depth": 1,
+      "category": "subsystem",
+      "colorHex": "#828c9b",
+      "dimensionsMm": [152.5, 117.5, 60.5],
+      "restPositionMeters": [0.0, 0.0, 0.0],
+      "explodeDirection": [0.0, 0.0, 0.0],
+      "explodeDistanceMeters": 0.0,
+      "materialHint": "machined_aluminum",
+      "origin": "open_step_catalog",
+      "spdxLicense": "CC-BY-NC-SA-4.0",
+      "sourceUrl": "https://github.com/AstroX-OpenRover/NOVA2/blob/main/Assembly/Part%20Studio%201.step",
+      "sourceName": "NOVA2 Structural Chassis & Nano Mount",
+      "stepFixtureName": null,
+      "specifications": {
+        "chassisWidthMm": 152.5
+      }
+    },
+    {
+      "id": "sub_mobility_drivetrain",
+      "parentId": "proj_open_rover",
+      "name": "Steering and Axle Drivetrain Subsystem",
+      "level": "subsystem",
+      "depth": 1,
+      "category": "subsystem",
+      "colorHex": "#3874a6",
+      "dimensionsMm": [255.0, 151.5, 118.5],
+      "restPositionMeters": [0.0, 0.0, 0.0],
+      "explodeDirection": [0.0, 0.0, 0.0],
+      "explodeDistanceMeters": 0.0,
+      "materialHint": "abs_3d_printed",
+      "origin": "open_step_catalog",
+      "spdxLicense": "CC-BY-NC-SA-4.0",
+      "sourceUrl": "https://github.com/AstroX-OpenRover/NOVA2/blob/main/Assembly/WheelBracket_000_configs.STEP",
+      "sourceName": "NOVA2 Swerve Brackets, Dynamixel XL430 & Flanges",
+      "stepFixtureName": null,
+      "specifications": {
+        "wheelStations": 2,
+        "shaftDiameterMm": 8.0
+      }
+    },
+    {
+      "id": "sub_perception_avionics",
+      "parentId": "proj_open_rover",
+      "name": "Stereo Perception Subsystem",
+      "level": "subsystem",
+      "depth": 1,
+      "category": "subsystem",
+      "colorHex": "#5c687a",
+      "dimensionsMm": [175.3, 43.0, 30.3],
+      "restPositionMeters": [0.0, 0.0, 0.0],
+      "explodeDirection": [0.0, 1.0, 0.0],
+      "explodeDistanceMeters": 0.04,
+      "materialHint": "anodized_aluminum",
+      "origin": "open_step_catalog",
+      "spdxLicense": "CC-BY-NC-SA-4.0",
+      "sourceUrl": "https://github.com/AstroX-OpenRover/NOVA2/blob/main/Assembly/ZED%202i%20Narrow.step",
+      "sourceName": "NOVA2 Stereolabs ZED 2i Camera",
+      "stepFixtureName": null,
+      "specifications": {
+        "sensor": "Stereo RGB-D + IMU"
+      }
+    },
+    {
+      "id": "comp_rover_base_plate",
+      "parentId": "sub_chassis_compute",
+      "name": "Main Chassis Base Plate",
+      "level": "component",
+      "depth": 2,
+      "category": "structure",
+      "colorHex": "#828c9b",
+      "dimensionsMm": [152.46, 117.52, 5.0],
+      "restPositionMeters": [0.0, 0.0025, 0.0],
+      "explodeDirection": [0.0, -1.0, 0.0],
+      "explodeDistanceMeters": 0.03,
+      "materialHint": "machined_aluminum",
+      "origin": "open_step_catalog",
+      "spdxLicense": "CC-BY-NC-SA-4.0",
+      "sourceUrl": "https://github.com/AstroX-OpenRover/NOVA2/blob/main/Assembly/Part%20Studio%201.step",
+      "sourceName": "NOVA2 Part Studio 1.step",
+      "stepFixtureName": "nova2_chassis_plate.step",
+      "specifications": {
+        "thicknessMm": 5.0,
+        "brepFaces": 129
+      },
+      "expectedStepSha256": "4f4eb210799100509ff43c760714082152e096caa0ab2f03de094914aa0535fc"
+    },
+    {
+      "id": "comp_rover_compute_bay",
+      "parentId": "sub_chassis_compute",
+      "name": "Jetson Nano Compute Bay Housing",
+      "level": "component",
+      "depth": 2,
+      "category": "avionics",
+      "colorHex": "#485263",
+      "dimensionsMm": [152.31, 117.13, 53.0],
+      "restPositionMeters": [0.0, 0.034, 0.0],
+      "explodeDirection": [0.0, 1.0, 0.0],
+      "explodeDistanceMeters": 0.045,
+      "materialHint": "abs_3d_printed",
+      "origin": "open_step_catalog",
+      "spdxLicense": "CC-BY-NC-SA-4.0",
+      "sourceUrl": "https://github.com/AstroX-OpenRover/NOVA2/blob/main/Assembly/Part%20Studio%201%20-%20Nano_mount_Base.step",
+      "sourceName": "NOVA2 Part Studio 1 - Nano_mount_Base.step",
+      "stepFixtureName": "nova2_nano_mount.step",
+      "specifications": {
+        "heightMm": 53.0,
+        "brepFaces": 166
+      },
+      "expectedStepSha256": "4113c8b462c8890a5f8f0455efd32d495915422a84b139a37bff793b06b8b9ea"
+    },
+    {
+      "id": "subcomp_rover_crossbar",
+      "parentId": "comp_rover_base_plate",
+      "name": "Structural Connecting Crossbar",
+      "level": "subcomponent",
+      "depth": 3,
+      "category": "structure",
+      "colorHex": "#aab4c2",
+      "dimensionsMm": [57.1, 10.0, 3.0],
+      "restPositionMeters": [0.0, 0.012, -0.068],
+      "explodeDirection": [0.0, 0.0, -1.0],
+      "explodeDistanceMeters": 0.04,
+      "materialHint": "anodized_aluminum",
+      "origin": "open_step_catalog",
+      "spdxLicense": "CC-BY-NC-SA-4.0",
+      "sourceUrl": "https://github.com/AstroX-OpenRover/NOVA2/blob/main/Assembly/ConnectingBracket_012.STEP",
+      "sourceName": "NOVA2 ConnectingBracket_012.STEP",
+      "stepFixtureName": "nova2_connecting_bracket.step",
+      "specifications": {
+        "spanMm": 57.1,
+        "brepFaces": 15
+      },
+      "expectedStepSha256": "1d531d39f33d784407719e01d6aa1bf1a59e0cd542100e395694c328b67ea22a"
+    },
+    {
+      "id": "subcomp_rover_bus_coupler",
+      "parentId": "comp_rover_base_plate",
+      "name": "Rear Harness Bus Connector",
+      "level": "subcomponent",
+      "depth": 3,
+      "category": "avionics",
+      "colorHex": "#de9224",
+      "dimensionsMm": [40.0, 16.5, 4.0],
+      "restPositionMeters": [0.0, 0.012, 0.072],
+      "explodeDirection": [0.0, 0.0, 1.0],
+      "explodeDistanceMeters": 0.04,
+      "materialHint": "abs_3d_printed",
+      "origin": "open_step_catalog",
+      "spdxLicense": "CC-BY-NC-SA-4.0",
+      "sourceUrl": "https://github.com/AstroX-OpenRover/NOVA2/blob/main/Assembly/Connector.step",
+      "sourceName": "NOVA2 Connector.step",
+      "stepFixtureName": "nova2_bus_connector.step",
+      "specifications": {
+        "widthMm": 40.0,
+        "brepFaces": 14
+      },
+      "expectedStepSha256": "0f32dbdb1bbde6c588042f46426aa80282a5483b703e8f2608ae5fea6b5c5c01"
+    },
+    {
+      "id": "comp_wheel_bracket_left",
+      "parentId": "sub_mobility_drivetrain",
+      "name": "Left Wheel Steering Bracket",
+      "level": "component",
+      "depth": 2,
+      "category": "drivetrain",
+      "colorHex": "#3874a6",
+      "dimensionsMm": [45.0, 151.5, 36.0],
+      "restPositionMeters": [-0.105, 0.02, 0.0],
+      "explodeDirection": [-1.0, 0.0, 0.0],
+      "explodeDistanceMeters": 0.055,
+      "materialHint": "abs_3d_printed",
+      "origin": "open_step_catalog",
+      "spdxLicense": "CC-BY-NC-SA-4.0",
+      "sourceUrl": "https://github.com/AstroX-OpenRover/NOVA2/blob/main/Assembly/WheelBracket_000_configs.STEP",
+      "sourceName": "NOVA2 WheelBracket_000_configs.STEP",
+      "stepFixtureName": "nova2_wheel_bracket_left.step",
+      "specifications": {
+        "lengthMm": 151.5,
+        "brepFaces": 162
+      },
+      "expectedStepSha256": "a20932b88989576575f1c0e6cd923737acc25790286b5a8cbd89980f2ce528ef"
+    },
+    {
+      "id": "comp_wheel_bracket_right",
+      "parentId": "sub_mobility_drivetrain",
+      "name": "Right Wheel Steering Bracket",
+      "level": "component",
+      "depth": 2,
+      "category": "drivetrain",
+      "colorHex": "#3874a6",
+      "dimensionsMm": [45.0, 151.5, 36.0],
+      "restPositionMeters": [0.105, 0.02, 0.0],
+      "explodeDirection": [1.0, 0.0, 0.0],
+      "explodeDistanceMeters": 0.055,
+      "materialHint": "abs_3d_printed",
+      "origin": "open_step_catalog",
+      "spdxLicense": "CC-BY-NC-SA-4.0",
+      "sourceUrl": "https://github.com/AstroX-OpenRover/NOVA2/blob/main/Assembly/WheelBracket_001_configs.STEP",
+      "sourceName": "NOVA2 WheelBracket_001_configs.STEP",
+      "stepFixtureName": "nova2_wheel_bracket_right.step",
+      "specifications": {
+        "lengthMm": 151.5,
+        "brepFaces": 173
+      },
+      "expectedStepSha256": "734484f698df1302b1c585f818fea4094b89321d2171488cedaa79329d0e9d43"
+    },
+    {
+      "id": "comp_steering_servo_left",
+      "parentId": "sub_mobility_drivetrain",
+      "name": "Left Dynamixel XL430 Steering Actuator",
+      "level": "component",
+      "depth": 2,
+      "category": "actuator",
+      "colorHex": "#404754",
+      "dimensionsMm": [28.5, 46.5, 40.9],
+      "restPositionMeters": [-0.105, 0.064, 0.0],
+      "explodeDirection": [-0.707, 0.707, 0.0],
+      "explodeDistanceMeters": 0.055,
+      "materialHint": "servo_housing",
+      "origin": "open_step_catalog",
+      "spdxLicense": "CC-BY-NC-SA-4.0",
+      "sourceUrl": "https://github.com/AstroX-OpenRover/NOVA2/blob/main/Assembly/XL-430_new.stp",
+      "sourceName": "NOVA2 XL-430_new.stp",
+      "stepFixtureName": "nova2_dynamixel_xl430.step",
+      "specifications": {
+        "stallTorqueNm": 1.5,
+        "brepFaces": 1281
+      },
+      "expectedStepSha256": "54e82d0ec41a87a397f255bad2c3c641ba97da53fb3ebc55288d4453fe230196",
+      "ports": [
+        {
+          "portId": "port_ttl_in",
+          "label": "Steering servo TTL input",
+          "connectorType": "JST-EH 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.01425, 0.00555, 0.00675],
+          "exitDirection": [1, 0, 0]
+        }
+      ]
+    },
+    {
+      "id": "comp_steering_servo_right",
+      "parentId": "sub_mobility_drivetrain",
+      "name": "Right Dynamixel XL430 Steering Actuator",
+      "level": "component",
+      "depth": 2,
+      "category": "actuator",
+      "colorHex": "#404754",
+      "dimensionsMm": [28.5, 46.5, 40.9],
+      "restPositionMeters": [0.105, 0.064, 0.0],
+      "explodeDirection": [0.707, 0.707, 0.0],
+      "explodeDistanceMeters": 0.055,
+      "materialHint": "servo_housing",
+      "origin": "open_step_catalog",
+      "spdxLicense": "CC-BY-NC-SA-4.0",
+      "sourceUrl": "https://github.com/AstroX-OpenRover/NOVA2/blob/main/Assembly/XL-430_new.stp",
+      "sourceName": "NOVA2 XL-430_new.stp",
+      "stepFixtureName": "nova2_dynamixel_xl430.step",
+      "specifications": {
+        "stallTorqueNm": 1.5,
+        "brepFaces": 1281
+      },
+      "expectedStepSha256": "54e82d0ec41a87a397f255bad2c3c641ba97da53fb3ebc55288d4453fe230196",
+      "ports": [
+        {
+          "portId": "port_ttl_in",
+          "label": "Steering servo TTL input",
+          "connectorType": "JST-EH 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.01425, 0.00555, 0.00675],
+          "exitDirection": [-1, 0, 0]
+        }
+      ]
+    },
+    {
+      "id": "subcomp_axle_flange_left",
+      "parentId": "comp_wheel_bracket_left",
+      "name": "Left 8mm Rigid Axle Flange Coupling",
+      "level": "subcomponent",
+      "depth": 3,
+      "category": "drivetrain",
+      "colorHex": "#c2cad4",
+      "dimensionsMm": [32.0, 13.0, 32.0],
+      "restPositionMeters": [-0.105, -0.018, 0.0],
+      "explodeDirection": [0.0, -1.0, 0.0],
+      "explodeDistanceMeters": 0.04,
+      "materialHint": "machined_aluminum",
+      "origin": "open_step_catalog",
+      "spdxLicense": "CC-BY-NC-SA-4.0",
+      "sourceUrl": "https://github.com/AstroX-OpenRover/NOVA2/blob/main/Assembly/8mm%20Rigid%20Flange%20Coupling%20v2.step",
+      "sourceName": "NOVA2 8mm Rigid Flange Coupling v2.step",
+      "stepFixtureName": "nova2_flange_coupling.step",
+      "specifications": {
+        "boreMm": 8.0,
+        "outerDiameterMm": 32.0,
+        "brepFaces": 77
+      },
+      "expectedStepSha256": "1f12d0289ef7e31ea4ac5be84f2d17884cd50680709b3a7f1a7f491f83307f60"
+    },
+    {
+      "id": "subcomp_axle_flange_right",
+      "parentId": "comp_wheel_bracket_right",
+      "name": "Right 8mm Rigid Axle Flange Coupling",
+      "level": "subcomponent",
+      "depth": 3,
+      "category": "drivetrain",
+      "colorHex": "#c2cad4",
+      "dimensionsMm": [32.0, 13.0, 32.0],
+      "restPositionMeters": [0.105, -0.018, 0.0],
+      "explodeDirection": [0.0, -1.0, 0.0],
+      "explodeDistanceMeters": 0.04,
+      "materialHint": "machined_aluminum",
+      "origin": "open_step_catalog",
+      "spdxLicense": "CC-BY-NC-SA-4.0",
+      "sourceUrl": "https://github.com/AstroX-OpenRover/NOVA2/blob/main/Assembly/8mm%20Rigid%20Flange%20Coupling%20v2.step",
+      "sourceName": "NOVA2 8mm Rigid Flange Coupling v2.step",
+      "stepFixtureName": "nova2_flange_coupling.step",
+      "specifications": {
+        "boreMm": 8.0,
+        "outerDiameterMm": 32.0,
+        "brepFaces": 77
+      },
+      "expectedStepSha256": "1f12d0289ef7e31ea4ac5be84f2d17884cd50680709b3a7f1a7f491f83307f60"
+    },
+    {
+      "id": "comp_zed2i_stereo_camera",
+      "parentId": "sub_perception_avionics",
+      "name": "Stereolabs ZED 2i Depth Camera",
+      "level": "component",
+      "depth": 2,
+      "category": "sensor",
+      "colorHex": "#5c687a",
+      "dimensionsMm": [175.25, 43.0, 30.25],
+      "restPositionMeters": [0.0, 0.08, -0.035],
+      "explodeDirection": [0.0, 1.0, -0.5],
+      "explodeDistanceMeters": 0.06,
+      "materialHint": "anodized_aluminum",
+      "origin": "open_step_catalog",
+      "spdxLicense": "CC-BY-NC-SA-4.0",
+      "sourceUrl": "https://github.com/AstroX-OpenRover/NOVA2/blob/main/Assembly/ZED%202i%20Narrow.step",
+      "sourceName": "NOVA2 ZED 2i Narrow.step",
+      "stepFixtureName": "nova2_zed2i_camera.step",
+      "specifications": {
+        "baselineMm": 120.0,
+        "brepFaces": 699
+      },
+      "expectedStepSha256": "b6801fbc9af0d7d9fa719a6d8e1f462a16e362e81c373487886e5380fc80bc1b",
+      "ports": [
+        {
+          "portId": "port_usb",
+          "label": "Stereo camera USB data",
+          "connectorType": "USB-C with dual locking screws",
+          "busKind": "usb_data",
+          "localPositionMeters": [0.02, -0.005, 0.021],
+          "exitDirection": [0, 0, 1]
+        }
+      ]
+    },
+    {
+      "id": "comp_nova2_jetson_carrier",
+      "parentId": "sub_chassis_compute",
+      "name": "Nova2 Jetson Orin Nano carrier and servo hub",
+      "level": "component",
+      "depth": 2,
+      "category": "electronics",
+      "restPositionMeters": [0.01085, 0.03775, 0.008],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.042,
+      "origin": "kicad_pcb_step",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "kicad://zappd/kicad_nova2_jetson_carrier",
+      "sourceName": "Zappd kicad_nova2_jetson_carrier.kicad_pcb with KiCad kicad-packages3D models",
+      "stepFixtureName": "kicad_nova2_jetson_carrier.step",
+      "expectedStepSha256": "7170d05986ec4c21b6e2b1b9b30e1f3a5d14d735ba014efacc2acaa038ca112b",
+      "dimensionsMm": [96.3, 14.6, 76.175],
+      "materialHint": "fr4_pcb",
+      "colorHex": "#247052",
+      "specifications": {
+        "pcbWidthMm": 96,
+        "pcbLengthMm": 76,
+        "pcbThicknessMm": 1.6,
+        "brepFaces": 4640,
+        "xcafColors": 11,
+        "referenceLayout": true
+      },
+      "ports": [
+        {
+          "portId": "port_gpio",
+          "label": "Jetson GPIO",
+          "connectorType": "40-pin GPIO",
+          "busKind": "i2c_spi_uart",
+          "localPositionMeters": [0.04342, 0.00514, 4.25e-5],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_usb",
+          "label": "ZED 2i USB data",
+          "connectorType": "USB-C",
+          "busKind": "usb_data",
+          "localPositionMeters": [0.01515, -0.00175, 0.0380875],
+          "exitDirection": [0.0, 0.0, 1.0]
+        },
+        {
+          "portId": "port_dc_in",
+          "label": "DC power input",
+          "connectorType": "DC barrel jack",
+          "busKind": "dc_power",
+          "localPositionMeters": [-0.04815, 0.003, 0.0129125],
+          "exitDirection": [-1.0, 0.0, -0.0]
+        },
+        {
+          "portId": "port_servo_1",
+          "label": "Servo bus 1",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.01685, 0.0026, -0.0190875],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_servo_2",
+          "label": "Servo bus 2",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.00615, 0.0026, -0.0190875],
+          "exitDirection": [0.0, 1.0, -0.0]
+        }
+      ]
+    },
+    {
+      "id": "comp_nova2_battery_pack",
+      "parentId": "sub_chassis_compute",
+      "name": "3S 18650 battery holder with cells",
+      "level": "component",
+      "depth": 2,
+      "category": "power",
+      "restPositionMeters": [0.0, -0.015, 0.0],
+      "explodeDirection": [0, -1, 0],
+      "explodeDistanceMeters": 0.038,
+      "origin": "cots_library_step",
+      "spdxLicense": "NOASSERTION",
+      "sourceUrl": "https://raw.githubusercontent.com/robotjaol/custom-components/main/BATTERY_HOLDER_18650_X3/3%20Battery%20Holder%20With%20Batteries.step",
+      "sourceName": "robotjaol/custom-components 3 Battery Holder With Batteries.step",
+      "stepFixtureName": "cots_battery_3s_18650.step",
+      "expectedStepSha256": "2447b23136e63ef600e444d6d1cda79b3e6b0405f8e6f5667f069647d5d4b611",
+      "dimensionsMm": [77.98, 24.74, 59.63],
+      "materialHint": "li_ion_battery",
+      "colorHex": "#3f3f46",
+      "specifications": {
+        "seriesCells": 3,
+        "cellFormat": "18650",
+        "brepFaces": 498,
+        "xcafColors": 5
+      },
+      "ports": [
+        {
+          "portId": "port_tab_1",
+          "label": "Battery holder contact 1",
+          "connectorType": "Solder tab",
+          "busKind": "dc_power",
+          "localPositionMeters": [-0.03624, -0.01237, 0.019255],
+          "exitDirection": [0, -1, 0]
+        },
+        {
+          "portId": "port_tab_2",
+          "label": "Battery holder contact 2",
+          "connectorType": "Solder tab",
+          "busKind": "dc_power",
+          "localPositionMeters": [-0.03624, -0.01237, -4.5e-5],
+          "exitDirection": [0, -1, 0]
+        },
+        {
+          "portId": "port_tab_3",
+          "label": "Battery holder contact 3",
+          "connectorType": "Solder tab",
+          "busKind": "dc_power",
+          "localPositionMeters": [-0.03624, -0.01237, -0.019345],
+          "exitDirection": [0, -1, 0]
+        },
+        {
+          "portId": "port_tab_4",
+          "label": "Battery holder contact 4",
+          "connectorType": "Solder tab",
+          "busKind": "dc_power",
+          "localPositionMeters": [0.03624, -0.01237, 0.019345],
+          "exitDirection": [0, -1, 0]
+        },
+        {
+          "portId": "port_tab_5",
+          "label": "Battery holder contact 5",
+          "connectorType": "Solder tab",
+          "busKind": "dc_power",
+          "localPositionMeters": [0.03624, -0.01237, 4.5e-5],
+          "exitDirection": [0, -1, 0]
+        },
+        {
+          "portId": "port_tab_6",
+          "label": "Battery holder contact 6",
+          "connectorType": "Solder tab",
+          "busKind": "dc_power",
+          "localPositionMeters": [0.03624, -0.01237, -0.019255],
+          "exitDirection": [0, -1, 0]
+        }
+      ]
+    },
+    {
+      "id": "comp_nova2_cable_zed_usb",
+      "parentId": "sub_chassis_compute",
+      "name": "Stereo camera USB-C cable",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#34363c",
+      "dimensionsMm": [9.052029756871292, 42.07769977007358, 78.01827232257266],
+      "restPositionMeters": [0.02305217552840443, 0.05553519020737799, 0.025809136061286316],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "braided_sleeve",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/open_source_rover_v1/rel_nova2_zed2i_usb",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_nova2_cable_zed_usb.step",
+      "specifications": {
+        "relationshipId": "rel_nova2_zed2i_usb",
+        "brepFaces": 20
+      },
+      "expectedStepSha256": "a678b14257f4274f439ef9490218c8c526731a15cb209a0bb09fc431039be2e4"
+    },
+    {
+      "id": "comp_nova2_cable_servo_left",
+      "parentId": "sub_chassis_compute",
+      "name": "Left steering TTL cable",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [84.72891595055879, 29.370925621192022, 22.40223795681323],
+      "restPositionMeters": [-0.04758554212472062, 0.05583546271059596, -0.0016976440461953075],
+      "explodeDirection": [-1, 0, 0],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/open_source_rover_v1/rel_nova2_servo_left",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_nova2_cable_servo_left.step",
+      "specifications": {
+        "relationshipId": "rel_nova2_servo_left",
+        "brepFaces": 48
+      },
+      "expectedStepSha256": "6ded6b9d737443e5dd0dfed36eb7e1ddc6150ce4fcfd3ab4252e4520d191b6b5"
+    },
+    {
+      "id": "comp_nova2_cable_servo_right",
+      "parentId": "sub_chassis_compute",
+      "name": "Right steering TTL cable",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [73.47558902230725, 29.572702954866152, 22.413930297870557],
+      "restPositionMeters": [0.05321220558884639, 0.055936351377433025, -0.001835308891844563],
+      "explodeDirection": [1, 0, 0],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/open_source_rover_v1/rel_nova2_servo_right",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_nova2_cable_servo_right.step",
+      "specifications": {
+        "relationshipId": "rel_nova2_servo_right",
+        "brepFaces": 48
+      },
+      "expectedStepSha256": "09668f3669c4f82527f202ca5b742d390549f6414a71211f11b538cb7a3c641a"
+    },
+    {
+      "id": "comp_nova2_cable_battery_power",
+      "parentId": "sub_chassis_compute",
+      "name": "Battery to carrier power lead",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [47.15148662564841, 108.34779092441039, 21.56139602591626],
+      "restPositionMeters": [-0.058422858969982824, 0.013978377347909412, 0.028018145912265285],
+      "explodeDirection": [-1, 0, 0],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/open_source_rover_v1/rel_nova2_battery_power",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_nova2_cable_battery_power.step",
+      "specifications": {
+        "relationshipId": "rel_nova2_battery_power",
+        "brepFaces": 56
+      },
+      "expectedStepSha256": "56fbef276705febc22596ec4665aa280d77f0de94ed2209529cdb3bd2b606ac9"
+    }
+  ],
+  "relationships": [
+    {
+      "id": "rel_nova2_compute_chassis",
+      "fromComponentId": "comp_rover_compute_bay",
+      "toComponentId": "comp_rover_base_plate",
+      "connectionType": "rigid_fastener",
+      "howConnected": "M3 threaded brass inserts fastening Jetson Nano enclosure onto chassis floor",
+      "whyConnected": "Isolates onboard compute electronics and power bus inside the structural rover tub."
+    },
+    {
+      "id": "rel_nova2_crossbar_chassis",
+      "fromComponentId": "subcomp_rover_crossbar",
+      "toComponentId": "comp_rover_base_plate",
+      "connectionType": "assembly_mount",
+      "howConnected": "Mounted onto the chassis base plate during chassis assembly",
+      "whyConnected": "Places the structural crossbar on the rover chassis."
+    },
+    {
+      "id": "rel_nova2_harness_connector_chassis",
+      "fromComponentId": "subcomp_rover_bus_coupler",
+      "toComponentId": "comp_rover_base_plate",
+      "connectionType": "assembly_mount",
+      "howConnected": "Mounted onto the chassis base plate during chassis assembly",
+      "whyConnected": "Provides the rear harness connection point on the chassis."
+    },
+    {
+      "id": "rel_nova2_steering_left",
+      "fromComponentId": "comp_steering_servo_left",
+      "toComponentId": "comp_wheel_bracket_left",
+      "connectionType": "revolute_joint",
+      "howConnected": "Dynamixel XL430 horn bolted coaxially into upper steering bracket yoke",
+      "whyConnected": "Drives independent Ackermann/swerve steering angle on the left wheel station."
+    },
+    {
+      "id": "rel_nova2_axle_left",
+      "fromComponentId": "subcomp_axle_flange_left",
+      "toComponentId": "comp_wheel_bracket_left",
+      "connectionType": "axial_mount",
+      "howConnected": "8mm rigid bore shaft coupler bolted onto lower wheel bracket hub",
+      "whyConnected": "Couples wheel hub drive torque without radial play."
+    },
+    {
+      "id": "rel_nova2_steering_right",
+      "fromComponentId": "comp_steering_servo_right",
+      "toComponentId": "comp_wheel_bracket_right",
+      "connectionType": "revolute_joint",
+      "howConnected": "Dynamixel XL430 horn bolted coaxially into upper steering bracket yoke",
+      "whyConnected": "Drives independent Ackermann/swerve steering angle on the right wheel station."
+    },
+    {
+      "id": "rel_nova2_axle_right",
+      "fromComponentId": "subcomp_axle_flange_right",
+      "toComponentId": "comp_wheel_bracket_right",
+      "connectionType": "axial_mount",
+      "howConnected": "8mm rigid bore shaft coupler bolted onto lower wheel bracket hub",
+      "whyConnected": "Couples wheel hub drive torque without radial play."
+    },
+    {
+      "id": "rel_nova2_zed2i_compute",
+      "fromComponentId": "comp_zed2i_stereo_camera",
+      "toComponentId": "comp_rover_compute_bay",
+      "connectionType": "assembly_mount",
+      "howConnected": "The stereo camera sits above the front of the compute bay.",
+      "whyConnected": "The mount keeps both camera lenses clear of the chassis."
+    },
+    {
+      "id": "rel_nova2_carrier_mount",
+      "fromComponentId": "comp_nova2_jetson_carrier",
+      "toComponentId": "comp_rover_compute_bay",
+      "connectionType": "assembly_mount",
+      "howConnected": "The carrier board sits in the open compute bay.",
+      "whyConnected": "The bay locates the carrier beneath the stereo camera."
+    },
+    {
+      "id": "rel_nova2_battery_mount",
+      "fromComponentId": "comp_nova2_battery_pack",
+      "toComponentId": "comp_rover_base_plate",
+      "connectionType": "assembly_mount",
+      "howConnected": "The battery holder sits under the base plate between the steering stations.",
+      "whyConnected": "The central position keeps the pack inside the wheel track."
+    },
+    {
+      "id": "rel_nova2_zed2i_usb",
+      "fromComponentId": "comp_zed2i_stereo_camera",
+      "toComponentId": "comp_nova2_jetson_carrier",
+      "connectionType": "electrical_bus",
+      "howConnected": "Stereo camera USB-C cable connects the two labeled ports.",
+      "whyConnected": "The USB-C connection carries stereo image and depth data to the carrier.",
+      "fromPortId": "port_usb",
+      "toPortId": "port_usb",
+      "routingWaypointsMeters": [
+        [0.021, 0.075, 0.012],
+        [0.023, 0.072, 0.034],
+        [0.026, 0.069, 0.051],
+        [0.026, 0.062, 0.062],
+        [0.026, 0.049, 0.063],
+        [0.026, 0.036, 0.058]
+      ],
+      "wireBundleDiameterMm": 2.8
+    },
+    {
+      "id": "rel_nova2_zed2i_usb_harness",
+      "fromComponentId": "comp_nova2_cable_zed_usb",
+      "toComponentId": "comp_zed2i_stereo_camera",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable plugs into the host at the start of the route.",
+      "whyConnected": "The host locates the cable at its first connection."
+    },
+    {
+      "id": "rel_nova2_servo_left",
+      "fromComponentId": "comp_nova2_jetson_carrier",
+      "toComponentId": "comp_steering_servo_left",
+      "connectionType": "electrical_bus",
+      "howConnected": "Left steering TTL cable connects the two labeled ports.",
+      "whyConnected": "The carrier issues position commands to the left steering actuator.",
+      "fromPortId": "port_servo_1",
+      "toPortId": "port_ttl_in",
+      "routingWaypointsMeters": [
+        [-0.015, 0.053, -0.002],
+        [-0.037, 0.061, 0.003],
+        [-0.058, 0.065, 0.008],
+        [-0.072, 0.069, 0.007]
+      ],
+      "wireBundleDiameterMm": 2.4
+    },
+    {
+      "id": "rel_nova2_servo_left_harness",
+      "fromComponentId": "comp_nova2_cable_servo_left",
+      "toComponentId": "comp_nova2_jetson_carrier",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable plugs into the host at the start of the route.",
+      "whyConnected": "The host locates the cable at its first connection."
+    },
+    {
+      "id": "rel_nova2_servo_right",
+      "fromComponentId": "comp_nova2_jetson_carrier",
+      "toComponentId": "comp_steering_servo_right",
+      "connectionType": "electrical_bus",
+      "howConnected": "Right steering TTL cable connects the two labeled ports.",
+      "whyConnected": "The carrier issues position commands to the right steering actuator.",
+      "fromPortId": "port_servo_2",
+      "toPortId": "port_ttl_in",
+      "routingWaypointsMeters": [
+        [0.019, 0.053, -0.002],
+        [0.034, 0.061, 0.003],
+        [0.057, 0.065, 0.008],
+        [0.072, 0.069, 0.007]
+      ],
+      "wireBundleDiameterMm": 2.4
+    },
+    {
+      "id": "rel_nova2_servo_right_harness",
+      "fromComponentId": "comp_nova2_cable_servo_right",
+      "toComponentId": "comp_nova2_jetson_carrier",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable plugs into the host at the start of the route.",
+      "whyConnected": "The host locates the cable at its first connection."
+    },
+    {
+      "id": "rel_nova2_battery_power",
+      "fromComponentId": "comp_nova2_battery_pack",
+      "toComponentId": "comp_nova2_jetson_carrier",
+      "connectionType": "power_bus",
+      "howConnected": "Battery to carrier power lead connects the two labeled ports.",
+      "whyConnected": "The battery supplies DC power to the carrier.",
+      "fromPortId": "port_tab_1",
+      "toPortId": "port_dc_in",
+      "routingWaypointsMeters": [
+        [-0.046, -0.039, 0.021],
+        [-0.064, -0.032, 0.028],
+        [-0.079, -0.014, 0.033],
+        [-0.08, 0.007, 0.036],
+        [-0.079, 0.028, 0.036],
+        [-0.076, 0.047, 0.037],
+        [-0.069, 0.062, 0.034],
+        [-0.059, 0.067, 0.028],
+        [-0.053, 0.06, 0.022],
+        [-0.05, 0.047, 0.0209]
+      ],
+      "wireBundleDiameterMm": 3.2
+    },
+    {
+      "id": "rel_nova2_battery_power_harness",
+      "fromComponentId": "comp_nova2_cable_battery_power",
+      "toComponentId": "comp_nova2_battery_pack",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable plugs into the host at the start of the route.",
+      "whyConnected": "The host locates the cable at its first connection."
+    }
+  ],
+  "assemblySteps": [
+    {
+      "id": "step_rover_1",
+      "order": 1,
+      "title": "Assemble Chassis Plate and Compute Bay",
+      "summary": "Mount the Jetson Nano compute housing, structural crossbar, and rear bus connector onto the chassis base plate.",
+      "componentIds": [
+        "comp_rover_base_plate",
+        "comp_rover_compute_bay",
+        "subcomp_rover_crossbar",
+        "subcomp_rover_bus_coupler"
+      ],
+      "relationshipIds": [
+        "rel_nova2_compute_chassis",
+        "rel_nova2_crossbar_chassis",
+        "rel_nova2_harness_connector_chassis"
+      ]
+    },
+    {
+      "id": "step_rover_2",
+      "order": 2,
+      "title": "Install Wheel Steering Brackets, Servos, and Axle Flanges",
+      "summary": "Attach left and right wheel brackets, mount the Dynamixel XL430 steering actuators, and bolt the 8mm axle flanges.",
+      "componentIds": [
+        "comp_wheel_bracket_left",
+        "comp_wheel_bracket_right",
+        "comp_steering_servo_left",
+        "comp_steering_servo_right",
+        "subcomp_axle_flange_left",
+        "subcomp_axle_flange_right"
+      ],
+      "relationshipIds": [
+        "rel_nova2_steering_left",
+        "rel_nova2_axle_left",
+        "rel_nova2_steering_right",
+        "rel_nova2_axle_right"
+      ]
+    },
+    {
+      "id": "step_rover_3",
+      "order": 3,
+      "title": "Mount ZED 2i Stereo Depth Camera",
+      "summary": "Secure the Stereolabs ZED 2i stereo depth camera forward of the compute bay.",
+      "componentIds": ["comp_zed2i_stereo_camera"],
+      "relationshipIds": ["rel_nova2_zed2i_compute"]
+    },
+    {
+      "id": "step_rover_4",
+      "order": 4,
+      "title": "Install Jetson Carrier, Battery Pack, and Wiring Harnesses",
+      "summary": "Seat the carrier in the compute bay and secure the battery below the base plate. Connect the camera, both steering servos, and the battery lead.",
+      "componentIds": [
+        "comp_nova2_jetson_carrier",
+        "comp_nova2_battery_pack",
+        "comp_nova2_cable_zed_usb",
+        "comp_nova2_cable_servo_left",
+        "comp_nova2_cable_servo_right",
+        "comp_nova2_cable_battery_power"
+      ],
+      "relationshipIds": [
+        "rel_nova2_carrier_mount",
+        "rel_nova2_battery_mount",
+        "rel_nova2_zed2i_usb",
+        "rel_nova2_zed2i_usb_harness",
+        "rel_nova2_servo_left",
+        "rel_nova2_servo_left_harness",
+        "rel_nova2_servo_right",
+        "rel_nova2_servo_right_harness",
+        "rel_nova2_battery_power",
+        "rel_nova2_battery_power_harness"
+      ]
+    }
+  ]
+}

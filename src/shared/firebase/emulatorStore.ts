@@ -140,8 +140,7 @@ export class FirebaseEmulatorRepository {
   ): Promise<void> {
     if (
       !canClassifyAsVerified(assembly.validation, assembly.verificationStatus) ||
-      (assembly.verificationStatus === 'sourced_verified' &&
-        !hasVerifiedUpstreamProvenance(assembly.nodes))
+      !hasVerifiedUpstreamProvenance(assembly.nodes, assembly.verificationStatus)
     ) {
       throw new Error(
         `Refusing to persist unverified or invalid assembly "${assembly.projectId}": ${assembly.validation.failures.join('; ')}`,
