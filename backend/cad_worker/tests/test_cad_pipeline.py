@@ -6,6 +6,7 @@ import re
 import struct
 import sys
 import zipfile
+from collections import Counter
 from io import BytesIO
 from pathlib import Path
 
@@ -26,9 +27,9 @@ from material_skins import build_skin_texture_set, resolve_material_skin, srgb_h
 
 
 EXPECTED_NODE_COUNTS = {
-    "quadcopter_drone_v1": 30,
-    "robotic_arm_3dof_v1": 24,
-    "open_source_rover_v1": 15,
+    "quadcopter_drone_v1": 42,
+    "robotic_arm_3dof_v1": 31,
+    "open_source_rover_v1": 21,
 }
 COTS_REGISTRY = (
     Path(__file__).resolve().parents[3] / "src/shared/domain/catalog/cots/index.json"
@@ -230,7 +231,8 @@ def assert_glb_skins(glb_path: Path, nodes_spec: list[dict]) -> None:
 
             material = gltf.materials[primitive.material]
             pbr = material.pbrMetallicRoughness
-            assert pbr.baseColorFactor == pytest.approx(srgb_hex_to_linear_rgba(spec["colorHex"]))
+            if spec["origin"] == "open_step_catalog":
+                assert pbr.baseColorFactor == pytest.approx(srgb_hex_to_linear_rgba(spec["colorHex"]))
             assert pbr.metallicFactor == skin.metallic
             assert pbr.roughnessFactor == skin.roughness
             assert material.normalTexture.scale == skin.normal_scale
@@ -285,17 +287,20 @@ def assert_usdz_skins(usdz_path: Path, nodes_spec: list[dict]) -> None:
                 png.verify()
         usda = archive.read(names[0]).decode()
 
-    assert usda.count('info:id = "UsdPreviewSurface"') == len(leaves)
-    assert usda.count('info:id = "UsdPrimvarReader_float2"') == len(leaves)
-    assert usda.count('info:id = "UsdUVTexture"') == 3 * len(leaves)
-    assert usda.count('prepend apiSchemas = ["MaterialBindingAPI"]') == len(leaves)
+    material_count = usda.count('def Material "mat_')
+    assert material_count >= len(leaves)
+    assert usda.count('info:id = "UsdPreviewSurface"') == material_count
+    assert usda.count('info:id = "UsdPrimvarReader_float2"') == material_count
+    assert usda.count('info:id = "UsdUVTexture"') == 3 * material_count
+    assert usda.count('prepend apiSchemas = ["MaterialBindingAPI"]') == len(leaves) + usda.count("def GeomSubset")
+    assert usda.count("rel material:binding = ") == material_count
     assert usda.count("texCoord2f[] primvars:st =") == len(leaves)
-    assert usda.count("inputs:diffuseColor.connect") == len(leaves)
-    assert usda.count("inputs:normal.connect") == len(leaves)
-    assert usda.count("inputs:roughness.connect") == len(leaves)
+    assert usda.count("inputs:diffuseColor.connect") == material_count
+    assert usda.count("inputs:normal.connect") == material_count
+    assert usda.count("inputs:roughness.connect") == material_count
     for node in leaves:
         cid = node["id"]
-        assert f"rel material:binding = </World/Materials/mat_{cid}>" in usda
+        assert re.search(rf"rel material:binding = </World/Materials/mat_{cid}(?:_\d+)?>", usda)
     assert set(re.findall(r"@\./(textures/[^@]+)@", usda)) == set(names[1:])
 
 
@@ -308,7 +313,7 @@ def test_all_robotics_categories_pass_opencascade_validation(tmp_path: Path) -> 
         result = run_cad_pipeline(spec, output_dir=out_dir, cache_dir=cache_dir)
 
         assert len(result["nodes"]) == EXPECTED_NODE_COUNTS[archetype_id]
-        assert result["verificationStatus"] == "sourced_verified"
+        assert result["verificationStatus"] == "composed_validated"
         validation = result["validation"]
         assert validation["valid"] is True, f"{archetype_id} failed: {validation['failures']}"
         assert validation["brepValid"] is True
@@ -320,24 +325,40 @@ def test_all_robotics_categories_pass_opencascade_validation(tmp_path: Path) -> 
         expected_leaf_ids = {
             n["id"] for n in spec["nodes"] if n["level"] in ("component", "subcomponent")
         }
-        glb_ids, _ = parse_glb_diagnostics(out_dir / "model.glb")
+        glb_ids, glb_bounds = parse_glb_diagnostics(out_dir / "model.glb")
         usda = parse_usdz_prim_paths(out_dir / "model.usdz")
-        assert set(glb_ids) == expected_leaf_ids
-        for cid in expected_leaf_ids:
-            assert f'custom string componentId = "{cid}"' in usda
+        step_text = (out_dir / "model.step").read_text()
+        step_ids = re.findall(r"PRODUCT\('((?:sub)?comp_[a-z0-9_]+)'", step_text)
+        assert Counter(cid for cid in step_ids if not re.search(r"_wire_\d+$", cid)) == Counter(expected_leaf_ids)
+        assert Counter(glb_ids) == Counter(expected_leaf_ids)
+        assert Counter(re.findall(r'def Xform "((?:sub)?comp_[a-z0-9_]+)"', usda)) == Counter(expected_leaf_ids)
 
         assert_glb_skins(out_dir / "model.glb", spec["nodes"])
         assert_usdz_skins(out_dir / "model.usdz", spec["nodes"])
 
+        nodes_by_id = {node["id"]: node for node in spec["nodes"]}
         for node in result["nodes"]:
+            catalog_node = nodes_by_id[node["id"]]
             prov = node["provenance"]
-            assert prov["origin"] == "open_step_catalog"
-            assert prov["verificationStatus"] == "sourced_verified"
+            assert prov["origin"] == catalog_node["origin"]
+            expected_status, allowed_prefix = {
+                "open_step_catalog": ("sourced_verified", "https://"),
+                "cots_library_step": ("sourced_verified", "https://"),
+                "kicad_pcb_step": ("composed_validated", "kicad://"),
+                "procedural_harness": ("composed_validated", "harness://"),
+            }[prov["origin"]]
+            assert prov["verificationStatus"] == expected_status
             assert prov["spdxLicense"]
-            assert prov["sourceUrl"].startswith("https://")
+            assert prov["sourceUrl"].startswith(allowed_prefix)
             assert len(prov["stepSha256"]) == 64
-            if node["level"] in ("component", "subcomponent"):
+            if node["id"] in expected_leaf_ids:
                 assert node["specifications"]["brepFaces"] >= 4
+                assert prov["stepSha256"] == catalog_node["expectedStepSha256"]
+            if prov["origin"] in {"kicad_pcb_step", "cots_library_step", "procedural_harness"}:
+                assert node["restPositionMeters"] == pytest.approx(catalog_node["restPositionMeters"], abs=1e-8)
+                assert node["dimensionsMm"] == pytest.approx(catalog_node["dimensionsMm"], abs=1e-5)
+                lower, upper = np.asarray(glb_bounds[node["id"]]) * 1000
+                assert upper - lower == pytest.approx(catalog_node["dimensionsMm"], abs=0.2)
 
         assert (out_dir / "model.step").stat().st_size > 0
         assert (out_dir / "model.glb").stat().st_size > 0
@@ -405,6 +426,7 @@ def test_step_ingestion_enforces_origin_uri_and_status(
 
 def test_mixed_geometry_uses_per_node_status_and_preserves_ports(tmp_path: Path) -> None:
     spec = copy.deepcopy(CATALOG_SPECS["open_source_rover_v1"])
+    spec["nodes"] = [node for node in spec["nodes"] if node["origin"] == "open_step_catalog"]
     by_id = {node["id"]: node for node in spec["nodes"]}
     ports = [
         {
@@ -428,14 +450,12 @@ def test_mixed_geometry_uses_per_node_status_and_preserves_ports(tmp_path: Path)
     assert result["validation"]["valid"] is True
     assert result["verificationStatus"] == "composed_validated"
     output_nodes = {node["id"]: node for node in result["nodes"]}
-    assert output_nodes["comp_zed2i_stereo_camera"]["ports"] == ports
     for node_id, output_node in output_nodes.items():
         expected = "composed_validated" if node_id in {
             "comp_zed2i_stereo_camera", "sub_perception_avionics"
         } else "sourced_verified"
         assert output_node["provenance"]["verificationStatus"] == expected
-        if node_id != "comp_zed2i_stereo_camera":
-            assert "ports" not in output_node
+        assert output_node.get("ports") == by_id[node_id].get("ports")
 
 
 @pytest.fixture
@@ -453,7 +473,7 @@ def harness_spec(cots_parts: dict):
     def build(bus: str, collision: bool = False) -> dict:
         if bus == "usb_data":
             start = board("kicad_quad_flight_controller", "comp_from", [-0.055, 0, 0])
-            end = board("kicad_so100_bus_servo_adapter", "comp_to", [0.055, 0, 0])
+            end = board("kicad_quad_flight_controller", "comp_to", [0.055, 0, 0])
             from_port = to_port = "port_usb"
             waypoint = [0, 0.002, 0.05]
         elif bus == "dc_power":
@@ -462,10 +482,10 @@ def harness_spec(cots_parts: dict):
             from_port, to_port = "port_dc_in", "port_tab_1"
             waypoint = [0.005, 0.030, 0.011]
         else:
-            start = board("kicad_so100_bus_servo_adapter", "comp_from", [-0.050, 0, 0])
-            end = board("kicad_so100_bus_servo_adapter", "comp_to", [0.060, 0, 0])
+            start = board("kicad_nova2_jetson_carrier", "comp_from", [-0.060, 0, 0])
+            end = board("kicad_nova2_jetson_carrier", "comp_to", [0.060, 0, 0])
             from_port = to_port = "port_servo_1"
-            waypoint = [0, 0.038, -0.0090875]
+            waypoint = [0, 0.038, -0.0190875]
         relationship = {
             "id": "rel_cable", "fromComponentId": start["id"], "toComponentId": end["id"],
             "fromPortId": from_port, "toPortId": to_port,
@@ -518,7 +538,7 @@ def test_routed_harness_exports_valid_colored_solids(harness_spec, bus, colors, 
     assert digest == node["provenance"]["stepSha256"]
     lower, upper = np.asarray(shape_bounds_mm(step))
     assert lower + upper == pytest.approx([0, 0, 0], abs=0.002)
-    assert upper - lower == pytest.approx(node["dimensionsMm"], abs=0.002)
+    assert (upper - lower)[[0, 2, 1]] == pytest.approx(node["dimensionsMm"], abs=0.002)
     solids = TopExp_Explorer(step, TopAbs_SOLID)
     solid_count = 0
     while solids.More():

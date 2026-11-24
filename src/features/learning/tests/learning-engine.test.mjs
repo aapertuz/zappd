@@ -6,6 +6,7 @@ import { describe, it } from 'node:test';
 
 import {
   CATALOG_ARCHETYPES,
+  GEOMETRY_ORIGIN_POLICY,
   QUADCOPTER_ARCHETYPE,
   buildLearningPromptParts,
   parseLearningCloudRequest,
@@ -28,12 +29,16 @@ import { runLearningRequest } from '../services/learningEngine.ts';
 const verifiedAssembly = (archetype, projectId) => ({
   ...archetype,
   projectId,
-  verificationStatus: 'sourced_verified',
+  verificationStatus: archetype.nodes.some(
+    ({ origin }) => GEOMETRY_ORIGIN_POLICY[origin].targetVerifiedStatus === 'composed_validated',
+  )
+    ? 'composed_validated'
+    : 'sourced_verified',
   nodes: archetype.nodes.map((blueprint) => ({
     ...blueprint,
     provenance: {
       origin: blueprint.origin,
-      verificationStatus: 'sourced_verified',
+      verificationStatus: GEOMETRY_ORIGIN_POLICY[blueprint.origin].targetVerifiedStatus,
       sourceUrl: blueprint.sourceUrl,
       sourceName: blueprint.sourceName,
       spdxLicense: blueprint.spdxLicense,
@@ -163,6 +168,7 @@ describe('component learning context', () => {
       [
         { id: 'rel_motor_rr_arm', direction: 'outgoing', counterpartId: 'comp_arm_rr' },
         { id: 'rel_prop_rr_motor', direction: 'incoming', counterpartId: 'subcomp_prop_rr' },
+        { id: 'rel_quad_motor_rr', direction: 'incoming', counterpartId: 'comp_quad_4in1_esc' },
       ],
     );
     assert.ok(context.assemblySteps.some(({ id }) => id === 'step_quad_3'));
@@ -348,6 +354,7 @@ describe('component learning context', () => {
       title: 'Hand Crank Lift',
       archetypeId: 'hand_crank_lift_v1',
       projectId: 'proj_learning_custom',
+      verificationStatus: 'sourced_verified',
       nodes: [
         { ...root, name: 'Hand Crank Lift', specifications: {} },
         {

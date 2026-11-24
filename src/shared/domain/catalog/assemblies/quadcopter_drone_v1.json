@@ -99,6 +99,26 @@
       }
     },
     {
+      "id": "sub_avionics_power",
+      "parentId": "proj_quadcopter",
+      "name": "Avionics and Power Distribution Subsystem",
+      "level": "subsystem",
+      "depth": 1,
+      "category": "subsystem",
+      "colorHex": "#404752",
+      "dimensionsMm": [130, 90, 130],
+      "restPositionMeters": [0, 0, 0],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0,
+      "materialHint": "assembly_group",
+      "origin": "open_step_catalog",
+      "spdxLicense": "NOASSERTION",
+      "sourceUrl": "https://github.com/AnupAdhikari64/Drone-CAD/blob/main/Drone-Assembly.FCStd",
+      "sourceName": "AnupAdhikari64 Drone-CAD FreeCAD Master Assembly",
+      "stepFixtureName": null,
+      "specifications": {}
+    },
+    {
       "id": "comp_base_plate_lower",
       "parentId": "sub_chassis",
       "name": "Lower Octagonal Chassis Plate",
@@ -466,7 +486,17 @@
         "spinDirection": "CW",
         "brepFaces": 44
       },
-      "expectedStepSha256": "2bd49bfe9aec6b1d4650e3c5c9ea6b4316b94b0946e6b5dbc56aec87870de761"
+      "expectedStepSha256": "2bd49bfe9aec6b1d4650e3c5c9ea6b4316b94b0946e6b5dbc56aec87870de761",
+      "ports": [
+        {
+          "portId": "port_phase_in",
+          "label": "Motor phase input",
+          "connectorType": "Three motor leads",
+          "busKind": "brushless_phase",
+          "localPositionMeters": [0.01326, -0.007, 0.01326],
+          "exitDirection": [0.70710678, 0, 0.70710678]
+        }
+      ]
     },
     {
       "id": "comp_motor_fr",
@@ -492,7 +522,17 @@
         "spinDirection": "CCW",
         "brepFaces": 44
       },
-      "expectedStepSha256": "3fb613b4d7e331b877d56f72c05d5f68f92998ab10b545d944a312ca9c018029"
+      "expectedStepSha256": "3fb613b4d7e331b877d56f72c05d5f68f92998ab10b545d944a312ca9c018029",
+      "ports": [
+        {
+          "portId": "port_phase_in",
+          "label": "Motor phase input",
+          "connectorType": "Three motor leads",
+          "busKind": "brushless_phase",
+          "localPositionMeters": [-0.01326, -0.007, 0.01326],
+          "exitDirection": [-0.70710678, 0, 0.70710678]
+        }
+      ]
     },
     {
       "id": "comp_motor_rl",
@@ -518,7 +558,17 @@
         "spinDirection": "CCW",
         "brepFaces": 44
       },
-      "expectedStepSha256": "79c5afa4c72a42836429f7e09704a1f247151e49cc4fc0cf889dc29dece590eb"
+      "expectedStepSha256": "79c5afa4c72a42836429f7e09704a1f247151e49cc4fc0cf889dc29dece590eb",
+      "ports": [
+        {
+          "portId": "port_phase_in",
+          "label": "Motor phase input",
+          "connectorType": "Three motor leads",
+          "busKind": "brushless_phase",
+          "localPositionMeters": [0.01326, -0.007, -0.01326],
+          "exitDirection": [0.70710678, 0, -0.70710678]
+        }
+      ]
     },
     {
       "id": "comp_motor_rr",
@@ -544,7 +594,17 @@
         "spinDirection": "CW",
         "brepFaces": 44
       },
-      "expectedStepSha256": "4be84cb94eb4fba84fb14992bb3faa0875b822f882eb8025ec0474cbadd8f175"
+      "expectedStepSha256": "4be84cb94eb4fba84fb14992bb3faa0875b822f882eb8025ec0474cbadd8f175",
+      "ports": [
+        {
+          "portId": "port_phase_in",
+          "label": "Motor phase input",
+          "connectorType": "Three motor leads",
+          "busKind": "brushless_phase",
+          "localPositionMeters": [-0.01326, -0.007, -0.01326],
+          "exitDirection": [-0.70710678, 0, -0.70710678]
+        }
+      ]
     },
     {
       "id": "subcomp_prop_fl",
@@ -745,6 +805,420 @@
         "brepFaces": 4
       },
       "expectedStepSha256": "43a58f6ea5139c5c174b8ee092cf476f613daf7f246293189cc048a86a0c2ef3"
+    },
+    {
+      "id": "comp_quad_4in1_esc",
+      "parentId": "sub_avionics_power",
+      "name": "Quadcopter 4-in-1 brushless ESC",
+      "level": "component",
+      "depth": 2,
+      "category": "electronics",
+      "restPositionMeters": [0.0, 0.019, 0.0],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.026,
+      "origin": "kicad_pcb_step",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "kicad://zappd/kicad_quad_4in1_esc",
+      "sourceName": "Zappd kicad_quad_4in1_esc.kicad_pcb with KiCad kicad-packages3D models",
+      "stepFixtureName": "kicad_quad_4in1_esc.step",
+      "expectedStepSha256": "2d1f810fe8a8b4e1c6b0453cf16779df6c6975889cfe47873bb5efc6fc1da0e1",
+      "dimensionsMm": [36.0, 20.5, 36.0],
+      "materialHint": "fr4_pcb",
+      "colorHex": "#247052",
+      "specifications": {
+        "pcbWidthMm": 36,
+        "pcbLengthMm": 36,
+        "pcbThicknessMm": 1.6,
+        "brepFaces": 1538,
+        "xcafColors": 10,
+        "referenceLayout": true
+      },
+      "ports": [
+        {
+          "portId": "port_dc_in",
+          "label": "Battery input",
+          "connectorType": "XT60",
+          "busKind": "dc_power",
+          "localPositionMeters": [0.0, 0.01025, 0.011],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_esc",
+          "label": "Flight controller / ESC link",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "pwm_signal",
+          "localPositionMeters": [0.01303, -0.00155, 0.006],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_motor_1",
+          "label": "Motor 1 phase pads",
+          "connectorType": "3 solder pads",
+          "busKind": "brushless_phase",
+          "localPositionMeters": [-0.0105, -0.005795, -0.015],
+          "exitDirection": [0, 1, 0]
+        },
+        {
+          "portId": "port_motor_2",
+          "label": "Motor 2 phase pads",
+          "connectorType": "3 solder pads",
+          "busKind": "brushless_phase",
+          "localPositionMeters": [0.0105, -0.005795, -0.015],
+          "exitDirection": [0, 1, 0]
+        },
+        {
+          "portId": "port_motor_3",
+          "label": "Motor 3 phase pads",
+          "connectorType": "3 solder pads",
+          "busKind": "brushless_phase",
+          "localPositionMeters": [0.0105, -0.005795, 0.015],
+          "exitDirection": [0, 1, 0]
+        },
+        {
+          "portId": "port_motor_4",
+          "label": "Motor 4 phase pads",
+          "connectorType": "3 solder pads",
+          "busKind": "brushless_phase",
+          "localPositionMeters": [-0.0105, -0.005795, 0.015],
+          "exitDirection": [0, 1, 0]
+        }
+      ]
+    },
+    {
+      "id": "comp_quad_flight_controller",
+      "parentId": "sub_avionics_power",
+      "name": "Quadcopter flight controller",
+      "level": "component",
+      "depth": 2,
+      "category": "electronics",
+      "restPositionMeters": [0.0, 0.046, 0.0],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.044,
+      "origin": "kicad_pcb_step",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "kicad://zappd/kicad_quad_flight_controller",
+      "sourceName": "Zappd kicad_quad_flight_controller.kicad_pcb with KiCad kicad-packages3D models",
+      "stepFixtureName": "kicad_quad_flight_controller.step",
+      "expectedStepSha256": "0ff4be30d9f595e08107563f24fc1ae2b875371d90602c3d7b367fc42ae4bc7c",
+      "dimensionsMm": [36.0, 5.845, 36.175],
+      "materialHint": "fr4_pcb",
+      "colorHex": "#247052",
+      "specifications": {
+        "pcbWidthMm": 36,
+        "pcbLengthMm": 36,
+        "pcbThicknessMm": 1.6,
+        "brepFaces": 3121,
+        "xcafColors": 10,
+        "referenceLayout": true
+      },
+      "ports": [
+        {
+          "portId": "port_usb",
+          "label": "USB data",
+          "connectorType": "USB-C",
+          "busKind": "usb_data",
+          "localPositionMeters": [0.0, 0.0003725, 0.0180875],
+          "exitDirection": [0.0, 0.0, 1.0]
+        },
+        {
+          "portId": "port_esc",
+          "label": "Flight controller / ESC link",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "pwm_signal",
+          "localPositionMeters": [-0.008, 0.0029225, -0.0110875],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_rx",
+          "label": "Receiver UART",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "i2c_spi_uart",
+          "localPositionMeters": [0.008, 0.0029225, -0.0110875],
+          "exitDirection": [0.0, 1.0, -0.0]
+        }
+      ]
+    },
+    {
+      "id": "comp_quad_elrs_receiver",
+      "parentId": "sub_avionics_power",
+      "name": "ELRS 2.4 GHz receiver",
+      "level": "component",
+      "depth": 2,
+      "category": "electronics",
+      "restPositionMeters": [0.0, 0.0116725, 0.0315],
+      "explodeDirection": [0, 0, 1],
+      "explodeDistanceMeters": 0.03,
+      "origin": "kicad_pcb_step",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "kicad://zappd/kicad_quad_elrs_receiver",
+      "sourceName": "Zappd kicad_quad_elrs_receiver.kicad_pcb with KiCad kicad-packages3D models",
+      "stepFixtureName": "kicad_quad_elrs_receiver.step",
+      "expectedStepSha256": "5c86733024e2f8efd501a284b963c20c58d6e299f8ce12d7f904292dc63f38af",
+      "dimensionsMm": [18.0, 5.845, 14.0],
+      "materialHint": "fr4_pcb",
+      "colorHex": "#247052",
+      "specifications": {
+        "pcbWidthMm": 18,
+        "pcbLengthMm": 14,
+        "pcbThicknessMm": 1.6,
+        "brepFaces": 688,
+        "xcafColors": 7,
+        "referenceLayout": true
+      },
+      "ports": [
+        {
+          "portId": "port_rx",
+          "label": "Receiver UART",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "i2c_spi_uart",
+          "localPositionMeters": [0.0035, 0.0029225, -0.0],
+          "exitDirection": [0.0, 1.0, -0.0]
+        }
+      ]
+    },
+    {
+      "id": "comp_quad_battery_pack",
+      "parentId": "sub_avionics_power",
+      "name": "3S 18650 battery holder with cells",
+      "level": "component",
+      "depth": 2,
+      "category": "power",
+      "restPositionMeters": [0.0, -0.01362, 0.0],
+      "explodeDirection": [0, -1, 0],
+      "explodeDistanceMeters": 0.04,
+      "origin": "cots_library_step",
+      "spdxLicense": "NOASSERTION",
+      "sourceUrl": "https://raw.githubusercontent.com/robotjaol/custom-components/main/BATTERY_HOLDER_18650_X3/3%20Battery%20Holder%20With%20Batteries.step",
+      "sourceName": "robotjaol/custom-components 3 Battery Holder With Batteries.step",
+      "stepFixtureName": "cots_battery_3s_18650.step",
+      "expectedStepSha256": "2447b23136e63ef600e444d6d1cda79b3e6b0405f8e6f5667f069647d5d4b611",
+      "dimensionsMm": [77.98, 24.74, 59.63],
+      "materialHint": "li_ion_battery",
+      "colorHex": "#3f3f46",
+      "specifications": {
+        "seriesCells": 3,
+        "cellFormat": "18650",
+        "brepFaces": 498,
+        "xcafColors": 5
+      },
+      "ports": [
+        {
+          "portId": "port_tab_1",
+          "label": "Battery holder contact 1",
+          "connectorType": "Solder tab",
+          "busKind": "dc_power",
+          "localPositionMeters": [-0.03624, -0.01237, 0.019255],
+          "exitDirection": [0, -1, 0]
+        },
+        {
+          "portId": "port_tab_2",
+          "label": "Battery holder contact 2",
+          "connectorType": "Solder tab",
+          "busKind": "dc_power",
+          "localPositionMeters": [-0.03624, -0.01237, -4.5e-5],
+          "exitDirection": [0, -1, 0]
+        },
+        {
+          "portId": "port_tab_3",
+          "label": "Battery holder contact 3",
+          "connectorType": "Solder tab",
+          "busKind": "dc_power",
+          "localPositionMeters": [-0.03624, -0.01237, -0.019345],
+          "exitDirection": [0, -1, 0]
+        },
+        {
+          "portId": "port_tab_4",
+          "label": "Battery holder contact 4",
+          "connectorType": "Solder tab",
+          "busKind": "dc_power",
+          "localPositionMeters": [0.03624, -0.01237, 0.019345],
+          "exitDirection": [0, -1, 0]
+        },
+        {
+          "portId": "port_tab_5",
+          "label": "Battery holder contact 5",
+          "connectorType": "Solder tab",
+          "busKind": "dc_power",
+          "localPositionMeters": [0.03624, -0.01237, 4.5e-5],
+          "exitDirection": [0, -1, 0]
+        },
+        {
+          "portId": "port_tab_6",
+          "label": "Battery holder contact 6",
+          "connectorType": "Solder tab",
+          "busKind": "dc_power",
+          "localPositionMeters": [0.03624, -0.01237, -0.019255],
+          "exitDirection": [0, -1, 0]
+        }
+      ]
+    },
+    {
+      "id": "comp_quad_cable_battery_esc",
+      "parentId": "sub_avionics_power",
+      "name": "Battery to ESC power lead",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [60.92140873099999, 78.61816917434504, 15.902989248450725],
+      "restPositionMeters": [-0.02893133009894588, 0.0011650325271470407, 0.016999686342471818],
+      "explodeDirection": [-1, 0, 0],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/quadcopter_drone_v1/rel_quad_battery_esc",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_quad_cable_battery_esc.step",
+      "specifications": {
+        "relationshipId": "rel_quad_battery_esc",
+        "brepFaces": 44
+      },
+      "expectedStepSha256": "64cca0a5eab53a654f34478dc72fd232a2c44611a20146096f70b1ea3a47749a"
+    },
+    {
+      "id": "comp_quad_cable_fc_esc",
+      "parentId": "sub_avionics_power",
+      "name": "Flight controller to ESC signal cable",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [43.00238815787437, 45.95030314478859, 39.073965388604414],
+      "restPositionMeters": [0.012691849681116925, 0.0412251514723942, -0.01187632829950354],
+      "explodeDirection": [1, 0, 0],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/quadcopter_drone_v1/rel_quad_fc_esc",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_quad_cable_fc_esc.step",
+      "specifications": {
+        "relationshipId": "rel_quad_fc_esc",
+        "brepFaces": 60
+      },
+      "expectedStepSha256": "10f4f574e34e931e66512d6ba38f95b4f378188ef7889af933d653f78fc87784"
+    },
+    {
+      "id": "comp_quad_cable_rx_fc",
+      "parentId": "sub_avionics_power",
+      "name": "Receiver UART cable",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [28.659024575850633, 44.77896955028682, 46.337383796634484],
+      "restPositionMeters": [0.016872148136512412, 0.0377844846751434, 0.010768779714407302],
+      "explodeDirection": [0, 0, 1],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/quadcopter_drone_v1/rel_quad_rx_fc",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_quad_cable_rx_fc.step",
+      "specifications": {
+        "relationshipId": "rel_quad_rx_fc",
+        "brepFaces": 54
+      },
+      "expectedStepSha256": "75a93cb7442364244097139d2234313b57c3667463078b22c86c21641f25683e"
+    },
+    {
+      "id": "comp_quad_cable_motor_fl",
+      "parentId": "sub_avionics_power",
+      "name": "Front left motor phase cable",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [63.93076695132918, 14.217146342879317, 60.600232585315155],
+      "restPositionMeters": [-0.041566894616577484, 0.0195891321440457, -0.043232161799584515],
+      "explodeDirection": [-1, 0, -1],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/quadcopter_drone_v1/rel_quad_motor_fl",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_quad_cable_motor_fl.step",
+      "specifications": {
+        "relationshipId": "rel_quad_motor_fl",
+        "brepFaces": 42
+      },
+      "expectedStepSha256": "f3c1788e1b43084c24d12edec5317f939c13c95d8f2bed08003a7c6e82273f21"
+    },
+    {
+      "id": "comp_quad_cable_motor_fr",
+      "parentId": "sub_avionics_power",
+      "name": "Front right motor phase cable",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [63.9307669513292, 14.217146342879309, 60.60023258531517],
+      "restPositionMeters": [0.0415668946165775, 0.0195891321440457, -0.04323216179958452],
+      "explodeDirection": [1, 0, -1],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/quadcopter_drone_v1/rel_quad_motor_fr",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_quad_cable_motor_fr.step",
+      "specifications": {
+        "relationshipId": "rel_quad_motor_fr",
+        "brepFaces": 42
+      },
+      "expectedStepSha256": "86d242835ab414a092c1dd3aa01ea0ceebba98885e3d092c29e0ab3881b4cec0"
+    },
+    {
+      "id": "comp_quad_cable_motor_rr",
+      "parentId": "sub_avionics_power",
+      "name": "Rear right motor phase cable",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [63.930766951329176, 14.217146342879312, 60.600232585315155],
+      "restPositionMeters": [0.04156689461657749, 0.019589132144045708, 0.043232161799584515],
+      "explodeDirection": [1, 0, 1],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/quadcopter_drone_v1/rel_quad_motor_rr",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_quad_cable_motor_rr.step",
+      "specifications": {
+        "relationshipId": "rel_quad_motor_rr",
+        "brepFaces": 42
+      },
+      "expectedStepSha256": "edec0805a3eb69f6c7f780d01d70c58eab7d5df00d8982302e46ff914f0177a7"
+    },
+    {
+      "id": "comp_quad_cable_motor_rl",
+      "parentId": "sub_avionics_power",
+      "name": "Rear left motor phase cable",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [63.93076695132919, 14.217146342879309, 60.600232585315155],
+      "restPositionMeters": [-0.0415668946165775, 0.019589132144045705, 0.043232161799584515],
+      "explodeDirection": [-1, 0, 1],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/quadcopter_drone_v1/rel_quad_motor_rl",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_quad_cable_motor_rl.step",
+      "specifications": {
+        "relationshipId": "rel_quad_motor_rl",
+        "brepFaces": 42
+      },
+      "expectedStepSha256": "460759b048bb9e4a5a70ca86d689f8581174dd363184095002c0b5bc97e30c82"
     }
   ],
   "relationships": [
@@ -947,6 +1421,215 @@
       "connectionType": "axial_mount",
       "howConnected": "Threaded conical lock nut cover threaded onto the motor shaft nose",
       "whyConnected": "Retains the dual-blade propeller hub against axial lift forces."
+    },
+    {
+      "id": "rel_quad_mount_esc",
+      "fromComponentId": "comp_quad_4in1_esc",
+      "toComponentId": "comp_base_plate_upper",
+      "connectionType": "assembly_mount",
+      "howConnected": "The ESC sits on the central upper deck.",
+      "whyConnected": "The upper deck supports the motor power distribution board."
+    },
+    {
+      "id": "rel_quad_mount_fc",
+      "fromComponentId": "comp_quad_flight_controller",
+      "toComponentId": "comp_quad_4in1_esc",
+      "connectionType": "assembly_mount",
+      "howConnected": "The flight controller is stacked above the ESC on the mounting pitch.",
+      "whyConnected": "The flight controller senses aircraft motion and commands the four ESC channels."
+    },
+    {
+      "id": "rel_quad_mount_receiver",
+      "fromComponentId": "comp_quad_elrs_receiver",
+      "toComponentId": "comp_base_plate_upper",
+      "connectionType": "assembly_mount",
+      "howConnected": "The receiver sits on the rear deck behind the flight stack.",
+      "whyConnected": "The receiver passes pilot commands to the flight controller."
+    },
+    {
+      "id": "rel_quad_mount_battery",
+      "fromComponentId": "comp_quad_battery_pack",
+      "toComponentId": "comp_base_plate_lower",
+      "connectionType": "assembly_mount",
+      "howConnected": "The battery is secured under the chassis.",
+      "whyConnected": "The low, central position balances the pack between the four arms."
+    },
+    {
+      "id": "rel_quad_battery_esc",
+      "fromComponentId": "comp_quad_battery_pack",
+      "toComponentId": "comp_quad_4in1_esc",
+      "connectionType": "power_bus",
+      "howConnected": "Battery to ESC power lead connects the two labeled ports.",
+      "whyConnected": "The battery supplies DC power to the ESC.",
+      "fromPortId": "port_tab_1",
+      "toPortId": "port_dc_in",
+      "routingWaypointsMeters": [
+        [-0.045, -0.037, 0.019],
+        [-0.056, -0.029, 0.021],
+        [-0.058, -0.01, 0.022],
+        [-0.057, 0.012, 0.023],
+        [-0.046, 0.027, 0.022],
+        [-0.028, 0.035, 0.018],
+        [-0.012, 0.038, 0.012]
+      ],
+      "wireBundleDiameterMm": 3.2
+    },
+    {
+      "id": "rel_quad_battery_esc_harness",
+      "fromComponentId": "comp_quad_cable_battery_esc",
+      "toComponentId": "comp_quad_battery_pack",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable plugs into the host at the start of the route.",
+      "whyConnected": "The host locates the cable at its first connection."
+    },
+    {
+      "id": "rel_quad_fc_esc",
+      "fromComponentId": "comp_quad_flight_controller",
+      "toComponentId": "comp_quad_4in1_esc",
+      "connectionType": "electrical_bus",
+      "howConnected": "Flight controller to ESC signal cable connects the two labeled ports.",
+      "whyConnected": "The flight controller sends motor commands to the ESC.",
+      "fromPortId": "port_esc",
+      "toPortId": "port_esc",
+      "routingWaypointsMeters": [
+        [-0.008, 0.062, -0.018],
+        [-0.001, 0.062, -0.028],
+        [0.019, 0.056, -0.029],
+        [0.033, 0.044, -0.016],
+        [0.024, 0.034, 0.0],
+        [0.017, 0.029, 0.005]
+      ],
+      "wireBundleDiameterMm": 2.4
+    },
+    {
+      "id": "rel_quad_fc_esc_harness",
+      "fromComponentId": "comp_quad_cable_fc_esc",
+      "toComponentId": "comp_quad_flight_controller",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable plugs into the host at the start of the route.",
+      "whyConnected": "The host locates the cable at its first connection."
+    },
+    {
+      "id": "rel_quad_rx_fc",
+      "fromComponentId": "comp_quad_elrs_receiver",
+      "toComponentId": "comp_quad_flight_controller",
+      "connectionType": "electrical_bus",
+      "howConnected": "Receiver UART cable connects the two labeled ports.",
+      "whyConnected": "The receiver forwards pilot commands over the flight controller UART.",
+      "fromPortId": "port_rx",
+      "toPortId": "port_rx",
+      "routingWaypointsMeters": [
+        [0.012, 0.026, 0.032],
+        [0.026, 0.034, 0.031],
+        [0.03, 0.046, 0.02],
+        [0.024, 0.055, 0.005],
+        [0.016, 0.058, -0.008]
+      ],
+      "wireBundleDiameterMm": 2.4
+    },
+    {
+      "id": "rel_quad_rx_fc_harness",
+      "fromComponentId": "comp_quad_cable_rx_fc",
+      "toComponentId": "comp_quad_elrs_receiver",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable plugs into the host at the start of the route.",
+      "whyConnected": "The host locates the cable at its first connection."
+    },
+    {
+      "id": "rel_quad_motor_fl",
+      "fromComponentId": "comp_quad_4in1_esc",
+      "toComponentId": "comp_motor_fl",
+      "connectionType": "electrical_bus",
+      "howConnected": "Front left motor phase cable connects the two labeled ports.",
+      "whyConnected": "The ESC supplies three switched phases to the front left motor.",
+      "fromPortId": "port_motor_1",
+      "toPortId": "port_phase_in",
+      "routingWaypointsMeters": [
+        [-0.023, 0.024, -0.028],
+        [-0.044, 0.021, -0.045],
+        [-0.058, 0.015, -0.058]
+      ],
+      "wireBundleDiameterMm": 3.0
+    },
+    {
+      "id": "rel_quad_motor_fl_harness",
+      "fromComponentId": "comp_quad_cable_motor_fl",
+      "toComponentId": "comp_quad_4in1_esc",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable plugs into the host at the start of the route.",
+      "whyConnected": "The host locates the cable at its first connection."
+    },
+    {
+      "id": "rel_quad_motor_fr",
+      "fromComponentId": "comp_quad_4in1_esc",
+      "toComponentId": "comp_motor_fr",
+      "connectionType": "electrical_bus",
+      "howConnected": "Front right motor phase cable connects the two labeled ports.",
+      "whyConnected": "The ESC supplies three switched phases to the front right motor.",
+      "fromPortId": "port_motor_2",
+      "toPortId": "port_phase_in",
+      "routingWaypointsMeters": [
+        [0.023, 0.024, -0.028],
+        [0.044, 0.021, -0.045],
+        [0.058, 0.015, -0.058]
+      ],
+      "wireBundleDiameterMm": 3.0
+    },
+    {
+      "id": "rel_quad_motor_fr_harness",
+      "fromComponentId": "comp_quad_cable_motor_fr",
+      "toComponentId": "comp_quad_4in1_esc",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable plugs into the host at the start of the route.",
+      "whyConnected": "The host locates the cable at its first connection."
+    },
+    {
+      "id": "rel_quad_motor_rr",
+      "fromComponentId": "comp_quad_4in1_esc",
+      "toComponentId": "comp_motor_rr",
+      "connectionType": "electrical_bus",
+      "howConnected": "Rear right motor phase cable connects the two labeled ports.",
+      "whyConnected": "The ESC supplies three switched phases to the rear right motor.",
+      "fromPortId": "port_motor_3",
+      "toPortId": "port_phase_in",
+      "routingWaypointsMeters": [
+        [0.023, 0.024, 0.028],
+        [0.044, 0.021, 0.045],
+        [0.058, 0.015, 0.058]
+      ],
+      "wireBundleDiameterMm": 3.0
+    },
+    {
+      "id": "rel_quad_motor_rr_harness",
+      "fromComponentId": "comp_quad_cable_motor_rr",
+      "toComponentId": "comp_quad_4in1_esc",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable plugs into the host at the start of the route.",
+      "whyConnected": "The host locates the cable at its first connection."
+    },
+    {
+      "id": "rel_quad_motor_rl",
+      "fromComponentId": "comp_quad_4in1_esc",
+      "toComponentId": "comp_motor_rl",
+      "connectionType": "electrical_bus",
+      "howConnected": "Rear left motor phase cable connects the two labeled ports.",
+      "whyConnected": "The ESC supplies three switched phases to the rear left motor.",
+      "fromPortId": "port_motor_4",
+      "toPortId": "port_phase_in",
+      "routingWaypointsMeters": [
+        [-0.023, 0.024, 0.028],
+        [-0.044, 0.021, 0.045],
+        [-0.058, 0.015, 0.058]
+      ],
+      "wireBundleDiameterMm": 3.0
+    },
+    {
+      "id": "rel_quad_motor_rl_harness",
+      "fromComponentId": "comp_quad_cable_motor_rl",
+      "toComponentId": "comp_quad_4in1_esc",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable plugs into the host at the start of the route.",
+      "whyConnected": "The host locates the cable at its first connection."
     }
   ],
   "assemblySteps": [
@@ -1034,6 +1717,55 @@
         "rel_cover_fr_prop",
         "rel_cover_rl_prop",
         "rel_cover_rr_prop"
+      ]
+    },
+    {
+      "id": "step_quad_5",
+      "order": 5,
+      "title": "Install Flight Stack, Receiver, and Battery Pack",
+      "summary": "Place the ESC on the upper plate and stack the flight controller above it. Seat the receiver behind the stack and secure the pack beneath the chassis.",
+      "componentIds": [
+        "comp_quad_4in1_esc",
+        "comp_quad_flight_controller",
+        "comp_quad_elrs_receiver",
+        "comp_quad_battery_pack"
+      ],
+      "relationshipIds": [
+        "rel_quad_mount_esc",
+        "rel_quad_mount_fc",
+        "rel_quad_mount_receiver",
+        "rel_quad_mount_battery"
+      ]
+    },
+    {
+      "id": "step_quad_6",
+      "order": 6,
+      "title": "Wire Power Distribution and Motor Phase Harnesses",
+      "summary": "Connect battery power to the ESC, then attach the flight controller and receiver leads. Follow each arm to connect its three motor phases.",
+      "componentIds": [
+        "comp_quad_cable_battery_esc",
+        "comp_quad_cable_fc_esc",
+        "comp_quad_cable_rx_fc",
+        "comp_quad_cable_motor_fl",
+        "comp_quad_cable_motor_fr",
+        "comp_quad_cable_motor_rr",
+        "comp_quad_cable_motor_rl"
+      ],
+      "relationshipIds": [
+        "rel_quad_battery_esc",
+        "rel_quad_battery_esc_harness",
+        "rel_quad_fc_esc",
+        "rel_quad_fc_esc_harness",
+        "rel_quad_rx_fc",
+        "rel_quad_rx_fc_harness",
+        "rel_quad_motor_fl",
+        "rel_quad_motor_fl_harness",
+        "rel_quad_motor_fr",
+        "rel_quad_motor_fr_harness",
+        "rel_quad_motor_rr",
+        "rel_quad_motor_rr_harness",
+        "rel_quad_motor_rl",
+        "rel_quad_motor_rl_harness"
       ]
     }
   ]

@@ -267,7 +267,25 @@
         "bus": "TTL Serial",
         "brepFaces": 182
       },
-      "expectedStepSha256": "a911808be63dd36e2ec821770a7363ea90b5389383946c7c5dbb7d566466eab5"
+      "expectedStepSha256": "a911808be63dd36e2ec821770a7363ea90b5389383946c7c5dbb7d566466eab5",
+      "ports": [
+        {
+          "portId": "port_ttl_in",
+          "label": "TTL bus input",
+          "connectorType": "5264-3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0124, -0.0138, -0.0047],
+          "exitDirection": [-1, 0, 0]
+        },
+        {
+          "portId": "port_ttl_out",
+          "label": "TTL bus pass-through",
+          "connectorType": "5264-3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0124, -0.0098, 0.0113],
+          "exitDirection": [-1, 0, 0]
+        }
+      ]
     },
     {
       "id": "comp_shoulder_turntable",
@@ -337,7 +355,25 @@
         "torqueKgCm": 30,
         "brepFaces": 229
       },
-      "expectedStepSha256": "210ef9bdf810193e0cc72618990e18a56c715e661bb6ba06258eda06c8a5bdcf"
+      "expectedStepSha256": "210ef9bdf810193e0cc72618990e18a56c715e661bb6ba06258eda06c8a5bdcf",
+      "ports": [
+        {
+          "portId": "port_ttl_in",
+          "label": "TTL bus input",
+          "connectorType": "5264-3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0166, -0.0015, 0.0026],
+          "exitDirection": [-1, 0, 0]
+        },
+        {
+          "portId": "port_ttl_out",
+          "label": "TTL bus pass-through",
+          "connectorType": "5264-3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0166, -0.0007, 0.0056],
+          "exitDirection": [-1, 0, 0]
+        }
+      ]
     },
     {
       "id": "comp_upper_arm_link",
@@ -384,7 +420,25 @@
         "torqueKgCm": 30,
         "brepFaces": 182
       },
-      "expectedStepSha256": "b966a9a70bb9592af02924219ea38730ab2b4608884e14f0d640c5d813ca522a"
+      "expectedStepSha256": "b966a9a70bb9592af02924219ea38730ab2b4608884e14f0d640c5d813ca522a",
+      "ports": [
+        {
+          "portId": "port_ttl_in",
+          "label": "TTL bus input",
+          "connectorType": "5264-3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0166, -0.00214, -0.00589],
+          "exitDirection": [-1, 0, 0]
+        },
+        {
+          "portId": "port_ttl_out",
+          "label": "TTL bus pass-through",
+          "connectorType": "5264-3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0138, 0.01386, -0.01527],
+          "exitDirection": [0, 0, -1]
+        }
+      ]
     },
     {
       "id": "comp_lower_forearm_link",
@@ -454,7 +508,25 @@
         "torqueKgCm": 30,
         "brepFaces": 182
       },
-      "expectedStepSha256": "1c1f1866b7bdae1035bd8933791723d4b83d90a3324c5c9dfdd1bc177a9b672c"
+      "expectedStepSha256": "1c1f1866b7bdae1035bd8933791723d4b83d90a3324c5c9dfdd1bc177a9b672c",
+      "ports": [
+        {
+          "portId": "port_ttl_in",
+          "label": "TTL bus input",
+          "connectorType": "5264-3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0166, 0.00656, -0.00199],
+          "exitDirection": [-1, 0, 0]
+        },
+        {
+          "portId": "port_ttl_out",
+          "label": "TTL bus pass-through",
+          "connectorType": "5264-3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0138, 0.01423, 0.01001],
+          "exitDirection": [0, 1, 0]
+        }
+      ]
     },
     {
       "id": "comp_wrist_clevis",
@@ -501,7 +573,25 @@
         "torqueKgCm": 30,
         "brepFaces": 174
       },
-      "expectedStepSha256": "6aa65e9524415d70654149dffd408a5f5124d62ae5f8178f9b7e3a7a0ad1a208"
+      "expectedStepSha256": "6aa65e9524415d70654149dffd408a5f5124d62ae5f8178f9b7e3a7a0ad1a208",
+      "ports": [
+        {
+          "portId": "port_ttl_in",
+          "label": "TTL bus input",
+          "connectorType": "5264-3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0227, 0.00885, -0.00343],
+          "exitDirection": [-1, 0, 0]
+        },
+        {
+          "portId": "port_ttl_out",
+          "label": "TTL bus pass-through",
+          "connectorType": "5264-3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0227, -0.00715, 0.00457],
+          "exitDirection": [-1, 0, 0]
+        }
+      ]
     },
     {
       "id": "comp_wrist_roll_palm",
@@ -548,7 +638,25 @@
         "torqueKgCm": 30,
         "brepFaces": 182
       },
-      "expectedStepSha256": "82c20c3bcda82aecd36c607819fd42dfb17c688c544901da9eb10037b8f6084b"
+      "expectedStepSha256": "82c20c3bcda82aecd36c607819fd42dfb17c688c544901da9eb10037b8f6084b",
+      "ports": [
+        {
+          "portId": "port_ttl_in",
+          "label": "TTL bus input",
+          "connectorType": "5264-3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0227, 0.00057, -0.00315],
+          "exitDirection": [-1, 0, 0]
+        },
+        {
+          "portId": "port_ttl_out",
+          "label": "TTL bus pass-through",
+          "connectorType": "5264-3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0227, 0.00057, 0.00485],
+          "exitDirection": [-1, 0, 0]
+        }
+      ]
     },
     {
       "id": "subcomp_moving_jaw",
@@ -572,6 +680,212 @@
         "brepFaces": 176
       },
       "expectedStepSha256": "86ca7321f7205c8263f556e9698dfcfcfddcce8ed5fe46e41f9e7b9678877b4d"
+    },
+    {
+      "id": "comp_waveshare_bus_adapter",
+      "parentId": "sub_base_turntable",
+      "name": "SO-100 bus servo adapter",
+      "level": "component",
+      "depth": 2,
+      "category": "electronics",
+      "restPositionMeters": [0.0, 0.06265, -0.0322],
+      "explodeDirection": [0, 0, -1],
+      "explodeDistanceMeters": 0.032,
+      "origin": "kicad_pcb_step",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "kicad://zappd/kicad_so100_bus_servo_adapter",
+      "sourceName": "Zappd kicad_so100_bus_servo_adapter.kicad_pcb with KiCad kicad-packages3D models",
+      "stepFixtureName": "kicad_so100_bus_servo_adapter.step",
+      "expectedStepSha256": "915f69472d58e5ac5b9ad13fa0e80e30009b29b1d86b0d9f15c232aa6c67a478",
+      "dimensionsMm": [36.6, 44.175, 14.6],
+      "materialHint": "fr4_pcb",
+      "colorHex": "#247052",
+      "specifications": {
+        "pcbWidthMm": 36,
+        "pcbLengthMm": 44,
+        "pcbThicknessMm": 1.6,
+        "brepFaces": 2066,
+        "xcafColors": 11,
+        "referenceLayout": true
+      },
+      "ports": [
+        {
+          "portId": "port_usb",
+          "label": "USB data",
+          "connectorType": "USB-C",
+          "busKind": "usb_data",
+          "localPositionMeters": [0.0053, 0.0220875, 0.00175],
+          "exitDirection": [0.0, 1.0, 0.0]
+        },
+        {
+          "portId": "port_dc_in",
+          "label": "DC power input",
+          "connectorType": "DC barrel jack",
+          "busKind": "dc_power",
+          "localPositionMeters": [-0.0183, 0.0074125, -0.003],
+          "exitDirection": [-1.0, 0.0, -0.0]
+        },
+        {
+          "portId": "port_servo_1",
+          "label": "Servo bus 1",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0087, -0.0090875, -0.0026],
+          "exitDirection": [0.0, 0.0, -1.0]
+        },
+        {
+          "portId": "port_servo_2",
+          "label": "Servo bus 2",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.0043, -0.0090875, -0.0026],
+          "exitDirection": [0.0, 0.0, -1.0]
+        }
+      ]
+    },
+    {
+      "id": "comp_so100_cable_bus_1",
+      "parentId": "sub_base_turntable",
+      "name": "Base yaw servo TTL cable",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [45.28654770287835, 23.056245152127094, 78.49234038194342],
+      "restPositionMeters": [-0.029567869564556745, 0.04268517245100802, -0.010021991065324433],
+      "explodeDirection": [-1, 0, 0],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/robotic_arm_3dof_v1/rel_so100_ttl_bus_1",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_so100_cable_bus_1.step",
+      "specifications": {
+        "relationshipId": "rel_so100_ttl_bus_1",
+        "brepFaces": 60
+      },
+      "expectedStepSha256": "733850f5fa36d65676b8c7993300f5783078bd3ac73f60a43254745072f53756"
+    },
+    {
+      "id": "comp_so100_cable_bus_2",
+      "parentId": "sub_base_turntable",
+      "name": "Shoulder servo TTL cable",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [33.96300023657832, 70.22623739269258, 37.116438182712294],
+      "restPositionMeters": [-0.03018150001828915, 0.07125993053698801, 0.06098740805486328],
+      "explodeDirection": [-1, 0, 0],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/robotic_arm_3dof_v1/rel_so100_ttl_bus_2",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_so100_cable_bus_2.step",
+      "specifications": {
+        "relationshipId": "rel_so100_ttl_bus_2",
+        "brepFaces": 54
+      },
+      "expectedStepSha256": "94317aad4d4d71d6e61fa1b46af42e5efb059294af9db3428c15615c064424f3"
+    },
+    {
+      "id": "comp_so100_cable_bus_3",
+      "parentId": "sub_base_turntable",
+      "name": "Elbow servo TTL cable",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [33.89326253622691, 13.140541057689973, 130.98494954629922],
+      "restPositionMeters": [-0.03434663116811345, 0.1118281111402759, 0.020134656457183032],
+      "explodeDirection": [-1, 0, 0],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/robotic_arm_3dof_v1/rel_so100_ttl_bus_3",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_so100_cable_bus_3.step",
+      "specifications": {
+        "relationshipId": "rel_so100_ttl_bus_3",
+        "brepFaces": 60
+      },
+      "expectedStepSha256": "da0fddce335483e1549db409aa676c75cd43731e6e90898b74a91b4ccd84a14c"
+    },
+    {
+      "id": "comp_so100_cable_bus_4",
+      "parentId": "sub_base_turntable",
+      "name": "Wrist pitch servo TTL cable",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [37.00896108596646, 36.05354024176383, 146.00953365707431],
+      "restPositionMeters": [-0.030513819880648312, 0.14488326933317439, 0.006347334599617831],
+      "explodeDirection": [-1, 0, 0],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/robotic_arm_3dof_v1/rel_so100_ttl_bus_4",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_so100_cable_bus_4.step",
+      "specifications": {
+        "relationshipId": "rel_so100_ttl_bus_4",
+        "brepFaces": 66
+      },
+      "expectedStepSha256": "739f82b5a32f5348fc2fb28b4522ad2533b051c1f40e21aed2124e41ec860d44"
+    },
+    {
+      "id": "comp_so100_cable_bus_5",
+      "parentId": "sub_base_turntable",
+      "name": "Wrist roll servo TTL cable",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [39.44709875339561, 56.18190687571385, 18.036021342739417],
+      "restPositionMeters": [-0.032733753153618095, 0.1486575292477937, 0.09736569935078182],
+      "explodeDirection": [-1, 0, 0],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/robotic_arm_3dof_v1/rel_so100_ttl_bus_5",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_so100_cable_bus_5.step",
+      "specifications": {
+        "relationshipId": "rel_so100_ttl_bus_5",
+        "brepFaces": 48
+      },
+      "expectedStepSha256": "ea313ac5ec581b52b15e5b9e1b67af304620f3b268a8019ddf262110c82303bc"
+    },
+    {
+      "id": "comp_so100_cable_bus_6",
+      "parentId": "sub_base_turntable",
+      "name": "Gripper servo TTL cable",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [36.55133201886947, 33.17399994696973, 11.375897685817819],
+      "restPositionMeters": [-0.03427566590943475, 0.09027044325811358, 0.11701896324669334],
+      "explodeDirection": [-1, 0, 0],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/robotic_arm_3dof_v1/rel_so100_ttl_bus_6",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_so100_cable_bus_6.step",
+      "specifications": {
+        "relationshipId": "rel_so100_ttl_bus_6",
+        "brepFaces": 42
+      },
+      "expectedStepSha256": "55adedb32853cccf172173c232b9829c750bec6b91dcd244a9eb7868812a79aa"
     }
   ],
   "relationships": [
@@ -581,7 +895,7 @@
       "toComponentId": "comp_base_servo",
       "connectionType": "revolute_joint",
       "howConnected": "Dual-sided STS3215 output spline bolted into the yaw turntable base pocket",
-      "whyConnected": "Transmits 30 kg·cm yaw rotation torque from the grounded base into the shoulder stage."
+      "whyConnected": "Transmits 30 kg\u00b7cm yaw rotation torque from the grounded base into the shoulder stage."
     },
     {
       "id": "rel_so100_shoulder_pitch",
@@ -686,6 +1000,171 @@
       "connectionType": "revolute_joint",
       "howConnected": "Direct-drive STS3215 jaw horn pivots the moving jaw",
       "whyConnected": "Actuates the moving jaw against the fixed palm jaw."
+    },
+    {
+      "id": "rel_so100_bus_adapter_mount",
+      "fromComponentId": "comp_waveshare_bus_adapter",
+      "toComponentId": "subcomp_waveshare_mount",
+      "connectionType": "assembly_mount",
+      "howConnected": "The adapter PCB sits against the rear face of the controller mount.",
+      "whyConnected": "The mount keeps the controller accessible at the base of the arm."
+    },
+    {
+      "id": "rel_so100_ttl_bus_1",
+      "fromComponentId": "comp_waveshare_bus_adapter",
+      "toComponentId": "comp_base_servo",
+      "connectionType": "electrical_bus",
+      "howConnected": "Base yaw servo TTL cable connects the two labeled ports.",
+      "whyConnected": "The shared serial bus carries power and control signals to the base yaw actuator.",
+      "fromPortId": "port_servo_1",
+      "toPortId": "port_ttl_in",
+      "routingWaypointsMeters": [
+        [-0.024, 0.047, -0.047],
+        [-0.045, 0.038, -0.03],
+        [-0.051, 0.033, -0.008],
+        [-0.046, 0.0327, 0.015],
+        [-0.036, 0.0327, 0.026],
+        [-0.028, 0.0327, 0.028]
+      ],
+      "wireBundleDiameterMm": 2.4
+    },
+    {
+      "id": "rel_so100_ttl_bus_1_harness",
+      "fromComponentId": "comp_so100_cable_bus_1",
+      "toComponentId": "comp_waveshare_bus_adapter",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable plugs into the host at the start of the route.",
+      "whyConnected": "The host locates the cable at its first connection."
+    },
+    {
+      "id": "rel_so100_ttl_bus_2",
+      "fromComponentId": "comp_base_servo",
+      "toComponentId": "comp_shoulder_servo",
+      "connectionType": "electrical_bus",
+      "howConnected": "Shoulder servo TTL cable connects the two labeled ports.",
+      "whyConnected": "The shared serial bus carries power and control signals to the shoulder actuator.",
+      "fromPortId": "port_ttl_out",
+      "toPortId": "port_ttl_in",
+      "routingWaypointsMeters": [
+        [-0.043, 0.047, 0.045],
+        [-0.046, 0.071, 0.053],
+        [-0.046, 0.091, 0.069],
+        [-0.042, 0.103, 0.077],
+        [-0.032, 0.105, 0.0784]
+      ],
+      "wireBundleDiameterMm": 2.4
+    },
+    {
+      "id": "rel_so100_ttl_bus_2_harness",
+      "fromComponentId": "comp_so100_cable_bus_2",
+      "toComponentId": "comp_base_servo",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable plugs into the host at the start of the route.",
+      "whyConnected": "The host locates the cable at its first connection."
+    },
+    {
+      "id": "rel_so100_ttl_bus_3",
+      "fromComponentId": "comp_shoulder_servo",
+      "toComponentId": "comp_elbow_servo",
+      "connectionType": "electrical_bus",
+      "howConnected": "Elbow servo TTL cable connects the two labeled ports.",
+      "whyConnected": "The shared serial bus carries power and control signals to the elbow actuator.",
+      "fromPortId": "port_ttl_out",
+      "toPortId": "port_ttl_in",
+      "routingWaypointsMeters": [
+        [-0.04, 0.109, 0.084],
+        [-0.049, 0.117, 0.063],
+        [-0.049, 0.112, 0.024],
+        [-0.049, 0.11, -0.019],
+        [-0.046, 0.1105, -0.036],
+        [-0.036, 0.111498, -0.04349]
+      ],
+      "wireBundleDiameterMm": 2.4
+    },
+    {
+      "id": "rel_so100_ttl_bus_3_harness",
+      "fromComponentId": "comp_so100_cable_bus_3",
+      "toComponentId": "comp_shoulder_servo",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable plugs into the host at the start of the route.",
+      "whyConnected": "The host locates the cable at its first connection."
+    },
+    {
+      "id": "rel_so100_ttl_bus_4",
+      "fromComponentId": "comp_elbow_servo",
+      "toComponentId": "comp_wrist_pitch_servo",
+      "connectionType": "electrical_bus",
+      "howConnected": "Wrist pitch servo TTL cable connects the two labeled ports.",
+      "whyConnected": "The shared serial bus carries power and control signals to the wrist pitch actuator.",
+      "fromPortId": "port_ttl_out",
+      "toPortId": "port_ttl_in",
+      "routingWaypointsMeters": [
+        [-0.023, 0.131, -0.065],
+        [-0.042, 0.142, -0.061],
+        [-0.048, 0.151, -0.031],
+        [-0.047, 0.16, 0.02],
+        [-0.045, 0.161, 0.053],
+        [-0.039, 0.158, 0.072],
+        [-0.032, 0.15693, 0.077984]
+      ],
+      "wireBundleDiameterMm": 2.4
+    },
+    {
+      "id": "rel_so100_ttl_bus_4_harness",
+      "fromComponentId": "comp_so100_cable_bus_4",
+      "toComponentId": "comp_elbow_servo",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable plugs into the host at the start of the route.",
+      "whyConnected": "The host locates the cable at its first connection."
+    },
+    {
+      "id": "rel_so100_ttl_bus_5",
+      "fromComponentId": "comp_wrist_pitch_servo",
+      "toComponentId": "subcomp_wrist_roll_servo",
+      "connectionType": "electrical_bus",
+      "howConnected": "Wrist roll servo TTL cable connects the two labeled ports.",
+      "whyConnected": "The shared serial bus carries power and control signals to the wrist roll actuator.",
+      "fromPortId": "port_ttl_out",
+      "toPortId": "port_ttl_in",
+      "routingWaypointsMeters": [
+        [-0.025, 0.176, 0.092],
+        [-0.046, 0.17, 0.096],
+        [-0.051, 0.149, 0.102],
+        [-0.049, 0.128, 0.105]
+      ],
+      "wireBundleDiameterMm": 2.4
+    },
+    {
+      "id": "rel_so100_ttl_bus_5_harness",
+      "fromComponentId": "comp_so100_cable_bus_5",
+      "toComponentId": "comp_wrist_pitch_servo",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable plugs into the host at the start of the route.",
+      "whyConnected": "The host locates the cable at its first connection."
+    },
+    {
+      "id": "rel_so100_ttl_bus_6",
+      "fromComponentId": "subcomp_wrist_roll_servo",
+      "toComponentId": "subcomp_gripper_servo",
+      "connectionType": "electrical_bus",
+      "howConnected": "Gripper servo TTL cable connects the two labeled ports.",
+      "whyConnected": "The shared serial bus carries power and control signals to the gripper actuator.",
+      "fromPortId": "port_ttl_out",
+      "toPortId": "port_ttl_in",
+      "routingWaypointsMeters": [
+        [-0.051, 0.099, 0.113],
+        [-0.049, 0.084, 0.116],
+        [-0.035, 0.075, 0.121]
+      ],
+      "wireBundleDiameterMm": 2.4
+    },
+    {
+      "id": "rel_so100_ttl_bus_6_harness",
+      "fromComponentId": "comp_so100_cable_bus_6",
+      "toComponentId": "subcomp_wrist_roll_servo",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable plugs into the host at the start of the route.",
+      "whyConnected": "The host locates the cable at its first connection."
     }
   ],
   "assemblySteps": [
@@ -750,6 +1229,36 @@
         "rel_so100_gripper_jaw",
         "rel_so100_wrist_roll_servo",
         "rel_so100_jaw_servo_drive"
+      ]
+    },
+    {
+      "id": "step_arm_5",
+      "order": 5,
+      "title": "Mount Bus Servo Controller and Route Servo Daisy Chain",
+      "summary": "Fit the controller to the rear mount. Follow the six TTL cables from the base yaw servo through to the gripper.",
+      "componentIds": [
+        "comp_waveshare_bus_adapter",
+        "comp_so100_cable_bus_1",
+        "comp_so100_cable_bus_2",
+        "comp_so100_cable_bus_3",
+        "comp_so100_cable_bus_4",
+        "comp_so100_cable_bus_5",
+        "comp_so100_cable_bus_6"
+      ],
+      "relationshipIds": [
+        "rel_so100_bus_adapter_mount",
+        "rel_so100_ttl_bus_1",
+        "rel_so100_ttl_bus_1_harness",
+        "rel_so100_ttl_bus_2",
+        "rel_so100_ttl_bus_2_harness",
+        "rel_so100_ttl_bus_3",
+        "rel_so100_ttl_bus_3_harness",
+        "rel_so100_ttl_bus_4",
+        "rel_so100_ttl_bus_4_harness",
+        "rel_so100_ttl_bus_5",
+        "rel_so100_ttl_bus_5_harness",
+        "rel_so100_ttl_bus_6",
+        "rel_so100_ttl_bus_6_harness"
       ]
     }
   ]

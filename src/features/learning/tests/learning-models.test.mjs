@@ -290,6 +290,39 @@ describe('canvas prompt routing', () => {
     }
   });
 
+  it('installs each cable in a step that documents its typed electrical connection', () => {
+    for (const assembly of CATALOG_ARCHETYPES) {
+      const nodes = new Map(assembly.nodes.map((node) => [node.id, node]));
+      const relationships = new Map(
+        assembly.relationships.map((relationship) => [relationship.id, relationship]),
+      );
+      for (const cable of nodes.values()) {
+        if (cable.origin !== 'procedural_harness') continue;
+        const electrical = relationships.get(cable.specifications.relationshipId);
+        assert.ok(electrical, cable.id);
+        const firstPort = nodes
+          .get(electrical.fromComponentId)
+          ?.ports?.find(({ portId }) => portId === electrical.fromPortId);
+        const secondPort = nodes
+          .get(electrical.toComponentId)
+          ?.ports?.find(({ portId }) => portId === electrical.toPortId);
+        assert.ok(firstPort && secondPort, cable.id);
+        assert.equal(firstPort.busKind, secondPort.busKind, cable.id);
+        assert.equal(
+          electrical.connectionType,
+          firstPort.busKind === 'dc_power' ? 'power_bus' : 'electrical_bus',
+        );
+        assert.ok(
+          assembly.assemblySteps.some(
+            ({ componentIds, relationshipIds }) =>
+              componentIds.includes(cable.id) && relationshipIds.includes(electrical.id),
+          ),
+          cable.id,
+        );
+      }
+    }
+  });
+
   it('records symmetric drone and rover relationships in the matching assembly steps', () => {
     for (const side of ['fl', 'fr', 'rl', 'rr']) {
       const components = [
