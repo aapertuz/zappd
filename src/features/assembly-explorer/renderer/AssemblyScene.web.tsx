@@ -9,7 +9,6 @@ import {
   useState,
 } from 'react';
 import * as THREE from 'three';
-import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 import {
@@ -21,8 +20,8 @@ import {
 
 import {
   LearningCallouts,
+  type CalloutRect,
   type LearningCalloutsHandle,
-  type LearningCalloutPlacement,
   type PartAnchors,
 } from '@/features/learning';
 
@@ -36,14 +35,20 @@ import {
   createAssemblyAnimationController,
   settleAssemblyPlayback,
 } from '../model/assemblyAnimation';
+import { type CalloutAnchor, computePartCalloutRect } from '../model/calloutPlacement';
 import {
+  type AssemblyBoundingBoxMeters,
+  computeAssemblyBoundingBoxMeters,
+  computeCameraZoomLimits,
+  computeFramedCameraForBoundingBox,
+  DEFAULT_EXPLORER_CAMERA,
   orbitExplorerCamera,
   reconcileCameraTarget,
   zoomExplorerCamera,
 } from '../model/explorerState';
 import type { AssemblySceneProps, ExplorerCameraState } from '../types';
 
-type ScreenPoint = readonly [number, number];
+type ScreenPoint = CalloutAnchor;
 
 type FocusedPartCallout = {
   readonly componentId: ComponentId;
@@ -67,6 +72,8 @@ declare global {
       readonly glbNodeIds: readonly string[];
       readonly viewMode: AssemblySceneProps['state']['viewMode']['kind'];
       readonly focusedPartCallout: FocusedPartCallout | null;
+      readonly hoveredComponentId: ComponentId | null;
+      readonly hoveredPartCallout: FocusedPartCallout | null;
       readonly nodeScreenPositions: Readonly<Record<string, ScreenPoint>>;
       readonly selectedComponentId: string | null;
       readonly isolatedComponentId: string | null;
@@ -92,40 +99,59 @@ type PhysicalSurfaceProfile = {
   readonly ior: number;
 };
 
-const SURFACE_PROFILES: Readonly<Record<string, PhysicalSurfaceProfile>> = {
-  carbon_fiber: { clearcoat: 0.45, clearcoatRoughness: 0.25, envMapIntensity: 1.15, ior: 1.5 },
-  carbon_fiber_composite: {
-    clearcoat: 0.45,
-    clearcoatRoughness: 0.25,
-    envMapIntensity: 1.15,
-    ior: 1.5,
-  },
-  anodized_aluminum: {
-    clearcoat: 0.15,
-    clearcoatRoughness: 0.22,
-    envMapIntensity: 1.35,
-    ior: 1.5,
-  },
-  machined_aluminum: {
-    clearcoat: 0.1,
-    clearcoatRoughness: 0.18,
-    envMapIntensity: 1.4,
-    ior: 1.5,
-  },
-  brass: { clearcoat: 0.12, clearcoatRoughness: 0.16, envMapIntensity: 1.45, ior: 1.5 },
-  polycarbonate: { clearcoat: 0.65, clearcoatRoughness: 0.14, envMapIntensity: 1.15, ior: 1.58 },
-  fr4_pcb: { clearcoat: 0.28, clearcoatRoughness: 0.35, envMapIntensity: 0.95, ior: 1.5 },
-  pla_3d_printed: { clearcoat: 0.14, clearcoatRoughness: 0.42, envMapIntensity: 0.9, ior: 1.46 },
-  abs_3d_printed: { clearcoat: 0.16, clearcoatRoughness: 0.4, envMapIntensity: 0.95, ior: 1.52 },
-  servo_housing: { clearcoat: 0.2, clearcoatRoughness: 0.36, envMapIntensity: 1.0, ior: 1.5 },
-};
-
 const DEFAULT_SURFACE_PROFILE: PhysicalSurfaceProfile = {
-  clearcoat: 0.15,
-  clearcoatRoughness: 0.35,
+  clearcoat: 0.12,
+  clearcoatRoughness: 0.38,
   envMapIntensity: 1.0,
   ior: 1.5,
 };
+const CARBON_SURFACE_PROFILE: PhysicalSurfaceProfile = {
+  clearcoat: 0.35,
+  clearcoatRoughness: 0.28,
+  envMapIntensity: 1.25,
+  ior: 1.5,
+};
+const ANODIZED_SURFACE_PROFILE: PhysicalSurfaceProfile = {
+  clearcoat: 0.14,
+  clearcoatRoughness: 0.24,
+  envMapIntensity: 1.35,
+  ior: 1.5,
+};
+const PRINTED_SURFACE_PROFILE: PhysicalSurfaceProfile = {
+  clearcoat: 0.08,
+  clearcoatRoughness: 0.45,
+  envMapIntensity: 0.95,
+  ior: 1.5,
+};
+const SURFACE_PROFILES: Readonly<Partial<Record<string, PhysicalSurfaceProfile>>> = {
+  carbon_fiber: CARBON_SURFACE_PROFILE,
+  carbon_fiber_composite: CARBON_SURFACE_PROFILE,
+  anodized_aluminum: ANODIZED_SURFACE_PROFILE,
+  extruded_aluminum: ANODIZED_SURFACE_PROFILE,
+  anodized_steel: ANODIZED_SURFACE_PROFILE,
+  stainless_steel: ANODIZED_SURFACE_PROFILE,
+  copper_winding: ANODIZED_SURFACE_PROFILE,
+  machined_aluminum: {
+    clearcoat: 0.1,
+    clearcoatRoughness: 0.22,
+    envMapIntensity: 1.45,
+    ior: 1.5,
+  },
+  brass: { clearcoat: 0.14, clearcoatRoughness: 0.22, envMapIntensity: 1.45, ior: 1.5 },
+  polycarbonate: { clearcoat: 0.25, clearcoatRoughness: 0.32, envMapIntensity: 1.1, ior: 1.58 },
+  fr4_pcb: { clearcoat: 0.32, clearcoatRoughness: 0.28, envMapIntensity: 1.15, ior: 1.5 },
+  pla_3d_printed: PRINTED_SURFACE_PROFILE,
+  abs_3d_printed: PRINTED_SURFACE_PROFILE,
+  acetal_polymer: DEFAULT_SURFACE_PROFILE,
+  nylon_glass_filled: DEFAULT_SURFACE_PROFILE,
+  servo_housing: { ...DEFAULT_SURFACE_PROFILE, envMapIntensity: 1.05 },
+  optical_glass: { clearcoat: 0.45, clearcoatRoughness: 0.08, envMapIntensity: 1.15, ior: 1.5 },
+};
+
+const CAD_EDGE_COLOR = '#cbd5e1';
+const CAD_EDGE_OPACITY = 0.11;
+const HOVER_COLOR = '#f5c451';
+const HSL_SCRATCH = { h: 0, s: 0, l: 0 };
 
 function isThreeMesh(obj: THREE.Object3D): obj is THREE.Mesh {
   return 'isMesh' in obj && obj.isMesh === true;
@@ -333,7 +359,7 @@ function projectPartAnchors(
   };
 }
 
-function updateFocusedCallout({
+function updatePartCallout({
   overlay,
   label,
   leader,
@@ -341,6 +367,7 @@ function updateFocusedCallout({
   reticle,
   anchor,
   viewport,
+  obstacles,
 }: {
   readonly overlay: HTMLDivElement | null;
   readonly label: HTMLDivElement | null;
@@ -349,34 +376,44 @@ function updateFocusedCallout({
   readonly reticle: SVGGElement | null;
   readonly anchor: ScreenPoint | null;
   readonly viewport: DOMRectReadOnly;
-}): LearningCalloutPlacement['rect'] | null {
+  readonly obstacles: readonly CalloutRect[];
+}): CalloutRect | null {
   if (overlay === null || label === null || leader === null || arrow === null || reticle === null) {
     return null;
   }
-  if (anchor === null) {
+  const rect =
+    anchor === null
+      ? null
+      : computePartCalloutRect({
+          anchor,
+          labelSize: { width: label.offsetWidth, height: label.offsetHeight },
+          viewport,
+          obstacles,
+        });
+  if (anchor === null || rect === null) {
     overlay.style.visibility = 'hidden';
     return null;
   }
 
   const [anchorX, anchorY] = anchor;
-  const labelWidth = label.offsetWidth;
-  const labelHeight = label.offsetHeight;
-  const placeOnRight = anchorX <= viewport.width / 2 + 4;
-  const labelX = THREE.MathUtils.clamp(
-    placeOnRight ? anchorX + 76 : anchorX - 76 - labelWidth,
-    16,
-    viewport.width - 16 - labelWidth,
-  );
-  const topSafeInset = viewport.width <= 800 ? 122 : 84;
-  const bottomSafeY = Math.max(topSafeInset, viewport.height - 194 - labelHeight);
-  const labelY = THREE.MathUtils.clamp(anchorY - 128, topSafeInset, bottomSafeY);
-
-  const startX = placeOnRight ? labelX : labelX + labelWidth;
-  const startY = labelY + labelHeight / 2;
-  const directionX = anchorX - startX;
-  const elbowX = startX + Math.sign(directionX) * Math.min(22, Math.abs(directionX) / 3);
+  const { x: labelX, y: labelY, width: labelWidth, height: labelHeight } = rect;
+  const horizontal = anchorX < labelX || anchorX > labelX + labelWidth;
+  const startX = horizontal
+    ? anchorX < labelX
+      ? labelX
+      : labelX + labelWidth
+    : labelX + labelWidth / 2;
+  const startY = horizontal
+    ? labelY + labelHeight / 2
+    : anchorY < labelY
+      ? labelY
+      : labelY + labelHeight;
+  const elbow = (start: number, end: number) =>
+    start + Math.sign(end - start) * Math.min(22, Math.abs(end - start) / 3);
+  const elbowX = horizontal ? elbow(startX, anchorX) : startX;
+  const elbowY = horizontal ? startY : elbow(startY, anchorY);
   const remainingX = anchorX - elbowX;
-  const remainingY = anchorY - startY;
+  const remainingY = anchorY - elbowY;
   const remainingLength = Math.hypot(remainingX, remainingY);
   if (remainingLength < 18) {
     leader.setAttribute('d', '');
@@ -388,7 +425,7 @@ function updateFocusedCallout({
     const tipY = anchorY - 10 * unitY;
     const baseX = tipX - 7 * unitX;
     const baseY = tipY - 7 * unitY;
-    leader.setAttribute('d', `M ${startX} ${startY} H ${elbowX} L ${baseX} ${baseY}`);
+    leader.setAttribute('d', `M ${startX} ${startY} L ${elbowX} ${elbowY} L ${baseX} ${baseY}`);
     arrow.setAttribute(
       'd',
       `M ${tipX} ${tipY} L ${baseX - 3 * unitY} ${baseY + 3 * unitX} L ${baseX + 3 * unitY} ${baseY - 3 * unitX} Z`,
@@ -397,7 +434,7 @@ function updateFocusedCallout({
   reticle.setAttribute('transform', `translate(${anchorX} ${anchorY})`);
   label.style.transform = `translate(${labelX}px, ${labelY}px)`;
   overlay.style.visibility = 'visible';
-  return { x: labelX, y: labelY, width: labelWidth, height: labelHeight };
+  return rect;
 }
 
 const HUD_ICON_PATHS = {
@@ -423,76 +460,144 @@ function HudIcon({ kind }: { readonly kind: keyof typeof HUD_ICON_PATHS }) {
   );
 }
 
-function resolveStudioFloorY(archetypeId: string): number {
-  switch (archetypeId) {
-    case 'robotic_arm_3dof_v1':
-      return -0.002;
-    case 'open_source_rover_v1':
-      return -0.036;
-    default:
-      return -0.016;
-  }
+function materialTextures(material: THREE.Material): THREE.Texture[] {
+  return Object.values(material).filter(
+    (value): value is THREE.Texture => value instanceof THREE.Texture,
+  );
 }
 
-function disposeMeshOrLine(
-  geometry: THREE.BufferGeometry,
-  material: THREE.Material | THREE.Material[],
-): void {
-  geometry.dispose();
-  if (Array.isArray(material)) {
-    for (const mat of material) {
-      mat.dispose();
+function disposeObjectSubtree(root: THREE.Object3D, sharedEnvironment?: THREE.Texture): void {
+  const geometries = new Set<THREE.BufferGeometry>();
+  const materials = new Set<THREE.Material>();
+  const textures = new Set<THREE.Texture>();
+  const bitmaps = new Set<ImageBitmap>();
+
+  root.traverse((object) => {
+    if (!isThreeMesh(object) && !isThreeLine(object)) return;
+    geometries.add(object.geometry);
+    for (const material of [object.material].flat()) materials.add(material);
+  });
+
+  for (const geometry of geometries) geometry.dispose();
+  for (const material of materials) {
+    for (const texture of materialTextures(material)) {
+      if (texture !== sharedEnvironment) textures.add(texture);
     }
-  } else {
     material.dispose();
   }
-}
-
-function disposeObjectSubtree(root: THREE.Object3D): void {
-  root.traverse((obj) => {
-    if (isThreeMesh(obj)) {
-      disposeMeshOrLine(obj.geometry, obj.material);
-      return;
-    }
-    if (isThreeLine(obj)) {
-      disposeMeshOrLine(obj.geometry, obj.material);
-    }
-  });
+  for (const texture of textures) {
+    const image: unknown = texture.source.data;
+    if (typeof ImageBitmap !== 'undefined' && image instanceof ImageBitmap) bitmaps.add(image);
+    texture.dispose();
+  }
+  for (const bitmap of bitmaps) bitmap.close();
 }
 
 function buildPhysicalCadMaterial(
   baseMaterial: THREE.Material,
   materialHint: string,
+  maxAnisotropy: number,
 ): THREE.MeshPhysicalMaterial {
   const profile = SURFACE_PROFILES[materialHint] ?? DEFAULT_SURFACE_PROFILE;
-  if (baseMaterial instanceof THREE.MeshStandardMaterial) {
-    const upgraded = new THREE.MeshPhysicalMaterial({
-      color: baseMaterial.color.clone(),
+  const upgraded =
+    baseMaterial instanceof THREE.MeshPhysicalMaterial
+      ? baseMaterial.clone()
+      : new THREE.MeshPhysicalMaterial({
+          color: new THREE.Color('#71717a'),
+          metalness: 0.35,
+          roughness: 0.45,
+          clearcoat: profile.clearcoat,
+          clearcoatRoughness: profile.clearcoatRoughness,
+        });
+
+  if (
+    baseMaterial instanceof THREE.MeshStandardMaterial &&
+    !(baseMaterial instanceof THREE.MeshPhysicalMaterial)
+  ) {
+    upgraded.setValues({
+      color: baseMaterial.color,
       metalness: baseMaterial.metalness,
       roughness: baseMaterial.roughness,
-      clearcoat: profile.clearcoat,
-      clearcoatRoughness: profile.clearcoatRoughness,
-      envMapIntensity: profile.envMapIntensity,
-      ior: profile.ior,
+      map: baseMaterial.map,
+      normalMap: baseMaterial.normalMap,
+      normalMapType: baseMaterial.normalMapType,
+      normalScale: baseMaterial.normalScale,
+      roughnessMap: baseMaterial.roughnessMap,
+      metalnessMap: baseMaterial.metalnessMap,
+      aoMap: baseMaterial.aoMap,
+      aoMapIntensity: baseMaterial.aoMapIntensity,
+      emissiveMap: baseMaterial.emissiveMap,
+      emissive: baseMaterial.emissive,
+      emissiveIntensity: baseMaterial.emissiveIntensity,
+      lightMap: baseMaterial.lightMap,
+      lightMapIntensity: baseMaterial.lightMapIntensity,
+      bumpMap: baseMaterial.bumpMap,
+      bumpScale: baseMaterial.bumpScale,
+      displacementMap: baseMaterial.displacementMap,
+      displacementScale: baseMaterial.displacementScale,
+      displacementBias: baseMaterial.displacementBias,
+      alphaMap: baseMaterial.alphaMap,
+      envMap: baseMaterial.envMap,
+      envMapRotation: baseMaterial.envMapRotation,
+      side: baseMaterial.side,
+      vertexColors: baseMaterial.vertexColors,
+      flatShading: baseMaterial.flatShading,
     });
-    baseMaterial.dispose();
-    return upgraded;
   }
-  return new THREE.MeshPhysicalMaterial({
-    color: new THREE.Color('#71717a'),
-    metalness: 0.35,
-    roughness: 0.45,
-    clearcoat: profile.clearcoat,
-    clearcoatRoughness: profile.clearcoatRoughness,
-    envMapIntensity: profile.envMapIntensity,
-    ior: profile.ior,
-  });
+
+  upgraded.envMapIntensity = profile.envMapIntensity;
+  upgraded.ior = profile.ior;
+  for (const texture of materialTextures(upgraded)) {
+    if (texture.anisotropy === maxAnisotropy) continue;
+    texture.anisotropy = maxAnisotropy;
+    texture.needsUpdate = true;
+  }
+  return upgraded;
 }
+
+function createStudioEnvironmentScene(): THREE.Scene {
+  const studio = new THREE.Scene();
+  studio.background = new THREE.Color('#555961');
+  const panelGeometry = new THREE.PlaneGeometry(1, 1);
+  const softboxes = [
+    { color: '#edf4ff', intensity: 2.3, width: 8, height: 5, position: [0, 5, -0.4] },
+    { color: '#f8fafc', intensity: 2.2, width: 4.6, height: 5.5, position: [-3.9, 2.2, 4.5] },
+    { color: '#fff0d7', intensity: 2.8, width: 1.8, height: 5.5, position: [3.3, 2.3, -4.1] },
+    { color: '#b4c5df', intensity: 0.75, width: 3.4, height: 4.6, position: [4, 1.4, 2.5] },
+    { color: '#95a6bf', intensity: 0.52, width: 3, height: 4, position: [-3.9, 0.8, -3.3] },
+    { color: '#50483f', intensity: 0.62, width: 15, height: 15, position: [0, -4.5, 0] },
+  ] satisfies readonly {
+    color: string;
+    intensity: number;
+    width: number;
+    height: number;
+    position: Vector3Tuple;
+  }[];
+
+  for (const { color, intensity, width, height, position } of softboxes) {
+    const radiance = new THREE.Color(color).multiplyScalar(intensity);
+    const panel = new THREE.Mesh(panelGeometry, new THREE.MeshBasicMaterial({ color: radiance }));
+    panel.position.set(...position);
+    panel.scale.set(width, height, 1);
+    panel.lookAt(0, 0, 0);
+    studio.add(panel);
+  }
+  return studio;
+}
+
+type CadMaterialBinding = {
+  readonly material: THREE.MeshPhysicalMaterial;
+  readonly color: THREE.Color;
+  readonly envMapIntensity: number;
+  readonly emissive: THREE.Color;
+  readonly emissiveIntensity: number;
+};
 
 type MeshBinding = {
   readonly mesh: THREE.Mesh;
   readonly ownerId: ComponentId;
   readonly restScale: THREE.Vector3;
+  readonly materials: readonly CadMaterialBinding[];
   edgeMaterial?: THREE.LineBasicMaterial;
 };
 
@@ -505,15 +610,21 @@ type WebAssemblyModel = {
   hasPainted: boolean;
   lastPoses: AssemblyFrameSnapshot['nodePoses'] | undefined;
   selectedComponentId: ComponentId | null;
+  hoveredComponentId: ComponentId | null;
 };
 
 type SceneRuntime = {
   readonly camera: THREE.PerspectiveCamera;
   readonly rootGroup: THREE.Group;
-  readonly gridHelper: THREE.GridHelper;
-  readonly shadowFloor: THREE.Mesh;
+  readonly raycaster: THREE.Raycaster;
+  readonly pointerNdc: THREE.Vector2;
+  readonly pointerHits: THREE.Intersection[];
+  readonly environmentMap: THREE.Texture | undefined;
   readonly webglActive: boolean;
+  readonly maxAnisotropy: number;
   readonly requestRender: () => void;
+  readonly configureStudio: (bounds: AssemblyBoundingBoxMeters) => void;
+  readonly positionStudioFloor: (floorY: number) => void;
   model: WebAssemblyModel | null;
   shadowDirty: boolean;
 };
@@ -526,6 +637,27 @@ type PointerDrag = {
   lastY: number;
   moved: boolean;
 };
+
+function pickComponent(
+  runtime: SceneRuntime | null,
+  { clientX, clientY, currentTarget }: PointerEvent<HTMLDivElement>,
+): ComponentId | null {
+  if (runtime?.model == null || !runtime.webglActive) return null;
+  const { camera, rootGroup, raycaster, pointerNdc, pointerHits } = runtime;
+  const { left, top, width, height } = currentTarget.getBoundingClientRect();
+  if (width <= 0 || height <= 0) return null;
+  pointerNdc.set(((clientX - left) / width) * 2 - 1, 1 - ((clientY - top) / height) * 2);
+  raycaster.setFromCamera(pointerNdc, camera);
+  raycaster.intersectObjects(rootGroup.children, true, pointerHits);
+  let pickedId: ComponentId | null = null;
+  for (const { object } of pointerHits) {
+    if (!object.visible || !isThreeMesh(object)) continue;
+    pickedId = findAncestorComponentId(object);
+    if (pickedId !== null) break;
+  }
+  pointerHits.length = 0;
+  return pickedId;
+}
 
 function separateMeshFromPartAnchor(mesh: THREE.Mesh): THREE.Group {
   const anchor = new THREE.Group();
@@ -548,6 +680,8 @@ function bindAssemblyModel(
   root: THREE.Group,
   schedule: readonly NodeAssemblyWindow[],
   buildEdges: boolean,
+  maxAnisotropy: number,
+  environmentMap: THREE.Texture | undefined,
 ): WebAssemblyModel {
   const objectsById = new Map<ComponentId, THREE.Object3D>();
   const meshes: { readonly mesh: THREE.Mesh; readonly ownerId: ComponentId }[] = [];
@@ -566,11 +700,23 @@ function bindAssemblyModel(
       objectsById.set(ownerId, anchor);
     }
     mesh.userData.componentId = ownerId;
-    mesh.material = Array.isArray(mesh.material)
-      ? mesh.material.map((material) => buildPhysicalCadMaterial(material, materialHint))
-      : buildPhysicalCadMaterial(mesh.material, materialHint);
+    const hasMaterialGroups = Array.isArray(mesh.material);
+    const upgraded = [mesh.material]
+      .flat()
+      .map((material) => buildPhysicalCadMaterial(material, materialHint, maxAnisotropy));
+    if (environmentMap !== undefined) {
+      for (const material of upgraded) material.envMap ??= environmentMap;
+    }
+    mesh.material = hasMaterialGroups ? upgraded : (upgraded[0] ?? mesh.material);
     mesh.receiveShadow = true;
-    return { mesh, ownerId, restScale: mesh.scale.clone() };
+    const materials = upgraded.map((material) => ({
+      material,
+      color: material.color.clone(),
+      envMapIntensity: material.envMapIntensity,
+      emissive: material.emissive.clone(),
+      emissiveIntensity: material.emissiveIntensity,
+    }));
+    return { mesh, ownerId, restScale: mesh.scale.clone(), materials };
   });
 
   const startTimes = new Map(schedule.map(({ nodeId, startSec }) => [nodeId, startSec]));
@@ -588,7 +734,14 @@ function bindAssemblyModel(
     hasPainted: false,
     lastPoses: undefined,
     selectedComponentId: null,
+    hoveredComponentId: null,
   };
+}
+
+function edgeOpacity(isSelected: boolean, isHovered: boolean, isDimmed: boolean): number {
+  if (isSelected) return 0.8;
+  if (isHovered) return 0.85;
+  return isDimmed ? CAD_EDGE_OPACITY * 0.55 : CAD_EDGE_OPACITY;
 }
 
 function buildQueuedEdges(model: WebAssemblyModel): void {
@@ -599,11 +752,14 @@ function buildQueuedEdges(model: WebAssemblyModel): void {
     model.nextEdgeIndex += 1;
     const geometry = new THREE.EdgesGeometry(binding.mesh.geometry, 32);
     const selected = model.selectedComponentId === binding.ownerId;
+    const hovered = model.hoveredComponentId === binding.ownerId;
+    const dimmed = model.hoveredComponentId !== null && !hovered;
     const material = new THREE.LineBasicMaterial({
-      color: selected ? '#f5c451' : '#a8a29e',
+      color: selected || hovered ? HOVER_COLOR : CAD_EDGE_COLOR,
       transparent: true,
       depthWrite: false,
-      opacity: (selected ? 0.8 : 0.18) * (model.lastPoses?.[binding.ownerId]?.opacity ?? 1),
+      opacity:
+        edgeOpacity(selected, hovered, dimmed) * (model.lastPoses?.[binding.ownerId]?.opacity ?? 1),
     });
     const lines = new THREE.LineSegments(geometry, material);
     lines.raycast = () => {};
@@ -612,28 +768,46 @@ function buildQueuedEdges(model: WebAssemblyModel): void {
   } while (performance.now() < deadline);
 }
 
-function applyMeshPose(binding: MeshBinding, pose: AnimatedNodePose, isSelected: boolean): void {
-  const { mesh, restScale, edgeMaterial } = binding;
+function applyMeshPose(
+  binding: MeshBinding,
+  pose: AnimatedNodePose,
+  selectedComponentId: ComponentId | null,
+  hoveredComponentId: ComponentId | null,
+): void {
+  const { mesh, ownerId, restScale, materials, edgeMaterial } = binding;
+  const isSelected = selectedComponentId === ownerId;
+  const isHovered = hoveredComponentId === ownerId;
+  const isDimmed = hoveredComponentId !== null && !isHovered;
   mesh.visible = pose.visible;
   mesh.castShadow = pose.visible && !pose.isAnimatingOpacity;
   mesh.scale.copy(restScale).multiplyScalar(pose.scale);
-  const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-  for (const material of materials) {
+  for (const { material, color, envMapIntensity, emissive, emissiveIntensity } of materials) {
     if (material.transparent !== pose.isAnimatingOpacity) {
       material.transparent = pose.isAnimatingOpacity;
-      material.depthWrite = !pose.isAnimatingOpacity;
       material.needsUpdate = true;
     }
+    material.depthWrite = !pose.isAnimatingOpacity;
     const opacity = pose.isAnimatingOpacity ? pose.opacity : 1;
     if (material.opacity !== opacity) material.opacity = opacity;
-    if (material instanceof THREE.MeshStandardMaterial) {
-      material.emissive.setHex(isSelected ? 0xeab308 : 0x000000);
-      material.emissiveIntensity = isSelected ? 0.26 : 0;
+    if (isDimmed) {
+      const { h, s, l } = color.getHSL(HSL_SCRATCH);
+      material.color.setHSL(h, s * 0.82, l * 0.8);
+      material.envMapIntensity = envMapIntensity * 0.78;
+    } else {
+      material.color.copy(color);
+      material.envMapIntensity = envMapIntensity;
+    }
+    if (isHovered) {
+      material.emissive.set(HOVER_COLOR);
+      material.emissiveIntensity = 0.24;
+    } else {
+      material.emissive.copy(emissive);
+      material.emissiveIntensity = emissiveIntensity;
     }
   }
   if (edgeMaterial !== undefined) {
-    edgeMaterial.color.set(isSelected ? '#f5c451' : '#a8a29e');
-    edgeMaterial.opacity = (isSelected ? 0.8 : 0.18) * pose.opacity;
+    edgeMaterial.color.set(isSelected || isHovered ? HOVER_COLOR : CAD_EDGE_COLOR);
+    edgeMaterial.opacity = edgeOpacity(isSelected, isHovered, isDimmed) * pose.opacity;
   }
 }
 
@@ -641,6 +815,7 @@ function applyModelPoses(
   model: WebAssemblyModel,
   poses: AssemblyFrameSnapshot['nodePoses'],
   selectedComponentId: ComponentId | null,
+  hoveredComponentId: ComponentId | null,
 ): void {
   if (model.lastPoses !== poses) {
     for (const [id, object] of model.objectsById) {
@@ -648,14 +823,19 @@ function applyModelPoses(
       if (pose !== undefined) object.position.set(...pose.localPositionMeters);
     }
   }
-  if (model.lastPoses !== poses || model.selectedComponentId !== selectedComponentId) {
+  if (
+    model.lastPoses !== poses ||
+    model.selectedComponentId !== selectedComponentId ||
+    model.hoveredComponentId !== hoveredComponentId
+  ) {
     for (const binding of model.meshes) {
       const pose = poses[binding.ownerId];
-      if (pose !== undefined) applyMeshPose(binding, pose, selectedComponentId === binding.ownerId);
+      if (pose !== undefined) applyMeshPose(binding, pose, selectedComponentId, hoveredComponentId);
     }
   }
   model.lastPoses = poses;
   model.selectedComponentId = selectedComponentId;
+  model.hoveredComponentId = hoveredComponentId;
 }
 
 export function AssemblyScene({
@@ -672,6 +852,7 @@ export function AssemblyScene({
 }: AssemblySceneProps) {
   const learningCalloutsRef = useRef<LearningCalloutsHandle>(null);
   const mountRef = useRef<HTMLDivElement>(null);
+  const hudBarRef = useRef<HTMLDivElement>(null);
   const calloutRef = useRef<HTMLDivElement>(null);
   const labelRef = useRef<HTMLDivElement>(null);
   const leaderRef = useRef<SVGPathElement>(null);
@@ -680,7 +861,17 @@ export function AssemblyScene({
   const runtimeRef = useRef<SceneRuntime | null>(null);
   const animationRef = useRef<AssemblyAnimationController | null>(null);
   const playbackInterruptedRef = useRef(false);
+  const hoveredComponentIdRef = useRef<ComponentId | null>(null);
+  const [hoveredComponentId, setHoveredComponentId] = useState<ComponentId | null>(null);
   const targetsRef = useRef<AssemblyAnimationTargets>(state);
+  const cameraGeometry = useMemo(() => {
+    const bounds = computeAssemblyBoundingBoxMeters(assembly);
+    return {
+      bounds,
+      defaultDistance: computeFramedCameraForBoundingBox(bounds).distanceMeters,
+      zoomLimits: computeCameraZoomLimits(assembly),
+    };
+  }, [assembly]);
   const leafPartIds = useMemo(() => {
     const parents = new Set(assembly.nodes.map(({ parentId }) => parentId));
     return assembly.nodes
@@ -692,29 +883,76 @@ export function AssemblyScene({
   const focusedId = state.viewMode.kind === 'part_focus' ? state.viewMode.componentId : null;
   const focusedNode =
     focusedId === null ? null : (assembly.nodes.find(({ id }) => id === focusedId) ?? null);
+  const hoveredNode =
+    focusedId === null && hoveredComponentId !== null
+      ? (assembly.nodes.find(({ id }) => id === hoveredComponentId) ?? null)
+      : null;
+  const calloutNode = focusedNode ?? hoveredNode;
   const propsRef = useRef({
     assembly,
     glbArrayBuffer,
     state,
     leafPartIds,
     focusedNode,
+    calloutNode,
     learningState,
+    cameraGeometry,
   });
   const lastCommittedCameraRef = useRef<ExplorerCameraState | null>(null);
   const dragRef = useRef<PointerDrag | null>(null);
   const wheelCommitRef = useRef<number | null>(null);
   const reactRenderCount = useRef(0);
   const [webglActive, setWebglActive] = useState(true);
+  const updateHoveredComponent = useCallback((id: ComponentId | null) => {
+    if (hoveredComponentIdRef.current === id) return;
+    hoveredComponentIdRef.current = id;
+    setHoveredComponentId(id);
+    mountRef.current?.setAttribute('data-hovering', id === null ? 'false' : 'true');
+    runtimeRef.current?.requestRender();
+  }, []);
   const syncCamera = useCallback(() => {
     const { camera } = targetsRef.current;
     lastCommittedCameraRef.current = camera;
     onSetCamera(camera);
   }, [onSetCamera]);
 
+  const zoomLiveCamera = useCallback((distanceFraction: number) => {
+    const { cameraGeometry, focusedNode } = propsRef.current;
+    const { camera } = targetsRef.current;
+    const defaultDistance =
+      focusedNode === null
+        ? cameraGeometry.defaultDistance
+        : Math.min(cameraGeometry.defaultDistance, camera.distanceMeters);
+    const limits =
+      focusedNode === null
+        ? cameraGeometry.zoomLimits
+        : {
+            ...cameraGeometry.zoomLimits,
+            minDistanceMeters: Math.min(
+              cameraGeometry.zoomLimits.minDistanceMeters,
+              (Math.max(1, ...focusedNode.dimensionsMm) * 0.15) / 1000,
+            ),
+          };
+    targetsRef.current = {
+      ...targetsRef.current,
+      camera: zoomExplorerCamera(camera, defaultDistance * distanceFraction, limits),
+    };
+    runtimeRef.current?.requestRender();
+  }, []);
+
   useLayoutEffect(() => {
     reactRenderCount.current += 1;
     const previous = propsRef.current;
-    propsRef.current = { assembly, glbArrayBuffer, state, leafPartIds, focusedNode, learningState };
+    propsRef.current = {
+      assembly,
+      glbArrayBuffer,
+      state,
+      leafPartIds,
+      focusedNode,
+      calloutNode,
+      learningState,
+      cameraGeometry,
+    };
     const modelChanged =
       previous.assembly !== assembly || previous.glbArrayBuffer !== glbArrayBuffer;
     const { nextCamera, nextLastCommittedCamera, externalCameraChanged } = reconcileCameraTarget({
@@ -732,6 +970,9 @@ export function AssemblyScene({
         wheelCommitRef.current = null;
       }
       dragRef.current = null;
+    }
+    if (modelChanged || focusedId !== null || state.selectedComponentId !== null) {
+      updateHoveredComponent(null);
     }
     targetsRef.current = {
       camera: nextCamera,
@@ -752,6 +993,7 @@ export function AssemblyScene({
       previous.state.isolatedComponentId !== state.isolatedComponentId ||
       previous.state.separatedOffsets !== state.separatedOffsets ||
       previous.state.selectedProvider !== state.selectedProvider ||
+      previous.calloutNode !== calloutNode ||
       previous.learningState !== learningState
     ) {
       runtimeRef.current?.requestRender();
@@ -793,6 +1035,8 @@ export function AssemblyScene({
 
     const width = Math.max(mount.clientWidth, 1);
     const height = Math.max(mount.clientHeight, 1);
+    const composer = mount.closest('main')?.querySelector('textarea[aria-label="Prompt input"]');
+    const composerForm = composer instanceof HTMLTextAreaElement ? composer.form : null;
     const scene = new THREE.Scene();
     scene.background = null;
 
@@ -800,24 +1044,15 @@ export function AssemblyScene({
     configureCameraViewport(camera, width, height);
     updateCameraFromSpherical(camera, targetsRef.current.camera);
 
-    const hemiLight = new THREE.HemisphereLight('#fff8e7', '#1c1917', 0.88);
-    const keyLight = new THREE.DirectionalLight('#fffcf5', 1.95);
-    keyLight.position.set(0.8, 1.6, 1.1);
+    const hemiLight = new THREE.HemisphereLight('#e6edf7', '#29241e', 0.65);
+    const keyLight = new THREE.DirectionalLight('#f8fafc', 1.9);
     keyLight.castShadow = true;
-    keyLight.shadow.mapSize.set(1024, 1024);
-    keyLight.shadow.camera.near = 0.2;
-    keyLight.shadow.camera.far = 5.0;
-    keyLight.shadow.camera.left = -0.35;
-    keyLight.shadow.camera.right = 0.35;
-    keyLight.shadow.camera.top = 0.35;
-    keyLight.shadow.camera.bottom = -0.35;
-    keyLight.shadow.bias = -0.0003;
+    keyLight.shadow.mapSize.set(2048, 2048);
+    keyLight.shadow.bias = -0.00015;
+    keyLight.shadow.radius = 3;
 
-    const fillLight = new THREE.DirectionalLight('#fef3c7', 0.55);
-    fillLight.position.set(0.9, -0.4, -0.9);
-
-    const rimLight = new THREE.DirectionalLight('#f5c451', 1.05);
-    rimLight.position.set(-1, 0.85, -0.95);
+    const fillLight = new THREE.DirectionalLight('#cbd5e1', 0.75);
+    const rimLight = new THREE.DirectionalLight('#fde68a', 1.35);
 
     const gridHelper = new THREE.GridHelper(0.8, 16, '#5c4b27', '#262118');
     for (const material of [gridHelper.material].flat()) {
@@ -833,11 +1068,55 @@ export function AssemblyScene({
     shadowFloor.receiveShadow = true;
 
     const rootGroup = new THREE.Group();
-    scene.add(hemiLight, keyLight, fillLight, rimLight, gridHelper, shadowFloor, rootGroup);
+    scene.add(
+      hemiLight,
+      keyLight,
+      keyLight.target,
+      fillLight,
+      fillLight.target,
+      rimLight,
+      rimLight.target,
+      gridHelper,
+      shadowFloor,
+      rootGroup,
+    );
+
+    function positionStudioFloor(floorY: number) {
+      gridHelper.position.y = floorY;
+      shadowFloor.position.y = floorY + 0.0005 * gridHelper.scale.y;
+    }
+
+    function configureStudio(bounds: AssemblyBoundingBoxMeters) {
+      const [x, y, z] = bounds.center;
+      const extent = Math.max(...bounds.size);
+      const scale = extent / 0.3;
+      gridHelper.scale.setScalar(scale);
+      gridHelper.position.set(x, bounds.min[1], z);
+      shadowFloor.scale.set(scale, scale, 1);
+      shadowFloor.position.set(x, bounds.min[1], z);
+      positionStudioFloor(bounds.min[1]);
+
+      keyLight.position.set(x + 0.8 * scale, y + 1.6 * scale, z + 1.1 * scale);
+      fillLight.position.set(x - 0.95 * scale, y + 0.65 * scale, z + 0.55 * scale);
+      rimLight.position.set(x + scale, y + 0.85 * scale, z - 0.95 * scale);
+      for (const light of [keyLight, fillLight, rimLight]) light.target.position.set(x, y, z);
+      const shadowCamera = keyLight.shadow.camera;
+      const shadowRadius = 0.35 * scale;
+      shadowCamera.left = -shadowRadius;
+      shadowCamera.right = shadowRadius;
+      shadowCamera.top = shadowRadius;
+      shadowCamera.bottom = -shadowRadius;
+      shadowCamera.near = 0.2 * scale;
+      shadowCamera.far = 5 * scale;
+      shadowCamera.updateProjectionMatrix();
+      keyLight.shadow.normalBias = 0.00075 * scale;
+
+      camera.near = Math.min(0.001, extent * 0.025);
+      camera.far = propsRef.current.cameraGeometry.zoomLimits.maxDistanceMeters + extent * 4;
+      camera.updateProjectionMatrix();
+    }
 
     let renderer: THREE.WebGLRenderer | null = null;
-    let pmremGenerator: THREE.PMREMGenerator | null = null;
-    let roomEnvironment: RoomEnvironment | null = null;
     let envRenderTarget: THREE.WebGLRenderTarget | null = null;
     try {
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -845,16 +1124,23 @@ export function AssemblyScene({
       renderer.setSize(width, height);
       renderer.outputColorSpace = THREE.SRGBColorSpace;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.18;
+      renderer.toneMappingExposure = 1.06;
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFShadowMap;
       renderer.shadowMap.autoUpdate = false;
-      pmremGenerator = new THREE.PMREMGenerator(renderer);
-      roomEnvironment = new RoomEnvironment();
-      envRenderTarget = pmremGenerator.fromScene(roomEnvironment, 0.04);
+      const pmremGenerator = new THREE.PMREMGenerator(renderer);
+      const studioEnvironment = createStudioEnvironmentScene();
+      try {
+        envRenderTarget = pmremGenerator.fromScene(studioEnvironment, 0.04);
+      } finally {
+        disposeObjectSubtree(studioEnvironment);
+        pmremGenerator.dispose();
+      }
       scene.environment = envRenderTarget.texture;
       mount.replaceChildren(renderer.domElement);
     } catch {
+      envRenderTarget?.dispose();
+      envRenderTarget = null;
       renderer?.dispose();
       renderer = null;
       queueMicrotask(() => {
@@ -872,10 +1158,15 @@ export function AssemblyScene({
     const runtime: SceneRuntime = {
       camera,
       rootGroup,
-      gridHelper,
-      shadowFloor,
+      raycaster: new THREE.Raycaster(),
+      pointerNdc: new THREE.Vector2(),
+      pointerHits: [],
+      environmentMap: envRenderTarget?.texture,
       webglActive: renderer !== null,
+      maxAnisotropy: renderer?.capabilities.getMaxAnisotropy() ?? 1,
       requestRender,
+      configureStudio,
+      positionStudioFloor,
       model: null,
       shadowDirty: true,
     };
@@ -891,14 +1182,19 @@ export function AssemblyScene({
       frameId = null;
       const dtSec = lastFrameTime === null ? 0 : (now - lastFrameTime) / 1000;
       lastFrameTime = now;
-      const { assembly, state, leafPartIds, focusedNode, learningState } = propsRef.current;
+      const { assembly, state, leafPartIds, focusedNode, calloutNode, learningState } =
+        propsRef.current;
       const targets = targetsRef.current;
       const model = runtime.model;
+      const hoveredComponentId =
+        state.viewMode.kind === 'overview' && state.selectedComponentId === null
+          ? hoveredComponentIdRef.current
+          : null;
       const snapshot = animationRef.current?.step(model?.hasPainted ? dtSec : 0, targets);
       if (model !== null && snapshot !== undefined) {
         if (model.hasPainted && model.nextEdgeIndex < model.edgeQueue.length)
           buildQueuedEdges(model);
-        applyModelPoses(model, snapshot.nodePoses, state.selectedComponentId);
+        applyModelPoses(model, snapshot.nodePoses, state.selectedComponentId, hoveredComponentId);
         if (!model.hasPainted || snapshot.cameraChanged) {
           updateCameraFromSpherical(camera, snapshot.animatedCamera);
         }
@@ -923,6 +1219,25 @@ export function AssemblyScene({
         }
       }
       const viewport = mount.getBoundingClientRect();
+      const hudBounds = hudBarRef.current?.getBoundingClientRect();
+      const hudRect =
+        hudBounds === undefined
+          ? null
+          : {
+              x: hudBounds.left - viewport.left,
+              y: hudBounds.top - viewport.top,
+              width: hudBounds.width,
+              height: hudBounds.height,
+            };
+      const composerTop = composerForm?.getBoundingClientRect().top ?? viewport.bottom;
+      const composerInsetY = Math.min(composerTop - viewport.top, viewport.height - 112);
+      const composerInset = {
+        x: 0,
+        y: composerInsetY,
+        width: viewport.width,
+        height: viewport.height - composerInsetY,
+      };
+      const obstacles = hudRect === null ? [composerInset] : [hudRect, composerInset];
       const nodeScreenPositions: Record<string, ScreenPoint> = {};
       if (renderer !== null && model !== null && snapshot !== undefined) {
         for (const id of leafPartIds) {
@@ -939,11 +1254,16 @@ export function AssemblyScene({
         focusedNode !== null && snapshot?.nodePoses[focusedNode.id]?.visible
           ? model?.objectsById.get(focusedNode.id)
           : undefined;
+      const calloutId = focusedNode?.id ?? hoveredComponentId;
+      const calloutPart =
+        calloutId === null || !snapshot?.nodePoses[calloutId]?.visible
+          ? undefined
+          : model?.objectsById.get(calloutId);
       const anchor =
-        renderer !== null && focusedPart !== undefined
-          ? projectPart(focusedPart, camera, viewport, partBounds, projectedPoint)
+        renderer !== null && calloutPart !== undefined && calloutNode?.id === calloutId
+          ? projectPart(calloutPart, camera, viewport, partBounds, projectedPoint)
           : null;
-      const partLabelRect = updateFocusedCallout({
+      const calloutElements = {
         overlay: calloutRef.current,
         label: labelRef.current,
         leader: leaderRef.current,
@@ -951,13 +1271,23 @@ export function AssemblyScene({
         reticle: reticleRef.current,
         anchor,
         viewport,
-      });
+      };
+      const partLabelRect =
+        focusedNode === null ? null : updatePartCallout({ ...calloutElements, obstacles });
+      const explanation = learningState.explanation;
+      const explanationPart =
+        explanation.kind === 'idle'
+          ? undefined
+          : explanation.componentId === focusedNode?.id
+            ? focusedPart
+            : state.viewMode.kind === 'overview' &&
+                explanation.componentId === assembly.rootNodeId &&
+                snapshot?.assemblyStatus === 'settled'
+              ? rootGroup
+              : undefined;
       const explanationAnchors =
-        renderer !== null &&
-        focusedPart !== undefined &&
-        learningState.explanation.kind !== 'idle' &&
-        learningState.explanation.componentId === focusedNode?.id
-          ? projectPartAnchors(focusedPart, camera, viewport, partBounds, projectedPoint)
+        renderer !== null && explanationPart !== undefined
+          ? projectPartAnchors(explanationPart, camera, viewport, partBounds, projectedPoint)
           : null;
       const answerId =
         learningState.answer.kind === 'idle' ? null : learningState.answer.componentId;
@@ -972,25 +1302,30 @@ export function AssemblyScene({
       const answerAnchors =
         answerPart === undefined
           ? null
-          : answerPart === focusedPart && explanationAnchors !== null
+          : answerPart === explanationPart && explanationAnchors !== null
             ? explanationAnchors
             : projectPartAnchors(answerPart, camera, viewport, partBounds, projectedPoint);
 
-      learningCalloutsRef.current?.syncGeometry({
+      const learningRects = learningCalloutsRef.current?.syncGeometry({
         viewportWidth: viewport.width,
         viewportHeight: viewport.height,
         partLabelRect,
         anchors: explanationAnchors,
         answerAnchors,
+        obstacles: hudRect === null ? [] : [hudRect],
       });
 
-      const focusedPartCallout =
-        focusedNode !== null && anchor !== null && partLabelRect !== null
+      if (learningRects?.explanationRect != null) obstacles.push(learningRects.explanationRect);
+      if (learningRects?.answerRect != null) obstacles.push(learningRects.answerRect);
+      const calloutRect =
+        focusedNode === null ? updatePartCallout({ ...calloutElements, obstacles }) : partLabelRect;
+      const callout =
+        calloutNode !== null && anchor !== null && calloutRect !== null
           ? {
-              componentId: focusedNode.id,
-              name: focusedNode.name,
+              componentId: calloutNode.id,
+              name: calloutNode.name,
               anchorPx: anchor,
-              labelPx: [partLabelRect.x, partLabelRect.y] as const,
+              labelPx: [calloutRect.x, calloutRect.y] as const,
             }
           : null;
 
@@ -1006,7 +1341,9 @@ export function AssemblyScene({
         nodeCount: assembly.nodes.length,
         glbNodeIds: model?.glbNodeIds ?? [],
         viewMode: state.viewMode.kind,
-        focusedPartCallout,
+        focusedPartCallout: focusedNode === null ? null : callout,
+        hoveredComponentId,
+        hoveredPartCallout: focusedNode === null ? callout : null,
         nodeScreenPositions,
         selectedComponentId: state.selectedComponentId,
         isolatedComponentId: targets.isolatedComponentId,
@@ -1039,21 +1376,21 @@ export function AssemblyScene({
       requestRender();
     });
     resizeObserver.observe(mount);
+    if (hudBarRef.current !== null) resizeObserver.observe(hudBarRef.current);
+    if (composerForm !== null) resizeObserver.observe(composerForm);
     requestRender();
 
     return () => {
       disposed = true;
       if (frameId !== null) window.cancelAnimationFrame(frameId);
       resizeObserver.disconnect();
-      disposeObjectSubtree(rootGroup);
+      disposeObjectSubtree(rootGroup, runtime.environmentMap);
       rootGroup.clear();
       shadowPlaneGeo.dispose();
       shadowPlaneMat.dispose();
       gridHelper.dispose();
       keyLight.shadow.dispose();
       envRenderTarget?.dispose();
-      roomEnvironment?.dispose();
-      pmremGenerator?.dispose();
       renderer?.dispose();
       mount.replaceChildren();
       runtimeRef.current = null;
@@ -1066,10 +1403,8 @@ export function AssemblyScene({
   useEffect(() => {
     const runtime = runtimeRef.current;
     if (runtime === null) return;
-    const { rootGroup, gridHelper, shadowFloor } = runtime;
-    const floorY = resolveStudioFloorY(assembly.archetypeId);
-    gridHelper.position.y = floorY;
-    shadowFloor.position.y = floorY + 0.0005;
+    const { rootGroup } = runtime;
+    runtime.configureStudio(propsRef.current.cameraGeometry.bounds);
     runtime.shadowDirty = true;
     runtime.requestRender();
     if (glbArrayBuffer === null) return;
@@ -1092,8 +1427,16 @@ export function AssemblyScene({
         });
         if (playbackInterruptedRef.current) settleAssemblyPlayback(animation);
         animationRef.current = animation;
-        runtime.model = bindAssemblyModel(gltf.scene, animation.schedule, runtime.webglActive);
+        runtime.model = bindAssemblyModel(
+          gltf.scene,
+          animation.schedule,
+          runtime.webglActive,
+          runtime.maxAnisotropy,
+          runtime.environmentMap,
+        );
         rootGroup.add(gltf.scene);
+        const glbBounds = new THREE.Box3().setFromObject(rootGroup, true);
+        if (!glbBounds.isEmpty()) runtime.positionStudioFloor(glbBounds.min.y - 0.002);
         runtime.shadowDirty = true;
         runtime.requestRender();
       },
@@ -1104,10 +1447,26 @@ export function AssemblyScene({
       cancelled = true;
       animationRef.current = null;
       runtime.model = null;
-      disposeObjectSubtree(rootGroup);
+      disposeObjectSubtree(rootGroup, runtime.environmentMap);
       rootGroup.clear();
     };
   }, [assembly, glbArrayBuffer]);
+
+  const hasExplanation = learningState.explanation.kind !== 'idle';
+  const hasAnswer = learningState.answer.kind !== 'idle';
+  useEffect(() => {
+    const explorer = mountRef.current?.parentElement;
+    if (explorer === null || explorer === undefined) return;
+    const observer = new ResizeObserver(() => {
+      if (hoveredComponentIdRef.current !== null) runtimeRef.current?.requestRender();
+    });
+    for (const card of explorer.querySelectorAll(
+      '[aria-label="Component explanation"], [aria-label="Learning answer"]',
+    )) {
+      observer.observe(card);
+    }
+    return () => observer.disconnect();
+  }, [hasExplanation, hasAnswer]);
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -1115,11 +1474,7 @@ export function AssemblyScene({
 
     function handleWheel(event: WheelEvent) {
       event.preventDefault();
-      targetsRef.current = {
-        ...targetsRef.current,
-        camera: zoomExplorerCamera(targetsRef.current.camera, event.deltaY * 0.0005),
-      };
-      runtimeRef.current?.requestRender();
+      zoomLiveCamera((event.deltaY * 0.0005) / DEFAULT_EXPLORER_CAMERA.distanceMeters);
       if (wheelCommitRef.current !== null) window.clearTimeout(wheelCommitRef.current);
       wheelCommitRef.current = window.setTimeout(() => {
         wheelCommitRef.current = null;
@@ -1135,15 +1490,15 @@ export function AssemblyScene({
         wheelCommitRef.current = null;
       }
     };
-  }, [syncCamera]);
+  }, [syncCamera, zoomLiveCamera]);
 
   function setLiveCamera(camera: ExplorerCameraState) {
     targetsRef.current = { ...targetsRef.current, camera };
     runtimeRef.current?.requestRender();
   }
 
-  function commitCamera(camera: ExplorerCameraState) {
-    setLiveCamera(camera);
+  function stepZoom(direction: 1 | -1) {
+    zoomLiveCamera(0.14 * direction);
     syncCamera();
   }
 
@@ -1155,6 +1510,7 @@ export function AssemblyScene({
 
   function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
     if (!event.isPrimary || event.button !== 0) return;
+    updateHoveredComponent(null);
     const { clientX, clientY, pointerId } = event;
     dragRef.current = {
       id: pointerId,
@@ -1169,7 +1525,18 @@ export function AssemblyScene({
 
   function handlePointerMove(event: PointerEvent<HTMLDivElement>) {
     const drag = dragRef.current;
-    if (drag?.id !== event.pointerId) return;
+    if (drag === null) {
+      if (
+        event.pointerType !== 'touch' &&
+        state.viewMode.kind === 'overview' &&
+        state.selectedComponentId === null
+      ) {
+        updateHoveredComponent(pickComponent(runtimeRef.current, event));
+      }
+      return;
+    }
+    updateHoveredComponent(null);
+    if (drag.id !== event.pointerId) return;
     const { clientX, clientY } = event;
     drag.moved ||= Math.hypot(clientX - drag.startX, clientY - drag.startY) > 2;
     if (!drag.moved) return;
@@ -1194,18 +1561,8 @@ export function AssemblyScene({
 
   function handlePointerUp(event: PointerEvent<HTMLDivElement>) {
     const drag = finishPointerDrag(event);
-    if (drag === null || drag.moved || runtimeRef.current === null) return;
-
-    const { camera, rootGroup } = runtimeRef.current;
-    const rect = event.currentTarget.getBoundingClientRect();
-    if (rect.width <= 0 || rect.height <= 0) return;
-    const ndcX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    const ndcY = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-    const raycaster = new THREE.Raycaster();
-    raycaster.setFromCamera(new THREE.Vector2(ndcX, ndcY), camera);
-    const hits = raycaster.intersectObjects(rootGroup.children, true);
-    const hit = hits.find(({ object }) => object.visible && isThreeMesh(object));
-    const componentId = hit === undefined ? null : findAncestorComponentId(hit.object);
+    if (drag === null || drag.moved) return;
+    const componentId = pickComponent(runtimeRef.current, event);
     if (componentId === null) return;
 
     if (wheelCommitRef.current !== null) {
@@ -1227,10 +1584,12 @@ export function AssemblyScene({
       <div
         ref={mountRef}
         className={classes.canvasMount}
+        data-hovering="false"
         role="region"
         aria-label="Interactive 3D CAD Canvas"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
+        onPointerLeave={() => updateHoveredComponent(null)}
         onPointerUp={handlePointerUp}
         onPointerCancel={finishPointerDrag}
         onLostPointerCapture={finishPointerDrag}
@@ -1241,7 +1600,7 @@ export function AssemblyScene({
         </div>
       ) : null}
 
-      {focusedNode !== null ? (
+      {calloutNode !== null ? (
         <div ref={calloutRef} className={classes.calloutOverlay}>
           <svg className={classes.calloutDrawing} width="100%" height="100%" aria-hidden="true">
             <path ref={leaderRef} className={classes.calloutLeader} />
@@ -1256,9 +1615,9 @@ export function AssemblyScene({
             ref={labelRef}
             className={classes.calloutLabel}
             role="status"
-            aria-label="Focused component">
-            <span className={classes.calloutEyebrow}>Part</span>
-            <strong className={classes.calloutName}>{focusedNode.name}</strong>
+            aria-label={focusedNode === null ? 'Hovered component' : 'Focused component'}>
+            {focusedNode === null ? null : <span className={classes.calloutEyebrow}>Part</span>}
+            <strong className={classes.calloutName}>{calloutNode.name}</strong>
           </div>
         </div>
       ) : null}
@@ -1266,6 +1625,7 @@ export function AssemblyScene({
       <LearningCallouts
         ref={learningCalloutsRef}
         learningState={learningState}
+        explanationIsOverview={focusedId === null}
         answeringInOverview={focusedId === null}
         onDismissAnswer={onDismissLearningAnswer}
       />
@@ -1277,7 +1637,7 @@ export function AssemblyScene({
         </button>
       ) : null}
 
-      <div className={classes.hudBar} role="group" aria-label="Assembly controls">
+      <div ref={hudBarRef} className={classes.hudBar} role="group" aria-label="Assembly controls">
         <button
           type="button"
           className={classes.explodeButton}
@@ -1307,7 +1667,7 @@ export function AssemblyScene({
           className={classes.zoomButton}
           aria-label="Zoom out"
           title="Zoom out"
-          onClick={() => commitCamera(zoomExplorerCamera(targetsRef.current.camera, 0.07))}>
+          onClick={() => stepZoom(1)}>
           <HudIcon kind="zoomOut" />
         </button>
         <button
@@ -1315,7 +1675,7 @@ export function AssemblyScene({
           className={classes.zoomButton}
           aria-label="Zoom in"
           title="Zoom in"
-          onClick={() => commitCamera(zoomExplorerCamera(targetsRef.current.camera, -0.07))}>
+          onClick={() => stepZoom(-1)}>
           <HudIcon kind="zoomIn" />
         </button>
       </div>

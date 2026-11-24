@@ -3,9 +3,10 @@ import { useReducedMotion } from 'react-native-reanimated';
 
 import { advanceTypewriterProgress, isTypewriterWriting } from '../model/typewriter';
 
-export function useTypewriterText(targetText: string, resetKey: number | string) {
+export function useTypewriterText(targetText: string, resetKey: number | string, instant = false) {
   const prefersReducedMotion = useReducedMotion();
   const reducedMotion =
+    instant ||
     prefersReducedMotion ||
     (typeof window !== 'undefined' &&
       window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true);

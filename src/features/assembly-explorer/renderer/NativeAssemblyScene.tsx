@@ -62,6 +62,7 @@ export function NativeAssemblyScene({
         learningState={
           canShowAnswer ? learningState : { ...learningState, answer: { kind: 'idle' } }
         }
+        explanationIsOverview={focusedId === null}
         answeringInOverview={focusedId === null}
         onDismissAnswer={onDismissLearningAnswer}
       />

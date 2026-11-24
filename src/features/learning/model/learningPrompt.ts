@@ -4,8 +4,19 @@ import {
   buildLearningPromptParts,
 } from '@/shared/domain';
 
+import {
+  describePurpose,
+  finishSentence,
+  formatConnection,
+  formatDimensions,
+  formatSpecification,
+  humanizeMaterial,
+  humanizeName,
+  humanizeTechnicalText,
+} from './learningLanguage';
+
 const COMMON_WORDS = new Set(
-  'about after also and any are answer assembly before build can component could does during explain for from had has have here how into its just like may more not our part project please should some tell than that the their them then there these they this was were what when where which while who why will with would work works you your'.split(
+  'about after also and any are answer assembly before build can called component could detail does during explain for from group had has have here how include into its just like may model more not our part project please record save saved should some tell than that the their them then there these they this was were what when where which while who whole why will with would work works you your'.split(
     ' ',
   ),
 );
@@ -18,7 +29,8 @@ function meaningfulWords(text: string): Set<string> {
         .toLowerCase()
         .match(/[a-z0-9]+/g) ?? []
     )
-      .map((word) => word.replace(/(?<=.{3})s$/, ''))
+      .filter((word) => !COMMON_WORDS.has(word))
+      .map((word) => word.replace(/(?<=.{2}[^s])s$/, ''))
       .filter((word) => word.length >= 3 && !COMMON_WORDS.has(word)),
   );
 }
@@ -55,9 +67,22 @@ export function evaluateLocalInferenceSufficiency(
   const componentTerms = meaningfulWords(
     [
       context.component.name,
+      context.component.category,
+      context.projectTitle,
+      context.projectSummary,
+      context.parentComponentName ?? '',
+      ...context.childComponentNames,
+      context.component.materialHint === 'assembly_root' ? '' : context.component.materialHint,
       ...Object.keys(context.component.specifications),
-      context.component.materialHint,
-      ...context.relationships.map(({ counterpartName }) => counterpartName),
+      ...Object.values(context.component.specifications).map(String),
+      ...context.relationships.flatMap(({ counterpartName, howConnected, whyConnected }) => [
+        counterpartName,
+        howConnected,
+        whyConnected,
+      ]),
+      ...context.assemblySteps.map(({ title }) => title),
+      context.storedExplanation.summary,
+      context.storedExplanation.purpose,
     ].join(' '),
   );
   const responseTerms = meaningfulWords(trimmed);
@@ -85,28 +110,41 @@ type SavedFact = { readonly terms: string; readonly text: string };
 
 function savedFacts(context: ComponentLearningContext): readonly SavedFact[] {
   const { component } = context;
+  const name = humanizeName(component.name);
+  const material = humanizeMaterial(component.materialHint);
   return [
     {
       terms: 'dimension dimensions size measurements width height length',
-      text: `${component.name} has recorded dimensions of ${component.dimensionsMm.join(' × ')} mm.`,
+      text: `The ${name} measures ${formatDimensions(component.dimensionsMm)}.`,
     },
-    {
-      terms: 'material composition made',
-      text: `The recorded material for ${component.name} is ${component.materialHint.replaceAll('_', ' ')}.`,
-    },
+    ...(material === null
+      ? []
+      : [{ terms: 'material composition made', text: `The ${name} is made of ${material}.` }]),
     ...Object.entries(component.specifications).map(([name, value]) => ({
       terms: name,
-      text: `The recorded ${name} for ${component.name} is ${String(value)}.`,
+      text: formatSpecification(name, value),
     })),
     ...context.relationships.map((relationship) => ({
       terms: `${relationship.counterpartName} connect connection mount attach join`,
-      text: `${relationship.counterpartName} connection: ${relationship.howConnected.replace(/[.!?]$/, '')}. ${relationship.whyConnected}`,
+      text: `${formatConnection(relationship.counterpartName, relationship.howConnected)} ${describePurpose(relationship.whyConnected, 'This connection')}`,
     })),
     ...context.assemblySteps.map((step) => ({
       terms: `step ${step.title} ${step.order}`,
-      text: `Step ${step.order}, ${step.title}: ${step.summary}`,
+      text: `The guide covers this in step ${step.order} (${humanizeName(step.title)}). ${finishSentence(humanizeTechnicalText(step.summary))}`,
     })),
   ];
+}
+
+function joinExplanationSentences(fields: readonly string[], limit: number): string {
+  const sentences = new Map<string, string>();
+  for (const field of fields) {
+    for (const sentence of field.trim().split(/(?<=[.!?])\s+/)) {
+      if (sentence.length === 0) continue;
+      const key = sentence.toLowerCase().replace(/[.!?]+$/, '');
+      if (!sentences.has(key)) sentences.set(key, finishSentence(sentence));
+    }
+  }
+  return [...sentences.values()].slice(0, limit).join(' ');
 }
 
 export function formatOfflineLearningFallback(
@@ -115,7 +153,15 @@ export function formatOfflineLearningFallback(
 ): string {
   const { storedExplanation } = context;
   if (request.kind === 'explain') {
-    return `Saved explanation. ${storedExplanation.summary} ${storedExplanation.purpose} ${storedExplanation.operatingPrinciple} ${storedExplanation.systemRole}`;
+    return joinExplanationSentences(
+      [
+        storedExplanation.summary,
+        storedExplanation.purpose,
+        storedExplanation.operatingPrinciple,
+        storedExplanation.systemRole,
+      ],
+      4,
+    );
   }
 
   const componentTerms = meaningfulWords(context.component.name);
@@ -124,14 +170,20 @@ export function formatOfflineLearningFallback(
   const matchingFact = savedFacts(context).find(({ terms }) =>
     hasSharedWord(specificTerms, meaningfulWords(terms)),
   );
-  if (matchingFact !== undefined) return `Saved component records. ${matchingFact.text}`;
+  if (matchingFact !== undefined) return matchingFact.text;
 
   if (
     specificTerms.size === 0 ||
     [...specificTerms].every((term) => ['function', 'purpose', 'role', 'use'].includes(term))
   ) {
-    return `Saved component records. ${storedExplanation.purpose} ${storedExplanation.operatingPrinciple}`;
+    return joinExplanationSentences(
+      [storedExplanation.purpose, storedExplanation.operatingPrinciple],
+      2,
+    );
   }
 
-  return `The saved records do not answer this question. ${storedExplanation.summary}`;
+  return joinExplanationSentences(
+    ['The saved details do not cover that yet.', storedExplanation.summary],
+    2,
+  );
 }
