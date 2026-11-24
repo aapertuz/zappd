@@ -666,6 +666,7 @@ export function AssemblyScene({
   onSetExplodeFactor,
   onToggleExplodePreset,
   onFocusComponent,
+  onSelectComponent,
   onExitPartFocus,
   learningState,
   onDismissLearningAnswer,
@@ -1217,6 +1218,7 @@ export function AssemblyScene({
     onFocusComponent(componentId);
   }
 
+  const supportsExplode = assembly.nodes.some((node) => node.explodeDistanceMeters > 0);
   const explodePercent = Math.round(state.explodeFactor * 100);
   const sliderStyle: CSSProperties & { readonly '--explode-progress': string } = {
     '--explode-progress': `${state.explodeFactor * 100}%`,
@@ -1224,6 +1226,80 @@ export function AssemblyScene({
 
   return (
     <section className={classes.explorerRoot} aria-label="3D Assembly Explorer">
+      {assembly.nodes.some((node) => node.geometry?.kind === 'unavailable') ? (
+        <div
+          role="status"
+          style={{
+            position: 'absolute',
+            top: 12,
+            left: 12,
+            zIndex: 10,
+            maxWidth: 'min(420px, calc(100% - 48px))',
+            padding: 12,
+            background: '#fff3cd',
+            color: '#533f03',
+            borderRadius: 8,
+          }}>
+          Partial source CAD inspection. Geometry unavailable for{' '}
+          {assembly.nodes
+            .filter((node) => node.geometry?.kind === 'unavailable')
+            .map((node) => node.name)
+            .join(', ')}{' '}
+          because source topology validation failed. Engineering and manufacturing validation are
+          not established. Mesh dimensional checks also have failures. Surface bodies are retained
+          as surfaces.
+          <div>
+            <a
+              href={
+                assembly.nodes.find((node) => node.id === assembly.rootNodeId)?.provenance.sourceUrl
+              }>
+              Poppy project and authors · CC-BY-SA-4.0 · Official source STEP
+            </a>
+          </div>
+          <details>
+            <summary>Inspection validation limits</summary>
+            <div style={{ maxHeight: 160, overflowY: 'auto' }}>
+              {assembly.validation.failures.map((failure) => (
+                <p key={failure}>{failure}</p>
+              ))}
+            </div>
+          </details>
+          <details>
+            <summary>Source component hierarchy</summary>
+            <div style={{ maxHeight: 220, overflowY: 'auto' }}>
+              {assembly.nodes.map((node) => (
+                <button
+                  key={node.id}
+                  type="button"
+                  aria-label={`Select source component ${node.id}`}
+                  aria-pressed={state.selectedComponentId === node.id}
+                  onClick={() =>
+                    node.geometry?.kind === 'available'
+                      ? onFocusComponent(node.id)
+                      : onSelectComponent(node.id)
+                  }
+                  style={{
+                    display: 'block',
+                    marginLeft: node.depth * 8,
+                    background: 'transparent',
+                    border: 0,
+                    color: 'inherit',
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    padding: 4,
+                  }}>
+                  {node.name} ·{' '}
+                  {node.geometry?.kind === 'unavailable'
+                    ? 'geometry unavailable: source validation failed'
+                    : node.geometry?.kind === 'available'
+                      ? node.geometry.role
+                      : 'assembly'}
+                </button>
+              ))}
+            </div>
+          </details>
+        </div>
+      ) : null}
       <div
         ref={mountRef}
         className={classes.canvasMount}
@@ -1281,13 +1357,15 @@ export function AssemblyScene({
         <button
           type="button"
           className={classes.explodeButton}
+          disabled={!supportsExplode}
+          title={supportsExplode ? undefined : 'Source assembly has no verified explode offsets'}
           aria-pressed={state.explodeFactor > 0.001}
           onClick={() => {
             interruptPlayback();
             onToggleExplodePreset();
           }}>
           <HudIcon kind="explode" />
-          {`Explode (${explodePercent}%)`}
+          {supportsExplode ? `Explode (${explodePercent}%)` : 'Explode unavailable'}
         </button>
         <input
           type="range"
@@ -1295,6 +1373,7 @@ export function AssemblyScene({
           max={1}
           step={0.005}
           aria-label="Explode factor"
+          disabled={!supportsExplode}
           aria-valuetext={`${explodePercent}%`}
           className={classes.explodeSlider}
           style={sliderStyle}

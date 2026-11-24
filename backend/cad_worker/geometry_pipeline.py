@@ -450,6 +450,7 @@ def run_cad_pipeline(
     output_dir: Path,
     cache_dir: Path,
     inject_collision_test: bool = False,
+    check_interference: bool = True,
 ) -> dict[str, Any]:
     archetype_id = archetype_spec["archetypeId"]
     nodes_spec = list(archetype_spec["nodes"])
@@ -492,7 +493,8 @@ def run_cad_pipeline(
 
         cad_offset_mm = world_rest_to_cad_mm(rest_m)
         placed_shape = translate_shape_mm(shape, cad_offset_mm)
-        placed_solids[cid] = placed_shape
+        if node_spec.get("geometry", {}).get("role") != "surface":
+            placed_solids[cid] = placed_shape
         builder.Add(compound, placed_shape)
 
         verts, norms, idxs = tessellate_shape_meters_y_up(shape)
@@ -517,7 +519,9 @@ def run_cad_pipeline(
         ingested[cid] = resolved
 
     interference_count = 0
-    solid_ids = list(placed_solids.keys())
+    solid_ids = list(placed_solids.keys()) if check_interference else []
+    if not check_interference:
+        failures.append("Volumetric interference analysis not performed for source inspection")
     for i in range(len(solid_ids)):
         for j in range(i + 1, len(solid_ids)):
             id_a = solid_ids[i]
@@ -559,7 +563,7 @@ def run_cad_pipeline(
     parsed_glb_ids, _ = parse_glb_diagnostics(glb_out)
     usda_text = parse_usdz_prim_paths(usdz_out)
 
-    expected_leaf_ids = [n["id"] for n in nodes_spec if n["level"] in ("component", "subcomponent")]
+    expected_leaf_ids = [n["id"] for n in nodes_spec if n["level"] in ("component", "subcomponent") and n.get("geometry", {}).get("kind") != "unavailable"]
     glb_mapping_ok = set(expected_leaf_ids) == set(parsed_glb_ids) == set(exported_glb_ids)
     usdz_mapping_ok = all(f'custom string componentId = "{cid}"' in usda_text for cid in expected_leaf_ids)
     node_mapping_complete = glb_mapping_ok and usdz_mapping_ok

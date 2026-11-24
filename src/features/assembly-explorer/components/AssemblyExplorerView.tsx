@@ -25,7 +25,7 @@ import {
   type SeparationAxis,
 } from '../types';
 
-const LOADING_CAPTION = 'Loading verified CAD assembly';
+const LOADING_CAPTION = 'Loading CAD assembly';
 
 function AssemblyLoadingBar({
   progress,

@@ -31,6 +31,8 @@ export function computeDefaultCameraForAssembly(
     return DEFAULT_EXPLORER_CAMERA;
   }
   switch (assembly.archetypeId) {
+    case 'poppy_humanoid_v1':
+      return { azimuthDeg: 22, elevationDeg: 12, distanceMeters: 1.5, targetMeters: [0, 0, 0] };
     case 'robotic_arm_3dof_v1':
       return {
         azimuthDeg: 42,

@@ -12,6 +12,7 @@ export {
 } from './aiProvider';
 export {
   canClassifyAsVerified,
+  canInspectSourceAssembly,
   clampExplodeFactor,
   computeExplodeStageWeight,
   computeNodeWorldPositionMeters,

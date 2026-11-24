@@ -1,9 +1,15 @@
 from __future__ import annotations
 
 import hashlib
+import math
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from OCP.BRepCheck import BRepCheck_Analyzer
+from OCP.TopAbs import TopAbs_SOLID
+from OCP.TopExp import TopExp_Explorer
+from OCP.BRepBuilderAPI import BRepBuilderAPI_Transform
+from OCP.gp import gp_Ax1, gp_Dir, gp_Pnt, gp_Trsf
 from OCP.IFSelect import IFSelect_RetDone
 from OCP.STEPCAFControl import STEPCAFControl_Reader
 from OCP.TCollection import TCollection_ExtendedString
@@ -49,6 +55,8 @@ def _import_poppy(source_path: Path, cache_dir: Path) -> dict:
     if roots.Length() != 1:
         raise RuntimeError("Expected one Poppy Humanoid assembly root")
     nodes = []
+    source_to_z_up = gp_Trsf()
+    source_to_z_up.SetRotation(gp_Ax1(gp_Pnt(0, 0, 0), gp_Dir(1, 0, 0)), math.pi / 2)
 
     def visit(label, parent_id, path, location, depth):
         definition = TDF_Label()
@@ -70,17 +78,24 @@ def _import_poppy(source_path: Path, cache_dir: Path) -> dict:
         metadata = {}
         if children.Length() == 0:
             shape = shape_tool.GetShape_s(definition).Moved(world_location)
+            shape = BRepBuilderAPI_Transform(shape, source_to_z_up, True).Shape()
             bounds_min, bounds_max = exact_bounds_mm(shape)
             dimensions = [round(b - a, 2) for a, b in zip(bounds_min, bounds_max)]
             fixture = f"{node_id}.step"
-            try:
+            if BRepCheck_Analyzer(shape).IsValid():
                 metadata = center_and_write_step(shape, cache_dir / fixture)
-            except RuntimeError as error:
-                raise RuntimeError(
-                    f"Poppy occurrence {node_id} ({name}) rejected: {error}. Source geometry was not repaired or replaced; no catalog was published."
-                ) from error
+                solids = TopExp_Explorer(shape, TopAbs_SOLID)
+                geometry = {"kind": "available", "role": "solid" if solids.More() else "surface"}
+            else:
+                fixture = None
+                center = [(a + b) / 2 for a, b in zip(bounds_min, bounds_max)]
+                metadata = {"restPositionMeters": [center[0] / 1000, center[2] / 1000, -center[1] / 1000]}
+                geometry = {"kind": "unavailable", "reason": "Source BRep topology validation failed; geometry excluded"}
+        else:
+            geometry = {"kind": "assembly"}
         node = {
             "id": node_id,
+            "geometry": geometry,
             "parentId": parent_id,
             "name": name,
             "level": (
@@ -106,8 +121,10 @@ def _import_poppy(source_path: Path, cache_dir: Path) -> dict:
                 "sourceOccurrencePath": path,
                 "engineeringValidation": "Not established by CAD import",
                 "brepFaces": metadata.get("faceCount", 0),
+                "geometryStatus": geometry["kind"],
+                "geometryDetail": geometry.get("reason", geometry.get("role", "hierarchy")),
             },
-            **({"expectedStepSha256": metadata["stepSha256"]} if fixture else {}),
+            **({"expectedStepSha256": metadata["stepSha256"]} if fixture and metadata else {}),
         }
         nodes.append(node)
         child_bounds = []

@@ -91,6 +91,65 @@ def test_poppy_preserves_repeated_occurrences_and_nested_placements(tmp_path, mo
     assert len(parts) == 2
     assert parts[0]["id"] != parts[1]["id"]
     assert parts[0]["parentId"] == parts[1]["parentId"]
-    assert parts[0]["restPositionMeters"] == pytest.approx([0.098, 0.003, -0.011])
-    assert parts[1]["restPositionMeters"] == pytest.approx([0.098, 0.003, -0.001])
-    assert parts[0]["dimensionsMm"] == [4.0, 2.0, 6.0]
+    assert parts[0]["restPositionMeters"] == pytest.approx([0.098, 0.011, 0.003])
+    assert parts[1]["restPositionMeters"] == pytest.approx([0.098, 0.001, 0.003])
+    assert parts[0]["dimensionsMm"] == [4.0, 6.0, 2.0]
+
+
+def test_invalid_poppy_occurrence_retains_identity_without_export(tmp_path, monkeypatch):
+    import poppy_catalog
+    class RejectTopology:
+        def __init__(self, shape):
+            self.shape = shape
+
+        def IsValid(self):
+            return False
+
+    monkeypatch.setattr(poppy_catalog, "BRepCheck_Analyzer", RejectTopology)
+    monkeypatch.setattr(poppy_catalog, "verify_poppy_source", lambda payload: None)
+    from OCP.BRepPrimAPI import BRepPrimAPI_MakeBox
+    from OCP.STEPCAFControl import STEPCAFControl_Writer
+    from OCP.TCollection import TCollection_ExtendedString
+    from OCP.TDocStd import TDocStd_Document
+    from OCP.XCAFDoc import XCAFDoc_DocumentTool
+
+    document = TDocStd_Document(TCollection_ExtendedString("rejection"))
+    tool = XCAFDoc_DocumentTool.ShapeTool_s(document.Main())
+    tool.AddShape(BRepPrimAPI_MakeBox(2, 4, 6).Shape(), False)
+    writer = STEPCAFControl_Writer()
+    writer.Transfer(document)
+    source = tmp_path / "source.step"
+    writer.Write(str(source))
+    catalog = poppy_catalog.import_poppy(source, tmp_path / "cache")
+    node = catalog["nodes"][0]
+    assert node["id"] == "poppy_1"
+    assert node["geometry"]["kind"] == "unavailable"
+    assert node["stepFixtureName"] is None
+    assert "expectedStepSha256" not in node
+    assert not list((tmp_path / "cache").glob("*.step"))
+
+
+def test_partial_pipeline_exports_only_available_source_geometry(tmp_path):
+    import copy
+    from catalog_specs import CATALOG_SPECS
+    from poppy_pipeline import run_poppy_pipeline
+
+    source = CATALOG_SPECS["quadcopter_drone_v1"]["nodes"]
+    nodes = copy.deepcopy([node for node in source if node["id"] in ("proj_quadcopter", "sub_chassis", "comp_base_plate_lower")])
+    for node in nodes:
+        node["geometry"] = {"kind": "available", "role": "solid"} if node["stepFixtureName"] else {"kind": "assembly"}
+        node["specifications"]["sourceSha256"] = "a" * 64
+    rejected = copy.deepcopy(next(node for node in nodes if node["stepFixtureName"]))
+    rejected.update(id="rejected_head", name="head_face", stepFixtureName=None, geometry={"kind": "unavailable", "reason": "Invalid source topology"})
+    nodes.append(rejected)
+    result = run_poppy_pipeline({"archetypeId": "poppy_humanoid_v1", "nodes": nodes}, tmp_path / "exports", tmp_path / "cache")
+    assert result["verificationStatus"] == "unverified"
+    assert result["validation"]["valid"] is False
+    assert result["validation"]["brepValid"] is True
+    assert result["validation"]["nodeMappingComplete"] is True
+    assert result["validation"]["interferenceCheck"] == "not_performed"
+    assert result["validation"]["availableGeometryCount"] == 1
+    assert result["validation"]["unavailableComponentIds"] == ["rejected_head"]
+    assert result["glbNodeIds"] == ["comp_base_plate_lower"]
+    assert any(node["id"] == "rejected_head" and node["geometry"]["kind"] == "unavailable" for node in result["nodes"])
+    assert all(node["provenance"]["verificationStatus"] == "unverified" for node in result["nodes"])

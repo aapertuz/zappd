@@ -22,6 +22,7 @@ import {
   type ProjectLearningDocuments,
   type VerifiedProjectAssembly,
   canClassifyAsVerified,
+  canInspectSourceAssembly,
   hasVerifiedUpstreamProvenance,
   parseProjectLearningDocuments,
 } from '@/shared/domain';
@@ -139,7 +140,8 @@ export class FirebaseEmulatorRepository {
     },
   ): Promise<void> {
     if (
-      !canClassifyAsVerified(assembly.validation, assembly.verificationStatus) ||
+      (!canClassifyAsVerified(assembly.validation, assembly.verificationStatus) &&
+        !canInspectSourceAssembly(assembly)) ||
       (assembly.verificationStatus === 'sourced_verified' &&
         !hasVerifiedUpstreamProvenance(assembly.nodes))
     ) {

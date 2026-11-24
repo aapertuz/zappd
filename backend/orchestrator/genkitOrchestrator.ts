@@ -12,6 +12,7 @@ import {
   type AssemblyNode,
   type VerifiedProjectAssembly,
   canClassifyAsVerified,
+  canInspectSourceAssembly,
   getCatalogArchetypeById,
   hasVerifiedUpstreamProvenance,
   matchProjectArchetypeFromPrompt,
@@ -160,13 +161,22 @@ async function tryReuseVerifiedExports(args: {
       await fs.readFile(path.join(precomputedDir, 'pipeline_result.json'), 'utf8'),
     );
     const workerResult = parseCadWorkerPayload(rawJson);
-    if (workerResult.verificationStatus !== 'sourced_verified') {
+    if (
+      workerResult.verificationStatus !== 'sourced_verified' &&
+      !canInspectSourceAssembly(workerResult)
+    ) {
       return null;
     }
-    if (!canClassifyAsVerified(workerResult.validation, 'sourced_verified')) {
+    if (
+      !canClassifyAsVerified(workerResult.validation, 'sourced_verified') &&
+      !canInspectSourceAssembly(workerResult)
+    ) {
       return null;
     }
-    if (!hasVerifiedUpstreamProvenance(workerResult.nodes)) {
+    if (
+      !hasVerifiedUpstreamProvenance(workerResult.nodes) &&
+      !canInspectSourceAssembly(workerResult)
+    ) {
       return null;
     }
     const expectedIds = new Set(catalogArchetype.nodes.map((node) => node.id));
@@ -270,7 +280,12 @@ async function runCadAssemblyAndValidation(args: {
   );
   const provenanceOk =
     status === 'sourced_verified' ? hasVerifiedUpstreamProvenance(workerResult.nodes) : false;
-  if (!canClassifyAsVerified(workerResult.validation, status) || !mappingOk || !provenanceOk) {
+  if (
+    (!canClassifyAsVerified(workerResult.validation, status) &&
+      !canInspectSourceAssembly(workerResult)) ||
+    !mappingOk ||
+    (!provenanceOk && !canInspectSourceAssembly(workerResult))
+  ) {
     throw new Error(
       `OpenCascade validation rejected assembly "${args.archetypeId}": ${workerResult.validation.failures.join('; ')}`,
     );

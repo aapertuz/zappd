@@ -36,7 +36,13 @@ export type CadProvenance = {
   readonly stepSha256: AssetChecksum;
 };
 
+export type ComponentGeometry =
+  | { readonly kind: 'assembly' }
+  | { readonly kind: 'available'; readonly role: 'solid' | 'surface' }
+  | { readonly kind: 'unavailable'; readonly reason: string };
+
 export type AssemblyNode = {
+  readonly geometry?: ComponentGeometry;
   readonly id: ComponentId;
   readonly parentId: ComponentId | null;
   readonly name: string;
@@ -313,13 +319,16 @@ export function verifyOneToOneNodeMapping(
   usdzPrimPaths: readonly string[],
 ): boolean {
   const leafNodes = nodes.filter(
-    (node) => node.level === 'component' || node.level === 'subcomponent',
+    (node) =>
+      (node.level === 'component' || node.level === 'subcomponent') &&
+      node.geometry?.kind !== 'unavailable',
   );
   if (leafNodes.length === 0) {
     return false;
   }
   const glbSet = new Set(glbNodeIds);
   const usdzSet = new Set(usdzPrimPaths);
+  if (glbSet.size !== leafNodes.length || usdzSet.size !== leafNodes.length) return false;
   for (const node of leafNodes) {
     if (!glbSet.has(node.glbNodeName)) {
       return false;
@@ -469,6 +478,39 @@ function parseSpecifications(raw: unknown): Readonly<Record<string, string | num
   return parsed;
 }
 
+function parseComponentGeometry(raw: unknown): ComponentGeometry | undefined {
+  if (raw === undefined) return undefined;
+  if (!isObjectRecord(raw)) throw new Error('Invalid component geometry');
+  if (raw.kind === 'assembly') return { kind: 'assembly' };
+  if (raw.kind === 'available' && (raw.role === 'solid' || raw.role === 'surface')) {
+    return { kind: 'available', role: raw.role };
+  }
+  if (raw.kind === 'unavailable')
+    return { kind: 'unavailable', reason: readRequiredString(raw, 'reason') };
+  throw new Error('Invalid component geometry state');
+}
+
+export function canInspectSourceAssembly(assembly: {
+  readonly nodes: readonly AssemblyNode[];
+  readonly validation: ValidationReport;
+  readonly verificationStatus: string;
+}): boolean {
+  return (
+    assembly.verificationStatus === 'unverified' &&
+    assembly.validation.brepValid &&
+    assembly.validation.nodeMappingComplete &&
+    assembly.nodes.some((node) => node.geometry?.kind === 'available') &&
+    assembly.nodes.every(
+      (node) =>
+        node.geometry !== undefined &&
+        node.provenance.origin === 'open_step_catalog' &&
+        node.provenance.sourceUrl.startsWith('https://') &&
+        isAssetChecksum(node.specifications.sourceSha256) &&
+        isAssetChecksum(node.provenance.stepSha256),
+    )
+  );
+}
+
 export function parseAssemblyNode(raw: unknown): AssemblyNode {
   if (!isObjectRecord(raw)) {
     throw new Error('Expected AssemblyNode object');
@@ -476,6 +518,7 @@ export function parseAssemblyNode(raw: unknown): AssemblyNode {
   const parentId =
     raw.parentId === null ? null : toComponentId(readRequiredString(raw, 'parentId'));
   return {
+    geometry: parseComponentGeometry(raw.geometry),
     id: toComponentId(readRequiredString(raw, 'id')),
     parentId,
     name: readRequiredString(raw, 'name'),

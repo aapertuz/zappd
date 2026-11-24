@@ -2,6 +2,7 @@ import {
   type AiProviderId,
   type VerifiedProjectAssembly,
   canClassifyAsVerified,
+  canInspectSourceAssembly,
   hasVerifiedUpstreamProvenance,
   parseVerifiedProjectAssembly,
 } from '@/shared/domain';
@@ -106,7 +107,8 @@ export async function loadVerifiedAssemblyForPrompt(args: {
 
   const assembly = parseVerifiedProjectAssembly(await orchestrationResponse.json());
   if (
-    !canClassifyAsVerified(assembly.validation, assembly.verificationStatus) ||
+    (!canClassifyAsVerified(assembly.validation, assembly.verificationStatus) &&
+      !canInspectSourceAssembly(assembly)) ||
     (assembly.verificationStatus === 'sourced_verified' &&
       !hasVerifiedUpstreamProvenance(assembly.nodes))
   ) {

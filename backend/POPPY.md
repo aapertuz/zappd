@@ -7,6 +7,46 @@ Hardware attribution belongs to the [Poppy project](https://www.poppy-project.or
 The upstream [README](https://github.com/poppy-project/poppy-humanoid#license) licenses hardware under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
 Preserve attribution and the share-alike license when redistributing derived CAD and render assets. Poppy is an upstream trademark.
 
+## Current inspection catalog
+
+Poppy is available as a partial source CAD inspection catalog. The complete pinned
+1.0.2 occurrence hierarchy is retained. Each leaf is classified as available solid,
+available surface, or unavailable geometry. The invalid `head_face` occurrence
+remains selectable in the hierarchy but is excluded from STEP/GLB/USDZ geometry.
+A rigid rotation about X normalizes the source Y-up assembly to the existing CAD Z-up convention before centering and export.
+The original official feet are used; no Onshape geometry is mixed into this source.
+The local Onshape re-export has digest
+`169dcbaaaa000dd142265ec80618903c5645b3b86bc8cfe348814501ded670ec` and was
+investigated separately; its foot topology regression is not published.
+
+The project and component provenance remain `unverified`.
+The current tessellation also fails the 0.1 mm dimensional bound check on five
+components: `poppy_1_10` and `poppy_1_11` at about 19.5609 mm,
+`poppy_1_21_2` and `poppy_1_25_2` at 0.3500 mm, and `poppy_1_28_7` at
+0.1526 mm. These failures are preserved in the export report and exposed in the
+inspection UI. The displayed meshes are inspection approximations; they do not
+establish dimensionally validated geometry. Successful topology and
+mesh mapping checks establish inspection availability, not manufacturing validity.
+Volumetric interference analysis is explicitly not performed for source inspection.
+The report records this omission and cannot pass engineering verification.
+Open surface bodies are never treated as solids for volumetric checks.
+No assembly instructions or connection claims are inferred. Explode offsets remain
+zero and the explode controls are disabled; selection, camera controls, hierarchy
+navigation, and part focus work through the existing renderer.
+
+Reproduce source extraction and generate the real normalized assets:
+
+```sh
+backend/.venv/bin/python backend/cad_worker/ingest_upstream_catalog.py --poppy
+python scripts/generate-poppy-catalog.py
+backend/.venv/bin/python backend/cad_worker/cli.py --archetype poppy_humanoid_v1 --public-dir public/assemblies
+```
+
+The catalog generator emits source metadata into the shared catalog. Generated
+binary files follow the repository's existing ignored cache/export conventions.
+The CLI fetches and verifies the pinned upstream source when no candidate exists.
+The source URL, SHA-256, occurrence path, attribution, and license are preserved.
+
 ## Import
 
 Run the source adapter through the existing catalog ingestion command:
@@ -21,7 +61,7 @@ Geometry uses the existing catalog centering and topology validation helper. Mat
 
 A successful import writes a candidate catalog to `backend/data/poppy-catalog.json` and STEP fixtures to the existing cache. It does not register the candidate in the verified backend or frontend catalog.
 
-## Current blocker
+## Historical rejected full-assembly import
 
 The pinned source fails the existing OpenCascade BRep topology check at occurrence `poppy_1_28_5`, the `head_face` product beneath the head assembly. The import stops without publishing a candidate catalog. Source geometry is not repaired, replaced, or fabricated to pass validation.
 
