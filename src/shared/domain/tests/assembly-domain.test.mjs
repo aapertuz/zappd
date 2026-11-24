@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { describe, it } from 'node:test';
 
 import {
@@ -23,6 +24,23 @@ import {
 } from '../catalog.ts';
 
 describe('shared domain contracts', () => {
+  it('keeps the app and CAD worker colors identical for every catalog component', () => {
+    const workerSource = readFileSync(
+      new URL('../../../../backend/cad_worker/catalog_specs.py', import.meta.url),
+      'utf8',
+    );
+    const workerColors = Object.fromEntries(
+      [...workerSource.matchAll(/_node\(\s*"([^"]+)",\n(?:[^\n]*\n){5}\s*"(#[0-9a-f]{6})"/g)].map(
+        ([, componentId, color]) => [componentId, color],
+      ),
+    );
+    const appColors = Object.fromEntries(
+      CATALOG_ARCHETYPES.flatMap(({ nodes }) => nodes.map(({ id, colorHex }) => [id, colorHex])),
+    );
+
+    assert.deepEqual(appColors, workerColors);
+  });
+
   it('routes gemini via google_genai and both openai and deepseek via openai_compatible api', () => {
     assert.equal(getAiProviderDescriptor('gemini').apiFormat, 'google_genai');
     assert.equal(getAiProviderDescriptor('openai').apiFormat, 'openai_compatible');
