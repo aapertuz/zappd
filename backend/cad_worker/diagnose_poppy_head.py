@@ -22,7 +22,13 @@ from OCP.STEPCAFControl import STEPCAFControl_Reader
 from OCP.TCollection import TCollection_ExtendedString
 from OCP.TDF import TDF_Label, TDF_LabelSequence
 from OCP.TDocStd import TDocStd_Document
-from OCP.TopAbs import TopAbs_EDGE, TopAbs_FACE, TopAbs_WIRE
+from OCP.TopAbs import (
+    TopAbs_EDGE,
+    TopAbs_FACE,
+    TopAbs_SHELL,
+    TopAbs_SOLID,
+    TopAbs_WIRE,
+)
 from OCP.TopExp import TopExp_Explorer
 from OCP.TopoDS import TopoDS
 from OCP.XCAFDoc import XCAFDoc_DocumentTool
@@ -81,6 +87,67 @@ def head_definition(source):
     if tool.GetReferredShape_s(label, definition):
         label = definition
     return tool.GetShape_s(label)
+
+
+def removal_diagnosis(shape):
+    faces = list(subshapes(shape, TopAbs_FACE))
+    invalid_indices = [
+        index for index, face in enumerate(faces, 1)
+        if not BRepCheck_Analyzer(face).IsValid()
+    ]
+    if invalid_indices != [86, 489]:
+        raise RuntimeError("Unexpected pinned head defects")
+    boundaries = []
+    sewing = BRepBuilderAPI_Sewing(1e-7)
+    for index, face in enumerate(faces, 1):
+        if index not in invalid_indices:
+            sewing.Add(face)
+            continue
+        for raw_edge in subshapes(face, TopAbs_EDGE):
+            edge = TopoDS.Edge_s(raw_edge)
+            curve = BRepAdaptor_Curve(edge)
+            neighbors = [
+                (neighbor_index, neighbor)
+                for neighbor_index, neighbor in enumerate(faces, 1)
+                if neighbor_index != index
+                and any(edge.IsSame(other) for other in subshapes(neighbor, TopAbs_EDGE))
+            ]
+            boundaries.append({
+                "removedFace": index,
+                "centerMm": curve.Circle().Location().Coord(),
+                "radiusMm": curve.Circle().Radius(),
+                "parameterSpan": curve.LastParameter() - curve.FirstParameter(),
+                "remainingAdjacentFaces": [neighbor_index for neighbor_index, _ in neighbors],
+                "remainingAdjacentSurfaces": [
+                    str(BRepAdaptor_Surface(TopoDS.Face_s(neighbor)).GetType())
+                    for _, neighbor in neighbors
+                ],
+                "remainingAdjacentFaceWireCounts": [
+                    len(list(subshapes(neighbor, TopAbs_WIRE)))
+                    for _, neighbor in neighbors
+                ],
+            })
+    sewing.Perform()
+    result = sewing.SewedShape()
+    healing = ShapeFix_Shape(BRepBuilderAPI_Copy(result).Shape())
+    healing.Perform()
+    healed_sewing = BRepBuilderAPI_Sewing(1e-7)
+    healed_sewing.Add(healing.Shape())
+    healed_sewing.Perform()
+    return {
+        "removedFaces": invalid_indices,
+        "result": metrics(result),
+        "resultShapeType": str(result.ShapeType()),
+        "resultSolidCount": sum(1 for _ in subshapes(result, TopAbs_SOLID)),
+        "resultShellCount": sum(1 for _ in subshapes(result, TopAbs_SHELL)),
+        "closed": BRep_Tool.IsClosed_s(result),
+        "freeEdges": sewing.NbFreeEdges(),
+        "multipleEdges": sewing.NbMultipleEdges(),
+        "boundaries": boundaries,
+        "healedResult": metrics(healing.Shape()),
+        "healedFreeEdges": healed_sewing.NbFreeEdges(),
+        "healedClosed": BRep_Tool.IsClosed_s(healing.Shape()),
+    }
 
 
 def diagnose(source):
@@ -151,6 +218,7 @@ def diagnose(source):
         "original": metrics(shape),
         "defects": defects,
         "attempts": attempts,
+        "degenerateFaceRemoval": removal_diagnosis(shape),
     }
 
 

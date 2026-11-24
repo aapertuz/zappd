@@ -106,3 +106,22 @@ The captured run is in
 It records the source digest, original and resulting bounds, counts, integrals,
 tolerances, sampled pcurves, and validity results. The diagnostic works on copies
 and does not write STEP fixtures or change the transactional importer cache.
+
+A direct neighbor check on the pinned source found that planar faces 78 and 481
+both have two wires, including the radius-1.35 mm circular inner wire at the
+removed boundary. The circle centers are `(46.5, 10.932446485240638,
+29.409891266940623)` and `(-46.5, 10.932446485240638, 29.409891266940623)` mm.
+Each boundary is represented by two semicircular arcs. Removing the zero-height
+cylinders leaves a `TopAbs_SHELL` with zero solids and four free edges.
+`BRepCheck_Analyzer` reports this shell valid, but `BRep_Tool.IsClosed` reports
+false. It cannot be treated as a closed solid. Adding a finite wall or cap would
+supply geometry absent from the STEP, while merging the circle into the
+neighboring plane would remove the 2.7 mm boundary.
+
+The CLI reproduction stops at `poppy_1_28_5 (head_face)` with
+`Invalid BRep topology before writing poppy_1_28_5.step`. The staged fixture
+directory is removed, leaving no candidate catalog. The original signed-volume
+integral is `40084.05972663066 mm³`; after face removal it is
+`40084.40497993639 mm³`. Both measurements describe an invalid or open shape,
+so the integral difference is not a physical volume change. The diagnostic and
+source-backed test record these limits without treating removal as a repair.

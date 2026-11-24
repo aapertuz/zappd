@@ -224,5 +224,76 @@
       ],
       "maxEdgeToleranceMm": 0.018265205479867694
     }
+  },
+  "degenerateFaceRemoval": {
+    "removedFaces": [86, 489],
+    "result": {
+      "valid": true,
+      "faces": 794,
+      "areaMm2": 42036.764425808164,
+      "signedVolumeMm3": 40084.40497993639,
+      "boundsMm": [
+        [-66.58495517072348, -16.76838153552537, -16.994473717932404],
+        [66.58495517072355, 97.22288031068007, 49.60400912394523]
+      ],
+      "maxEdgeToleranceMm": 0.018265205479867694
+    },
+    "resultShapeType": "TopAbs_ShapeEnum.TopAbs_SHELL",
+    "resultSolidCount": 0,
+    "resultShellCount": 1,
+    "closed": false,
+    "freeEdges": 4,
+    "multipleEdges": 0,
+    "boundaries": [
+      {
+        "removedFace": 86,
+        "centerMm": [46.500000000000014, 10.932446485240638, 29.409891266940623],
+        "radiusMm": 1.3499999999999912,
+        "parameterSpan": 3.141592653589793,
+        "remainingAdjacentFaces": [78],
+        "remainingAdjacentSurfaces": ["GeomAbs_SurfaceType.GeomAbs_Plane"],
+        "remainingAdjacentFaceWireCounts": [2]
+      },
+      {
+        "removedFace": 86,
+        "centerMm": [46.500000000000014, 10.932446485240638, 29.409891266940623],
+        "radiusMm": 1.3499999999999912,
+        "parameterSpan": 3.141592653589793,
+        "remainingAdjacentFaces": [78],
+        "remainingAdjacentSurfaces": ["GeomAbs_SurfaceType.GeomAbs_Plane"],
+        "remainingAdjacentFaceWireCounts": [2]
+      },
+      {
+        "removedFace": 489,
+        "centerMm": [-46.500000000000014, 10.932446485240638, 29.409891266940623],
+        "radiusMm": 1.3499999999999912,
+        "parameterSpan": 3.141592653589793,
+        "remainingAdjacentFaces": [481],
+        "remainingAdjacentSurfaces": ["GeomAbs_SurfaceType.GeomAbs_Plane"],
+        "remainingAdjacentFaceWireCounts": [2]
+      },
+      {
+        "removedFace": 489,
+        "centerMm": [-46.500000000000014, 10.932446485240638, 29.409891266940623],
+        "radiusMm": 1.3499999999999912,
+        "parameterSpan": 3.141592653589793,
+        "remainingAdjacentFaces": [481],
+        "remainingAdjacentSurfaces": ["GeomAbs_SurfaceType.GeomAbs_Plane"],
+        "remainingAdjacentFaceWireCounts": [2]
+      }
+    ],
+    "healedResult": {
+      "valid": true,
+      "faces": 794,
+      "areaMm2": 42036.764425808164,
+      "signedVolumeMm3": 40084.40497993639,
+      "boundsMm": [
+        [-66.58495517072348, -16.76838153552537, -16.994473717932404],
+        [66.58495517072355, 97.22288031068007, 49.60400912394523]
+      ],
+      "maxEdgeToleranceMm": 0.018265205479867694
+    },
+    "healedFreeEdges": 4,
+    "healedClosed": false
   }
 }
