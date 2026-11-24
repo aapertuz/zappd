@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import hashlib
 import io
 import json
@@ -282,6 +283,21 @@ def ingest_nova2(cache_dir: Path) -> dict[str, dict[str, Any]]:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--poppy", action="store_true", help="Import the pinned Poppy Humanoid release")
+    args = parser.parse_args()
+    if args.poppy:
+        from poppy_catalog import POPPY_SOURCE_URL, POPPY_SPEC_PATH, import_poppy, verify_poppy_source
+
+        source = CACHE_DIR / "Poppy_Humanoid.STEP"
+        if not source.exists():
+            payload = fetch_bytes(POPPY_SOURCE_URL)
+            verify_poppy_source(payload)
+            source.parent.mkdir(parents=True, exist_ok=True)
+            source.write_bytes(payload)
+        spec = import_poppy(source, CACHE_DIR)
+        POPPY_SPEC_PATH.write_text(json.dumps(spec, indent=2) + "\n")
+        return 0
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     for stale in CACHE_DIR.glob("*.step"):
         stale.unlink()
