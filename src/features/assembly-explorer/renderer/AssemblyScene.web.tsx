@@ -1246,8 +1246,11 @@ export function AssemblyScene({
             .map((node) => node.name)
             .join(', ')}{' '}
           because source topology validation failed. Engineering and manufacturing validation are
-          not established. Mesh dimensional checks also have failures. Surface bodies are retained
-          as surfaces.
+          not established.{' '}
+          {assembly.validation.maxDimensionalErrorMm > 0.1
+            ? 'Mesh dimensional checks also have failures. '
+            : ''}
+          Surface bodies are retained as surfaces.
           <div>
             <a
               href={
