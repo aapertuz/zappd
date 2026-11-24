@@ -9,7 +9,10 @@ import numpy as np
 from PIL import Image
 
 
-SkinFamily = Literal["carbon_weave", "brushed_metal", "composite_matte", "fdm_printed", "pcb_fr4"]
+SkinFamily = Literal[
+    "carbon_weave", "brushed_metal", "composite_matte", "fdm_printed", "pcb_fr4",
+    "silicone_wire", "braided_sleeve",
+]
 TEXTURE_SIZE = 256
 
 
@@ -58,6 +61,8 @@ FAMILY_DEFAULTS: dict[SkinFamily, MaterialSkinSpec] = {
     "composite_matte": MaterialSkinSpec("composite_matte", 0.05, 0.48, 0.35, 0.024, 0.12, 0.38),
     "fdm_printed": MaterialSkinSpec("fdm_printed", 0.06, 0.55, 0.40, 0.020, 0.08, 0.45),
     "pcb_fr4": MaterialSkinSpec("pcb_fr4", 0.08, 0.52, 0.55, 0.030, 0.32, 0.28),
+    "silicone_wire": MaterialSkinSpec("silicone_wire", 0.0, 0.49, 0.24, 0.008, 0.10, 0.40),
+    "braided_sleeve": MaterialSkinSpec("braided_sleeve", 0.0, 0.71, 0.68, 0.012, 0.04, 0.62),
 }
 
 DEFAULT_MATERIAL_SKIN_SPEC = FAMILY_DEFAULTS["composite_matte"]
@@ -77,6 +82,9 @@ MATERIAL_SKIN_REGISTRY: dict[str, MaterialSkinSpec] = {
     "copper_winding": replace(_METAL, metallic=0.92),
     "polycarbonate": replace(DEFAULT_MATERIAL_SKIN_SPEC, roughness=0.34, clearcoat=0.25, clearcoat_roughness=0.32),
     "fr4_pcb": FAMILY_DEFAULTS["pcb_fr4"],
+    "silicone_wire": FAMILY_DEFAULTS["silicone_wire"],
+    "braided_sleeve": FAMILY_DEFAULTS["braided_sleeve"],
+    "li_ion_battery": replace(DEFAULT_MATERIAL_SKIN_SPEC, metallic=0.0, roughness=0.62, clearcoat=0.06, clearcoat_roughness=0.52),
     "abs_3d_printed": _PRINTED,
     "pla_3d_printed": replace(_PRINTED, roughness=0.53),
     "acetal_polymer": DEFAULT_MATERIAL_SKIN_SPEC,
@@ -167,12 +175,30 @@ def _pcb_fr4(x: np.ndarray, y: np.ndarray) -> SkinChannels:
     )
 
 
+def _silicone_wire(x: np.ndarray, y: np.ndarray) -> SkinChannels:
+    grain = np.cos(2 * np.pi * (46 * y + 0.06 * np.sin(4 * np.pi * x)))
+    grain = 0.7 * grain + 0.3 * _centered_noise(_rng(37))
+    return SkinChannels(0.977 + 0.015 * grain, 0.10 * grain, 0.94 + 0.04 * grain, np.zeros_like(x))
+
+
+def _braided_sleeve(x: np.ndarray, y: np.ndarray) -> SkinChannels:
+    diagonal = x + y
+    crossed = x - y
+    over = ((np.floor(diagonal * 9) + np.floor(crossed * 9)) % 2) == 0
+    tow = np.where(over, _weave_tow(diagonal, 9), _weave_tow(crossed, 9))
+    filament = np.cos(2 * np.pi * 63 * np.where(over, diagonal, crossed))
+    fiber = tow * (0.87 + 0.13 * filament)
+    return SkinChannels(0.70 + 0.25 * fiber, 2.2 * tow + 0.16 * fiber, 0.98 - 0.16 * fiber, np.zeros_like(x))
+
+
 _TEXTURE_PATTERNS: dict[SkinFamily, Callable[[np.ndarray, np.ndarray], SkinChannels]] = {
     "carbon_weave": _carbon_weave,
     "brushed_metal": _brushed_metal,
     "composite_matte": _composite_matte,
     "fdm_printed": _fdm_printed,
     "pcb_fr4": _pcb_fr4,
+    "silicone_wire": _silicone_wire,
+    "braided_sleeve": _braided_sleeve,
 }
 
 

@@ -1,0 +1,338 @@
+[
+  {
+    "cotsId": "kicad_so100_bus_servo_adapter",
+    "name": "SO-100 bus servo adapter",
+    "origin": "kicad_pcb_step",
+    "spdxLicense": "CC-BY-SA-4.0",
+    "sourceUrl": "kicad://zappd/kicad_so100_bus_servo_adapter",
+    "sourceName": "Zappd kicad_so100_bus_servo_adapter.kicad_pcb with KiCad kicad-packages3D models",
+    "stepFixtureName": "kicad_so100_bus_servo_adapter.step",
+    "expectedStepSha256": "d60c9e4ec6574c9e71b160e44d522927a4779166e4ab64d3e63b16b6efc90317",
+    "dimensionsMm": [36.6, 44.175, 14.6],
+    "materialHint": "fr4_pcb",
+    "colorHex": "#247052",
+    "specifications": {
+      "pcbWidthMm": 36,
+      "pcbLengthMm": 44,
+      "pcbThicknessMm": 1.6,
+      "brepFaces": 2066,
+      "xcafColors": 11,
+      "referenceLayout": true
+    },
+    "ports": [
+      {
+        "portId": "port_usb",
+        "label": "USB data",
+        "connectorType": "USB-C",
+        "busKind": "usb_data",
+        "localPositionMeters": [0.0053, -0.00175, 0.0220875],
+        "exitDirection": [0.0, 0.0, 1.0]
+      },
+      {
+        "portId": "port_dc_in",
+        "label": "DC power input",
+        "connectorType": "DC barrel jack",
+        "busKind": "dc_power",
+        "localPositionMeters": [-0.0183, 0.003, 0.0074125],
+        "exitDirection": [-1.0, 0.0, -0.0]
+      },
+      {
+        "portId": "port_servo_1",
+        "label": "Servo bus 1",
+        "connectorType": "JST-PH 3-pin",
+        "busKind": "ttl_serial",
+        "localPositionMeters": [-0.0087, 0.0026, -0.0090875],
+        "exitDirection": [0.0, 1.0, -0.0]
+      },
+      {
+        "portId": "port_servo_2",
+        "label": "Servo bus 2",
+        "connectorType": "JST-PH 3-pin",
+        "busKind": "ttl_serial",
+        "localPositionMeters": [0.0043, 0.0026, -0.0090875],
+        "exitDirection": [0.0, 1.0, -0.0]
+      }
+    ]
+  },
+  {
+    "cotsId": "kicad_quad_4in1_esc",
+    "name": "Quadcopter 4-in-1 brushless ESC",
+    "origin": "kicad_pcb_step",
+    "spdxLicense": "CC-BY-SA-4.0",
+    "sourceUrl": "kicad://zappd/kicad_quad_4in1_esc",
+    "sourceName": "Zappd kicad_quad_4in1_esc.kicad_pcb with KiCad kicad-packages3D models",
+    "stepFixtureName": "kicad_quad_4in1_esc.step",
+    "expectedStepSha256": "2d1f810fe8a8b4e1c6b0453cf16779df6c6975889cfe47873bb5efc6fc1da0e1",
+    "dimensionsMm": [36.0, 36.0, 20.5],
+    "materialHint": "fr4_pcb",
+    "colorHex": "#247052",
+    "specifications": {
+      "pcbWidthMm": 36,
+      "pcbLengthMm": 36,
+      "pcbThicknessMm": 1.6,
+      "brepFaces": 1538,
+      "xcafColors": 10,
+      "referenceLayout": true
+    },
+    "ports": [
+      {
+        "portId": "port_dc_in",
+        "label": "Battery input",
+        "connectorType": "XT60",
+        "busKind": "dc_power",
+        "localPositionMeters": [0.0, 0.01025, 0.011],
+        "exitDirection": [0.0, 1.0, -0.0]
+      },
+      {
+        "portId": "port_esc",
+        "label": "Flight controller / ESC link",
+        "connectorType": "JST-GH 4-pin",
+        "busKind": "pwm_signal",
+        "localPositionMeters": [0.01303, -0.00155, 0.006],
+        "exitDirection": [0.0, 1.0, -0.0]
+      },
+      {
+        "portId": "port_motor_1",
+        "label": "Motor 1 phase pads",
+        "connectorType": "3 solder pads",
+        "busKind": "brushless_phase",
+        "localPositionMeters": [-0.0105, -0.005795, -0.015],
+        "exitDirection": [0, 1, 0]
+      },
+      {
+        "portId": "port_motor_2",
+        "label": "Motor 2 phase pads",
+        "connectorType": "3 solder pads",
+        "busKind": "brushless_phase",
+        "localPositionMeters": [0.0105, -0.005795, -0.015],
+        "exitDirection": [0, 1, 0]
+      },
+      {
+        "portId": "port_motor_3",
+        "label": "Motor 3 phase pads",
+        "connectorType": "3 solder pads",
+        "busKind": "brushless_phase",
+        "localPositionMeters": [0.0105, -0.005795, 0.015],
+        "exitDirection": [0, 1, 0]
+      },
+      {
+        "portId": "port_motor_4",
+        "label": "Motor 4 phase pads",
+        "connectorType": "3 solder pads",
+        "busKind": "brushless_phase",
+        "localPositionMeters": [-0.0105, -0.005795, 0.015],
+        "exitDirection": [0, 1, 0]
+      }
+    ]
+  },
+  {
+    "cotsId": "kicad_quad_flight_controller",
+    "name": "Quadcopter flight controller",
+    "origin": "kicad_pcb_step",
+    "spdxLicense": "CC-BY-SA-4.0",
+    "sourceUrl": "kicad://zappd/kicad_quad_flight_controller",
+    "sourceName": "Zappd kicad_quad_flight_controller.kicad_pcb with KiCad kicad-packages3D models",
+    "stepFixtureName": "kicad_quad_flight_controller.step",
+    "expectedStepSha256": "0ff4be30d9f595e08107563f24fc1ae2b875371d90602c3d7b367fc42ae4bc7c",
+    "dimensionsMm": [36.0, 36.175, 5.845],
+    "materialHint": "fr4_pcb",
+    "colorHex": "#247052",
+    "specifications": {
+      "pcbWidthMm": 36,
+      "pcbLengthMm": 36,
+      "pcbThicknessMm": 1.6,
+      "brepFaces": 3121,
+      "xcafColors": 10,
+      "referenceLayout": true
+    },
+    "ports": [
+      {
+        "portId": "port_usb",
+        "label": "USB data",
+        "connectorType": "USB-C",
+        "busKind": "usb_data",
+        "localPositionMeters": [0.0, 0.0003725, 0.0180875],
+        "exitDirection": [0.0, 0.0, 1.0]
+      },
+      {
+        "portId": "port_esc",
+        "label": "Flight controller / ESC link",
+        "connectorType": "JST-GH 4-pin",
+        "busKind": "pwm_signal",
+        "localPositionMeters": [-0.008, 0.0029225, -0.0110875],
+        "exitDirection": [0.0, 1.0, -0.0]
+      },
+      {
+        "portId": "port_rx",
+        "label": "Receiver UART",
+        "connectorType": "JST-GH 4-pin",
+        "busKind": "i2c_spi_uart",
+        "localPositionMeters": [0.008, 0.0029225, -0.0110875],
+        "exitDirection": [0.0, 1.0, -0.0]
+      }
+    ]
+  },
+  {
+    "cotsId": "kicad_quad_elrs_receiver",
+    "name": "ELRS 2.4 GHz receiver",
+    "origin": "kicad_pcb_step",
+    "spdxLicense": "CC-BY-SA-4.0",
+    "sourceUrl": "kicad://zappd/kicad_quad_elrs_receiver",
+    "sourceName": "Zappd kicad_quad_elrs_receiver.kicad_pcb with KiCad kicad-packages3D models",
+    "stepFixtureName": "kicad_quad_elrs_receiver.step",
+    "expectedStepSha256": "5c86733024e2f8efd501a284b963c20c58d6e299f8ce12d7f904292dc63f38af",
+    "dimensionsMm": [18.0, 14.0, 5.845],
+    "materialHint": "fr4_pcb",
+    "colorHex": "#247052",
+    "specifications": {
+      "pcbWidthMm": 18,
+      "pcbLengthMm": 14,
+      "pcbThicknessMm": 1.6,
+      "brepFaces": 688,
+      "xcafColors": 7,
+      "referenceLayout": true
+    },
+    "ports": [
+      {
+        "portId": "port_rx",
+        "label": "Receiver UART",
+        "connectorType": "JST-GH 4-pin",
+        "busKind": "i2c_spi_uart",
+        "localPositionMeters": [0.0035, 0.0029225, -0.0],
+        "exitDirection": [0.0, 1.0, -0.0]
+      }
+    ]
+  },
+  {
+    "cotsId": "kicad_nova2_jetson_carrier",
+    "name": "Nova2 Jetson Orin Nano carrier and servo hub",
+    "origin": "kicad_pcb_step",
+    "spdxLicense": "CC-BY-SA-4.0",
+    "sourceUrl": "kicad://zappd/kicad_nova2_jetson_carrier",
+    "sourceName": "Zappd kicad_nova2_jetson_carrier.kicad_pcb with KiCad kicad-packages3D models",
+    "stepFixtureName": "kicad_nova2_jetson_carrier.step",
+    "expectedStepSha256": "7170d05986ec4c21b6e2b1b9b30e1f3a5d14d735ba014efacc2acaa038ca112b",
+    "dimensionsMm": [96.3, 76.175, 14.6],
+    "materialHint": "fr4_pcb",
+    "colorHex": "#247052",
+    "specifications": {
+      "pcbWidthMm": 96,
+      "pcbLengthMm": 76,
+      "pcbThicknessMm": 1.6,
+      "brepFaces": 4640,
+      "xcafColors": 11,
+      "referenceLayout": true
+    },
+    "ports": [
+      {
+        "portId": "port_gpio",
+        "label": "Jetson GPIO",
+        "connectorType": "40-pin GPIO",
+        "busKind": "i2c_spi_uart",
+        "localPositionMeters": [0.04342, 0.00514, 4.25e-5],
+        "exitDirection": [0.0, 1.0, -0.0]
+      },
+      {
+        "portId": "port_usb",
+        "label": "ZED 2i USB data",
+        "connectorType": "USB-C",
+        "busKind": "usb_data",
+        "localPositionMeters": [0.01515, -0.00175, 0.0380875],
+        "exitDirection": [0.0, 0.0, 1.0]
+      },
+      {
+        "portId": "port_dc_in",
+        "label": "DC power input",
+        "connectorType": "DC barrel jack",
+        "busKind": "dc_power",
+        "localPositionMeters": [-0.04815, 0.003, 0.0129125],
+        "exitDirection": [-1.0, 0.0, -0.0]
+      },
+      {
+        "portId": "port_servo_1",
+        "label": "Servo bus 1",
+        "connectorType": "JST-PH 3-pin",
+        "busKind": "ttl_serial",
+        "localPositionMeters": [-0.01685, 0.0026, -0.0190875],
+        "exitDirection": [0.0, 1.0, -0.0]
+      },
+      {
+        "portId": "port_servo_2",
+        "label": "Servo bus 2",
+        "connectorType": "JST-PH 3-pin",
+        "busKind": "ttl_serial",
+        "localPositionMeters": [0.00615, 0.0026, -0.0190875],
+        "exitDirection": [0.0, 1.0, -0.0]
+      }
+    ]
+  },
+  {
+    "cotsId": "cots_battery_3s_18650",
+    "name": "3S 18650 battery holder with cells",
+    "origin": "cots_library_step",
+    "spdxLicense": "NOASSERTION",
+    "sourceUrl": "https://raw.githubusercontent.com/robotjaol/custom-components/main/BATTERY_HOLDER_18650_X3/3%20Battery%20Holder%20With%20Batteries.step",
+    "sourceName": "robotjaol/custom-components 3 Battery Holder With Batteries.step",
+    "stepFixtureName": "cots_battery_3s_18650.step",
+    "expectedStepSha256": "2447b23136e63ef600e444d6d1cda79b3e6b0405f8e6f5667f069647d5d4b611",
+    "dimensionsMm": [77.98, 59.63, 24.74],
+    "materialHint": "li_ion_battery",
+    "colorHex": "#3f3f46",
+    "specifications": {
+      "seriesCells": 3,
+      "cellFormat": "18650",
+      "brepFaces": 498,
+      "xcafColors": 5
+    },
+    "ports": [
+      {
+        "portId": "port_tab_1",
+        "label": "Battery holder contact 1",
+        "connectorType": "Solder tab",
+        "busKind": "dc_power",
+        "localPositionMeters": [-0.03624, -0.01237, 0.019255],
+        "exitDirection": [0, -1, 0]
+      },
+      {
+        "portId": "port_tab_2",
+        "label": "Battery holder contact 2",
+        "connectorType": "Solder tab",
+        "busKind": "dc_power",
+        "localPositionMeters": [-0.03624, -0.01237, -4.5e-5],
+        "exitDirection": [0, -1, 0]
+      },
+      {
+        "portId": "port_tab_3",
+        "label": "Battery holder contact 3",
+        "connectorType": "Solder tab",
+        "busKind": "dc_power",
+        "localPositionMeters": [-0.03624, -0.01237, -0.019345],
+        "exitDirection": [0, -1, 0]
+      },
+      {
+        "portId": "port_tab_4",
+        "label": "Battery holder contact 4",
+        "connectorType": "Solder tab",
+        "busKind": "dc_power",
+        "localPositionMeters": [0.03624, -0.01237, 0.019345],
+        "exitDirection": [0, -1, 0]
+      },
+      {
+        "portId": "port_tab_5",
+        "label": "Battery holder contact 5",
+        "connectorType": "Solder tab",
+        "busKind": "dc_power",
+        "localPositionMeters": [0.03624, -0.01237, 4.5e-5],
+        "exitDirection": [0, -1, 0]
+      },
+      {
+        "portId": "port_tab_6",
+        "label": "Battery holder contact 6",
+        "connectorType": "Solder tab",
+        "busKind": "dc_power",
+        "localPositionMeters": [0.03624, -0.01237, -0.019255],
+        "exitDirection": [0, -1, 0]
+      }
+    ]
+  }
+]

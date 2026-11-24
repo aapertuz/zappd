@@ -12,14 +12,15 @@ from pathlib import Path
 import numpy as np
 import pytest
 from PIL import Image
+from OCP.BRepCheck import BRepCheck_Analyzer
 from pygltflib import FLOAT, GLTF2
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from catalog_ingestor import resolve_component_step
+from catalog_ingestor import read_xcaf_face_colors, resolve_component_step
 from catalog_specs import CATALOG_SPECS, resolve_catalog_spec
-from geometry_pipeline import parse_glb_diagnostics, parse_usdz_prim_paths, run_cad_pipeline
-from material_skins import resolve_material_skin, srgb_hex_to_linear_rgba
+from geometry_pipeline import parse_glb_diagnostics, parse_usdz_prim_paths, run_cad_pipeline, shape_bounds_mm
+from material_skins import build_skin_texture_set, resolve_material_skin, srgb_hex_to_linear_rgba
 
 
 EXPECTED_NODE_COUNTS = {
@@ -27,6 +28,14 @@ EXPECTED_NODE_COUNTS = {
     "robotic_arm_3dof_v1": 24,
     "open_source_rover_v1": 15,
 }
+COTS_REGISTRY = (
+    Path(__file__).resolve().parents[3] / "src/shared/domain/catalog/cots/index.json"
+)
+
+
+@pytest.fixture(scope="module")
+def cots_parts() -> dict[str, dict]:
+    return {part["cotsId"]: part for part in json.loads(COTS_REGISTRY.read_text(encoding="utf-8"))}
 
 
 def test_worker_loads_complete_shared_catalog_specs() -> None:
@@ -56,6 +65,125 @@ def test_worker_loads_complete_shared_catalog_specs() -> None:
 )
 def test_catalog_srgb_is_converted_to_linear_color(color: str, expected: list[float]) -> None:
     assert srgb_hex_to_linear_rgba(color) == pytest.approx(expected, abs=1e-8)
+
+
+@pytest.mark.parametrize(
+    ("hint", "family"),
+    [
+        ("silicone_wire", "silicone_wire"),
+        ("braided_sleeve", "braided_sleeve"),
+        ("li_ion_battery", "composite_matte"),
+    ],
+)
+def test_electronics_skin_resolution_and_textures(hint: str, family: str) -> None:
+    skin = resolve_material_skin(hint)
+    assert skin.family == family
+    assert skin.metallic == 0
+    textures = build_skin_texture_set(skin.family)
+    for png in (textures.albedo_png, textures.normal_png, textures.metallic_roughness_png):
+        with Image.open(BytesIO(png)) as image:
+            assert image.size == (256, 256)
+            assert image.mode == "RGB"
+            assert image.getextrema()[1][0] < image.getextrema()[1][1]
+
+
+def test_cots_registry_resolves_valid_centered_steps_with_ports(cots_parts: dict, tmp_path: Path) -> None:
+    assert set(cots_parts) == {
+        "cots_battery_3s_18650",
+        "kicad_so100_bus_servo_adapter",
+        "kicad_quad_4in1_esc",
+        "kicad_quad_flight_controller",
+        "kicad_quad_elrs_receiver",
+        "kicad_nova2_jetson_carrier",
+    }
+    for cid, part in cots_parts.items():
+        resolved = resolve_component_step({**part, "id": cid}, tmp_path)
+        assert resolved["sha256"] == part["expectedStepSha256"]
+        assert BRepCheck_Analyzer(resolved["shape"]).IsValid()
+        assert resolved["faceCount"] == part["specifications"]["brepFaces"]
+        lower, upper = np.asarray(shape_bounds_mm(resolved["shape"]))
+        assert lower + upper == pytest.approx([0, 0, 0], abs=0.0001)
+        assert upper - lower == pytest.approx(part["dimensionsMm"], abs=0.0001)
+
+        face_colors = read_xcaf_face_colors(resolved["stepPath"])
+        assert len(face_colors) == resolved["faceCount"]
+        colors = {color for _, color in face_colors if color is not None}
+        assert len(colors) == part["specifications"]["xcafColors"]
+        assert len(colors) >= (3 if part["origin"] == "kicad_pcb_step" else 2)
+        assert part["ports"]
+        assert len({port["portId"] for port in part["ports"]}) == len(part["ports"])
+        for port in part["ports"]:
+            assert re.fullmatch(r"port_[a-z0-9_]+", port["portId"])
+            assert port["label"] and port["connectorType"]
+            assert port["busKind"] in {"dc_power", "usb_data", "ttl_serial", "i2c_spi_uart", "pwm_signal", "brushless_phase"}
+            x, y, z = port["localPositionMeters"]
+            position = np.array([x, -z, y]) * 1000
+            assert np.all(position >= lower - 0.001)
+            assert np.all(position <= upper + 0.001)
+            assert np.linalg.norm(port["exitDirection"]) == pytest.approx(1)
+            if cid == "kicad_quad_elrs_receiver":
+                assert position[2] == pytest.approx(upper[2], abs=0.0001)
+            if cid == "cots_battery_3s_18650":
+                assert position[2] == pytest.approx(lower[2], abs=0.0001)
+
+
+def test_xcaf_materials_export_as_one_component_with_partitioned_faces(cots_parts: dict, tmp_path: Path) -> None:
+    board = "kicad_quad_elrs_receiver"
+    cid = "comp_receiver"
+    part = cots_parts[board]
+    template = CATALOG_SPECS["open_source_rover_v1"]
+    root = template["nodes"][0]
+    component = next(node for node in template["nodes"] if node.get("stepFixtureName"))
+    node = {
+        **component,
+        **part,
+        "id": cid,
+        "level": "component",
+        "parentId": root["id"],
+        "depth": 1,
+        "restPositionMeters": [0, 0, 0],
+    }
+    out = tmp_path / "exports"
+    cache = tmp_path / "steps"
+    result = run_cad_pipeline({**template, "nodes": [root, node]}, output_dir=out, cache_dir=cache)
+    assert result["verificationStatus"] == "composed_validated"
+    assert result["validation"]["valid"]
+    assert result["validation"]["maxDimensionalErrorMm"] <= 0.1
+
+    glb = out / "model.glb"
+    ids, bounds = parse_glb_diagnostics(glb)
+    assert ids == [cid]
+    gltf = GLTF2.load_binary(str(glb))
+    meshes = [n for n in gltf.nodes if n.mesh is not None]
+    assert [n.name for n in meshes] == [cid]
+    primitives = gltf.meshes[meshes[0].mesh].primitives
+    source_face_colors = read_xcaf_face_colors(cache / part["stepFixtureName"])
+    tints = {tuple(srgb_hex_to_linear_rgba(color or part["colorHex"])) for _, color in source_face_colors}
+    assert len(primitives) >= 3
+    assert {tuple(gltf.materials[p.material].pbrMetallicRoughness.baseColorFactor) for p in primitives} == tints
+    assert [gltf.materials[p.material].name for p in primitives] == [
+        f"mat_{cid}_{index}" for index in range(len(primitives))
+    ]
+    points = np.concatenate([_read_glb_accessor(gltf, p.attributes.POSITION, 3) for p in primitives])
+    assert bounds[cid][0] == pytest.approx(points.min(axis=0))
+    assert bounds[cid][1] == pytest.approx(points.max(axis=0))
+
+    usda = parse_usdz_prim_paths(out / "model.usdz")
+    assert usda.count('def Mesh "Mesh"') == 1
+    assert usda.count(f'custom string componentId = "{cid}"') == 2
+    assert result["usdzPrimPaths"] == [f"/World/{root['id']}/{cid}"]
+    assert 'uniform token subsetFamily:materialBind:familyType = "partition"' in usda
+    assert usda.count('uniform token elementType = "face"') == len(primitives)
+    subsets = re.findall(r'def GeomSubset "sub_(\d+)".*?int\[\] indices = \[(.*?)\]', usda, re.S)
+    offset = 0
+    for index, (subset, indices) in enumerate(subsets):
+        assert int(subset) == index
+        assert f'def Material "mat_{cid}_{index}"' in usda
+        assert f"rel material:binding = </World/Materials/mat_{cid}_{index}>" in usda
+        end = offset + gltf.accessors[primitives[index].indices].count // 3
+        assert [int(face) for face in indices.split(", ")] == list(range(offset, end))
+        offset = end
+    assert len(subsets) == len(primitives)
 
 
 def _read_glb_accessor(gltf: GLTF2, accessor_index: int, dimensions: int) -> np.ndarray:

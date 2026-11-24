@@ -7,12 +7,22 @@ from typing import Any, Literal, TypedDict
 
 from OCP.BRepCheck import BRepCheck_Analyzer
 from OCP.IFSelect import IFSelect_RetDone
+from OCP.Quantity import Quantity_Color, Quantity_TOC_sRGB
+from OCP.STEPCAFControl import STEPCAFControl_Reader
 from OCP.STEPControl import STEPControl_Reader
+from OCP.TCollection import TCollection_ExtendedString
+from OCP.TDF import TDF_Label
+from OCP.TDocStd import TDocStd_Document
 from OCP.TopAbs import TopAbs_FACE
 from OCP.TopExp import TopExp_Explorer
+from OCP.TopLoc import TopLoc_Location
+from OCP.TopoDS import TopoDS, TopoDS_Iterator
+from OCP.XCAFDoc import XCAFDoc_ColorGen, XCAFDoc_ColorSurf, XCAFDoc_DocumentTool
+from OCP.collections import IndexedMap_TopoDS_Shape, Sequence_TDF_Label
 
 
 REPO_STEP_CACHE_DIR = Path(__file__).resolve().parents[1] / "data" / "open_step_cache"
+REPO_COTS_LIBRARY_DIR = REPO_STEP_CACHE_DIR.with_name("cots_library")
 MIN_CAD_BREP_FACES = 4
 
 
@@ -48,6 +58,71 @@ def count_brep_faces(shape: Any) -> int:
         count += 1
         explorer.Next()
     return count
+
+
+def read_xcaf_document(step_path: Path) -> TDocStd_Document:
+    document = TDocStd_Document(TCollection_ExtendedString("MDTV-XCAF"))
+    reader = STEPCAFControl_Reader()
+    reader.SetColorMode(True)
+    if reader.ReadFile(str(step_path)) != IFSelect_RetDone or not reader.Transfer(document):
+        raise RuntimeError(f"STEPCAFControl_Reader failed on {step_path}")
+    return document
+
+
+def read_xcaf_face_colors(step_path: Path) -> list[tuple[Any, str | None]]:
+    document = read_xcaf_document(step_path)
+    shape_tool = XCAFDoc_DocumentTool.ShapeTool_s(document.Main())
+    color_tool = XCAFDoc_DocumentTool.ColorTool_s(document.Main())
+    faces: list[tuple[Any, str | None]] = []
+
+    def label_color(label: TDF_Label) -> str | None:
+        color = Quantity_Color()
+        for color_type in (XCAFDoc_ColorSurf, XCAFDoc_ColorGen):
+            if color_tool.GetColor_s(label, color_type, color):
+                return "#" + "".join(f"{round(channel * 255):02x}" for channel in color.Values(Quantity_TOC_sRGB))
+        return None
+
+    def visit_label(label: TDF_Label, location: TopLoc_Location, inherited: str | None) -> None:
+        color = label_color(label) or inherited
+        referred = TDF_Label()
+        if shape_tool.GetReferredShape_s(label, referred):
+            visit_label(referred, location.Multiplied(shape_tool.GetLocation_s(label)), color)
+            return
+
+        components = Sequence_TDF_Label()
+        if shape_tool.GetComponents_s(label, components):
+            for child in components:
+                visit_label(child, location, color)
+            return
+
+        subshapes = Sequence_TDF_Label()
+        shape_tool.GetSubShapes_s(label, subshapes)
+        styled_shapes = IndexedMap_TopoDS_Shape()
+        colors: dict[int, str] = {}
+        for subshape in subshapes:
+            subshape_color = label_color(subshape)
+            if subshape_color is not None:
+                colors[styled_shapes.Add(shape_tool.GetShape_s(subshape))] = subshape_color
+
+        def visit_shape(shape: Any, parent_color: str | None) -> None:
+            shape_color = colors.get(styled_shapes.FindIndex(shape), parent_color)
+            if shape.ShapeType() == TopAbs_FACE:
+                faces.append((TopoDS.Face(shape.Moved(location)), shape_color))
+                return
+            children = TopoDS_Iterator(shape)
+            while children.More():
+                visit_shape(children.Value(), shape_color)
+                children.Next()
+
+        shape = shape_tool.GetShape_s(label)
+        if not shape.IsNull():
+            visit_shape(shape, color)
+
+    roots = Sequence_TDF_Label()
+    shape_tool.GetFreeShapes(roots)
+    for root in roots:
+        visit_label(root, TopLoc_Location(), None)
+    return faces
 
 
 def read_and_validate_step(
@@ -118,9 +193,12 @@ def resolve_component_step(node_spec: dict[str, Any], cache_dir: Path) -> dict[s
     cache_dir.mkdir(parents=True, exist_ok=True)
     step_path = cache_dir / str(fixture_name)
     if not step_path.exists():
-        repo_step_path = REPO_STEP_CACHE_DIR / str(fixture_name)
-        if repo_step_path.exists() and repo_step_path.resolve() != step_path.resolve():
-            shutil.copy2(repo_step_path, step_path)
+        for fixture_dir in (REPO_STEP_CACHE_DIR, REPO_COTS_LIBRARY_DIR):
+            repo_step_path = fixture_dir / str(fixture_name)
+            if repo_step_path.is_file():
+                step_path.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(repo_step_path, step_path)
+                break
 
     shape, sha256_hex, face_count = read_and_validate_step(
         step_path,
