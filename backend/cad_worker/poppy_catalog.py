@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from OCP.IFSelect import IFSelect_RetDone
 from OCP.STEPCAFControl import STEPCAFControl_Reader
@@ -26,6 +27,16 @@ def verify_poppy_source(payload: bytes) -> None:
 
 def import_poppy(source_path: Path, cache_dir: Path) -> dict:
     verify_poppy_source(source_path.read_bytes())
+    with TemporaryDirectory(prefix="zappd-poppy-") as temporary:
+        staging_dir = Path(temporary)
+        catalog = _import_poppy(source_path, staging_dir)
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        for fixture in staging_dir.iterdir():
+            (cache_dir / fixture.name).write_bytes(fixture.read_bytes())
+        return catalog
+
+
+def _import_poppy(source_path: Path, cache_dir: Path) -> dict:
     document = TDocStd_Document(TCollection_ExtendedString("Poppy Humanoid"))
     reader = STEPCAFControl_Reader()
     if reader.ReadFile(str(source_path)) != IFSelect_RetDone or not reader.Transfer(
