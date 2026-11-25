@@ -219,3 +219,22 @@ def test_poppy_inject_collision_test_recomputes_shifted_interference(tmp_path: P
     report = result["validation"]["sourceInterferenceReport"]
     assert report["intersectionCount"] == 1
     assert result["validation"]["interferenceCount"] == 1
+
+
+def test_cli_rejects_inject_collision_test_into_canonical_exports(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    import cli
+
+    repo_root = Path(__file__).resolve().parents[3]
+    canonical_export = repo_root / "backend" / "data" / "exports" / "poppy_humanoid_v1"
+    canonical_public = repo_root / "public" / "assemblies" / "poppy_humanoid_v1"
+    for argv in (
+        ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test"],
+        ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(canonical_export)],
+        ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(canonical_public)],
+        ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(tmp_path), "--public-dir", str(tmp_path / "pub")],
+        ["cli.py", "--all-archetypes", "--inject-collision-test", "--output-dir", str(tmp_path)],
+    ):
+        monkeypatch.setattr(sys, "argv", argv)
+        with pytest.raises(SystemExit) as exc:
+            cli.main()
+        assert exc.value.code == 2

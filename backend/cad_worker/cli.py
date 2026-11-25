@@ -27,6 +27,29 @@ def main() -> int:
     repo_root = Path(__file__).resolve().parents[2]
     cache_dir = Path(args.cache_dir) if args.cache_dir else repo_root / "backend" / "data" / "open_step_cache"
 
+    if args.inject_collision_test:
+        if args.all_archetypes or args.public_dir:
+            parser.error("--inject-collision-test cannot be combined with --all-archetypes or --public-dir")
+        if not args.output_dir:
+            parser.error("--inject-collision-test requires an explicit --output-dir outside canonical exports")
+        canonical_exports = repo_root / "backend" / "data" / "exports"
+        canonical_public = repo_root / "public" / "assemblies"
+        forbidden_roots = (
+            canonical_exports.resolve(),
+            canonical_exports.absolute(),
+            canonical_public.resolve(),
+            canonical_public.absolute(),
+        )
+        candidate_outputs = (Path(args.output_dir).resolve(), Path(args.output_dir).absolute())
+        if any(
+            candidate == root or root in candidate.parents
+            for candidate in candidate_outputs
+            for root in forbidden_roots
+        ):
+            parser.error(
+                "--inject-collision-test --output-dir must be outside canonical exports and public assemblies"
+            )
+
     targets = list(CATALOG_SPECS.keys()) if args.all_archetypes else [args.archetype]
     results = []
     for archetype_id in targets:

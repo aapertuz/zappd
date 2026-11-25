@@ -852,14 +852,17 @@ def run_cad_pipeline(
 
         cad_offset_mm = world_rest_to_cad_mm(rest_m)
         placed_shape = translate_shape_mm(shape, cad_offset_mm)
+        has_solid = TopExp_Explorer(shape, TopAbs_SOLID).More()
         if node_spec.get("geometry", {}).get("role") == "surface":
-            if TopExp_Explorer(shape, TopAbs_SOLID).More():
+            if has_solid:
                 failures.append(f"Component {cid} declared surface contains CAD solids")
                 placed_solids[cid] = placed_shape
             else:
                 failures.append(
                     f"Open surface component {cid} excluded from solid volumetric interference check"
                 )
+        elif not has_solid:
+            failures.append(f"Component {cid} has no CAD solid for volumetric interference check")
         else:
             placed_solids[cid] = placed_shape
         builder.Add(compound, placed_shape)

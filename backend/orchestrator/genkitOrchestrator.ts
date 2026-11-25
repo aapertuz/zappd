@@ -85,6 +85,34 @@ function resolveRepoRoot(): string {
   return path.resolve(process.cwd());
 }
 
+export function matchesCatalogPlacements(
+  catalogNodes: readonly Pick<AssemblyNode, 'id' | 'restPositionMeters'>[],
+  workerNodes: readonly Pick<AssemblyNode, 'id' | 'restPositionMeters'>[],
+): boolean {
+  if (catalogNodes.length !== workerNodes.length) {
+    return false;
+  }
+  const byId = new Map(workerNodes.map((node) => [node.id, node]));
+  for (const expected of catalogNodes) {
+    const actual = byId.get(expected.id);
+    if (actual === undefined) {
+      return false;
+    }
+    for (let axis = 0; axis < 3; axis += 1) {
+      const expectedValue = expected.restPositionMeters[axis];
+      const actualValue = actual.restPositionMeters[axis];
+      if (
+        expectedValue === undefined ||
+        actualValue === undefined ||
+        Math.abs(expectedValue - actualValue) > 1e-6
+      ) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -165,15 +193,8 @@ async function tryReuseVerifiedExports(args: {
     if (!isAllowedProjectAssembly(workerResult)) {
       return null;
     }
-    const expectedIds = new Set(catalogArchetype.nodes.map((node) => node.id));
-    const actualIds = new Set(workerResult.nodes.map((node) => node.id));
-    if (expectedIds.size !== actualIds.size) {
+    if (!matchesCatalogPlacements(catalogArchetype.nodes, workerResult.nodes)) {
       return null;
-    }
-    for (const id of expectedIds) {
-      if (!actualIds.has(id)) {
-        return null;
-      }
     }
     const mappingOk = verifyOneToOneNodeMapping(
       workerResult.nodes,
@@ -274,7 +295,14 @@ async function runCadAssemblyAndValidation(args: {
     workerResult.usdzPrimPaths,
     { allowUnavailableNodes: catalogArchetype?.semantics === 'source_inspection' },
   );
-  if (!mappingOk || !isAllowedProjectAssembly(workerResult)) {
+  const placementsMatch =
+    catalogArchetype === undefined || matchesCatalogPlacements(catalogArchetype.nodes, nodes);
+  if (
+    args.injectCollisionTest === true ||
+    !mappingOk ||
+    !placementsMatch ||
+    !isAllowedProjectAssembly(workerResult)
+  ) {
     throw new Error(
       `OpenCascade validation rejected assembly "${args.archetypeId}": ${workerResult.validation.failures.join('; ')}`,
     );

@@ -34,8 +34,10 @@ registerHooks({
   },
 });
 
+const { getCatalogArchetypeById } = await import('../../../src/shared/domain/index.ts');
 const { FirebaseEmulatorRepository } = await import('../../../src/shared/firebase/index.ts');
-const { orchestrateProjectAssemblyCreation } = await import('../genkitOrchestrator.ts');
+const { matchesCatalogPlacements, orchestrateProjectAssemblyCreation } =
+  await import('../genkitOrchestrator.ts');
 
 function assertReusesAvailableExports(assembly) {
   const manifestFile = path.join(
@@ -274,5 +276,25 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
         process.env.OPENAI_API_KEY = originalOpenAiKey;
       }
     }
+  });
+
+  it('rejects shifted placements before reusing or publishing Poppy inspection exports', () => {
+    const poppy = getCatalogArchetypeById('poppy_humanoid_v1');
+    assert.ok(poppy);
+    assert.equal(matchesCatalogPlacements(poppy.nodes, poppy.nodes), true);
+    const shifted = poppy.nodes.map((node, index) =>
+      index === poppy.nodes.length - 1
+        ? {
+            ...node,
+            restPositionMeters: [
+              node.restPositionMeters[0] + 0.01,
+              node.restPositionMeters[1],
+              node.restPositionMeters[2],
+            ],
+          }
+        : node,
+    );
+    assert.equal(matchesCatalogPlacements(poppy.nodes, shifted), false);
+    assert.equal(matchesCatalogPlacements(poppy.nodes, poppy.nodes.slice(0, -1)), false);
   });
 });

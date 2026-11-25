@@ -726,3 +726,51 @@ def test_unavailable_or_visual_only_leaf_cannot_certify_as_verified(tmp_path: Pa
     assert visual_result["verificationStatus"] == "unverified"
     assert visual_result["validation"]["valid"] is False
     assert any("has visual_only CAD geometry" in f for f in visual_result["validation"]["failures"])
+
+
+def test_open_surface_declared_as_solid_cannot_certify_as_verified(tmp_path: Path) -> None:
+    import hashlib
+    from OCP.BRep import BRep_Builder
+    from OCP.BRepPrimAPI import BRepPrimAPI_MakeBox
+    from OCP.STEPControl import STEPControl_AsIs, STEPControl_Writer
+    from OCP.TopAbs import TopAbs_FACE
+    from OCP.TopExp import TopExp_Explorer
+    from OCP.TopoDS import TopoDS_Shell
+
+    box = BRepPrimAPI_MakeBox(20.0, 20.0, 20.0).Shape()
+    shell = TopoDS_Shell()
+    builder = BRep_Builder()
+    builder.MakeShell(shell)
+    explorer = TopExp_Explorer(box, TopAbs_FACE)
+    added = 0
+    while explorer.More():
+        if added < 5:
+            builder.Add(shell, explorer.Current())
+            added += 1
+        explorer.Next()
+
+    cache_dir = tmp_path / "cache"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    step_path = cache_dir / "open_shell_fixture.step"
+    writer = STEPControl_Writer()
+    writer.Transfer(shell, STEPControl_AsIs)
+    writer.Write(str(step_path))
+    digest = hashlib.sha256(step_path.read_bytes()).hexdigest()
+
+    template = CATALOG_SPECS["quadcopter_drone_v1"]
+    root = copy.deepcopy(template["nodes"][0])
+    leaf = copy.deepcopy(next(n for n in template["nodes"] if n["id"] == "comp_base_plate_lower"))
+    leaf["parentId"] = root["id"]
+    leaf["depth"] = 1
+    leaf["stepFixtureName"] = step_path.name
+    leaf["expectedStepSha256"] = digest
+    leaf["geometry"] = {"kind": "available", "role": "solid"}
+
+    result = run_cad_pipeline(
+        {**template, "nodes": [root, leaf], "relationships": [], "assemblySteps": []},
+        output_dir=tmp_path / "exports",
+        cache_dir=cache_dir,
+    )
+    assert result["verificationStatus"] == "unverified"
+    assert result["validation"]["valid"] is False
+    assert any("has no CAD solid" in failure for failure in result["validation"]["failures"])

@@ -231,8 +231,9 @@ a known interior maximum checks the CAD calculation without a mesh reference.
 A shifted render mesh still fails the pipeline dimensional check.
 All 201 available source components pass the unchanged 0.1 mm dimensional check.
 The complete-catalog maximum is 0.0563 mm. Export metadata has been refreshed.
-The head remains unavailable, engineering validation remains unverified, and
-interference analysis remains unperformed.
+At that milestone, the head remained unavailable, engineering validation remained
+unverified, and interference analysis had not yet been run (the visual-only head
+shell and reproducible interference report were added in the sections below).
 
 ## Visual-only front head shell
 
