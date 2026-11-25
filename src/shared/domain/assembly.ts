@@ -39,7 +39,18 @@ export type CadProvenance = {
 export type ComponentGeometry =
   | { readonly kind: 'assembly' }
   | { readonly kind: 'available'; readonly role: 'solid' | 'surface' }
-  | { readonly kind: 'unavailable'; readonly reason: string };
+  | { readonly kind: 'unavailable'; readonly reason: string }
+  | {
+      readonly kind: 'visual_only';
+      readonly cadRejectionReason: string;
+      readonly sourceUrl: string;
+      readonly archiveSha256: AssetChecksum;
+      readonly memberPath: string;
+      readonly sha256: AssetChecksum;
+      readonly spdxLicense: string;
+      readonly sourceOccurrencePath: string;
+      readonly sourceCoordinateFrame: 'assembly_y_up_millimeters';
+    };
 
 export type AssemblyNode = {
   readonly geometry?: ComponentGeometry;
@@ -487,6 +498,21 @@ function parseComponentGeometry(raw: unknown): ComponentGeometry | undefined {
   }
   if (raw.kind === 'unavailable')
     return { kind: 'unavailable', reason: readRequiredString(raw, 'reason') };
+  if (raw.kind === 'visual_only' && raw.sourceCoordinateFrame === 'assembly_y_up_millimeters') {
+    const sourceUrl = readRequiredString(raw, 'sourceUrl');
+    if (!sourceUrl.startsWith('https://')) throw new Error('Invalid visual source URL');
+    return {
+      kind: 'visual_only',
+      cadRejectionReason: readRequiredString(raw, 'cadRejectionReason'),
+      sourceUrl,
+      archiveSha256: toAssetChecksum(readRequiredString(raw, 'archiveSha256')),
+      memberPath: readRequiredString(raw, 'memberPath'),
+      sha256: toAssetChecksum(readRequiredString(raw, 'sha256')),
+      spdxLicense: readRequiredString(raw, 'spdxLicense'),
+      sourceOccurrencePath: readRequiredString(raw, 'sourceOccurrencePath'),
+      sourceCoordinateFrame: 'assembly_y_up_millimeters',
+    };
+  }
   throw new Error('Invalid component geometry state');
 }
 

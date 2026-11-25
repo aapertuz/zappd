@@ -1226,7 +1226,9 @@ export function AssemblyScene({
 
   return (
     <section className={classes.explorerRoot} aria-label="3D Assembly Explorer">
-      {assembly.nodes.some((node) => node.geometry?.kind === 'unavailable') ? (
+      {assembly.nodes.some(
+        (node) => node.geometry?.kind === 'unavailable' || node.geometry?.kind === 'visual_only',
+      ) ? (
         <div
           role="status"
           style={{
@@ -1240,9 +1242,12 @@ export function AssemblyScene({
             color: '#533f03',
             borderRadius: 8,
           }}>
-          Partial source CAD inspection. Geometry unavailable for{' '}
+          Partial source CAD inspection. Source CAD rejected for{' '}
           {assembly.nodes
-            .filter((node) => node.geometry?.kind === 'unavailable')
+            .filter(
+              (node) =>
+                node.geometry?.kind === 'unavailable' || node.geometry?.kind === 'visual_only',
+            )
             .map((node) => node.name)
             .join(', ')}{' '}
           because source topology validation failed. Engineering and manufacturing validation are
@@ -1250,7 +1255,8 @@ export function AssemblyScene({
           {assembly.validation.maxDimensionalErrorMm > 0.1
             ? 'Mesh dimensional checks also have failures. '
             : ''}
-          Surface bodies are retained as surfaces.
+          Surface bodies are retained as surfaces. The front head shell uses the official
+          visual-only STL. This mesh is not validated engineering CAD.
           <div>
             <a
               href={
@@ -1259,6 +1265,15 @@ export function AssemblyScene({
               Poppy project and authors · CC-BY-SA-4.0 · Official source STEP
             </a>
           </div>
+          {assembly.nodes.map((node) =>
+            node.geometry?.kind === 'visual_only' ? (
+              <div key={node.id}>
+                <a href={node.geometry.sourceUrl}>
+                  Official {node.name} STL · visual only · CC-BY-SA-4.0
+                </a>
+              </div>
+            ) : null,
+          )}
           <details>
             <summary>Inspection validation limits</summary>
             <div style={{ maxHeight: 160, overflowY: 'auto' }}>
@@ -1277,7 +1292,7 @@ export function AssemblyScene({
                   aria-label={`Select source component ${node.id}`}
                   aria-pressed={state.selectedComponentId === node.id}
                   onClick={() =>
-                    node.geometry?.kind === 'available'
+                    node.geometry?.kind === 'available' || node.geometry?.kind === 'visual_only'
                       ? onFocusComponent(node.id)
                       : onSelectComponent(node.id)
                   }
@@ -1294,9 +1309,11 @@ export function AssemblyScene({
                   {node.name} ·{' '}
                   {node.geometry?.kind === 'unavailable'
                     ? 'geometry unavailable: source validation failed'
-                    : node.geometry?.kind === 'available'
-                      ? node.geometry.role
-                      : 'assembly'}
+                    : node.geometry?.kind === 'visual_only'
+                      ? 'official STL · visual only · CAD rejected'
+                      : node.geometry?.kind === 'available'
+                        ? node.geometry.role
+                        : 'assembly'}
                 </button>
               ))}
             </div>

@@ -12,7 +12,8 @@ Preserve attribution and the share-alike license when redistributing derived CAD
 Poppy is available as a partial source CAD inspection catalog. The complete pinned
 1.0.2 occurrence hierarchy is retained. Each leaf is classified as available solid,
 available surface, or unavailable geometry. The invalid `head_face` occurrence
-remains selectable in the hierarchy but is excluded from STEP/GLB/USDZ geometry.
+remains rejected as CAD and is excluded from STEP. GLB/USDZ include its separately
+pinned official per-part STL as an explicitly visual-only representation, described below.
 A rigid rotation about X normalizes the source Y-up assembly to the existing CAD Z-up convention before centering and export.
 The original official feet are used; no Onshape geometry is mixed into this source.
 The local Onshape re-export has digest
@@ -233,3 +234,35 @@ All 201 available source components pass the unchanged 0.1 mm dimensional check.
 The complete-catalog maximum is 0.0563 mm. Export metadata has been refreshed.
 The head remains unavailable, engineering validation remains unverified, and
 interference analysis remains unperformed.
+
+## Visual-only front head shell
+
+The renderer includes the official hardware 1.0.2 per-part
+`STL_3D_printed_parts/head/head_face.STL` from
+https://github.com/poppy-project/poppy-humanoid/releases/download/1.0.2/STL_3D_printed_parts.zip.
+The archive SHA-256 is `c67a4e53e10b6be5c7dc29737ec7e8bfb8f299ac62c05a0659d2b9481bd5583e`;
+the member SHA-256 is `af7366acad9f1ea6e5e509b9d8c4063dca5d91b8f2b60a3c9b5092082ddd37f0`.
+Both are verified before rendering. Poppy project and authors retain attribution,
+CC-BY-SA-4.0 applies. The source STEP and its rejection are unchanged.
+
+This is a `visual_only` representation of stable occurrence `poppy_1_28_5`, not
+CAD repair, validated manufacturing geometry, or a STEP replacement. The manifest
+records its separate mesh provenance and the original CAD rejection. CAD-only
+component counts and dimensional checks exclude it; rendered node mapping includes
+it. No whole-head URDF mesh or procedural geometry is substituted.
+
+The STL uses assembly Y-up millimeters, matching the placed source occurrence.
+The STEP definition's occurrence placement is a -20 degree X rotation with source
+translation `(0, 296.4874742048977, 24.8)` mm. The mesh requires no fitted transform.
+Its source coordinates are divided by 1000 and the existing component rest position
+is subtracted for local rendering; the shared renderer restores that rest position
+and applies the existing ancestor explosion offsets.
+
+The measured world bounds differ from a 0.2 mm CAD tessellation by at most
+0.0401 mm. The 264,978 source triangles cover only the front shell. A deterministic
+256-vertex sample in each direction gives nearest-vertex median distances of
+0.0246 and 0.0717 mm, with maxima 2.2918 and 2.4644 mm. Vertex distances depend on
+mesh sampling and are not surface error, CAD validity, or an equivalence proof.
+The captured bounds and samples are in
+`cad_worker/tests/evidence/poppy-head-visual-alignment.json`.
+The source mesh remains explicitly visual-only even though its bounds align.

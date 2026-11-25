@@ -452,6 +452,7 @@ def run_cad_pipeline(
     cache_dir: Path,
     inject_collision_test: bool = False,
     check_interference: bool = True,
+    visual_geometry_by_id: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     archetype_id = archetype_spec["archetypeId"]
     nodes_spec = list(archetype_spec["nodes"])
@@ -459,7 +460,7 @@ def run_cad_pipeline(
 
     ingested: dict[str, dict[str, Any]] = {}
     placed_solids: dict[str, Any] = {}
-    geometry_by_id: dict[str, dict[str, Any]] = {}
+    geometry_by_id: dict[str, dict[str, Any]] = dict(visual_geometry_by_id or {})
     max_dim_err_mm = 0.0
     brep_valid = True
 

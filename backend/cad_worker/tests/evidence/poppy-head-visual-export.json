@@ -1,0 +1,56 @@
+{
+  "validation": {
+    "valid": false,
+    "brepValid": true,
+    "interferenceCount": 0,
+    "maxDimensionalErrorMm": 0.0563,
+    "nodeMappingComplete": true,
+    "unitSystem": "meters_y_up",
+    "checkedAtIso": "2026-11-24T16:11:22.103155Z",
+    "failures": [
+      "Volumetric interference analysis not performed for source inspection",
+      "Partial source inspection: head_face uses official visual-only STL; source CAD remains rejected; engineering validation not established"
+    ],
+    "interferenceCheck": "not_performed",
+    "availableGeometryCount": 201,
+    "visualOnlyComponentIds": ["poppy_1_28_5"],
+    "rejectedCadComponentIds": ["poppy_1_28_5"],
+    "unavailableComponentIds": [],
+    "surfaceComponentIds": ["poppy_1_6_1", "poppy_1_7_1"]
+  },
+  "geometry": {
+    "kind": "visual_only",
+    "cadRejectionReason": "Source BRep topology validation failed; geometry excluded",
+    "sourceUrl": "https://github.com/poppy-project/poppy-humanoid/releases/download/1.0.2/STL_3D_printed_parts.zip",
+    "archiveSha256": "c67a4e53e10b6be5c7dc29737ec7e8bfb8f299ac62c05a0659d2b9481bd5583e",
+    "memberPath": "STL_3D_printed_parts/head/head_face.STL",
+    "sha256": "af7366acad9f1ea6e5e509b9d8c4063dca5d91b8f2b60a3c9b5092082ddd37f0",
+    "spdxLicense": "CC-BY-SA-4.0",
+    "sourceOccurrencePath": "1_28_5",
+    "sourceCoordinateFrame": "assembly_y_up_millimeters"
+  },
+  "renderedComponentCount": 202,
+  "files": {
+    "step": {
+      "format": "step",
+      "storagePath": "assemblies/a9ac64b7370ba26cc8dd3975b6c00c53dc4780aac45c6c9e9211c9c830419c2c/model.step",
+      "publicUrl": "/assemblies/poppy_humanoid_v1/model.step",
+      "sha256": "6287eb926cbf4cf4720e07020c516ee7b8a28f0d45bc910c3f2d8f6b951ce2d8",
+      "sizeBytes": 396999652
+    },
+    "glb": {
+      "format": "glb",
+      "storagePath": "assemblies/a9ac64b7370ba26cc8dd3975b6c00c53dc4780aac45c6c9e9211c9c830419c2c/model.glb",
+      "publicUrl": "/assemblies/poppy_humanoid_v1/model.glb",
+      "sha256": "032cf0d6a63d7a213a53de913dc8a082b70c9ea64e785702c6b8ba05a65e4c3a",
+      "sizeBytes": 65635512
+    },
+    "usdz": {
+      "format": "usdz",
+      "storagePath": "assemblies/a9ac64b7370ba26cc8dd3975b6c00c53dc4780aac45c6c9e9211c9c830419c2c/model.usdz",
+      "publicUrl": "/assemblies/poppy_humanoid_v1/model.usdz",
+      "sha256": "2137e08aad74c8cb75862847ec2283a66ca58314baffa1cb056ec12aaa4b5a60",
+      "sizeBytes": 159569841
+    }
+  }
+}

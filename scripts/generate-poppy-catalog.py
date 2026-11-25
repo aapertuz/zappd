@@ -15,7 +15,7 @@ block = '''export const POPPY_ARCHETYPE: CatalogArchetypeDefinition = {
   semantics: 'source_inspection',
   archetypeId: aid('poppy_humanoid_v1'),
   title: 'Poppy Humanoid source CAD inspection',
-  summary: 'Official Poppy Humanoid 1.0.2 source assembly. Partial geometry: head_face is unavailable after topology rejection. Engineering validation is not established. CC-BY-SA-4.0, Poppy project and authors.',
+  summary: 'Official Poppy Humanoid 1.0.2 source assembly. Front shell uses an official visual-only mesh; head_face CAD remains rejected. Engineering validation is not established. CC-BY-SA-4.0, Poppy project and authors.',
   keywords: ['poppy', 'humanoid', 'biped'],
   rootNodeId: cid(''' + json.dumps(spec['nodes'][0]['id']) + '''),
   nodes: [
