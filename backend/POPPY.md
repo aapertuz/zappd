@@ -28,8 +28,8 @@ components: `poppy_1_10` and `poppy_1_11` at about 19.5609 mm,
 inspection UI. The displayed meshes are inspection approximations; they do not
 establish dimensionally validated geometry. Successful topology and
 mesh mapping checks establish inspection availability, not manufacturing validity.
-Volumetric interference analysis is explicitly not performed for source inspection.
-The report records this omission and cannot pass engineering verification.
+Source-placement volumetric interference analysis is reported separately with explicit
+exclusions and unresolved pairs. It cannot establish engineering verification.
 Open surface bodies are never treated as solids for volumetric checks.
 No assembly instructions or connection claims are inferred. Explode offsets remain
 zero and the explode controls are disabled; selection, camera controls, hierarchy
@@ -300,9 +300,35 @@ The report always retains `manufacturingReadiness: not_established` for this par
 The captured `cad_worker/tests/evidence/poppy-interference.json` analyzes 199
 source solids and excludes the two surface thighs and rejected head CAD.
 AABB filtering reduces 19,701 possible pairs to 595 candidates.
-OCCT common finds 101 intersections above 0.001 mm³, 491 contact-or-below-threshold
-results, and three timed-out pairs. Those three remain unresolved.
+The original 30-second run found 101 intersections above 0.001 mm³, 491
+below-threshold results and three timed-out pairs. A bounded 180-second retry
+resolved all three using the same OCCT common algorithm and default settings.
+Two measured 0 mm³; `poppy_1_28_1 / poppy_1_28_3` measured 115.96055272186521 mm³.
+The final report records 102 intersections, 493 below-threshold results and zero
+unresolved pairs. `retryHistory` preserves all original timeout results and retry
+deadlines. No fuzzy tolerance, geometry repair or source change was applied.
 The largest reported common volume is 486.074918567 mm³.
 These are source-placement measurements, not an intended-fit classification.
 No overlap has been removed by changing placement or CAD.
 The report pins its input catalog and each analyzed fixture by SHA-256.
+
+## Published inspection reports
+
+The exporter publishes `interference.json` and `engineering.json` alongside the
+regenerated render assets and pipeline result. The app validates and retains both
+reports inside its validation record. Open **Inspection validation limits** for
+solid and candidate counts, measured intersections, unresolved pairs, exclusions,
+units and thresholds. **Measured and unresolved pairs** lists stable occurrence
+IDs and measured common volumes. Below-threshold volumes are not intended-fit
+classifications. Render bounds comparisons are not manufacturing tolerances.
+
+The captured interference report can be reused only when the complete catalog
+and every analyzed fixture digest match. `retry_poppy_pairs.py <output.json>`
+rechecks only unresolved pairs with a bounded 180-second deadline, retaining
+the original results and the retry deadline in its output. It does not change CAD.
+
+Native verification remains unavailable on this host because Xcode, simulator,
+Android SDK and emulator tooling are absent. The native scene remains a 2D
+fallback. The official front-shell STL remains visual only; no valid replacement
+head CAD or source-preserving repair has been established. Materials, tolerances,
+loads and constraints remain unknown or unverified.

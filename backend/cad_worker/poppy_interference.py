@@ -118,6 +118,25 @@ def analyze(spec: dict, cache: Path, timeout_seconds: float = 30, threshold_mm3:
                 limitations=['Excluded CAD is not clear of interference', 'Contacts below threshold do not establish intended fits', 'Materials, manufacturing tolerances, loads and assembly constraints are not verified'])
 
 
+def load_cached_report(spec: dict, cache: Path) -> dict | None:
+    path = Path(__file__).parent / "tests" / "evidence" / "poppy-interference.json"
+    report = json.loads(path.read_text())
+    catalog = Path(__file__).parents[1] / "data" / "poppy-catalog.json"
+    if not catalog.exists() or json.loads(catalog.read_text()) != spec:
+        return None
+    if hashlib.sha256(catalog.read_bytes()).hexdigest() != report.get("catalogSha256"):
+        return None
+    expected = {node["id"] for node in spec["nodes"]
+                if node["geometry"]["kind"] == "available" and node["geometry"].get("role") != "surface"}
+    if expected != {node["componentId"] for node in report["sourceComponents"]}:
+        return None
+    for source in report["sourceComponents"]:
+        fixture = cache / source["fixture"]
+        if not fixture.exists() or hashlib.sha256(fixture.read_bytes()).hexdigest() != source["sha256"]:
+            return None
+    return report
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('catalog', type=Path)

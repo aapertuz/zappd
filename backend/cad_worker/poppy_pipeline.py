@@ -3,7 +3,7 @@ from copy import deepcopy
 from pathlib import Path
 
 from geometry_pipeline import run_cad_pipeline
-from poppy_interference import analyze
+from poppy_interference import analyze, load_cached_report
 from poppy_visual import HEAD_ID, load_head_visual, visual_state
 
 
@@ -13,6 +13,7 @@ def run_poppy_pipeline(
     cache_dir: Path,
     inject_collision_test: bool = False,
 ) -> dict:
+    cached_interference = load_cached_report(spec, cache_dir)
     spec = deepcopy(spec)
     head = next((node for node in spec["nodes"] if node["id"] == HEAD_ID), None)
     visual_geometry = {}
@@ -42,7 +43,7 @@ def run_poppy_pipeline(
     if set(result["glbNodeIds"]) != expected_geometry:
         raise RuntimeError("Poppy geometry coverage differs from source validation states")
     validation = result["validation"]
-    interference = analyze(spec, cache_dir)
+    interference = cached_interference or analyze(spec, cache_dir)
     validation["interferenceCheck"] = "partial"
     validation["interferenceCount"] = interference["intersectionCount"]
     validation["sourceInterferenceReport"] = interference
@@ -79,6 +80,7 @@ def run_poppy_pipeline(
         "sourceComponents": interference["sourceComponents"],
     }
     result["engineeringReport"] = engineering
+    validation["engineeringReport"] = engineering
     (output_dir / "engineering.json").write_text(json.dumps(engineering, indent=2))
     result["verificationStatus"] = "unverified"
     validation["valid"] = False

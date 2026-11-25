@@ -2597,9 +2597,9 @@
     },
     {
       "componentIds": ["poppy_1_9_2_3", "poppy_1_11"],
-      "status": "timeout",
-      "volumeMm3": null,
-      "error": "Pair worker produced no result within deadline"
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
     },
     {
       "componentIds": ["poppy_1_9_2_4", "poppy_1_11"],
@@ -4433,9 +4433,9 @@
     },
     {
       "componentIds": ["poppy_1_28_1", "poppy_1_28_2_1"],
-      "status": "timeout",
-      "volumeMm3": null,
-      "error": "Pair worker produced no result within deadline"
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
     },
     {
       "componentIds": ["poppy_1_28_1", "poppy_1_28_2_2"],
@@ -4451,9 +4451,9 @@
     },
     {
       "componentIds": ["poppy_1_28_1", "poppy_1_28_3"],
-      "status": "timeout",
-      "volumeMm3": null,
-      "error": "Pair worker produced no result within deadline"
+      "status": "intersection",
+      "volumeMm3": 115.96055272186521,
+      "error": null
     },
     {
       "componentIds": ["poppy_1_28_1", "poppy_1_28_4"],
@@ -4798,12 +4798,62 @@
       "error": null
     }
   ],
-  "intersectionCount": 101,
-  "unresolvedPairCount": 3,
+  "intersectionCount": 102,
+  "unresolvedPairCount": 0,
   "limitations": [
     "Excluded CAD is not clear of interference",
     "Contacts below threshold do not establish intended fits",
     "Materials, manufacturing tolerances, loads and assembly constraints are not verified"
   ],
-  "catalogSha256": "c30726ba16336f7a221815cc7d3e1ba4d8cd12a9d506c3b4f97e9ba73bd70043"
+  "catalogSha256": "c30726ba16336f7a221815cc7d3e1ba4d8cd12a9d506c3b4f97e9ba73bd70043",
+  "retryHistory": [
+    {
+      "original": {
+        "componentIds": ["poppy_1_9_2_3", "poppy_1_11"],
+        "status": "timeout",
+        "volumeMm3": null,
+        "error": "Pair worker produced no result within deadline"
+      },
+      "result": {
+        "componentIds": ["poppy_1_9_2_3", "poppy_1_11"],
+        "status": "contact_or_below_threshold",
+        "volumeMm3": 0.0,
+        "error": null
+      },
+      "timeoutSeconds": 180,
+      "algorithm": "OCCT BRepAlgoAPI_Common default settings; no fuzzy tolerance or geometry modification"
+    },
+    {
+      "original": {
+        "componentIds": ["poppy_1_28_1", "poppy_1_28_2_1"],
+        "status": "timeout",
+        "volumeMm3": null,
+        "error": "Pair worker produced no result within deadline"
+      },
+      "result": {
+        "componentIds": ["poppy_1_28_1", "poppy_1_28_2_1"],
+        "status": "contact_or_below_threshold",
+        "volumeMm3": 0.0,
+        "error": null
+      },
+      "timeoutSeconds": 180,
+      "algorithm": "OCCT BRepAlgoAPI_Common default settings; no fuzzy tolerance or geometry modification"
+    },
+    {
+      "original": {
+        "componentIds": ["poppy_1_28_1", "poppy_1_28_3"],
+        "status": "timeout",
+        "volumeMm3": null,
+        "error": "Pair worker produced no result within deadline"
+      },
+      "result": {
+        "componentIds": ["poppy_1_28_1", "poppy_1_28_3"],
+        "status": "intersection",
+        "volumeMm3": 115.96055272186521,
+        "error": null
+      },
+      "timeoutSeconds": 180,
+      "algorithm": "OCCT BRepAlgoAPI_Common default settings; no fuzzy tolerance or geometry modification"
+    }
+  ]
 }

@@ -63,7 +63,9 @@ def main() -> int:
             pub_base = Path(args.public_dir) if args.public_dir else repo_root / "public" / "assemblies"
             pub_dir = pub_base / archetype_id
             pub_dir.mkdir(parents=True, exist_ok=True)
-            for filename in ("model.glb", "model.step", "model.usdz", "manifest.json", "pipeline_result.json"):
+            for filename in ("model.glb", "model.step", "model.usdz", "manifest.json", "pipeline_result.json", "interference.json", "engineering.json"):
+                if filename in ("interference.json", "engineering.json") and archetype_id != "poppy_humanoid_v1":
+                    continue
                 shutil.copy2(out_dir / filename, pub_dir / filename)
         results.append(result)
 

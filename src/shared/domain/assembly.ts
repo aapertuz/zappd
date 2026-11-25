@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 import type { AiApiFormat, AiProviderId } from './aiProvider';
 
 export type ProjectId = string & { readonly __brand: 'ProjectId' };
@@ -90,7 +92,72 @@ export type AssemblyInstructionStep = {
   readonly relationshipIds: readonly RelationshipId[];
 };
 
+export const sourceInterferenceSchema = z
+  .object({
+    status: z.literal('partial'),
+    solidCount: z.number().int().nonnegative(),
+    possiblePairCount: z.number().int().nonnegative(),
+    candidatePairCount: z.number().int().nonnegative(),
+    intersectionCount: z.number().int().nonnegative(),
+    unresolvedPairCount: z.number().int().nonnegative(),
+    volumeThresholdMm3: z.number().nonnegative(),
+    aabbToleranceMm: z.number().nonnegative(),
+    excludedComponents: z.array(z.object({ componentId: z.string() })),
+    pairs: z.array(
+      z.discriminatedUnion('status', [
+        z.object({
+          componentIds: z.tuple([z.string(), z.string()]),
+          status: z.literal('intersection'),
+          volumeMm3: z.number().finite().nonnegative(),
+          error: z.null(),
+        }),
+        z.object({
+          componentIds: z.tuple([z.string(), z.string()]),
+          status: z.literal('contact_or_below_threshold'),
+          volumeMm3: z.number().finite().nonnegative(),
+          error: z.null(),
+        }),
+        z.object({
+          componentIds: z.tuple([z.string(), z.string()]),
+          status: z.enum(['failed', 'timeout']),
+          volumeMm3: z.null(),
+          error: z.string().nullable(),
+        }),
+      ]),
+    ),
+    limitations: z.array(z.string()),
+  })
+  .refine(
+    (report) =>
+      report.pairs.length === report.candidatePairCount &&
+      report.pairs.filter((pair) => pair.status === 'intersection').length ===
+        report.intersectionCount &&
+      report.pairs.filter((pair) => pair.status === 'failed' || pair.status === 'timeout')
+        .length === report.unresolvedPairCount &&
+      new Set(report.pairs.map((pair) => [...pair.componentIds].sort().join(':'))).size ===
+        report.pairs.length,
+    'Inconsistent source interference coverage',
+  );
+
+export const engineeringReportSchema = z.object({
+  status: z.literal('unverified'),
+  manufacturingReadiness: z.literal('not_established'),
+  materials: z.literal('unknown'),
+  manufacturingTolerances: z.literal('unknown'),
+  loadsAndConstraints: z.literal('not_verified'),
+  renderDimensionComparison: z.object({
+    maximumErrorMm: z.number().finite().nonnegative(),
+    thresholdMm: z.number().finite().nonnegative(),
+    meaning: z.string(),
+  }),
+  nodeMappingComplete: z.boolean(),
+  rejectedCadComponentIds: z.array(z.string()),
+  surfaceComponentIds: z.array(z.string()),
+});
+
 export type ValidationReport = {
+  readonly sourceInterferenceReport?: z.infer<typeof sourceInterferenceSchema>;
+  readonly engineeringReport?: z.infer<typeof engineeringReportSchema>;
   readonly valid: boolean;
   readonly brepValid: boolean;
   readonly interferenceCount: number;
@@ -602,6 +669,14 @@ function parseValidationReport(raw: unknown): ValidationReport {
     throw new Error(`Invalid unitSystem: ${String(raw.unitSystem)}`);
   }
   return {
+    sourceInterferenceReport:
+      raw.sourceInterferenceReport === undefined
+        ? undefined
+        : sourceInterferenceSchema.parse(raw.sourceInterferenceReport),
+    engineeringReport:
+      raw.engineeringReport === undefined
+        ? undefined
+        : engineeringReportSchema.parse(raw.engineeringReport),
     valid: readRequiredBoolean(raw, 'valid'),
     brepValid: readRequiredBoolean(raw, 'brepValid'),
     interferenceCount: readRequiredNumber(raw, 'interferenceCount'),

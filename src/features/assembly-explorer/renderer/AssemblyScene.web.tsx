@@ -1242,21 +1242,8 @@ export function AssemblyScene({
             color: '#533f03',
             borderRadius: 8,
           }}>
-          Partial source CAD inspection. Source CAD rejected for{' '}
-          {assembly.nodes
-            .filter(
-              (node) =>
-                node.geometry?.kind === 'unavailable' || node.geometry?.kind === 'visual_only',
-            )
-            .map((node) => node.name)
-            .join(', ')}{' '}
-          because source topology validation failed. Engineering and manufacturing validation are
-          not established.{' '}
-          {assembly.validation.maxDimensionalErrorMm > 0.1
-            ? 'Mesh dimensional checks also have failures. '
-            : ''}
-          Surface bodies are retained as surfaces. The front head shell uses the official
-          visual-only STL. This mesh is not validated engineering CAD.
+          Partial CAD inspection · engineering unverified. Head shell is visual only; two thighs are
+          surfaces.
           <div>
             <a
               href={
@@ -1276,7 +1263,66 @@ export function AssemblyScene({
           )}
           <details>
             <summary>Inspection validation limits</summary>
+            {assembly.validation.sourceInterferenceReport ? (
+              <div>
+                <p>
+                  {assembly.validation.sourceInterferenceReport.solidCount} solids examined ·{' '}
+                  {assembly.validation.sourceInterferenceReport.candidatePairCount} candidate pairs
+                  · {assembly.validation.sourceInterferenceReport.intersectionCount} intersections ·{' '}
+                  {assembly.validation.sourceInterferenceReport.unresolvedPairCount} unresolved ·{' '}
+                  {assembly.validation.sourceInterferenceReport.excludedComponents.length} excluded
+                </p>
+                <p>
+                  {
+                    assembly.validation.sourceInterferenceReport.pairs.filter(
+                      (pair) => pair.status === 'contact_or_below_threshold',
+                    ).length
+                  }{' '}
+                  pairs below the reporting threshold. Common-volume threshold{' '}
+                  {assembly.validation.sourceInterferenceReport.volumeThresholdMm3} mm³; bounds
+                  tolerance {assembly.validation.sourceInterferenceReport.aabbToleranceMm} mm. These
+                  measurements do not establish intended fits or manufacturing readiness. Materials
+                  and manufacturing tolerances remain unknown.
+                </p>
+                <details>
+                  <summary>Measured and unresolved pairs</summary>
+                  <p>
+                    Excluded CAD:{' '}
+                    {assembly.validation.sourceInterferenceReport.excludedComponents
+                      .map((component) => component.componentId)
+                      .join(', ')}
+                  </p>
+                  <div style={{ maxHeight: 180, overflowY: 'auto' }}>
+                    {assembly.validation.sourceInterferenceReport.pairs
+                      .filter((pair) => pair.status !== 'contact_or_below_threshold')
+                      .map((pair) => (
+                        <p key={pair.componentIds.join(':')}>
+                          {pair.componentIds.join(' / ')} · {pair.status}
+                          {pair.volumeMm3 === null
+                            ? pair.error
+                            : ` · ${pair.volumeMm3.toFixed(4)} mm³`}
+                        </p>
+                      ))}
+                  </div>
+                </details>
+              </div>
+            ) : null}
             <div style={{ maxHeight: 160, overflowY: 'auto' }}>
+              {assembly.validation.engineeringReport ? (
+                <p>
+                  Render bounds error{' '}
+                  {assembly.validation.engineeringReport.renderDimensionComparison.maximumErrorMm.toFixed(
+                    4,
+                  )}{' '}
+                  mm against{' '}
+                  {assembly.validation.engineeringReport.renderDimensionComparison.thresholdMm} mm.
+                  This is a render comparison, not a manufacturing tolerance. Node mapping{' '}
+                  {assembly.validation.engineeringReport.nodeMappingComplete
+                    ? 'complete'
+                    : 'incomplete'}
+                  .
+                </p>
+              ) : null}
               {assembly.validation.failures.map((failure) => (
                 <p key={failure}>{failure}</p>
               ))}
