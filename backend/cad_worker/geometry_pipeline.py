@@ -23,7 +23,7 @@ from OCP.BRepTools import BRepTools
 from OCP.GProp import GProp_GProps
 from OCP.IMeshTools import IMeshTools_Parameters
 from OCP.STEPControl import STEPControl_AsIs, STEPControl_Writer
-from OCP.TopAbs import TopAbs_FACE, TopAbs_SOLID
+from OCP.TopAbs import TopAbs_FACE, TopAbs_SHELL, TopAbs_SOLID
 from OCP.TopExp import TopExp_Explorer
 from OCP.TopLoc import TopLoc_Location
 from OCP.TopoDS import TopoDS, TopoDS_Compound, TopoDS_Shape
@@ -853,7 +853,12 @@ def run_cad_pipeline(
         cad_offset_mm = world_rest_to_cad_mm(rest_m)
         placed_shape = translate_shape_mm(shape, cad_offset_mm)
         has_solid = TopExp_Explorer(shape, TopAbs_SOLID).More()
-        if node_spec.get("geometry", {}).get("role") == "surface":
+        has_free_surface = (
+            TopExp_Explorer(shape, TopAbs_SHELL, TopAbs_SOLID).More()
+            or TopExp_Explorer(shape, TopAbs_FACE, TopAbs_SOLID).More()
+        )
+        declared_role = geometry_state.get("role")
+        if declared_role == "surface":
             if has_solid:
                 failures.append(f"Component {cid} declared surface contains CAD solids")
                 placed_solids[cid] = placed_shape
@@ -865,6 +870,10 @@ def run_cad_pipeline(
             failures.append(f"Component {cid} has no CAD solid for volumetric interference check")
         else:
             placed_solids[cid] = placed_shape
+            if declared_role == "solid" and has_free_surface:
+                failures.append(
+                    f"Component {cid} declared solid contains open surface geometry outside CAD solids"
+                )
         builder.Add(compound, placed_shape)
 
         geometry = tessellate_step_geometry(shape, resolved["stepPath"], node_spec["origin"])

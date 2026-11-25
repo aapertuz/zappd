@@ -774,3 +774,28 @@ def test_open_surface_declared_as_solid_cannot_certify_as_verified(tmp_path: Pat
     assert result["verificationStatus"] == "unverified"
     assert result["validation"]["valid"] is False
     assert any("has no CAD solid" in failure for failure in result["validation"]["failures"])
+
+    from OCP.TopoDS import TopoDS_Compound
+
+    mixed = TopoDS_Compound()
+    builder.MakeCompound(mixed)
+    builder.Add(mixed, BRepPrimAPI_MakeBox(10.0, 10.0, 10.0).Shape())
+    builder.Add(mixed, shell)
+    mixed_step_path = cache_dir / "mixed_solid_and_shell.step"
+    mixed_writer = STEPControl_Writer()
+    mixed_writer.Transfer(mixed, STEPControl_AsIs)
+    mixed_writer.Write(str(mixed_step_path))
+    leaf["stepFixtureName"] = mixed_step_path.name
+    leaf["expectedStepSha256"] = hashlib.sha256(mixed_step_path.read_bytes()).hexdigest()
+
+    mixed_result = run_cad_pipeline(
+        {**template, "nodes": [root, leaf], "relationships": [], "assemblySteps": []},
+        output_dir=tmp_path / "exports_mixed",
+        cache_dir=cache_dir,
+    )
+    assert mixed_result["verificationStatus"] == "unverified"
+    assert mixed_result["validation"]["valid"] is False
+    assert any(
+        "contains open surface geometry outside CAD solids" in failure
+        for failure in mixed_result["validation"]["failures"]
+    )

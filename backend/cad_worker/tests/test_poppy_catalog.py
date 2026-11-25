@@ -231,6 +231,8 @@ def test_cli_rejects_inject_collision_test_into_canonical_exports(monkeypatch: p
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test"],
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(canonical_export)],
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(canonical_public)],
+        ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(tmp_path), "--json-out", str(canonical_export / "pipeline_result.json")],
+        ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(tmp_path), "--json-out", str(canonical_public / "pipeline_result.json")],
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(tmp_path), "--public-dir", str(tmp_path / "pub")],
         ["cli.py", "--all-archetypes", "--inject-collision-test", "--output-dir", str(tmp_path)],
     ):

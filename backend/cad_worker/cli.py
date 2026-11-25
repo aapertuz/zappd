@@ -40,15 +40,18 @@ def main() -> int:
             canonical_public.resolve(),
             canonical_public.absolute(),
         )
-        candidate_outputs = (Path(args.output_dir).resolve(), Path(args.output_dir).absolute())
-        if any(
-            candidate == root or root in candidate.parents
-            for candidate in candidate_outputs
-            for root in forbidden_roots
-        ):
-            parser.error(
-                "--inject-collision-test --output-dir must be outside canonical exports and public assemblies"
-            )
+        checked_paths = [Path(args.output_dir)]
+        if args.json_out:
+            checked_paths.append(Path(args.json_out))
+        for path_arg in checked_paths:
+            if any(
+                candidate == root or root in candidate.parents
+                for candidate in (path_arg.resolve(), path_arg.absolute())
+                for root in forbidden_roots
+            ):
+                parser.error(
+                    "--inject-collision-test paths must be outside canonical exports and public assemblies"
+                )
 
     targets = list(CATALOG_SPECS.keys()) if args.all_archetypes else [args.archetype]
     results = []
