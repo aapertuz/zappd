@@ -11,6 +11,7 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
+from OCP.APIHeaderSection import APIHeaderSection_MakeHeader
 from OCP.Bnd import Bnd_Box
 from OCP.BRep import BRep_Builder
 from OCP.BRepAlgoAPI import BRepAlgoAPI_Cut
@@ -20,6 +21,7 @@ from OCP.BRepCheck import BRepCheck_Analyzer
 from OCP.BRepTools import BRepTools
 from OCP.IFSelect import IFSelect_RetDone
 from OCP.STEPControl import STEPControl_AsIs, STEPControl_Reader, STEPControl_Writer
+from OCP.TCollection import TCollection_HAsciiString
 from OCP.TopAbs import TopAbs_FACE, TopAbs_SOLID
 from OCP.TopExp import TopExp_Explorer
 from OCP.TopoDS import TopoDS_Shape
@@ -58,7 +60,9 @@ def count_faces(shape: Any) -> int:
     return count
 
 
-def center_and_write_step(shape: Any, step_path: Path) -> dict[str, Any]:
+def center_and_write_step(
+    shape: Any, step_path: Path, *, timestamp: str | None = None,
+) -> dict[str, Any]:
     if not BRepCheck_Analyzer(shape).IsValid():
         raise RuntimeError(f"Invalid BRep topology before writing {step_path.name}")
 
@@ -89,7 +93,11 @@ def center_and_write_step(shape: Any, step_path: Path) -> dict[str, Any]:
 
     step_path.parent.mkdir(parents=True, exist_ok=True)
     writer = STEPControl_Writer()
-    writer.Transfer(centered_shape, STEPControl_AsIs)
+    if writer.Transfer(centered_shape, STEPControl_AsIs) != IFSelect_RetDone:
+        raise RuntimeError(f"Failed to transfer STEP geometry: {step_path}")
+    if timestamp is not None:
+        header = APIHeaderSection_MakeHeader(writer.Model())
+        header.SetTimeStamp(TCollection_HAsciiString(timestamp))
     status = writer.Write(str(step_path))
     if status != IFSelect_RetDone:
         raise RuntimeError(f"Failed to write STEP file: {step_path}")

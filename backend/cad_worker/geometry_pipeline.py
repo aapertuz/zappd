@@ -14,10 +14,12 @@ from OCP.Bnd import Bnd_Box
 from OCP.BRep import BRep_Builder, BRep_Tool
 from OCP.BRepAlgoAPI import BRepAlgoAPI_Common
 from OCP.BRepBndLib import BRepBndLib
-from OCP.BRepBuilderAPI import BRepBuilderAPI_Transform
+from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeFace, BRepBuilderAPI_Transform
 from OCP.BRepCheck import BRepCheck_Analyzer
+from OCP.BRepExtrema import BRepExtrema_DistShapeShape
 from OCP.BRepGProp import BRepGProp
 from OCP.BRepMesh import BRepMesh_IncrementalMesh
+from OCP.BRepTools import BRepTools
 from OCP.GProp import GProp_GProps
 from OCP.IMeshTools import IMeshTools_Parameters
 from OCP.STEPControl import STEPControl_AsIs, STEPControl_Writer
@@ -26,7 +28,7 @@ from OCP.TopExp import TopExp_Explorer
 from OCP.TopLoc import TopLoc_Location
 from OCP.TopoDS import TopoDS, TopoDS_Compound, TopoDS_Shape
 from OCP.collections import List_TopoDS_Shape
-from OCP.gp import gp_Trsf, gp_Vec
+from OCP.gp import gp_Dir, gp_Pln, gp_Pnt, gp_Trsf, gp_Vec
 from pygltflib import (
     ARRAY_BUFFER,
     ELEMENT_ARRAY_BUFFER,
@@ -210,12 +212,58 @@ def tessellate_shape_meters_y_up(
     return np.concatenate(vertices), np.concatenate(normals), np.concatenate(indices), np.concatenate(metric_uvs)
 
 
+def _exact_axis_extent_mm(
+    shape: TopoDS_Shape, axis: int, upper: bool, lower_bounds: np.ndarray, upper_bounds: np.ndarray,
+) -> float:
+    span = float(max(upper_bounds - lower_bounds)) + 100.0
+    offset = 10.0
+    origin = [0.0, 0.0, 0.0]
+    normal = [0.0, 0.0, 0.0]
+    origin[axis] = float(upper_bounds[axis] + offset) if upper else float(lower_bounds[axis] - offset)
+    normal[axis] = -1.0 if upper else 1.0
+    plane = BRepBuilderAPI_MakeFace(
+        gp_Pln(gp_Pnt(*origin), gp_Dir(*normal)), -span, span, -span, span,
+    ).Face()
+    extrema = BRepExtrema_DistShapeShape(shape, plane)
+    extrema.Perform()
+    if not extrema.IsDone() or extrema.NbSolution() < 1:
+        return float(upper_bounds[axis] if upper else lower_bounds[axis])
+    point = extrema.PointOnShape1(1)
+    return float((point.X(), point.Y(), point.Z())[axis])
+
+
+def mesh_dimensional_error_mm(shape: TopoDS_Shape, vertices: np.ndarray) -> float:
+    lower, upper = np.asarray(shape_bounds_mm(shape))
+    cad_vertices = vertices[:, (0, 2, 1)] * np.array([1000, -1000, 1000])
+    mesh_min = cad_vertices.min(axis=0)
+    mesh_max = cad_vertices.max(axis=0)
+    min_err = np.abs(mesh_min - lower)
+    max_err = np.abs(mesh_max - upper)
+    err_mm = float(max(np.max(min_err), np.max(max_err)))
+    if err_mm <= 0.1:
+        return err_mm
+    for axis in range(3):
+        if min_err[axis] > 0.1:
+            exact_min = _exact_axis_extent_mm(shape, axis, False, lower, upper)
+            min_err[axis] = abs(float(mesh_min[axis]) - exact_min)
+        if max_err[axis] > 0.1:
+            exact_max = _exact_axis_extent_mm(shape, axis, True, lower, upper)
+            max_err[axis] = abs(float(mesh_max[axis]) - exact_max)
+    return float(max(np.max(min_err), np.max(max_err)))
+
+
 def tessellate_step_geometry(shape: Any, step_path: Path, origin: str) -> MeshGeometry:
-    face_colors = read_xcaf_face_colors(step_path)
-    if origin not in {"cots_library_step", "kicad_pcb_step", "procedural_harness"} and len({
+    styled_origin = origin in {"cots_library_step", "kicad_pcb_step", "procedural_harness"}
+    has_step_styles = styled_origin or b"STYLED_ITEM" in step_path.read_bytes()
+    face_colors = read_xcaf_face_colors(step_path) if has_step_styles else []
+    if not styled_origin and len({
         color for _, color in face_colors if color is not None
     }) < 2:
-        return MeshGeometry(*tessellate_shape_meters_y_up(shape))
+        mesh = MeshGeometry(*tessellate_shape_meters_y_up(shape))
+        if len(mesh.vertices) and mesh_dimensional_error_mm(shape, mesh.vertices) > 0.1:
+            BRepTools.Clean_s(shape)
+            mesh = MeshGeometry(*tessellate_shape_meters_y_up(shape, linear_deflection=0.05, angular_deflection=0.22))
+        return mesh
 
     builder = BRep_Builder()
     groups: dict[str | None, TopoDS_Compound] = {}
@@ -771,12 +819,7 @@ def run_cad_pipeline(
         if len(verts) == 0 or len(geometry.indices) == 0:
             failures.append(f"Empty triangulation for {cid}")
         else:
-            bmin_mm, bmax_mm = shape_bounds_mm(shape)
-            mesh_min_mm = np.array([verts[:, 0].min(), -verts[:, 2].max(), verts[:, 1].min()]) * 1000.0
-            mesh_max_mm = np.array([verts[:, 0].max(), -verts[:, 2].min(), verts[:, 1].max()]) * 1000.0
-            step_min_mm = np.array([bmin_mm[0], bmin_mm[1], bmin_mm[2]])
-            step_max_mm = np.array([bmax_mm[0], bmax_mm[1], bmax_mm[2]])
-            err_mm = float(max(np.max(np.abs(mesh_min_mm - step_min_mm)), np.max(np.abs(mesh_max_mm - step_max_mm))))
+            err_mm = mesh_dimensional_error_mm(shape, verts)
             max_dim_err_mm = max(max_dim_err_mm, err_mm)
             if err_mm > 0.1:
                 failures.append(f"Dimensional tolerance exceeded for {cid}: {err_mm:.4f} mm > 0.1 mm")

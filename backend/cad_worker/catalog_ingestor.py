@@ -8,6 +8,7 @@ from itertools import count
 from pathlib import Path
 from typing import Any, Literal, TypedDict
 
+from OCP.BRep import BRep_Builder
 from OCP.BRepCheck import BRepCheck_Analyzer
 from OCP.IFSelect import IFSelect_RetDone
 from OCP.Quantity import Quantity_Color, Quantity_TOC_sRGB
@@ -19,7 +20,7 @@ from OCP.TDocStd import TDocStd_Document
 from OCP.TopAbs import TopAbs_FACE
 from OCP.TopExp import TopExp_Explorer
 from OCP.TopLoc import TopLoc_Location
-from OCP.TopoDS import TopoDS, TopoDS_Iterator
+from OCP.TopoDS import TopoDS, TopoDS_Compound, TopoDS_Iterator, TopoDS_Shape
 from OCP.XCAFDoc import XCAFDoc_ColorGen, XCAFDoc_ColorSurf, XCAFDoc_DocumentTool
 from OCP.collections import IndexedMap_TopoDS_Shape, Sequence_TDF_Label
 
@@ -32,6 +33,7 @@ STEP_PRESENTATION_START = re.compile(rf"^#(\d+) = {STEP_PRESENTATION[:-1]}\(", r
 STEP_ENTITY = re.compile(r"^#(\d+) = ", re.MULTILINE)
 STEP_TOKENS = re.compile(r"'(?:[^']|'')*'|#(\d+)|\s+")
 STEP_OCCURRENCE = re.compile(r"(?<=NEXT_ASSEMBLY_USAGE_OCCURRENCE\()'\d+'")
+STEP_OCCURRENCE_RECORD = re.compile(r"^#\d+ = NEXT_ASSEMBLY_USAGE_OCCURRENCE\([^;]+\);", re.MULTILINE)
 STEP_PRESENTATION_ITEMS = re.compile(r"(?<=,\()#\d+(?:,#\d+)*(?=\),#\d+\);$)")
 
 
@@ -57,6 +59,10 @@ GEOMETRY_ORIGIN_POLICY: dict[str, GeometryOriginPolicy] = {
         "allowedUriPrefixes": ("https://", "harness://"),
         "targetVerifiedStatus": "composed_validated",
     },
+    "parametric_cad": {
+        "allowedUriPrefixes": ("https://", "parametric://"),
+        "targetVerifiedStatus": "composed_validated",
+    },
 }
 
 
@@ -69,15 +75,24 @@ def count_brep_faces(shape: Any) -> int:
     return count
 
 
+def stabilize_step_occurrences(source: str) -> str:
+    occurrence_ids = count(1)
+    source = STEP_OCCURRENCE.sub(lambda _: f"'{next(occurrence_ids)}'", source)
+
+    def join_short_occurrence(match: re.Match[str]) -> str:
+        record = match[0].replace("\n  ", "")
+        return record if len(record) < 72 else match[0]
+
+    return STEP_OCCURRENCE_RECORD.sub(join_short_occurrence, source)
+
+
 def stabilize_step_presentation(path: Path) -> None:
     source = path.read_text(encoding="ascii")
     presentation = STEP_PRESENTATION_START.search(source)
     if presentation is None:
         raise RuntimeError(f"Missing STEP presentation records in {path}")
     first_style = int(presentation[1])
-    geometry = source[:presentation.start()]
-    occurrence_ids = count(1)
-    geometry = STEP_OCCURRENCE.sub(lambda _: f"'{next(occurrence_ids)}'", geometry)
+    geometry = stabilize_step_occurrences(source[:presentation.start()])
     if any(int(match[1]) >= first_style for match in re.finditer(r"#(\d+)", geometry)):
         raise RuntimeError(f"STEP geometry references presentation entities in {path}")
 
@@ -144,6 +159,20 @@ def read_xcaf_document(step_path: Path) -> TDocStd_Document:
     if reader.ReadFile(str(step_path)) != IFSelect_RetDone or not reader.Transfer(document):
         raise RuntimeError(f"STEPCAFControl_Reader failed on {step_path}")
     return document
+
+
+def xcaf_shape(document: TDocStd_Document) -> TopoDS_Shape:
+    shape_tool = XCAFDoc_DocumentTool.ShapeTool_s(document.Main())
+    roots = Sequence_TDF_Label()
+    shape_tool.GetFreeShapes(roots)
+    if roots.Length() == 1:
+        return shape_tool.GetShape_s(roots.Value(1))
+    shape = TopoDS_Compound()
+    builder = BRep_Builder()
+    builder.MakeCompound(shape)
+    for root in roots:
+        builder.Add(shape, shape_tool.GetShape_s(root))
+    return shape
 
 
 def read_xcaf_face_colors(step_path: Path) -> list[tuple[Any, str | None]]:
