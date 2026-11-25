@@ -6,8 +6,10 @@ import shutil
 from functools import cache
 from itertools import count
 from pathlib import Path
-from typing import Any, Literal, TypedDict
+from tempfile import TemporaryDirectory
+from typing import TYPE_CHECKING, Any, Literal, TypedDict
 
+from OCP.BRep import BRep_Builder
 from OCP.BRepCheck import BRepCheck_Analyzer
 from OCP.IFSelect import IFSelect_RetDone
 from OCP.Quantity import Quantity_Color, Quantity_TOC_sRGB
@@ -19,9 +21,13 @@ from OCP.TDocStd import TDocStd_Document
 from OCP.TopAbs import TopAbs_FACE
 from OCP.TopExp import TopExp_Explorer
 from OCP.TopLoc import TopLoc_Location
-from OCP.TopoDS import TopoDS, TopoDS_Iterator
+from OCP.TopoDS import TopoDS, TopoDS_Compound, TopoDS_Iterator, TopoDS_Shape
 from OCP.XCAFDoc import XCAFDoc_ColorGen, XCAFDoc_ColorSurf, XCAFDoc_DocumentTool
 from OCP.collections import IndexedMap_TopoDS_Shape, Sequence_TDF_Label
+
+
+if TYPE_CHECKING:
+    from xbf_cache import CadAssetCache
 
 
 REPO_STEP_CACHE_DIR = Path(__file__).resolve().parents[1] / "data" / "open_step_cache"
@@ -42,6 +48,10 @@ class GeometryOriginPolicy(TypedDict):
 
 
 GEOMETRY_ORIGIN_POLICY: dict[str, GeometryOriginPolicy] = {
+    "parametric_cad": {
+        "allowedUriPrefixes": ("https://", "parametric://"),
+        "targetVerifiedStatus": "composed_validated",
+    },
     "open_step_catalog": {
         "allowedUriPrefixes": ("https://",),
         "targetVerifiedStatus": "sourced_verified",
@@ -70,20 +80,24 @@ def count_brep_faces(shape: Any) -> int:
     return count
 
 
+def stabilize_step_occurrences(source: str) -> str:
+    occurrence_ids = count(1)
+    source = STEP_OCCURRENCE.sub(lambda _: f"'{next(occurrence_ids)}'", source)
+
+    def join_short_occurrence(match: re.Match[str]) -> str:
+        record = match[0].replace("\n  ", "")
+        return record if len(record) < 72 else match[0]
+
+    return STEP_OCCURRENCE_RECORD.sub(join_short_occurrence, source)
+
+
 def stabilize_step_presentation(path: Path) -> None:
     source = path.read_text(encoding="ascii")
     presentation = STEP_PRESENTATION_START.search(source)
     if presentation is None:
         raise RuntimeError(f"Missing STEP presentation records in {path}")
     first_style = int(presentation[1])
-    geometry = source[:presentation.start()]
-    occurrence_ids = count(1)
-    geometry = STEP_OCCURRENCE.sub(lambda _: f"'{next(occurrence_ids)}'", geometry)
-    def join_short_occurrence(match: re.Match[str]) -> str:
-        record = match[0].replace("\n  ", "")
-        return record if len(record) < 72 else match[0]
-
-    geometry = STEP_OCCURRENCE_RECORD.sub(join_short_occurrence, geometry)
+    geometry = stabilize_step_occurrences(source[:presentation.start()])
     if any(int(match[1]) >= first_style for match in re.finditer(r"#(\d+)", geometry)):
         raise RuntimeError(f"STEP geometry references presentation entities in {path}")
 
@@ -144,7 +158,7 @@ def stabilize_step_presentation(path: Path) -> None:
 
 
 def read_xcaf_document(step_path: Path) -> TDocStd_Document:
-    document = TDocStd_Document(TCollection_ExtendedString("MDTV-XCAF"))
+    document = TDocStd_Document(TCollection_ExtendedString("BinXCAF"))
     reader = STEPCAFControl_Reader()
     reader.SetColorMode(True)
     if reader.ReadFile(str(step_path)) != IFSelect_RetDone or not reader.Transfer(document):
@@ -152,8 +166,22 @@ def read_xcaf_document(step_path: Path) -> TDocStd_Document:
     return document
 
 
-def read_xcaf_face_colors(step_path: Path) -> list[tuple[Any, str | None]]:
-    document = read_xcaf_document(step_path)
+def xcaf_shape(document: TDocStd_Document) -> TopoDS_Shape:
+    shape_tool = XCAFDoc_DocumentTool.ShapeTool_s(document.Main())
+    roots = Sequence_TDF_Label()
+    shape_tool.GetFreeShapes(roots)
+    if roots.Length() == 1:
+        return shape_tool.GetShape_s(roots.Value(1))
+    shape = TopoDS_Compound()
+    builder = BRep_Builder()
+    builder.MakeCompound(shape)
+    for root in roots:
+        builder.Add(shape, shape_tool.GetShape_s(root))
+    return shape
+
+
+def read_xcaf_face_colors(source: Path | TDocStd_Document) -> list[tuple[TopoDS_Shape, str | None]]:
+    document = read_xcaf_document(source) if isinstance(source, Path) else source
     shape_tool = XCAFDoc_DocumentTool.ShapeTool_s(document.Main())
     color_tool = XCAFDoc_DocumentTool.ColorTool_s(document.Main())
     faces: list[tuple[Any, str | None]] = []
@@ -208,10 +236,7 @@ def read_xcaf_face_colors(step_path: Path) -> list[tuple[Any, str | None]]:
     return faces
 
 
-def read_and_validate_step(
-    step_path: Path,
-    expected_sha256: str | None = None,
-) -> tuple[Any, str, int]:
+def read_step_digest(step_path: Path, expected_sha256: str | None = None) -> str:
     if not step_path.exists():
         raise FileNotFoundError(f"Missing verified upstream STEP file: {step_path}")
 
@@ -225,6 +250,13 @@ def read_and_validate_step(
             f"STEP SHA-256 mismatch for {step_path.name}: expected {expected_sha256}, got {sha256_hex}"
         )
 
+    return sha256_hex
+
+
+def read_and_validate_step(
+    step_path: Path, expected_sha256: str | None = None,
+) -> tuple[TopoDS_Shape, str, int]:
+    sha256_hex = read_step_digest(step_path, expected_sha256)
     reader = STEPControl_Reader()
     status = reader.ReadFile(str(step_path))
     if status != IFSelect_RetDone:
@@ -232,16 +264,24 @@ def read_and_validate_step(
     reader.TransferRoots()
     shape = reader.OneShape()
 
-    if not BRepCheck_Analyzer(shape).IsValid():
-        raise RuntimeError(f"BRepCheck_Analyzer invalid topology in {step_path}")
+    return shape, sha256_hex, validate_step_shape(shape, step_path)
+
+
+class InvalidBRepError(RuntimeError):
+    pass
+
+
+def validate_step_shape(shape: TopoDS_Shape, step_path: Path) -> int:
+    if shape.IsNull() or not BRepCheck_Analyzer(shape).IsValid():
+        raise InvalidBRepError(f"BRepCheck_Analyzer invalid topology in {step_path}")
 
     face_count = count_brep_faces(shape)
     if face_count < MIN_CAD_BREP_FACES:
-        raise RuntimeError(
+        raise InvalidBRepError(
             f"Insufficient geometric detail in {step_path.name}: {face_count} faces < {MIN_CAD_BREP_FACES}"
         )
 
-    return shape, sha256_hex, face_count
+    return face_count
 
 
 def node_provenance_failure(
@@ -256,7 +296,9 @@ def node_provenance_failure(
     return None
 
 
-def resolve_component_step(node_spec: dict[str, Any], cache_dir: Path) -> dict[str, Any]:
+def resolve_component_step(
+    node_spec: dict[str, Any], cache_dir: Path, asset_cache: CadAssetCache | None = None,
+) -> dict[str, Any]:
     origin = node_spec.get("origin")
     if not isinstance(origin, str) or origin not in GEOMETRY_ORIGIN_POLICY:
         raise RuntimeError(f"Node {node_spec['id']} uses disallowed origin {origin!r}")
@@ -280,13 +322,20 @@ def resolve_component_step(node_spec: dict[str, Any], cache_dir: Path) -> dict[s
             repo_step_path = fixture_dir / str(fixture_name)
             if repo_step_path.is_file():
                 step_path.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(repo_step_path, step_path)
+                with TemporaryDirectory(dir=step_path.parent) as staging:
+                    staged = Path(staging) / step_path.name
+                    shutil.copy2(repo_step_path, staged)
+                    staged.replace(step_path)
                 break
 
-    shape, sha256_hex, face_count = read_and_validate_step(
-        step_path,
-        expected_sha256=node_spec.get("expectedStepSha256"),
-    )
+    mesh = {}
+    expected_digest = node_spec.get("expectedStepSha256")
+    if asset_cache is None:
+        shape, sha256_hex, face_count = read_and_validate_step(step_path, expected_digest)
+    else:
+        asset, mode = asset_cache.load(step_path, origin, expected_digest)
+        shape, sha256_hex, face_count = asset.shape, asset.sha256, asset.face_count
+        mesh = {"meshGeometry": asset.mesh_geometry, "cacheMode": mode}
 
     return {
         "hasGeometry": True,
@@ -294,6 +343,6 @@ def resolve_component_step(node_spec: dict[str, Any], cache_dir: Path) -> dict[s
         "stepPath": step_path,
         "sha256": sha256_hex,
         "faceCount": face_count,
-        "initialStatus": "unverified",
+        **mesh,
         "targetVerifiedStatus": policy["targetVerifiedStatus"],
     }

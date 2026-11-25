@@ -164,7 +164,7 @@
       "category": "structure",
       "colorHex": "#aab4c2",
       "dimensionsMm": [57.1, 10.0, 3.0],
-      "restPositionMeters": [0.0, 0.012, -0.068],
+      "restPositionMeters": [-0.076, 0, -0.04],
       "explodeDirection": [0.0, 0.0, -1.0],
       "explodeDistanceMeters": 0.04,
       "materialHint": "anodized_aluminum",
@@ -188,7 +188,7 @@
       "category": "avionics",
       "colorHex": "#de9224",
       "dimensionsMm": [40.0, 16.5, 4.0],
-      "restPositionMeters": [0.0, 0.012, 0.072],
+      "restPositionMeters": [0.076, -0.004, -0.02],
       "explodeDirection": [0.0, 0.0, 1.0],
       "explodeDistanceMeters": 0.04,
       "materialHint": "abs_3d_printed",
@@ -834,6 +834,22 @@
       "connectionType": "assembly_mount",
       "howConnected": "The cable plugs into the host at the start of the route.",
       "whyConnected": "The host locates the cable at its first connection."
+    },
+    {
+      "id": "rel_rover_left_mount_bridge",
+      "fromComponentId": "subcomp_rover_crossbar",
+      "toComponentId": "comp_wheel_bracket_left",
+      "connectionType": "assembly_mount",
+      "howConnected": "Align the sourced mounting piece across the chassis seam.",
+      "whyConnected": "Connects the wheel bracket to the chassis mounting area."
+    },
+    {
+      "id": "rel_rover_right_mount_bridge",
+      "fromComponentId": "subcomp_rover_bus_coupler",
+      "toComponentId": "comp_wheel_bracket_right",
+      "connectionType": "assembly_mount",
+      "howConnected": "Align the sourced mounting piece across the chassis seam.",
+      "whyConnected": "Connects the wheel bracket to the chassis mounting area."
     }
   ],
   "assemblySteps": [
@@ -851,7 +867,9 @@
       "relationshipIds": [
         "rel_nova2_compute_chassis",
         "rel_nova2_crossbar_chassis",
-        "rel_nova2_harness_connector_chassis"
+        "rel_nova2_harness_connector_chassis",
+        "rel_rover_left_mount_bridge",
+        "rel_rover_right_mount_bridge"
       ]
     },
     {

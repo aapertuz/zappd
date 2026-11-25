@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import json
 import re
+import shutil
 import struct
 import sys
 import zipfile
@@ -38,6 +39,7 @@ EXPECTED_NODE_COUNTS = {
     "robotic_arm_3dof_v1": 31,
     "open_source_rover_v1": 21,
     "open_quadruped_v1": 40,
+    "parametric_multirotor_v1": 38,
 }
 @pytest.fixture(scope="module")
 def cots_parts() -> dict[str, dict]:
@@ -394,6 +396,7 @@ def test_all_robotics_categories_pass_opencascade_validation(tmp_path: Path) -> 
                 "cots_library_step": ("sourced_verified", "https://"),
                 "kicad_pcb_step": ("composed_validated", "kicad://"),
                 "procedural_harness": ("composed_validated", "harness://"),
+                "parametric_cad": ("composed_validated", "parametric://"),
             }[prov["origin"]]
             assert prov["verificationStatus"] == expected_status
             assert prov["spdxLicense"]
@@ -411,6 +414,7 @@ def test_all_robotics_categories_pass_opencascade_validation(tmp_path: Path) -> 
         assert (out_dir / "model.step").stat().st_size > 0
         assert (out_dir / "model.glb").stat().st_size > 0
         assert (out_dir / "model.usdz").stat().st_size > 0
+        shutil.rmtree(out_dir)
 
 
 def test_open_quadruped_documents_pinned_parts_and_rated_circuits(tmp_path: Path) -> None:
@@ -526,7 +530,11 @@ def test_step_ingestion_enforces_origin_uri_and_status(
 
 def test_mixed_geometry_uses_per_node_status_and_preserves_ports(tmp_path: Path) -> None:
     spec = copy.deepcopy(CATALOG_SPECS["open_source_rover_v1"])
-    spec["nodes"] = [node for node in spec["nodes"] if node["origin"] == "open_step_catalog"]
+    retained = {"comp_rover_base_plate", "comp_zed2i_stereo_camera"}
+    spec["nodes"] = [
+        node for node in spec["nodes"] if not node["stepFixtureName"] or node["id"] in retained
+    ]
+    spec["relationships"] = []
     by_id = {node["id"]: node for node in spec["nodes"]}
     ports = [
         {
@@ -539,7 +547,8 @@ def test_mixed_geometry_uses_per_node_status_and_preserves_ports(tmp_path: Path)
         }
     ]
     by_id["comp_zed2i_stereo_camera"].update(
-        origin="kicad_pcb_step", sourceUrl="kicad://test/board", ports=ports
+        origin="kicad_pcb_step", sourceUrl="kicad://test/board", ports=ports,
+        restPositionMeters=[0, 0.0204, 0],
     )
     by_id["sub_perception_avionics"].update(
         origin="procedural_harness", sourceUrl="harness://test/route"
@@ -579,12 +588,21 @@ def harness_spec(cots_parts: dict):
         elif bus == "dc_power":
             start = board("kicad_quad_4in1_esc", "comp_from", [-0.045, 0, 0])
             end = board("cots_battery_3s_18650", "comp_to", [0.090, 0.060, -0.008255])
-            from_port, to_port = "port_dc_in", "port_tab_1"
+            from_port, to_port = "port_dc_in", "port_pack_out"
+            start["ports"] = [
+                {**port, "maxCurrentA": 15} if port["portId"] == from_port else port
+                for port in start["ports"]
+            ]
             waypoint = [0.005, 0.030, 0.011]
         else:
             start = board("kicad_nova2_jetson_carrier", "comp_from", [-0.060, 0, 0])
-            end = board("kicad_nova2_jetson_carrier", "comp_to", [0.060, 0, 0])
-            from_port = to_port = "port_servo_1"
+            servo = next(node for node in template["nodes"] if node["id"] == "comp_steering_servo_right")
+            end = {
+                **copy.deepcopy(servo), "id": "comp_to", "parentId": root["id"],
+                "level": "component", "depth": 1, "restPositionMeters": [0.060, 0.03245, -0.0258375],
+            }
+            end["ports"][0]["role"] = "sink"
+            from_port, to_port = "port_servo_1", "port_ttl_in"
             waypoint = [0, 0.038, -0.0190875]
         relationship = {
             "id": "rel_cable", "fromComponentId": start["id"], "toComponentId": end["id"],

@@ -127,6 +127,17 @@ describe('shared domain contracts', () => {
     assert.equal(quadruped, OPEN_QUADRUPED_ARCHETYPE);
     assert.equal(getCatalogArchetypeById('open_quadruped_v1'), quadruped);
     assert.equal(quadruped.generationMode, 'reference_catalog');
+    for (const prompt of [
+      'parametric quadcopter',
+      'hexacopter',
+      'custom drone',
+      '6-rotor UAV',
+      'multirotor',
+    ]) {
+      const family = matchProjectArchetypeFromPrompt(prompt);
+      assert.equal(family.archetypeId, 'parametric_multirotor_v1');
+      assert.equal(family.generationMode, 'parametric_family');
+    }
   });
 
   it('prevents classifying unvalidated, colliding, or ungrounded models as verified', () => {

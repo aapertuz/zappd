@@ -13,16 +13,21 @@ from geometry_pipeline import run_cad_pipeline
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Zappd OpenCascade Phase 1 CAD pipeline CLI")
+    parser = argparse.ArgumentParser(description="Zappd OpenCascade CAD pipeline CLI")
     parser.add_argument("--archetype", required=False, default="quadcopter_drone_v1")
     parser.add_argument("--all-archetypes", action="store_true")
     parser.add_argument("--output-dir", required=False)
     parser.add_argument("--public-dir", required=False)
     parser.add_argument("--cache-dir", required=False)
     parser.add_argument("--catalog-json", required=False)
+    parser.add_argument("--params-json", type=json.loads)
+    parser.add_argument("--xbf-cache-dir", type=Path)
+    parser.add_argument("--render-views-dir", type=Path)
     parser.add_argument("--json-out", required=False)
     parser.add_argument("--inject-collision-test", action="store_true")
     args = parser.parse_args()
+    if args.params_json is not None and not isinstance(args.params_json, dict):
+        parser.error("--params-json requires a JSON object")
 
     repo_root = Path(__file__).resolve().parents[2]
     cache_dir = Path(args.cache_dir) if args.cache_dir else repo_root / "backend" / "data" / "open_step_cache"
@@ -41,10 +46,13 @@ def main() -> int:
             output_dir=out_dir,
             cache_dir=cache_dir,
             inject_collision_test=args.inject_collision_test,
+            parameter_overrides=args.params_json,
+            xbf_cache_dir=args.xbf_cache_dir,
+            render_views_dir=args.render_views_dir,
         )
         if args.public_dir or args.all_archetypes:
             pub_base = Path(args.public_dir) if args.public_dir else repo_root / "public" / "assemblies"
-            pub_dir = pub_base / archetype_id
+            pub_dir = pub_base / result["manifest"]["manifestHash"]
             pub_dir.mkdir(parents=True, exist_ok=True)
             for filename in ("model.glb", "model.step", "model.usdz", "manifest.json", "pipeline_result.json"):
                 shutil.copy2(out_dir / filename, pub_dir / filename)

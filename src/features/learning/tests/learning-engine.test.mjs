@@ -332,6 +332,7 @@ describe('component learning context', () => {
       robotic_arm_3dof_v1: /robot arm that follows another arm/i,
       open_source_rover_v1: /vehicle designed to explore terrain/i,
       open_quadruped_v1: /four-legged walking robot by Adham Elarabawy/i,
+      parametric_multirotor_v1: /reconfigurable aircraft/i,
     };
     for (const [index, archetype] of CATALOG_ARCHETYPES.entries()) {
       const project = verifiedAssembly(archetype, `proj_learning_overview_${index}`);

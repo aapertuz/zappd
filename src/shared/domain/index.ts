@@ -86,6 +86,7 @@ export {
   ROBOTIC_ARM_ARCHETYPE,
   ROVER_ARCHETYPE,
   OPEN_QUADRUPED_ARCHETYPE,
+  PARAMETRIC_MULTIROTOR_ARCHETYPE,
   getCatalogArchetypeById,
   listCatalogArchetypes,
   matchProjectArchetypeFromPrompt,

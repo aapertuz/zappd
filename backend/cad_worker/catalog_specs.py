@@ -11,6 +11,7 @@ CATALOG_ORDER = {
     "robotic_arm_3dof_v1": 1,
     "open_source_rover_v1": 2,
     "open_quadruped_v1": 3,
+    "parametric_multirotor_v1": 4,
 }
 
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from itertools import combinations
-from math import pi
+from math import acos, pi, tan
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
@@ -19,6 +19,7 @@ from OCP.BRepCheck import BRepCheck_Analyzer
 from OCP.BRepExtrema import BRepExtrema_DistShapeShape
 from OCP.BRepGProp import BRepGProp
 from OCP.BRepOffsetAPI import BRepOffsetAPI_MakePipeShell
+from OCP.GC import GC_MakeArcOfCircle
 from OCP.Geom import Geom_BSplineCurve
 from OCP.GeomAPI import GeomAPI_Interpolate, GeomAPI_PointsToBSpline
 from OCP.GProp import GProp_GProps
@@ -36,12 +37,16 @@ from OCP.XCAFDoc import XCAFDoc_ColorGen, XCAFDoc_DocumentTool
 from OCP.collections import Array1_gp_Pnt, HArray1_double, HArray1_gp_Pnt
 from OCP.gp import gp_Ax2, gp_Circ, gp_Dir, gp_Pnt, gp_Vec
 
+from cad_pose import rotate_vector, world_rest_to_cad_mm, world_rotation
+from routing_paths import RoutingSpace, channel_paths, escape_port, routing_boxes, voxel_path
+from validation_checks import INTERFERENCE_TOLERANCE_MM3, bounds_distance_mm
+
 from catalog_ingestor import (
     GEOMETRY_ORIGIN_POLICY,
     MIN_CAD_BREP_FACES,
     count_brep_faces,
     node_provenance_failure,
-    read_and_validate_step,
+    read_step_digest,
     stabilize_step_presentation,
 )
 
@@ -241,13 +246,169 @@ def write_colored_step(
             entity.SetId(TCollection_HAsciiString(str(occurrence_id)))
     if writer.Write(str(step_path)) != IFSelect_RetDone:
         raise RuntimeError(f"Could not write colored STEP file {step_path}")
-    stabilize_step_presentation(step_path)
+    if any(colors for _, _, colors in components):
+        stabilize_step_presentation(step_path)
+
+
+def _sweep_bundle(
+    points: list[np.ndarray], start_exit: np.ndarray, end_exit: np.ndarray, wire_count: int, diameter_mm: float,
+) -> TopoDS_Compound:
+    if wire_count == 1:
+        conductors = [_sweep_conductor(_spline(points, start_exit, end_exit), diameter_mm / 2)]
+    else:
+        axes = _ribbon_axes(points, start_exit, end_exit)
+        parameters = HArray1_double(1, len(points))
+        parameters.SetValue(1, 0.0)
+        for index, (before, after) in enumerate(zip(points, points[1:]), start=2):
+            parameters.SetValue(index, parameters.Value(index - 1) + np.linalg.norm(after - before))
+        conductors = []
+        for index in range(wire_count):
+            offset = (index - (wire_count - 1) / 2) * (diameter_mm + _WIRE_GAP_MM)
+            wire_points = [point + offset * axis for point, axis in zip(points, axes)]
+            curve = _spline(wire_points, start_exit, end_exit, parameters)
+            conductors.append(_sweep_conductor(curve, diameter_mm / 2))
+        _validate_conductor_clearance(conductors, diameter_mm)
+
+    compound = TopoDS_Compound()
+    builder = BRep_Builder()
+    builder.MakeCompound(compound)
+    for _, solid in conductors:
+        builder.Add(compound, solid)
+
+    return compound
+
+
+def _rounded_bundle(
+    points: list[np.ndarray], start_exit: np.ndarray, wire_count: int, diameter_mm: float,
+) -> TopoDS_Compound:
+    radius = (diameter_mm + (wire_count - 1) * (diameter_mm + _WIRE_GAP_MM)) / 2
+    route = BRepBuilderAPI_MakeWire()
+    cursor = points[0]
+    for before, corner, after in zip(points, points[1:], points[2:]):
+        incoming, outgoing = _unit(corner - before), _unit(after - corner)
+        dot = float(np.clip(np.dot(incoming, outgoing), -1, 1))
+        if dot > 1 - 1e-7:
+            continue
+        if dot < -1 + 1e-7:
+            raise RuntimeError("Cable route doubles back at a corner")
+        half_turn = tan(acos(dot) / 2)
+        span = min(5.0 * half_turn, np.linalg.norm(corner - before) * 0.48,
+                   np.linalg.norm(after - corner) * 0.48)
+        if span / half_turn <= radius + _SPLINE_TOLERANCE_MM:
+            raise RuntimeError("Cable bend radius is too small for the conductor bundle")
+        first, last = corner - incoming * span, corner + outgoing * span
+        route.Add(BRepBuilderAPI_MakeEdge(gp_Pnt(*cursor), gp_Pnt(*first)).Edge())
+        arc = GC_MakeArcOfCircle(gp_Pnt(*first), gp_Vec(*incoming), gp_Pnt(*last))
+        route.Add(BRepBuilderAPI_MakeEdge(arc.Value()).Edge())
+        cursor = last
+    route.Add(BRepBuilderAPI_MakeEdge(gp_Pnt(*cursor), gp_Pnt(*points[-1])).Edge())
+    spine = route.Wire()
+
+    lateral = np.cross(start_exit, [0, 0, 1])
+    if np.linalg.norm(lateral) < 0.1:
+        lateral = np.cross(start_exit, [1, 0, 0])
+    lateral = _unit(lateral)
+    builder = BRep_Builder()
+    bundle = TopoDS_Compound()
+    builder.MakeCompound(bundle)
+    for index in range(wire_count):
+        offset = (index - (wire_count - 1) / 2) * (diameter_mm + _WIRE_GAP_MM)
+        center = points[0] + offset * lateral
+        profile = gp_Circ(gp_Ax2(gp_Pnt(*center), gp_Dir(*start_exit)), diameter_mm / 2)
+        section = BRepBuilderAPI_MakeWire(
+            BRepBuilderAPI_MakeEdge(profile, 0.0, pi).Edge(),
+            BRepBuilderAPI_MakeEdge(profile, pi, 2 * pi).Edge(),
+        ).Wire()
+        swept = BRepOffsetAPI_MakePipeShell(spine)
+        swept.SetMode(False)
+        swept.Add(section)
+        swept.Build()
+        if not swept.IsDone() or not swept.MakeSolid():
+            raise RuntimeError("Could not sweep the rounded cable route")
+        solid = swept.Shape()
+        if not BRepCheck_Analyzer(solid).IsValid() or count_brep_faces(solid) < MIN_CAD_BREP_FACES:
+            raise RuntimeError("Rounded cable conductor produced an invalid BRep")
+        children = TopoDS_Iterator(bundle)
+        while children.More():
+            common = BRepAlgoAPI_Common(solid, children.Value())
+            properties = GProp_GProps()
+            if not common.IsDone():
+                raise RuntimeError("Could not validate rounded cable conductor clearance")
+            BRepGProp.VolumeProperties_s(common.Shape(), properties)
+            if properties.Mass() > 1e-6:
+                raise RuntimeError("Rounded cable bundle has overlapping conductors")
+            children.Next()
+        builder.Add(bundle, solid)
+    return bundle
+
+
+def _auto_route_bundle(
+    relationship_id: str, start: np.ndarray, end: np.ndarray, start_exit: np.ndarray, end_exit: np.ndarray,
+    start_id: str, end_id: str, wire_count: int, diameter_mm: float,
+    obstacles: dict[str, TopoDS_Shape], repair_attempt: int, harness_ids: set[str],
+) -> TopoDS_Compound:
+    from geometry_pipeline import interference_volume_mm3, shape_bounds_mm
+
+    blocked = f"Cable routing blocked: no collision-free path for {relationship_id}"
+    radius = diameter_mm / 2 + (wire_count - 1) / 2 * (diameter_mm + _WIRE_GAP_MM)
+    space = RoutingSpace(routing_boxes(obstacles, {start_id, end_id}, harness_ids), radius + 0.25 + repair_attempt * 0.35)
+    first = escape_port(space, start, start_exit, start_id, _CLEARANCE_MM)
+    last = escape_port(space, end, end_exit, end_id, _CLEARANCE_MM)
+    if first is None or last is None:
+        raise CableRoutingBlockedError(f"{blocked}: obstructed port exit")
+
+    obstacle_bounds = {cid: shape_bounds_mm(shape) for cid, shape in obstacles.items()}
+    last_failure = "no free channel or voxel detour"
+
+    def sweep(path: list[np.ndarray]) -> TopoDS_Compound | None:
+        nonlocal last_failure
+        if len(path) > 5 or any(not space.clear(a, b) for a, b in zip(path, path[1:])):
+            return None
+        points = [first[0]]
+        for point in [*path, last[0]]:
+            if np.linalg.norm(point - points[-1]) >= _MIN_SPAN_MM:
+                points.append(point)
+        if len(points) < 3:
+            return None
+        try:
+            bundle = _rounded_bundle(points, start_exit, wire_count, diameter_mm)
+        except RuntimeError as error:
+            last_failure = str(error)
+            return None
+        bounds = shape_bounds_mm(bundle)
+        for cid, obstacle in obstacles.items():
+            if bounds_distance_mm(bounds, obstacle_bounds[cid]) > 0:
+                continue
+            volume = interference_volume_mm3(bundle, obstacle)
+            if volume > INTERFERENCE_TOLERANCE_MM3:
+                last_failure = f"swept cable intersects {cid}: {volume:.4f} mm^3"
+                return None
+        return bundle
+
+    for channel in channel_paths(space, first[1], last[1]):
+        bundle = sweep(channel)
+        if bundle is not None:
+            return bundle
+
+    detour = voxel_path(space, first[1], last[1], (4, 3.25, 2.5)[repair_attempt])
+    if detour is not None:
+        bundle = sweep(detour)
+        if bundle is not None:
+            return bundle
+
+    raise CableRoutingBlockedError(f"{blocked}: {last_failure}")
+
+
+class CableRoutingBlockedError(RuntimeError):
+    pass
 
 
 def route_harness_for_node(
-    node_spec: dict[str, Any], archetype_spec: dict[str, Any], cache_dir: Path
+    node_spec: dict[str, Any], archetype_spec: dict[str, Any], cache_dir: Path,
+    obstacles: dict[str, TopoDS_Shape] | None = None, *, auto_route: bool = False, repair_attempt: int = 0,
+    harness_ids: set[str] | None = None,
 ) -> dict[str, Any]:
-    from geometry_pipeline import shape_bounds_mm, translate_shape_mm, world_rest_to_cad_mm
+    from geometry_pipeline import shape_bounds_mm, translate_shape_mm
 
     policy = GEOMETRY_ORIGIN_POLICY["procedural_harness"]
     provenance_failure = node_provenance_failure(node_spec, policy)
@@ -269,15 +430,16 @@ def route_harness_for_node(
     to_node, to_port = _route_endpoint(nodes, relationship, "to")
 
     def endpoint(node: dict[str, Any], port: dict[str, Any]) -> tuple[np.ndarray, np.ndarray]:
-        world = tuple(rest + local for rest, local in zip(node["restPositionMeters"], port["localPositionMeters"]))
-        return np.asarray(world_rest_to_cad_mm(world)), _unit(np.asarray(world_rest_to_cad_mm(port["exitDirection"])))
+        rotation = world_rotation(node.get("restRotationDeg", (0, 0, 0)))
+        world = np.asarray(node["restPositionMeters"]) + rotate_vector(rotation, port["localPositionMeters"])
+        exit_direction = rotate_vector(rotation, port["exitDirection"])
+        return np.asarray(world_rest_to_cad_mm(world)), _unit(np.asarray(world_rest_to_cad_mm(exit_direction)))
 
     start, start_exit = endpoint(from_node, from_port)
     end, end_exit = endpoint(to_node, to_port)
     waypoints = [
         np.asarray(world_rest_to_cad_mm(point)) for point in relationship.get("routingWaypointsMeters", [])
     ]
-    points = _route_points(start, end, start_exit, end_exit, waypoints)
     colors = tuple(
         from_port.get("wireColorsHex") or to_port.get("wireColorsHex")
         or _DEFAULT_COLORS.get(from_port["busKind"], (node_spec["colorHex"],))
@@ -288,27 +450,14 @@ def route_harness_for_node(
         else min(2.2, max(0.9, bundle_mm / (len(colors) * 0.85)))
     )
 
-    if len(colors) == 1:
-        conductors = [_sweep_conductor(_spline(points, start_exit, end_exit), diameter_mm / 2)]
+    if waypoints and not auto_route:
+        points = _route_points(start, end, start_exit, end_exit, waypoints)
+        compound = _sweep_bundle(points, start_exit, end_exit, len(colors), diameter_mm)
     else:
-        axes = _ribbon_axes(points, start_exit, end_exit)
-        parameters = HArray1_double(1, len(points))
-        parameters.SetValue(1, 0.0)
-        for index, (before, after) in enumerate(zip(points, points[1:]), start=2):
-            parameters.SetValue(index, parameters.Value(index - 1) + np.linalg.norm(after - before))
-        conductors = []
-        for index in range(len(colors)):
-            offset = (index - (len(colors) - 1) / 2) * (diameter_mm + _WIRE_GAP_MM)
-            wire_points = [point + offset * axis for point, axis in zip(points, axes)]
-            curve = _spline(wire_points, start_exit, end_exit, parameters)
-            conductors.append(_sweep_conductor(curve, diameter_mm / 2))
-        _validate_conductor_clearance(conductors, diameter_mm)
-
-    compound = TopoDS_Compound()
-    builder = BRep_Builder()
-    builder.MakeCompound(compound)
-    for _, solid in conductors:
-        builder.Add(compound, solid)
+        compound = _auto_route_bundle(
+            relationship["id"], start, end, start_exit, end_exit, from_node["id"], to_node["id"],
+            len(colors), diameter_mm, obstacles or {}, repair_attempt, harness_ids or set(),
+        )
 
     lower, upper = shape_bounds_mm(compound)
     x, y, z = ((lo + hi) / 2 for lo, hi in zip(lower, upper))
@@ -318,7 +467,8 @@ def route_harness_for_node(
     with TemporaryDirectory(dir=step_path.parent) as staging:
         staged_step = Path(staging) / step_path.name
         write_colored_step(staged_step, [(node_spec["id"], centered, colors)])
-        _, sha, face_count = read_and_validate_step(staged_step, node_spec.get("expectedStepSha256"))
+        sha = read_step_digest(staged_step, node_spec.get("expectedStepSha256"))
+        face_count = count_brep_faces(centered)
         staged_step.replace(step_path)
 
     return {

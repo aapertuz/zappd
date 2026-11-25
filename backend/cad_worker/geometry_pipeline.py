@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import datetime
+from collections import Counter
 import hashlib
 import json
+import re
 import struct
 import zipfile
 from dataclasses import dataclass
 from pathlib import Path
+from time import perf_counter
 from typing import Any
 
 import numpy as np
@@ -15,12 +18,10 @@ from OCP.BRep import BRep_Builder, BRep_Tool
 from OCP.BRepAlgoAPI import BRepAlgoAPI_Common
 from OCP.BRepBndLib import BRepBndLib
 from OCP.BRepBuilderAPI import BRepBuilderAPI_Transform
-from OCP.BRepCheck import BRepCheck_Analyzer
 from OCP.BRepGProp import BRepGProp
 from OCP.BRepMesh import BRepMesh_IncrementalMesh
 from OCP.GProp import GProp_GProps
 from OCP.IMeshTools import IMeshTools_Parameters
-from OCP.STEPControl import STEPControl_AsIs, STEPControl_Writer
 from OCP.TopAbs import TopAbs_FACE
 from OCP.TopExp import TopExp_Explorer
 from OCP.TopLoc import TopLoc_Location
@@ -49,8 +50,11 @@ from pygltflib import (
     TextureInfo,
 )
 
-from cable_router import route_harness_for_node, write_colored_step
-from catalog_ingestor import MIN_CAD_BREP_FACES, read_xcaf_face_colors, resolve_component_step
+from cable_router import CableRoutingBlockedError, route_harness_for_node, write_colored_step
+from cad_pose import local_pose, place_shape, world_rest_to_cad_mm
+from catalog_ingestor import GEOMETRY_ORIGIN_POLICY, InvalidBRepError, resolve_component_step
+from validation_checks import INTERFERENCE_TOLERANCE_MM3, electrical_failures, floating_components
+from xbf_cache import DEFAULT_XBF_DIR, CadAssetCache, CacheMode, build_cache_mode
 from material_skins import (
     FAMILY_DEFAULTS,
     MaterialSkinSpec,
@@ -84,10 +88,6 @@ _UV_AXES = ((2, 1), (0, 2), (0, 1))
 _ZIP_LOCAL_HEADER_BYTES = 30
 _USDZ_ALIGNMENT_BYTES = 64
 _HARNESS_MIN_MESH_SIZE_MM = 0.2
-
-
-def world_rest_to_cad_mm(rest_m: list[float] | tuple[float, float, float]) -> tuple[float, float, float]:
-    return (rest_m[0] * 1000.0, -rest_m[2] * 1000.0, rest_m[1] * 1000.0)
 
 
 def translate_shape_mm(shape, offset_mm: tuple[float, float, float]):
@@ -210,11 +210,10 @@ def tessellate_shape_meters_y_up(
     return np.concatenate(vertices), np.concatenate(normals), np.concatenate(indices), np.concatenate(metric_uvs)
 
 
-def tessellate_step_geometry(shape: Any, step_path: Path, origin: str) -> MeshGeometry:
-    face_colors = read_xcaf_face_colors(step_path)
-    if origin not in {"cots_library_step", "kicad_pcb_step", "procedural_harness"} and len({
-        color for _, color in face_colors if color is not None
-    }) < 2:
+def tessellate_step_geometry(
+    shape: TopoDS_Shape, face_colors: list[tuple[TopoDS_Shape, str | None]], origin: str,
+) -> MeshGeometry:
+    if not any(color is not None for _, color in face_colors):
         return MeshGeometry(*tessellate_shape_meters_y_up(shape))
 
     builder = BRep_Builder()
@@ -335,14 +334,10 @@ def export_hierarchical_glb(
 ) -> list[str]:
     gltf = GLTF2(scene=0, scenes=[Scene(nodes=[0])], nodes=[], meshes=[], materials=[], accessors=[], bufferViews=[], buffers=[])
     binary_blob = bytearray()
-    index_by_id: dict[str, int] = {}
-    rest_by_id: dict[str, list[float]] = {}
+    by_id = {node["id"]: node for node in nodes_spec}
+    index_by_id = {node["id"]: index for index, node in enumerate(nodes_spec)}
     exported_leaf_ids: list[str] = []
     textures_by_family: dict[SkinFamily, tuple[int, int, int]] = {}
-
-    for idx, node_spec in enumerate(nodes_spec):
-        index_by_id[node_spec["id"]] = idx
-        rest_by_id[node_spec["id"]] = list(node_spec["restPositionMeters"])
 
     children_by_id: dict[str, list[int]] = {n["id"]: [] for n in nodes_spec}
     for idx, node_spec in enumerate(nodes_spec):
@@ -353,13 +348,7 @@ def export_hierarchical_glb(
     for node_spec in nodes_spec:
         cid = node_spec["id"]
         pid = node_spec["parentId"]
-        rest = rest_by_id[cid]
-        parent_rest = rest_by_id[pid] if pid is not None and pid in rest_by_id else [0.0, 0.0, 0.0]
-        local_translation = [
-            round(rest[0] - parent_rest[0], 6),
-            round(rest[1] - parent_rest[1], 6),
-            round(rest[2] - parent_rest[2], 6),
-        ]
+        local_translation, quaternion, local_rotation = local_pose(node_spec, by_id.get(pid))
 
         extras = {
             "componentId": cid,
@@ -424,6 +413,8 @@ def export_hierarchical_glb(
                 name=cid,
                 children=children_by_id[cid],
                 translation=local_translation,
+                rotation=[quaternion.X(), quaternion.Y(), quaternion.Z(), quaternion.W()]
+                if local_rotation is not None else None,
                 mesh=mesh_index,
                 extras=extras,
             )
@@ -575,14 +566,19 @@ def export_usdz_archive(
         pad = " " * indent
         cid = node["id"]
         pid = node["parentId"]
-        rest = node["restPositionMeters"]
-        p_rest = by_id[pid]["restPositionMeters"] if pid is not None and pid in by_id else [0.0, 0.0, 0.0]
-        dx, dy, dz = (round(coord - parent_coord, 6) for coord, parent_coord in zip(rest, p_rest))
+        (dx, dy, dz), _, rotation = local_pose(node, by_id.get(pid))
+        xform_order = '"xformOp:translate"'
         lines.extend([
             f'{pad}def Xform "{cid}"',
             f"{pad}{{",
             f"{pad}    double3 xformOp:translate = ({dx}, {dy}, {dz})",
-            f'{pad}    uniform token[] xformOpOrder = ["xformOp:translate"]',
+        ])
+        if rotation is not None:
+            x, y, z = (round(angle, 9) for angle in rotation)
+            lines.append(f"{pad}    double3 xformOp:rotateXYZ = ({x}, {y}, {z})")
+            xform_order += ', "xformOp:rotateXYZ"'
+        lines.extend([
+            f'{pad}    uniform token[] xformOpOrder = [{xform_order}]',
             f'{pad}    custom string componentId = "{cid}"',
         ])
 
@@ -707,8 +703,18 @@ def run_cad_pipeline(
     output_dir: Path,
     cache_dir: Path,
     inject_collision_test: bool = False,
+    *,
+    asset_cache: CadAssetCache | None = None,
+    xbf_cache_dir: Path | None = None,
+    parameter_overrides: dict[str, float | int] | None = None,
+    render_views_dir: Path | None = None,
 ) -> dict[str, Any]:
+    started = perf_counter()
     archetype_id = archetype_spec["archetypeId"]
+    if archetype_id == "parametric_multirotor_v1":
+        from parametric_multirotor import materialize_multirotor
+
+        archetype_spec = materialize_multirotor(archetype_spec, cache_dir, parameter_overrides)
     nodes_spec = list(archetype_spec["nodes"])
     failures: list[str] = []
 
@@ -718,26 +724,71 @@ def run_cad_pipeline(
     max_dim_err_mm = 0.0
     brep_valid = True
 
-    compound = TopoDS_Compound()
-    builder = BRep_Builder()
-    builder.MakeCompound(compound)
-
-    for idx, node_spec in enumerate(nodes_spec):
+    cache = asset_cache if asset_cache is not None else CadAssetCache(xbf_cache_dir or DEFAULT_XBF_DIR)
+    modes: list[CacheMode] = []
+    repair_attempts = 0
+    relationships = archetype_spec.get("relationships", [])
+    relationships_by_id = {relationship["id"]: relationship for relationship in relationships}
+    routed_nodes = {
+        node["id"] for node in nodes_spec
+        if node["origin"] == "procedural_harness" and node.get("stepFixtureName") is not None
+        and "relationshipId" in node.get("specifications", {})
+    }
+    collision_position = None
+    collision_id = None
+    if inject_collision_test:
+        fixtures = [
+            idx for idx, node in enumerate(nodes_spec)
+            if node.get("stepFixtureName") is not None and node["id"] not in routed_nodes
+        ]
+        if len(fixtures) < 2:
+            raise ValueError("Collision fault injection requires two physical components")
+        collision_position = nodes_spec[fixtures[0]]["restPositionMeters"]
+        collision_id = nodes_spec[fixtures[-1]]["id"]
+    routing_spec = {**archetype_spec, "nodes": list(nodes_spec)}
+    node_order = sorted(range(len(nodes_spec)), key=lambda idx: nodes_spec[idx]["id"] in routed_nodes)
+    for idx in node_order:
+        node_spec = nodes_spec[idx]
         cid = node_spec["id"]
-        if (
-            node_spec["origin"] == "procedural_harness"
-            and node_spec.get("stepFixtureName") is not None
-            and "relationshipId" in node_spec.get("specifications", {})
-        ):
-            resolved = route_harness_for_node(node_spec, archetype_spec, cache_dir)
-            node_spec = {
-                **node_spec,
-                "restPositionMeters": resolved["restPositionMeters"],
-                "dimensionsMm": resolved["dimensionsMm"],
+        try:
+            if cid in routed_nodes:
+                relationship_id = node_spec["specifications"]["relationshipId"]
+                relationship = relationships_by_id.get(relationship_id, {})
+                max_repairs = 0 if inject_collision_test or relationship.get("routingWaypointsMeters") else 2
+                for attempt in range(max_repairs + 1):
+                    try:
+                        resolved = route_harness_for_node(
+                            node_spec, routing_spec, cache_dir, placed_solids, repair_attempt=attempt, harness_ids=routed_nodes,
+                        )
+                        break
+                    except CableRoutingBlockedError:
+                        if attempt == max_repairs:
+                            raise
+                        repair_attempts = max(repair_attempts, attempt + 1)
+                node_spec = {
+                    **node_spec,
+                    "restPositionMeters": resolved["restPositionMeters"],
+                    "dimensionsMm": resolved["dimensionsMm"],
+                    "specifications": {
+                        **node_spec["specifications"],
+                        "brepFaces": resolved["faceCount"],
+                    },
+                }
+                nodes_spec[idx] = node_spec
+                asset, _ = cache.load(resolved["stepPath"], node_spec["origin"], resolved["sha256"])
+                resolved["meshGeometry"] = asset.mesh_geometry
+            else:
+                resolved = resolve_component_step(node_spec, cache_dir, cache)
+                if "cacheMode" in resolved and node_spec["origin"] != "parametric_cad":
+                    modes.append(resolved["cacheMode"])
+        except (InvalidBRepError, CableRoutingBlockedError) as error:
+            brep_valid = brep_valid and not isinstance(error, InvalidBRepError)
+            failures.append(f"{cid}: {error}")
+            resolved_by_id[cid] = {
+                "hasGeometry": False,
+                "targetVerifiedStatus": GEOMETRY_ORIGIN_POLICY[node_spec["origin"]]["targetVerifiedStatus"],
             }
-            nodes_spec[idx] = node_spec
-        else:
-            resolved = resolve_component_step(node_spec, cache_dir)
+            continue
         resolved_by_id[cid] = resolved
         provenance_failure = resolved.get("provenanceFailure")
         if provenance_failure is not None:
@@ -746,27 +797,12 @@ def run_cad_pipeline(
         if not resolved["hasGeometry"]:
             continue
 
-        if resolved["faceCount"] < MIN_CAD_BREP_FACES:
-            failures.append(
-                f"Component {cid} has {resolved['faceCount']} faces (< {MIN_CAD_BREP_FACES})"
-            )
-
         shape = resolved["shape"]
-        if not BRepCheck_Analyzer(shape).IsValid():
-            brep_valid = False
-            failures.append(f"Invalid BRep solid for {cid}")
-
-        rest_m = list(node_spec["restPositionMeters"])
-        if inject_collision_test and idx == len(nodes_spec) - 1:
-            first_geom_node = next(n for n in nodes_spec if n.get("stepFixtureName") is not None)
-            rest_m = list(first_geom_node["restPositionMeters"])
-
-        cad_offset_mm = world_rest_to_cad_mm(rest_m)
-        placed_shape = translate_shape_mm(shape, cad_offset_mm)
-        placed_solids[cid] = placed_shape
-        builder.Add(compound, placed_shape)
-
-        geometry = tessellate_step_geometry(shape, resolved["stepPath"], node_spec["origin"])
+        if cid == collision_id:
+            node_spec = {**node_spec, "restPositionMeters": collision_position}
+            nodes_spec[idx] = node_spec
+        placed_solids[cid] = place_shape(shape, node_spec)
+        geometry = resolved["meshGeometry"]
         verts = geometry.vertices
         if len(verts) == 0 or len(geometry.indices) == 0:
             failures.append(f"Empty triangulation for {cid}")
@@ -782,9 +818,15 @@ def run_cad_pipeline(
                 failures.append(f"Dimensional tolerance exceeded for {cid}: {err_mm:.4f} mm > 0.1 mm")
 
             geometry_by_id[cid] = geometry
-    interference_count = 0
-    solid_ids = list(placed_solids.keys())
     bounds_by_id = {cid: shape_bounds_mm(shape) for cid, shape in placed_solids.items()}
+    floating = floating_components(placed_solids, bounds_by_id)
+    if floating:
+        failures.append(f"Floating components: {', '.join(floating)}")
+    electrical = electrical_failures(nodes_spec, relationships)
+    failures.extend(electrical)
+
+    interference_count = 0
+    solid_ids = [node["id"] for node in nodes_spec if node["id"] in placed_solids]
     for i in range(len(solid_ids)):
         for j in range(i + 1, len(solid_ids)):
             id_a = solid_ids[i]
@@ -801,7 +843,7 @@ def run_cad_pipeline(
             ):
                 continue
             vol = interference_volume_mm3(placed_solids[id_a], placed_solids[id_b])
-            if vol > 1e-3:
+            if vol > INTERFERENCE_TOLERANCE_MM3:
                 interference_count += 1
                 failures.append(f"Volumetric interference between {id_a} and {id_b}: {vol:.4f} mm^3")
 
@@ -810,15 +852,10 @@ def run_cad_pipeline(
     glb_out = output_dir / "model.glb"
     usdz_out = output_dir / "model.usdz"
 
-    if any("conductorColors" in resolved for resolved in resolved_by_id.values()):
-        write_colored_step(step_out, [
-            (cid, shape, resolved_by_id[cid].get("conductorColors", ()))
-            for cid, shape in placed_solids.items()
-        ])
-    else:
-        step_writer = STEPControl_Writer()
-        step_writer.Transfer(compound, STEPControl_AsIs)
-        step_writer.Write(str(step_out))
+    write_colored_step(step_out, [
+        (cid, placed_solids[cid], resolved_by_id[cid].get("conductorColors", ()))
+        for cid in solid_ids
+    ])
 
     all_checks_ok = brep_valid and interference_count == 0 and max_dim_err_mm <= 0.1 and len(failures) == 0
     target_status = (
@@ -835,11 +872,20 @@ def run_cad_pipeline(
     usda_text = parse_usdz_prim_paths(usdz_out)
 
     expected_leaf_ids = [n["id"] for n in nodes_spec if n["level"] in ("component", "subcomponent")]
-    glb_mapping_ok = set(expected_leaf_ids) == set(parsed_glb_ids) == set(exported_glb_ids)
-    usdz_mapping_ok = all(f'custom string componentId = "{cid}"' in usda_text for cid in expected_leaf_ids)
-    node_mapping_complete = glb_mapping_ok and usdz_mapping_ok
+    expected = Counter(expected_leaf_ids)
+    step_ids = re.findall(r"PRODUCT\('([^']+)'", step_out.read_text(encoding="ascii"))
+    step_mapping_ok = Counter(cid for cid in step_ids if cid in expected) == expected
+    glb_mapping_ok = Counter(parsed_glb_ids) == Counter(exported_glb_ids) == expected
+    usdz_mapping_ok = Counter(re.findall(r'def Xform "([^"]+)"', usda_text)) == Counter(["World", *prim_paths])
+    usdz_mesh_mapping_ok = Counter(
+        cid for cid in re.findall(r'custom string componentId = "([^"]+)"', usda_text)
+        if cid in expected
+    ) == Counter({cid: count * 2 for cid, count in expected.items()})
+    node_mapping_complete = step_mapping_ok and glb_mapping_ok and usdz_mapping_ok and usdz_mesh_mapping_ok
     if not node_mapping_complete:
-        failures.append("Incomplete 1:1 componentId mapping across Firestore, GLB, and USDZ")
+        failures.append("Incomplete 1:1 componentId mapping across Firestore, STEP, GLB, and USDZ")
+        if all_checks_ok:
+            export_hierarchical_glb(nodes_spec, geometry_by_id, "unverified", glb_out)
 
     valid = all_checks_ok and node_mapping_complete
     final_status = target_status if valid else "unverified"
@@ -872,6 +918,7 @@ def run_cad_pipeline(
                 "colorHex": node_spec["colorHex"],
                 "dimensionsMm": node_spec["dimensionsMm"],
                 "restPositionMeters": node_spec["restPositionMeters"],
+                **({"restRotationDeg": node_spec["restRotationDeg"]} if "restRotationDeg" in node_spec else {}),
                 "explodeDirection": node_spec["explodeDirection"],
                 "explodeDistanceMeters": node_spec["explodeDistanceMeters"],
                 "materialHint": node_spec["materialHint"],
@@ -900,26 +947,34 @@ def run_cad_pipeline(
             "step": {
                 "format": "step",
                 "storagePath": f"assemblies/{manifest_hash}/model.step",
-                "publicUrl": f"/assemblies/{archetype_id}/model.step",
+                "publicUrl": f"/assemblies/{manifest_hash}/model.step",
                 "sha256": step_sha,
                 "sizeBytes": len(step_bytes),
             },
             "glb": {
                 "format": "glb",
                 "storagePath": f"assemblies/{manifest_hash}/model.glb",
-                "publicUrl": f"/assemblies/{archetype_id}/model.glb",
+                "publicUrl": f"/assemblies/{manifest_hash}/model.glb",
                 "sha256": glb_sha,
                 "sizeBytes": len(glb_bytes),
             },
             "usdz": {
                 "format": "usdz",
                 "storagePath": f"assemblies/{manifest_hash}/model.usdz",
-                "publicUrl": f"/assemblies/{archetype_id}/model.usdz",
+                "publicUrl": f"/assemblies/{manifest_hash}/model.usdz",
                 "sha256": usdz_sha,
                 "sizeBytes": len(usdz_bytes),
             },
         },
     }
+
+    visual_paths = []
+    if render_views_dir is not None:
+        from visual_renderer import render_contact_sheet
+
+        visual_paths.append(str(render_contact_sheet(
+            nodes_spec, geometry_by_id, render_views_dir / f"{archetype_id}.png",
+        )))
 
     validation = {
         "valid": valid,
@@ -930,12 +985,22 @@ def run_cad_pipeline(
         "unitSystem": "meters_y_up",
         "checkedAtIso": now_iso,
         "failures": failures,
+        "connectivityValid": not floating,
+        "floatingComponentIds": floating,
+        "electricalValid": not electrical,
+        "electricalFailures": electrical,
+        "repairAttempts": repair_attempts,
+        "visualRenderPaths": visual_paths,
+        "buildTimingMs": {"totalMs": round((perf_counter() - started) * 1000, 3), "cacheMode": build_cache_mode(modes)},
     }
 
     result = {
         "archetypeId": archetype_id,
         "verificationStatus": final_status,
         "nodes": enriched_nodes,
+        "relationships": relationships,
+        "assemblySteps": archetype_spec.get("assemblySteps", []),
+        **{field: archetype_spec[field] for field in ("parameters", "parameterValues") if field in archetype_spec},
         "manifest": manifest,
         "validation": validation,
         "glbNodeIds": parsed_glb_ids,

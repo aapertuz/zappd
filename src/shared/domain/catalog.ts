@@ -20,6 +20,7 @@ import {
 } from './assembly';
 import openQuadrupedCatalog from './catalog/assemblies/open_quadruped_v1.json' with { type: 'json' };
 import roverCatalog from './catalog/assemblies/open_source_rover_v1.json' with { type: 'json' };
+import parametricMultirotorCatalog from './catalog/assemblies/parametric_multirotor_v1.json' with { type: 'json' };
 import quadcopterCatalog from './catalog/assemblies/quadcopter_drone_v1.json' with { type: 'json' };
 import roboticArmCatalog from './catalog/assemblies/robotic_arm_3dof_v1.json' with { type: 'json' };
 
@@ -81,11 +82,14 @@ export const ROBOTIC_ARM_ARCHETYPE = parseCatalogArchetype(roboticArmCatalog);
 export const ROVER_ARCHETYPE = parseCatalogArchetype(roverCatalog);
 export const OPEN_QUADRUPED_ARCHETYPE = parseCatalogArchetype(openQuadrupedCatalog);
 
+export const PARAMETRIC_MULTIROTOR_ARCHETYPE = parseCatalogArchetype(parametricMultirotorCatalog);
+
 export const CATALOG_ARCHETYPES: readonly CatalogArchetypeDefinition[] = [
   QUADCOPTER_ARCHETYPE,
   ROBOTIC_ARM_ARCHETYPE,
   ROVER_ARCHETYPE,
   OPEN_QUADRUPED_ARCHETYPE,
+  PARAMETRIC_MULTIROTOR_ARCHETYPE,
 ];
 
 export function listCatalogArchetypes(): readonly CatalogArchetypeDefinition[] {
@@ -100,6 +104,9 @@ export function getCatalogArchetypeById(
 
 export function matchProjectArchetypeFromPrompt(prompt: string): CatalogArchetypeDefinition {
   const normalized = prompt.trim().toLowerCase();
+  if (PARAMETRIC_MULTIROTOR_ARCHETYPE.keywords.some((keyword) => normalized.includes(keyword))) {
+    return PARAMETRIC_MULTIROTOR_ARCHETYPE;
+  }
   let bestArchetype = QUADCOPTER_ARCHETYPE;
   let bestScore = -1;
 
