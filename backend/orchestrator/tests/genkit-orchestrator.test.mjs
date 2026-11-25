@@ -38,7 +38,7 @@ const { FirebaseEmulatorRepository } = await import('../../../src/shared/firebas
 const { orchestrateProjectAssemblyCreation, rebuildAssemblyWithParameters } =
   await import('../genkitOrchestrator.ts');
 const { planProjectWithProvider } = await import('../aiProviders.ts');
-const { shutdownWarmCadWorker } = await import('../warmCadClient.ts');
+const { requestWarmCadBuild, shutdownWarmCadWorker } = await import('../warmCadClient.ts');
 
 after(shutdownWarmCadWorker);
 
@@ -338,6 +338,61 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
     });
     assert.equal(localPlan.archetypeId, 'parametric_multirotor_v1');
     assert.equal(localPlan.parameterValues.wheelbase_mm, 360);
+
+    const roverPlan = await planProjectWithProvider({
+      prompt: 'Build a rover with a 300 mm wheelbase',
+      provider: 'gemini',
+    });
+    assert.equal(roverPlan.archetypeId, 'open_source_rover_v1');
+    assert.equal(roverPlan.parameterValues, undefined);
+  });
+
+  it('repairs a corrupt public manifest directory on subsequent publication', async () => {
+    const repository = new FirebaseEmulatorRepository();
+    const first = await orchestrateProjectAssemblyCreation({
+      prompt: 'Explore an autonomous ground rover chassis with stereo camera',
+      provider: 'gemini',
+      repository,
+    });
+    const publishedGlb = path.join(repoRoot, 'public', first.manifest.files.glb.publicUrl);
+    fs.writeFileSync(publishedGlb, 'corrupt');
+
+    const second = await orchestrateProjectAssemblyCreation({
+      prompt: 'Explore an autonomous ground rover chassis with stereo camera',
+      provider: 'gemini',
+      repository,
+    });
+    assert.equal(second.manifest.manifestHash, first.manifest.manifestHash);
+    assert.equal(fs.statSync(publishedGlb).size, second.manifest.files.glb.sizeBytes);
+    assert.equal(fs.readFileSync(publishedGlb).subarray(0, 4).toString('utf8'), 'glTF');
+  });
+
+  it('releases the warm worker queue after a build deadline expires', async () => {
+    const tempOut = fs.mkdtempSync(path.join(os.tmpdir(), 'zappd-timeout-'));
+    try {
+      await assert.rejects(
+        () =>
+          requestWarmCadBuild(
+            {
+              cmd: 'build',
+              archetypeId: 'open_source_rover_v1',
+              outputDir: tempOut,
+              cacheDir: path.join(repoRoot, 'backend', 'data', 'open_step_cache'),
+            },
+            { timeoutMs: 1 },
+          ),
+        /CAD worker timed out/,
+      );
+      const recovered = await orchestrateProjectAssemblyCreation({
+        prompt: 'Explore an autonomous ground rover chassis with stereo camera',
+        provider: 'gemini',
+        repository: new FirebaseEmulatorRepository(),
+      });
+      assert.equal(recovered.archetypeId, 'open_source_rover_v1');
+      assert.equal(recovered.validation.valid, true);
+    } finally {
+      fs.rmSync(tempOut, { recursive: true, force: true });
+    }
   });
 
   it('persists and publishes colliding geometry with its original validation failures when allowed', async () => {

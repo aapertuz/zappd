@@ -220,22 +220,46 @@ async function tryReuseVerifiedExports(args: {
     ) {
       return null;
     }
-    if (!canClassifyAsVerified(workerResult.validation, workerResult.verificationStatus)) {
+    if (
+      !canClassifyAsVerified(workerResult.validation, workerResult.verificationStatus) ||
+      workerResult.validation.connectivityValid !== true ||
+      workerResult.validation.electricalValid !== true
+    ) {
       return null;
     }
     if (!hasVerifiedUpstreamProvenance(workerResult.nodes, workerResult.verificationStatus)) {
       return null;
     }
-    const expectedCategories = new Map(
-      args.archetype.nodes.map((node) => [node.id, node.category]),
-    );
-    if (
-      workerResult.nodes.length !== expectedCategories.size ||
-      workerResult.nodes.some(({ id, category }) => expectedCategories.get(id) !== category) ||
-      args.archetype.parameters?.some(
+    const expectedNodesById = new Map(args.archetype.nodes.map((node) => [node.id, node]));
+    const matchesCatalogContract =
+      workerResult.nodes.length === expectedNodesById.size &&
+      workerResult.nodes.every((actual) => {
+        const expected = expectedNodesById.get(actual.id);
+        if (expected === undefined) {
+          return false;
+        }
+        return (
+          actual.category === expected.category &&
+          actual.provenance.origin === expected.origin &&
+          actual.provenance.sourceUrl === expected.sourceUrl &&
+          actual.provenance.spdxLicense === expected.spdxLicense &&
+          (expected.expectedStepSha256 === undefined ||
+            actual.provenance.stepSha256 === expected.expectedStepSha256) &&
+          JSON.stringify(actual.restPositionMeters) ===
+            JSON.stringify(expected.restPositionMeters) &&
+          JSON.stringify(actual.restRotationDeg ?? null) ===
+            JSON.stringify(expected.restRotationDeg ?? null) &&
+          JSON.stringify(actual.ports ?? null) === JSON.stringify(expected.ports ?? null) &&
+          JSON.stringify(actual.mountingInterfaces ?? null) ===
+            JSON.stringify(expected.mountingInterfaces ?? null)
+        );
+      }) &&
+      JSON.stringify(workerResult.relationships) === JSON.stringify(args.archetype.relationships) &&
+      JSON.stringify(workerResult.assemblySteps) === JSON.stringify(args.archetype.assemblySteps) &&
+      !args.archetype.parameters?.some(
         ({ name, defaultValue }) => workerResult.parameterValues?.[name] !== defaultValue,
-      )
-    ) {
+      );
+    if (!matchesCatalogContract) {
       return null;
     }
     const mappingOk = verifyOneToOneNodeMapping(
@@ -332,9 +356,27 @@ async function runCadAssemblyAndValidation(
   return workerResult;
 }
 
-async function publishAssemblyArtifacts(workDir: string, manifestHash: string): Promise<void> {
+async function hasValidPublishedArtifacts(
+  publicDir: string,
+  cadResult: CadWorkerPayload,
+): Promise<boolean> {
+  try {
+    await Promise.all(
+      PUBLISHED_ASSEMBLY_FILE_NAMES.map((fileName) => fs.access(path.join(publicDir, fileName))),
+    );
+    await readExportedArtifacts(publicDir, cadResult);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function publishAssemblyArtifacts(
+  workDir: string,
+  cadResult: CadWorkerPayload,
+): Promise<void> {
   const assembliesDir = path.resolve('public/assemblies');
-  const publicDir = path.join(assembliesDir, manifestHash);
+  const publicDir = path.join(assembliesDir, cadResult.manifest.manifestHash);
   await fs.mkdir(assembliesDir, { recursive: true });
   const stagingDir = await fs.mkdtemp(path.join(assembliesDir, '.publish-'));
   try {
@@ -352,6 +394,10 @@ async function publishAssemblyArtifacts(workDir: string, manifestHash: string): 
         (error.code === 'ENOTEMPTY' || error.code === 'EEXIST')
       )) {
         throw error;
+      }
+      if (!(await hasValidPublishedArtifacts(publicDir, cadResult))) {
+        await fs.rm(publicDir, { recursive: true, force: true });
+        await fs.rename(stagingDir, publicDir);
       }
     }
   } finally {
@@ -403,7 +449,7 @@ async function buildProjectAssembly(
     };
 
     const artifacts = await readExportedArtifacts(workDir, cadResult);
-    await publishAssemblyArtifacts(workDir, manifest.manifestHash);
+    await publishAssemblyArtifacts(workDir, cadResult);
     await repository.saveProjectAssembly(assembly, artifacts, {
       allowUnverified: options.allowUnverified,
       syncLiveEmulator: false,

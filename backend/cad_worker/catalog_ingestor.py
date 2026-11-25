@@ -330,6 +330,10 @@ def resolve_component_step(
 
     mesh = {}
     expected_digest = node_spec.get("expectedStepSha256")
+    if policy["targetVerifiedStatus"] == "sourced_verified" and not expected_digest:
+        raise RuntimeError(
+            f"Node {node_spec['id']} lacks expectedStepSha256 pin for sourced origin {origin}"
+        )
     if asset_cache is None:
         shape, sha256_hex, face_count = read_and_validate_step(step_path, expected_digest)
     else:

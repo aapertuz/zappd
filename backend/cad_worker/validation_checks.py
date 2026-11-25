@@ -87,11 +87,17 @@ def electrical_failures(nodes: list[dict], relationships: list[dict]) -> list[st
     for relationship in relationships:
         if relationship.get("connectionType") not in {"power_bus", "electrical_bus"}:
             continue
-        first = by_id.get(relationship["fromComponentId"], {})
-        second = by_id.get(relationship["toComponentId"], {})
-        if not first.get("ports") or not second.get("ports"):
-            continue
+        first = by_id.get(relationship["fromComponentId"])
+        second = by_id.get(relationship["toComponentId"])
         first_id, second_id = relationship.get("fromPortId"), relationship.get("toPortId")
+        if first_id is None and second_id is None:
+            continue
+        if first is None or second is None:
+            failures.append(
+                f"{relationship['id']}: electrical endpoints reference missing components "
+                f"{relationship['fromComponentId']!r}, {relationship['toComponentId']!r}"
+            )
+            continue
         port_a, port_b = _declared_port(first, first_id), _declared_port(second, second_id)
         if port_a is None or port_b is None:
             failures.append(f"{relationship['id']}: electrical endpoints reference missing ports {first_id!r}, {second_id!r}")

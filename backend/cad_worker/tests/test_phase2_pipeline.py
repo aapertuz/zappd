@@ -379,3 +379,42 @@ def test_docker_sandbox_command_is_read_only_and_resource_limited(tmp_path) -> N
         assert command[command.index(flag) + 1] == value
     assert f"{cache}:/xbf_cache:ro" in command
     assert f"{job}:/job:rw" in command
+
+
+def test_sourced_fixture_requires_expected_step_sha256_pin(tmp_path) -> None:
+    rover = CATALOG_SPECS["open_source_rover_v1"]
+    node = copy.deepcopy(next(item for item in rover["nodes"] if item["origin"] == "open_step_catalog" and item["stepFixtureName"]))
+    node.pop("expectedStepSha256", None)
+    with pytest.raises(RuntimeError, match="lacks expectedStepSha256 pin"):
+        resolve_component_step(node, tmp_path)
+
+
+def test_electrical_validation_flags_missing_port_declarations() -> None:
+    from validation_checks import electrical_failures
+
+    nodes = [
+        {"id": "comp_a", "ports": [{"portId": "port_out", "busKind": "dc_power", "role": "source"}]},
+        {"id": "comp_b"},
+    ]
+    relationships = [{
+        "id": "rel_missing_ports",
+        "connectionType": "power_bus",
+        "fromComponentId": "comp_a",
+        "toComponentId": "comp_b",
+        "fromPortId": "port_out",
+        "toPortId": "port_in",
+    }]
+    failures = electrical_failures(nodes, relationships)
+    assert any("rel_missing_ports" in failure and "missing ports" in failure for failure in failures)
+
+
+def test_parametric_generator_replaces_stale_cached_step(tmp_path) -> None:
+    catalog = CATALOG_SPECS[_MULTIROTOR]
+    stale = tmp_path / _MULTIROTOR / "lower_plate.step"
+    stale.parent.mkdir(parents=True, exist_ok=True)
+    stale.write_text("ISO-10303-21;\nSTALE\nEND-ISO-10303-21;\n", encoding="ascii")
+    spec = materialize_multirotor(catalog, tmp_path)
+    lower = next(node for node in spec["nodes"] if node["id"] == "comp_multi_lower")
+    expected = next(node for node in catalog["nodes"] if node["id"] == "comp_multi_lower")["expectedStepSha256"]
+    assert lower["expectedStepSha256"] == expected
+    assert "STALE" not in stale.read_text(encoding="ascii")

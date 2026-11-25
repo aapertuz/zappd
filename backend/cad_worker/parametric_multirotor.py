@@ -101,19 +101,20 @@ def _step_fields(part: Part, key: str, cache_dir: Path) -> tuple[dict, tuple[flo
     part = part.translate(tuple(-value for value in center))
     fixture = str(Path(ARCHETYPE_ID) / f"{key}.step")
     path = cache_dir / fixture
-    if not path.exists():
-        path.parent.mkdir(parents=True, exist_ok=True)
-        with TemporaryDirectory(dir=path.parent) as staging:
-            staged = Path(staging) / path.name
-            if not export_step(part, staged, timestamp="2026-01-01T00:00:00"):
-                raise RuntimeError(f"Could not export parametric part {key}")
-            stabilized = stabilize_step_occurrences(staged.read_text(encoding="ascii"))
-            staged.write_text(stabilized, encoding="ascii")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with TemporaryDirectory(dir=path.parent) as staging:
+        staged = Path(staging) / path.name
+        if not export_step(part, staged, timestamp="2026-01-01T00:00:00"):
+            raise RuntimeError(f"Could not export parametric part {key}")
+        stabilized = stabilize_step_occurrences(staged.read_text(encoding="ascii"))
+        staged.write_text(stabilized, encoding="ascii")
+        staged_digest = read_step_digest(staged)
+        if not path.exists() or read_step_digest(path) != staged_digest:
             staged.replace(path)
     bounds = part.bounding_box()
     return {
         "stepFixtureName": fixture,
-        "expectedStepSha256": read_step_digest(path),
+        "expectedStepSha256": staged_digest,
         "dimensionsMm": [bounds.size.X, bounds.size.Z, bounds.size.Y],
         "specifications": {"brepFaces": validate_step_shape(part.wrapped, path)},
     }, center

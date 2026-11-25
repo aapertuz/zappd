@@ -40,6 +40,10 @@ type Worker = {
 };
 
 class CadWorkerExited extends Error {}
+class CadWorkerTimedOut extends Error {}
+
+const DEFAULT_BUILD_TIMEOUT_MS = 180_000;
+const CONTROL_COMMAND_TIMEOUT_MS = 10_000;
 
 type WarmCadState = {
   worker: Worker | undefined;
@@ -101,11 +105,21 @@ function setWorkerReferenced({ child }: Worker, referenced: boolean): void {
   }
 }
 
-function exchange(activeWorker: Worker, request: CadWorkerRequest): Promise<unknown> {
+function exchange(
+  activeWorker: Worker,
+  request: CadWorkerRequest,
+  timeoutMs: number,
+): Promise<unknown> {
   const { child, lines, getStderr } = activeWorker;
   const id = ++state.nextRequestId;
   return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new CadWorkerTimedOut(`CAD worker timed out after ${timeoutMs} ms`));
+    }, timeoutMs);
+    timer.unref();
     const cleanup = () => {
+      clearTimeout(timer);
       lines.off('line', receive);
       lines.off('close', disconnected);
     };
@@ -140,20 +154,41 @@ function exchange(activeWorker: Worker, request: CadWorkerRequest): Promise<unkn
   });
 }
 
-async function requestWarmWorker(request: CadBuildRequest, retry: boolean): Promise<unknown> {
+async function terminateWorker(activeWorker: Worker): Promise<void> {
+  if (state.worker === activeWorker) {
+    state.worker = undefined;
+  }
+  activeWorker.child.kill('SIGKILL');
+  activeWorker.lines.close();
+  await Promise.race([
+    activeWorker.closed,
+    new Promise<void>((resolve) => {
+      const timer = setTimeout(resolve, 2_000);
+      timer.unref();
+    }),
+  ]);
+}
+
+async function requestWarmWorker(
+  request: CadBuildRequest,
+  retry: boolean,
+  timeoutMs: number,
+): Promise<unknown> {
   const activeWorker = (state.worker ??= startWorker());
   setWorkerReferenced(activeWorker, true);
   try {
-    return await exchange(activeWorker, request);
+    return await exchange(activeWorker, request, timeoutMs);
   } catch (error) {
+    if (error instanceof CadWorkerTimedOut) {
+      await terminateWorker(activeWorker);
+      throw error;
+    }
     if (!(error instanceof CadWorkerExited)) {
       throw error;
     }
-    state.worker = undefined;
-    activeWorker.child.kill();
-    await activeWorker.closed;
+    await terminateWorker(activeWorker);
     if (retry) {
-      return requestWarmWorker(request, false);
+      return requestWarmWorker(request, false, timeoutMs);
     }
     throw error;
   } finally {
@@ -161,8 +196,12 @@ async function requestWarmWorker(request: CadBuildRequest, retry: boolean): Prom
   }
 }
 
-export function requestWarmCadBuild(request: CadBuildRequest): Promise<unknown> {
-  return enqueue(() => requestWarmWorker(request, true));
+export function requestWarmCadBuild(
+  request: CadBuildRequest,
+  options?: { readonly timeoutMs?: number },
+): Promise<unknown> {
+  const timeoutMs = options?.timeoutMs ?? DEFAULT_BUILD_TIMEOUT_MS;
+  return enqueue(() => requestWarmWorker(request, true, timeoutMs));
 }
 
 export function shutdownWarmCadWorker(): Promise<void> {
@@ -174,14 +213,13 @@ export function shutdownWarmCadWorker(): Promise<void> {
     state.worker = undefined;
     setWorkerReferenced(activeWorker, true);
     try {
-      await exchange(activeWorker, { cmd: 'shutdown' });
+      await exchange(activeWorker, { cmd: 'shutdown' }, CONTROL_COMMAND_TIMEOUT_MS);
+      await activeWorker.closed;
     } catch (error) {
-      activeWorker.child.kill();
-      if (!(error instanceof CadWorkerExited)) {
+      await terminateWorker(activeWorker);
+      if (!(error instanceof CadWorkerExited || error instanceof CadWorkerTimedOut)) {
         throw error;
       }
-    } finally {
-      await activeWorker.closed;
     }
   });
 }

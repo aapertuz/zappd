@@ -232,17 +232,21 @@ function extractMultirotorParameters(prompt: string): Record<string, number> {
 }
 
 function matchPlannerArchetype(prompt: string) {
+  const matched = matchProjectArchetypeFromPrompt(prompt);
+  const isDroneContext =
+    matched.archetypeId === 'quadcopter_drone_v1' ||
+    matched.archetypeId === PARAMETRIC_MULTIROTOR_ARCHETYPE.archetypeId;
   const hasDimensions = Object.values(multirotorDimensions).some((pattern) => pattern.test(prompt));
   const requestsCustomDrone =
     /\b(?:custom|parametric)\b.*\b(?:drone|quadcopter|multirotor)\b/i.test(prompt);
   if (
-    hasDimensions ||
     requestsCustomDrone ||
-    extractMultirotorParameters(prompt).rotor_count === 6
+    extractMultirotorParameters(prompt).rotor_count === 6 ||
+    (hasDimensions && isDroneContext)
   ) {
     return PARAMETRIC_MULTIROTOR_ARCHETYPE;
   }
-  return matchProjectArchetypeFromPrompt(prompt);
+  return matched;
 }
 
 function resolvePlannedParameters(
