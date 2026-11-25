@@ -3,6 +3,7 @@ import { z } from 'zod';
 import {
   type AssemblyInstructionStep,
   type AssemblyNode,
+  type AssemblyParameter,
   type AssetChecksum,
   type CatalogArchetypeId,
   type ComponentId,
@@ -10,6 +11,7 @@ import {
   type GeometryOrigin,
   assemblyInstructionStepSchema,
   assemblyNodeFieldsSchema,
+  assemblyParameterSchema,
   componentRelationshipSchema,
   isAssetChecksum,
   isCatalogArchetypeId,
@@ -41,6 +43,8 @@ export type CatalogArchetypeDefinition = {
   readonly nodes: readonly CatalogComponentBlueprint[];
   readonly relationships: readonly ComponentRelationship[];
   readonly assemblySteps: readonly AssemblyInstructionStep[];
+  readonly parameters?: readonly AssemblyParameter[];
+  readonly generationMode?: 'reference_catalog' | 'parametric_family';
 };
 
 const nonEmptyString = z.string().min(1);
@@ -63,9 +67,11 @@ const catalogArchetypeSchema = z.strictObject({
   nodes: z.array(catalogComponentSchema),
   relationships: z.array(componentRelationshipSchema.strict()),
   assemblySteps: z.array(assemblyInstructionStepSchema.strict()),
+  parameters: z.array(assemblyParameterSchema).optional(),
+  generationMode: z.enum(['reference_catalog', 'parametric_family']).optional(),
 });
 
-function parseCatalogArchetype(raw: unknown): CatalogArchetypeDefinition {
+export function parseCatalogArchetype(raw: unknown): CatalogArchetypeDefinition {
   return catalogArchetypeSchema.parse(raw);
 }
 

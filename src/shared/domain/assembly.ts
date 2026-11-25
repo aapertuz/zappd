@@ -5,6 +5,8 @@ import type { AiApiFormat, AiProviderId } from './aiProvider';
 export type ProjectId = string & { readonly __brand: 'ProjectId' };
 export type ComponentId = string & { readonly __brand: 'ComponentId' };
 export type PortId = string & { readonly __brand: 'PortId' };
+export type MountingInterfaceId = string & { readonly __brand: 'MountingInterfaceId' };
+export type ParameterName = string & { readonly __brand: 'ParameterName' };
 export type RelationshipId = string & { readonly __brand: 'RelationshipId' };
 export type AssemblyStepId = string & { readonly __brand: 'AssemblyStepId' };
 export type AssetChecksum = string & { readonly __brand: 'AssetChecksum' };
@@ -19,6 +21,7 @@ export const GEOMETRY_ORIGINS = [
   'cots_library_step',
   'kicad_pcb_step',
   'procedural_harness',
+  'parametric_cad',
 ] as const;
 
 export type GeometryOrigin = (typeof GEOMETRY_ORIGINS)[number];
@@ -46,6 +49,10 @@ export const GEOMETRY_ORIGIN_POLICY: Readonly<
   },
   procedural_harness: {
     allowedUriPrefixes: ['https://', 'harness://'],
+    targetVerifiedStatus: 'composed_validated',
+  },
+  parametric_cad: {
+    allowedUriPrefixes: ['https://', 'parametric://'],
     targetVerifiedStatus: 'composed_validated',
   },
 };
@@ -86,7 +93,36 @@ export type ConnectorPort = {
   readonly wireGaugeAwg?: number;
   readonly wireColorsHex?: readonly string[];
   readonly nominalVoltageV?: number;
+  readonly role?: 'source' | 'sink' | 'bidirectional';
+  readonly minVoltageV?: number;
+  readonly maxVoltageV?: number;
+  readonly maxCurrentA?: number;
+  readonly compatibleBusKinds?: readonly ElectricalBusKind[];
 };
+
+const mountingInterfaceKindSchema = z.enum([
+  'm2_standoff',
+  'm2_5_standoff',
+  'm3_standoff',
+  'slot',
+  'flange',
+  'clamp',
+]);
+export type MountingInterfaceKind = z.infer<typeof mountingInterfaceKindSchema>;
+
+export type MountingInterface = {
+  readonly interfaceId: MountingInterfaceId;
+  readonly label: string;
+  readonly kind: MountingInterfaceKind;
+  readonly holeDiameterMm: number;
+  readonly boltPitchMm?: readonly [number, number];
+  readonly localPositionMeters: Vector3Tuple;
+  readonly normalDirection: Vector3Tuple;
+};
+
+const parameterUnitSchema = z.enum(['mm', 'deg', 'count']);
+export type ParameterUnit = z.infer<typeof parameterUnitSchema>;
+export type AssemblyParameter = Readonly<z.infer<typeof assemblyParameterSchema>>;
 
 export type AssetFileFormat = 'step' | 'glb' | 'usdz';
 
@@ -109,11 +145,13 @@ export type AssemblyNode = {
   readonly colorHex: string;
   readonly dimensionsMm: Vector3Tuple;
   readonly restPositionMeters: Vector3Tuple;
+  readonly restRotationDeg?: Vector3Tuple;
   readonly explodeDirection: Vector3Tuple;
   readonly explodeDistanceMeters: number;
   readonly materialHint: string;
   readonly specifications: Readonly<Record<string, string | number | boolean>>;
   readonly ports?: readonly ConnectorPort[];
+  readonly mountingInterfaces?: readonly MountingInterface[];
   readonly provenance: CadProvenance;
   readonly glbNodeName: string;
   readonly usdzPrimPath: string;
@@ -150,6 +188,16 @@ export type ValidationReport = {
   readonly unitSystem: 'meters_y_up';
   readonly checkedAtIso: string;
   readonly failures: readonly string[];
+  readonly connectivityValid?: boolean;
+  readonly floatingComponentIds?: readonly ComponentId[];
+  readonly electricalValid?: boolean;
+  readonly electricalFailures?: readonly string[];
+  readonly repairAttempts?: number;
+  readonly visualRenderPaths?: readonly string[];
+  readonly buildTimingMs?: {
+    readonly totalMs: number;
+    readonly cacheMode: 'cold_step' | 'xbf_disk' | 'warm_ram';
+  };
 };
 
 export type AssetFileRecord = {
@@ -189,9 +237,12 @@ export type VerifiedProjectAssembly = {
   readonly manifest: AssemblyAssetManifest;
   readonly validation: ValidationReport;
   readonly orchestration: AiOrchestrationMetadata;
+  readonly parameters?: readonly AssemblyParameter[];
+  readonly parameterValues?: Readonly<Record<string, number>>;
 };
 
 const SAFE_SLUG_PATTERN = /^[a-z0-9][a-z0-9_-]{1,79}$/;
+const PARAMETER_NAME_PATTERN = /^[a-z][a-z0-9_]{0,47}$/;
 const SHA256_HEX_PATTERN = /^[a-f0-9]{64}$/;
 
 export function isProjectId(value: unknown): value is ProjectId {
@@ -225,6 +276,28 @@ export function toPortId(value: string): PortId {
     return value;
   }
   throw new Error(`Invalid PortId: ${value}`);
+}
+
+export function isMountingInterfaceId(value: unknown): value is MountingInterfaceId {
+  return typeof value === 'string' && SAFE_SLUG_PATTERN.test(value);
+}
+
+export function toMountingInterfaceId(value: string): MountingInterfaceId {
+  if (isMountingInterfaceId(value)) {
+    return value;
+  }
+  throw new Error(`Invalid MountingInterfaceId: ${value}`);
+}
+
+export function isParameterName(value: unknown): value is ParameterName {
+  return typeof value === 'string' && PARAMETER_NAME_PATTERN.test(value);
+}
+
+export function toParameterName(value: string): ParameterName {
+  if (isParameterName(value)) {
+    return value;
+  }
+  throw new Error(`Invalid ParameterName: ${value}`);
 }
 
 export function isRelationshipId(value: unknown): value is RelationshipId {
@@ -305,7 +378,11 @@ export function canClassifyAsVerified(
     report.interferenceCount === 0 &&
     report.maxDimensionalErrorMm <= 0.1 &&
     report.nodeMappingComplete &&
-    report.failures.length === 0
+    report.failures.length === 0 &&
+    report.connectivityValid !== false &&
+    (report.floatingComponentIds?.length ?? 0) === 0 &&
+    report.electricalValid !== false &&
+    (report.electricalFailures?.length ?? 0) === 0
   );
 }
 
@@ -352,6 +429,24 @@ export function clampExplodeFactor(value: number): number {
     return 1;
   }
   return value;
+}
+
+export function clampAssemblyParameterValues(
+  parameters: readonly AssemblyParameter[],
+  overrides: Readonly<Record<string, unknown>>,
+): Readonly<Record<string, number>> {
+  return Object.fromEntries(
+    parameters.map(({ name, kind, value, min, max, step }) => {
+      const override = Object.hasOwn(overrides, name) ? overrides[name] : undefined;
+      if (typeof override !== 'number' || !Number.isFinite(override)) {
+        return [name, value];
+      }
+      const bounded = Math.min(max, Math.max(min, override));
+      const snapped = min + Math.round((bounded - min) / step) * step;
+      const clamped = Math.min(max, snapped);
+      return [name, kind === 'int' ? Math.round(clamped) : clamped];
+    }),
+  );
 }
 
 export function computeExplodeStageWeight(
@@ -461,14 +556,6 @@ function readRequiredString(record: Record<string, unknown>, key: string): strin
   return value;
 }
 
-function readRequiredBoolean(record: Record<string, unknown>, key: string): boolean {
-  const value = record[key];
-  if (typeof value !== 'boolean') {
-    throw new Error(`Expected boolean field "${key}"`);
-  }
-  return value;
-}
-
 function readRequiredNumber(record: Record<string, unknown>, key: string): number {
   const value = record[key];
   if (typeof value !== 'number' || !Number.isFinite(value)) {
@@ -516,27 +603,89 @@ function parseProvenance(raw: unknown): CadProvenance {
 
 const nonEmptyString = z.string().min(1);
 const vector3TupleSchema = z.tuple([z.number(), z.number(), z.number()]);
+const nonZeroVector3TupleSchema = vector3TupleSchema.refine(
+  (vector) => vector.some((coordinate) => coordinate !== 0),
+  'Expected non-zero direction',
+);
 const componentIdSchema = z.custom<ComponentId>(isComponentId);
 const relationshipIdSchema = z.custom<RelationshipId>(isRelationshipId);
 const portIdSchema = z.custom<PortId>(isPortId);
+const parameterNameSchema = z.custom<ParameterName>(isParameterName);
+const positiveNumber = z.number().positive();
 
-const connectorPortSchema = z.strictObject({
-  portId: portIdSchema,
-  label: z.string().refine((value) => value.trim().length > 0),
-  connectorType: z.string().refine((value) => value.trim().length > 0),
-  busKind: electricalBusKindSchema,
-  localPositionMeters: vector3TupleSchema,
-  exitDirection: vector3TupleSchema.refine(
-    ([x, y, z]) => x !== 0 || y !== 0 || z !== 0,
-    'Expected non-zero exitDirection',
-  ),
-  wireGaugeAwg: z.number().optional(),
-  wireColorsHex: z.array(z.string().regex(/^#[a-f0-9]{6}$/i)).optional(),
-  nominalVoltageV: z.number().optional(),
-});
+export const connectorPortSchema = z
+  .strictObject({
+    portId: portIdSchema,
+    label: z.string().refine((value) => value.trim().length > 0),
+    connectorType: z.string().refine((value) => value.trim().length > 0),
+    busKind: electricalBusKindSchema,
+    localPositionMeters: vector3TupleSchema,
+    exitDirection: nonZeroVector3TupleSchema,
+    wireGaugeAwg: z.number().optional(),
+    wireColorsHex: z.array(z.string().regex(/^#[a-f0-9]{6}$/i)).optional(),
+    nominalVoltageV: z.number().optional(),
+    role: z.enum(['source', 'sink', 'bidirectional']).optional(),
+    minVoltageV: z.number().nonnegative().optional(),
+    maxVoltageV: z.number().nonnegative().optional(),
+    maxCurrentA: positiveNumber.optional(),
+    compatibleBusKinds: z.array(electricalBusKindSchema).optional(),
+  })
+  .refine(
+    ({ minVoltageV, maxVoltageV }) =>
+      minVoltageV === undefined || maxVoltageV === undefined || minVoltageV <= maxVoltageV,
+    { path: ['maxVoltageV'], message: 'Expected maxVoltageV to be at least minVoltageV' },
+  );
 
 export function parseConnectorPort(raw: unknown): ConnectorPort {
   return connectorPortSchema.parse(raw);
+}
+
+export const mountingInterfaceSchema = z.strictObject({
+  interfaceId: z.custom<MountingInterfaceId>(isMountingInterfaceId),
+  label: nonEmptyString,
+  kind: mountingInterfaceKindSchema,
+  holeDiameterMm: positiveNumber,
+  boltPitchMm: z.tuple([positiveNumber, positiveNumber]).optional(),
+  localPositionMeters: vector3TupleSchema,
+  normalDirection: nonZeroVector3TupleSchema,
+});
+
+export function parseMountingInterface(raw: unknown): MountingInterface {
+  return mountingInterfaceSchema.parse(raw);
+}
+
+export const assemblyParameterSchema = z
+  .strictObject({
+    name: parameterNameSchema,
+    label: z.string().trim().min(1),
+    kind: z.enum(['int', 'float']),
+    defaultValue: z.number(),
+    value: z.number(),
+    min: z.number(),
+    max: z.number(),
+    step: positiveNumber,
+    unit: parameterUnitSchema.optional(),
+  })
+  .refine(({ min, max }) => min < max, {
+    path: ['max'],
+    message: 'Expected max to be greater than min',
+  })
+  .refine(({ defaultValue, min, max }) => defaultValue >= min && defaultValue <= max, {
+    path: ['defaultValue'],
+    message: 'Expected defaultValue within the parameter range',
+  })
+  .refine(({ value, min, max }) => value >= min && value <= max, {
+    path: ['value'],
+    message: 'Expected value within the parameter range',
+  })
+  .refine(
+    ({ kind, defaultValue, value, min, max, step }) =>
+      kind === 'float' || [defaultValue, value, min, max, step].every(Number.isInteger),
+    'Expected integer bounds, values, and step for an int parameter',
+  );
+
+export function parseAssemblyParameter(raw: unknown): AssemblyParameter {
+  return assemblyParameterSchema.parse(raw);
 }
 
 export const assemblyNodeFieldsSchema = z.object({
@@ -549,11 +698,13 @@ export const assemblyNodeFieldsSchema = z.object({
   colorHex: nonEmptyString,
   dimensionsMm: vector3TupleSchema,
   restPositionMeters: vector3TupleSchema,
+  restRotationDeg: vector3TupleSchema.optional(),
   explodeDirection: vector3TupleSchema,
   explodeDistanceMeters: z.number(),
   materialHint: nonEmptyString,
   specifications: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])),
   ports: z.array(connectorPortSchema).optional(),
+  mountingInterfaces: z.array(mountingInterfaceSchema).optional(),
 });
 
 const assemblyNodeSchema = assemblyNodeFieldsSchema.extend({
@@ -601,24 +752,28 @@ export function parseInstructionStep(raw: unknown): AssemblyInstructionStep {
   return assemblyInstructionStepSchema.parse(raw);
 }
 
-function parseValidationReport(raw: unknown): ValidationReport {
-  if (!isObjectRecord(raw)) {
-    throw new Error('Expected ValidationReport object');
-  }
-  if (raw.unitSystem !== 'meters_y_up') {
-    throw new Error(`Invalid unitSystem: ${String(raw.unitSystem)}`);
-  }
-  return {
-    valid: readRequiredBoolean(raw, 'valid'),
-    brepValid: readRequiredBoolean(raw, 'brepValid'),
-    interferenceCount: readRequiredNumber(raw, 'interferenceCount'),
-    maxDimensionalErrorMm: readRequiredNumber(raw, 'maxDimensionalErrorMm'),
-    nodeMappingComplete: readRequiredBoolean(raw, 'nodeMappingComplete'),
-    unitSystem: 'meters_y_up',
-    checkedAtIso: readRequiredString(raw, 'checkedAtIso'),
-    failures: readStringArray(raw, 'failures'),
-  };
-}
+const validationReportSchema = z.object({
+  valid: z.boolean(),
+  brepValid: z.boolean(),
+  interferenceCount: z.number(),
+  maxDimensionalErrorMm: z.number(),
+  nodeMappingComplete: z.boolean(),
+  unitSystem: z.literal('meters_y_up'),
+  checkedAtIso: nonEmptyString,
+  failures: z.array(z.string()),
+  connectivityValid: z.boolean().optional(),
+  floatingComponentIds: z.array(componentIdSchema).optional(),
+  electricalValid: z.boolean().optional(),
+  electricalFailures: z.array(z.string()).optional(),
+  repairAttempts: z.int().nonnegative().optional(),
+  visualRenderPaths: z.array(nonEmptyString).optional(),
+  buildTimingMs: z
+    .strictObject({
+      totalMs: z.number().nonnegative(),
+      cacheMode: z.enum(['cold_step', 'xbf_disk', 'warm_ram']),
+    })
+    .optional(),
+});
 
 function parseAssetFileRecord(raw: unknown, expectedFormat: AssetFileFormat): AssetFileRecord {
   if (!isObjectRecord(raw)) {
@@ -682,6 +837,11 @@ function parseOrchestrationMetadata(raw: unknown): AiOrchestrationMetadata {
   };
 }
 
+const assemblyParametersSchema = z.object({
+  parameters: z.array(assemblyParameterSchema).optional(),
+  parameterValues: z.record(parameterNameSchema, z.number()).optional(),
+});
+
 export function parseVerifiedProjectAssembly(raw: unknown): VerifiedProjectAssembly {
   if (!isObjectRecord(raw)) {
     throw new Error('Expected VerifiedProjectAssembly object');
@@ -707,7 +867,8 @@ export function parseVerifiedProjectAssembly(raw: unknown): VerifiedProjectAssem
     relationships: rawRelationships.map(parseRelationship),
     assemblySteps: rawSteps.map(parseInstructionStep),
     manifest: parseAssetManifest(raw.manifest),
-    validation: parseValidationReport(raw.validation),
+    validation: validationReportSchema.parse(raw.validation),
     orchestration: parseOrchestrationMetadata(raw.orchestration),
+    ...assemblyParametersSchema.parse(raw),
   };
 }
