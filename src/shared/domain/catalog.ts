@@ -18,6 +18,7 @@ import {
 } from './assembly';
 import roverCatalog from './catalog/assemblies/open_source_rover_v1.json' with { type: 'json' };
 import quadcopterCatalog from './catalog/assemblies/quadcopter_drone_v1.json' with { type: 'json' };
+import reachyMiniCatalog from './catalog/assemblies/reachy_mini_v1.json' with { type: 'json' };
 import roboticArmCatalog from './catalog/assemblies/robotic_arm_3dof_v1.json' with { type: 'json' };
 
 export type CatalogComponentBlueprint = Omit<
@@ -38,6 +39,8 @@ export type CatalogArchetypeDefinition = {
   readonly summary: string;
   readonly keywords: readonly string[];
   readonly rootNodeId: ComponentId;
+  readonly generationMode?: 'reference_catalog' | 'parametric_family';
+  readonly spdxLicense?: string;
   readonly nodes: readonly CatalogComponentBlueprint[];
   readonly relationships: readonly ComponentRelationship[];
   readonly assemblySteps: readonly AssemblyInstructionStep[];
@@ -60,6 +63,8 @@ const catalogArchetypeSchema = z.strictObject({
   summary: nonEmptyString,
   keywords: z.array(nonEmptyString),
   rootNodeId: z.custom<ComponentId>(isComponentId),
+  generationMode: z.enum(['reference_catalog', 'parametric_family']).optional(),
+  spdxLicense: nonEmptyString.optional(),
   nodes: z.array(catalogComponentSchema),
   relationships: z.array(componentRelationshipSchema.strict()),
   assemblySteps: z.array(assemblyInstructionStepSchema.strict()),
@@ -72,11 +77,13 @@ function parseCatalogArchetype(raw: unknown): CatalogArchetypeDefinition {
 export const QUADCOPTER_ARCHETYPE = parseCatalogArchetype(quadcopterCatalog);
 export const ROBOTIC_ARM_ARCHETYPE = parseCatalogArchetype(roboticArmCatalog);
 export const ROVER_ARCHETYPE = parseCatalogArchetype(roverCatalog);
+export const REACHY_MINI_ARCHETYPE = parseCatalogArchetype(reachyMiniCatalog);
 
 export const CATALOG_ARCHETYPES: readonly CatalogArchetypeDefinition[] = [
   QUADCOPTER_ARCHETYPE,
   ROBOTIC_ARM_ARCHETYPE,
   ROVER_ARCHETYPE,
+  REACHY_MINI_ARCHETYPE,
 ];
 
 export function listCatalogArchetypes(): readonly CatalogArchetypeDefinition[] {

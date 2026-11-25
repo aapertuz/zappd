@@ -52,6 +52,7 @@ export {
   type ComponentId,
   type ComponentRelationship,
   type ConnectorPort,
+  type ConnectorPortRole,
   type ElectricalBusKind,
   type ExplodeStageFilter,
   type GeometryOrigin,
@@ -68,6 +69,7 @@ export {
 export {
   CATALOG_ARCHETYPES,
   QUADCOPTER_ARCHETYPE,
+  REACHY_MINI_ARCHETYPE,
   ROBOTIC_ARM_ARCHETYPE,
   ROVER_ARCHETYPE,
   getCatalogArchetypeById,

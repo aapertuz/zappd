@@ -130,6 +130,23 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
     assertReusesAvailableExports(assembly);
   });
 
+  it('orchestrates a fourth robotics archetype (HeyPCB Reachy Mini desktop robot)', async () => {
+    const repository = new FirebaseEmulatorRepository();
+    const assembly = await orchestrateProjectAssemblyCreation({
+      prompt: 'Build Reachy Mini desktop companion robot',
+      provider: 'gemini',
+      repository,
+    });
+
+    assert.equal(assembly.archetypeId, 'reachy_mini_v1');
+    assert.equal(assembly.verificationStatus, 'composed_validated');
+    assert.equal(assembly.validation.valid, true);
+    assert.equal(assembly.validation.interferenceCount, 0);
+    assert.equal(assembly.nodes.length, 98);
+    assert.equal(assembly.assemblySteps.length, 51);
+    assertReusesAvailableExports(assembly);
+  });
+
   it('drives both OpenAI and DeepSeek through the shared OpenAI-compatible API integration', async () => {
     const receivedRequests = [];
     const server = http.createServer((req, res) => {
