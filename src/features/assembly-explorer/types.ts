@@ -44,6 +44,9 @@ export type AssemblyExplorerState = {
   readonly loadingPhase: AssemblyLoadingPhase;
   readonly loadingProgress: number;
   readonly errorMessage: string | null;
+  readonly parameterRequestId: number | null;
+  readonly isRebuildingParameters: boolean;
+  readonly parameterErrorMessage: string | null;
   readonly camera: ExplorerCameraState;
   readonly viewMode: ExplorerViewMode;
   readonly explodeFactor: number;
@@ -65,6 +68,18 @@ export type AssemblyExplorerAction =
       readonly glbArrayBuffer: ArrayBuffer;
     }
   | { readonly type: 'loadAssemblyError'; readonly promptId: number; readonly message: string }
+  | { readonly type: 'startParameterRebuild'; readonly requestId: number }
+  | {
+      readonly type: 'rebuildParametersSuccess';
+      readonly requestId: number;
+      readonly assembly: VerifiedProjectAssembly;
+      readonly glbArrayBuffer: ArrayBuffer;
+    }
+  | {
+      readonly type: 'rebuildParametersError';
+      readonly requestId: number;
+      readonly message: string;
+    }
   | {
       readonly type: 'orbitCamera';
       readonly deltaAzimuthDeg: number;
@@ -95,6 +110,7 @@ export type AssemblySceneProps = {
   readonly assembly: VerifiedProjectAssembly;
   readonly glbArrayBuffer: ArrayBuffer | null;
   readonly state: AssemblyExplorerState;
+  readonly onApplyParameters: (parameterValues: Readonly<Record<string, number>>) => void;
   readonly onSetCamera: (camera: ExplorerCameraState) => void;
   readonly onSetExplodeFactor: (explodeFactor: number) => void;
   readonly onToggleExplodePreset: () => void;

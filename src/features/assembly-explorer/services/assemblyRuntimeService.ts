@@ -1,8 +1,7 @@
 import {
   type AiProviderId,
   type VerifiedProjectAssembly,
-  canClassifyAsVerified,
-  hasVerifiedUpstreamProvenance,
+  canRenderAssembly,
   parseVerifiedProjectAssembly,
 } from '@/shared/domain';
 import {
@@ -18,8 +17,6 @@ export type LoadedAssemblyBundle = {
   readonly assembly: VerifiedProjectAssembly;
   readonly glbArrayBuffer: ArrayBuffer;
 };
-
-const ORCHESTRATE_ENDPOINT = '/api/orchestrate';
 
 type ReportProgress = (progress: AssemblyLoadingProgress) => void;
 
@@ -71,8 +68,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-async function readOrchestrationErrorMessage(response: Response): Promise<string> {
-  const fallbackMessage = `Orchestration request failed with HTTP ${response.status}`;
+async function readRequestErrorMessage(response: Response, action: string): Promise<string> {
+  const fallbackMessage = `${action} request failed with HTTP ${response.status}`;
   try {
     const payload: unknown = await response.json();
     return isRecord(payload) && typeof payload.error === 'string' ? payload.error : fallbackMessage;
@@ -81,46 +78,43 @@ async function readOrchestrationErrorMessage(response: Response): Promise<string
   }
 }
 
-export async function loadVerifiedAssemblyForPrompt(args: {
-  readonly prompt: string;
-  readonly provider: AiProviderId;
-  readonly providerExplicitlySelected?: boolean;
+type BundleOptions = {
   readonly repository?: FirebaseEmulatorRepository;
   readonly onProgress?: ReportProgress;
-}): Promise<LoadedAssemblyBundle> {
-  const repository = args.repository ?? defaultFirebaseEmulatorRepository;
+  readonly signal?: AbortSignal;
+};
 
-  args.onProgress?.({ phase: 'orchestrating', progress: 0.12 });
-  const orchestrationResponse = await fetch(ORCHESTRATE_ENDPOINT, {
+async function requestAssemblyBundle(
+  endpoint: string,
+  body: object,
+  action: string,
+  { repository = defaultFirebaseEmulatorRepository, onProgress, signal }: BundleOptions,
+): Promise<LoadedAssemblyBundle> {
+  onProgress?.({ phase: 'orchestrating', progress: 0.12 });
+  const response = await fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      prompt: args.prompt,
-      provider: args.provider,
-      providerExplicitlySelected: args.providerExplicitlySelected ?? false,
-    }),
+    body: JSON.stringify(body),
+    signal,
   });
-  if (!orchestrationResponse.ok) {
-    throw new Error(await readOrchestrationErrorMessage(orchestrationResponse));
+  if (!response.ok) {
+    throw new Error(await readRequestErrorMessage(response, action));
   }
 
-  const assembly = parseVerifiedProjectAssembly(await orchestrationResponse.json());
-  if (
-    !canClassifyAsVerified(assembly.validation, assembly.verificationStatus) ||
-    !hasVerifiedUpstreamProvenance(assembly.nodes, assembly.verificationStatus)
-  ) {
+  const assembly = parseVerifiedProjectAssembly(await response.json());
+  if (!canRenderAssembly(assembly)) {
     throw new Error(`Assembly ${assembly.archetypeId} failed OpenCascade validation checks`);
   }
 
   const glbFile = assembly.manifest.files.glb;
-  args.onProgress?.({ phase: 'downloading', progress: 0.55 });
-  const glbResponse = await fetch(glbFile.publicUrl);
+  onProgress?.({ phase: 'downloading', progress: 0.55 });
+  const glbResponse = await fetch(glbFile.publicUrl, { signal });
   if (!glbResponse.ok) {
     throw new Error(
       `Failed to load GLB geometry for ${assembly.archetypeId}: HTTP ${glbResponse.status}`,
     );
   }
-  const glbArrayBuffer = await readGlbWithProgress(glbResponse, glbFile.sizeBytes, args.onProgress);
+  const glbArrayBuffer = await readGlbWithProgress(glbResponse, glbFile.sizeBytes, onProgress);
 
   await hydrateComponentLearningContext({
     assembly,
@@ -128,9 +122,43 @@ export async function loadVerifiedAssemblyForPrompt(args: {
     binaries: { glb: new Uint8Array(glbArrayBuffer) },
   });
 
-  args.onProgress?.({ phase: 'ready', progress: 1 });
+  onProgress?.({ phase: 'ready', progress: 1 });
   return {
     assembly,
     glbArrayBuffer,
   };
+}
+
+export function loadVerifiedAssemblyForPrompt({
+  prompt,
+  provider,
+  providerExplicitlySelected = false,
+  ...options
+}: BundleOptions & {
+  readonly prompt: string;
+  readonly provider: AiProviderId;
+  readonly providerExplicitlySelected?: boolean;
+}): Promise<LoadedAssemblyBundle> {
+  return requestAssemblyBundle(
+    '/api/orchestrate',
+    { prompt, provider, providerExplicitlySelected },
+    'Orchestration',
+    options,
+  );
+}
+
+export function rebuildAssemblyForParameters({
+  assembly: { archetypeId, title, userPrompt, orchestration },
+  parameterValues,
+  ...options
+}: BundleOptions & {
+  readonly assembly: VerifiedProjectAssembly;
+  readonly parameterValues: Readonly<Record<string, number>>;
+}): Promise<LoadedAssemblyBundle> {
+  return requestAssemblyBundle(
+    '/api/rebuild',
+    { archetypeId, title, userPrompt, orchestration, parameterValues },
+    'Parameter rebuild',
+    options,
+  );
 }

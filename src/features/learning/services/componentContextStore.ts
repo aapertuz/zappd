@@ -5,7 +5,6 @@ import {
   type ProjectLearningDocuments,
   type ResolvedComponentRelationship,
   type VerifiedProjectAssembly,
-  getCatalogArchetypeById,
   isVerifiedStatus,
   parseProjectLearningDocuments,
 } from '@/shared/domain';
@@ -15,7 +14,10 @@ import {
   defaultFirebaseEmulatorRepository,
 } from '@/shared/firebase';
 
-import { buildGroundedComponentExplanation } from '../model/catalogExplanations';
+import {
+  buildGroundedComponentExplanation,
+  describeLearningProject,
+} from '../model/catalogExplanations';
 
 export type LearningContextRepository = Pick<
   FirebaseEmulatorRepository,
@@ -101,6 +103,7 @@ export async function hydrateComponentLearningContext({
 }): Promise<void> {
   const documents = buildLearningDocuments(assembly);
   await repository.saveProjectAssembly(assembly, binaries, {
+    allowUnverified: assembly.verificationStatus === 'unverified',
     componentExplanations: documents.explanations,
     syncLearningDocuments,
   });
@@ -154,11 +157,12 @@ function resolveContext(
   const parent = component.parentId === null ? null : nodes.get(component.parentId);
   if (parent === undefined) return null;
   const relationshipIds = new Set(relationships.map(({ id }) => id));
+  const { title, catalogSummary, currentDimensions } = describeLearningProject(assembly);
   return {
     projectId: assembly.projectId,
     archetypeId: assembly.archetypeId,
-    projectTitle: assembly.title,
-    projectSummary: getCatalogArchetypeById(assembly.archetypeId)?.summary ?? assembly.title,
+    projectTitle: title,
+    projectSummary: currentDimensions ?? catalogSummary ?? title,
     component,
     parentComponentName: parent?.name ?? null,
     childComponentNames: documents.nodes

@@ -20,7 +20,7 @@ import {
   waitForBrowserState,
 } from './cdp-browser.mjs';
 
-const BASE_DIR = '/tmp/zappd-verify';
+const BASE_DIR = path.resolve(process.env.ZAPPD_VERIFY_BASE_DIR ?? '/tmp/zappd-verify');
 const RUNS_DIR = path.join(BASE_DIR, 'runs');
 const EVIDENCE_DIR = path.join(BASE_DIR, 'evidence');
 const ID_PATTERN = /^[A-Za-z0-9._-]+$/;

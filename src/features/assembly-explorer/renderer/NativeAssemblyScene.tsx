@@ -2,11 +2,14 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { LearningCallouts } from '@/features/learning';
 
+import { AssemblyParameters } from './AssemblyParameters';
+import { getAssemblyValidationFailures } from '../model/parameterControls';
 import { type AssemblySceneProps } from '../types';
 
 export function NativeAssemblyScene({
   assembly,
   state,
+  onApplyParameters,
   onSetExplodeFactor,
   onFocusComponent,
   onExitPartFocus,
@@ -57,6 +60,31 @@ export function NativeAssemblyScene({
             {focusedPart.name}
           </Text>
         </View>
+      ) : null}
+      {assembly.verificationStatus === 'unverified' ? (
+        <View
+          accessibilityRole="alert"
+          accessibilityLabel="Unverified assembly warning"
+          style={styles.warning}>
+          <Text style={styles.warningText}>
+            Unverified assembly. This assembly failed validation checks.
+          </Text>
+          <ScrollView style={styles.warningDetails}>
+            {getAssemblyValidationFailures(assembly.validation).map((failure) => (
+              <Text key={failure} style={styles.warningText}>
+                {failure}
+              </Text>
+            ))}
+          </ScrollView>
+        </View>
+      ) : null}
+      {assembly.parameters !== undefined && assembly.parameters.length > 0 ? (
+        <AssemblyParameters
+          key={assembly.manifest.manifestHash}
+          parameters={assembly.parameters}
+          state={state}
+          onApplyParameters={onApplyParameters}
+        />
       ) : null}
       <LearningCallouts
         learningState={
@@ -109,6 +137,19 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#18181b',
     fontWeight: '600',
+    fontSize: 12,
+  },
+  warning: {
+    gap: 6,
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: '#2e2113',
+  },
+  warningDetails: {
+    maxHeight: 88,
+  },
+  warningText: {
+    color: '#f9c774',
     fontSize: 12,
   },
   list: {

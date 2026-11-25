@@ -7,6 +7,7 @@ import { describe, it } from 'node:test';
 import {
   CATALOG_ARCHETYPES,
   GEOMETRY_ORIGIN_POLICY,
+  PARAMETRIC_MULTIROTOR_ARCHETYPE,
   QUADCOPTER_ARCHETYPE,
   buildLearningPromptParts,
   parseLearningCloudRequest,
@@ -347,6 +348,18 @@ describe('component learning context', () => {
       assert.doesNotMatch(explanation, /assembly.root|listed in|cantilevered|outrunner|\bDOF\b/i);
       assert.equal(explanation.split(/(?<=\.)\s+/).length, 4);
     }
+  });
+
+  it('grounds rebuilt multirotor explanations in the current parameters', async () => {
+    const project = {
+      ...verifiedAssembly(PARAMETRIC_MULTIROTOR_ARCHETYPE, 'proj_rebuilt_multirotor'),
+      title: 'Original six-rotor hexacopter with 320 mm wheelbase',
+      parameterValues: { rotor_count: 4, wheelbase_mm: 300, deck_gap_mm: 26, arm_thickness_mm: 4 },
+    };
+    const context = await createLearningContext(project);
+    assert.equal(context.projectTitle, 'Parametric Multirotor');
+    assert.match(context.projectSummary, /Rotor Count 4, Wheelbase 300 mm/);
+    assert.match(context.storedExplanation.purpose, /Rotor Count 4, Wheelbase 300 mm/);
   });
 
   it('grounds a new assembly overview in its own names, parts, and steps', async () => {
