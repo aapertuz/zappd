@@ -61,3 +61,15 @@ def test_pair_deadline_is_unresolved_not_clear(monkeypatch, tmp_path):
     assert report['intersectionCount'] == 0
     assert report['pairs'][0]['status'] == 'timeout'
     assert report['pairs'][0]['volumeMm3'] is None
+
+
+def test_isolated_pair_returns_measured_overlap(monkeypatch, tmp_path):
+    if 'fork' not in poppy_interference.multiprocessing.get_all_start_methods():
+        pytest.skip('In-memory CAD fixture requires fork; spawn uses verified disk fixtures')
+    shape = BRepPrimAPI_MakeBox(1, 1, 1).Shape()
+    monkeypatch.setattr(poppy_interference, 'resolve_component_step', lambda node, cache: dict(shape=shape, sha256='fixture-digest'))
+    nodes = [dict(id=identifier, geometry=dict(kind='available', role='solid'), stepFixtureName=f'{identifier}.step', restPositionMeters=[0, 0, 0]) for identifier in ['a', 'b']]
+    report = poppy_interference.analyze(dict(nodes=nodes), tmp_path, timeout_seconds=3)
+    assert report['unresolvedPairCount'] == 0
+    assert report['intersectionCount'] == 1
+    assert report['pairs'][0]['volumeMm3'] == pytest.approx(1)
