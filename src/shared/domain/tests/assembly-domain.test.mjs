@@ -571,7 +571,23 @@ describe('shared domain contracts', () => {
     assert.deepEqual(searchCotsParts({ origin: 'cots_library_step' }), [battery]);
     assert.deepEqual(searchCotsParts({ text: '  BRuSHLeSS Esc  ' }), [esc]);
     assert.deepEqual(searchCotsParts({ text: 'kicad_quad_4in1_esc' }), [esc]);
-    assert.deepEqual(searchCotsParts({ mountingKind: 'm3_standoff' }), []);
+    const hub = getCotsPartById('kicad_quadruped_servo_hub');
+    assert.deepEqual(hub.mountingInterfaces[0].boltPitchMm, [64, 48]);
+    assert.equal(hub.ports.filter(({ busKind }) => busKind === 'pwm_signal').length, 12);
+    assert.deepEqual(
+      searchCotsParts({
+        busKind: 'pwm_signal',
+        mountingKind: 'm3_standoff',
+        origin: 'kicad_pcb_step',
+        maxDimensionMm: 72,
+        text: '  OPEN-Quadruped ',
+      }),
+      [hub],
+    );
+    assert.deepEqual(searchCotsParts({ text: 'open-quadruped', maxDimensionMm: 71 }), []);
+    const batteryOutput = battery.ports.find(({ portId }) => portId === 'port_pack_out');
+    assert.equal(batteryOutput.role, 'source');
+    assert.equal(batteryOutput.nominalVoltageV, 11.1);
     assert.deepEqual(
       searchCotsParts({
         busKind: 'dc_power',

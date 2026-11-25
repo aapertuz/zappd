@@ -20,8 +20,10 @@ from pygltflib import FLOAT, GLTF2
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from build_cots_library import load_cots_specs
 from catalog_ingestor import count_brep_faces, read_and_validate_step, read_xcaf_face_colors, resolve_component_step
 from catalog_specs import CATALOG_SPECS, resolve_catalog_spec
+from cots_catalog import get_cots_part, load_cots_catalog, search_cots_parts
 from geometry_pipeline import parse_glb_diagnostics, parse_usdz_prim_paths, run_cad_pipeline, shape_bounds_mm
 from material_skins import build_skin_texture_set, resolve_material_skin, srgb_hex_to_linear_rgba
 
@@ -31,14 +33,48 @@ EXPECTED_NODE_COUNTS = {
     "robotic_arm_3dof_v1": 31,
     "open_source_rover_v1": 21,
 }
-COTS_REGISTRY = (
-    Path(__file__).resolve().parents[3] / "src/shared/domain/catalog/cots/index.json"
-)
-
-
 @pytest.fixture(scope="module")
 def cots_parts() -> dict[str, dict]:
-    return {part["cotsId"]: part for part in json.loads(COTS_REGISTRY.read_text(encoding="utf-8"))}
+    return {part["cotsId"]: part for part in load_cots_catalog()}
+
+
+def test_declarative_cots_specs_feed_the_shared_registry(cots_parts: dict) -> None:
+    models, boards, upstream_parts = load_cots_specs()
+    assert len(models) == 12
+    for model in models.values():
+        for digest in (model.step_sha256, model.footprint_sha256):
+            assert re.fullmatch(r"[a-f0-9]{64}", digest)
+        for revision in (model.model_revision, model.footprint_revision):
+            assert re.fullmatch(r"[a-f0-9]{40}", revision)
+        assert model.spdx_license
+    assert set(cots_parts) == {board.id for board in boards} | {part["cotsId"] for part in upstream_parts}
+
+    hub_id = "kicad_quadruped_servo_hub"
+    hub = get_cots_part(hub_id)
+    assert hub is not None
+    assert hub["mountingInterfaces"][0]["boltPitchMm"] == [64, 48]
+    assert hub["specifications"]["pcbWidthMm"] == 72
+    assert hub["specifications"]["pcbLengthMm"] == 56
+    assert len([port for port in hub["ports"] if port["busKind"] == "pwm_signal"]) == 12
+    assert search_cots_parts(
+        bus_kind="pwm_signal", mounting_kind="m3_standoff", origin="kicad_pcb_step",
+        max_dimension_mm=72, text=" open-QUADRUPED ",
+    ) == [hub]
+    assert search_cots_parts(text="open-quadruped", max_dimension_mm=71) == []
+    assert get_cots_part("missing_part") is None
+
+    battery = cots_parts["cots_battery_3s_18650"]
+    output = next(port for port in battery["ports"] if port["portId"] == "port_pack_out")
+    assert (output["role"], output["minVoltageV"], output["nominalVoltageV"], output["maxVoltageV"], output["maxCurrentA"]) == (
+        "source", 9.0, 11.1, 12.6, 15.0,
+    )
+
+    parts_by_fixture = {part["stepFixtureName"]: part for part in cots_parts.values()}
+    for spec in CATALOG_SPECS.values():
+        for node in spec["nodes"]:
+            if node["stepFixtureName"] in parts_by_fixture:
+                part = parts_by_fixture[node["stepFixtureName"]]
+                assert node["expectedStepSha256"] == part["expectedStepSha256"]
 
 
 def test_worker_loads_complete_shared_catalog_specs() -> None:
@@ -98,6 +134,7 @@ def test_cots_registry_resolves_valid_centered_steps_with_ports(cots_parts: dict
         "kicad_quad_flight_controller",
         "kicad_quad_elrs_receiver",
         "kicad_nova2_jetson_carrier",
+        "kicad_quadruped_servo_hub",
     }
     for cid, part in cots_parts.items():
         resolved = resolve_component_step({**part, "id": cid}, tmp_path)
@@ -113,11 +150,15 @@ def test_cots_registry_resolves_valid_centered_steps_with_ports(cots_parts: dict
         colors = {color for _, color in face_colors if color is not None}
         assert len(colors) == part["specifications"]["xcafColors"]
         assert len(colors) >= (3 if part["origin"] == "kicad_pcb_step" else 2)
+        assert part["category"] and part["tags"] and part["mountingInterfaces"]
         assert part["ports"]
         assert len({port["portId"] for port in part["ports"]}) == len(part["ports"])
         for port in part["ports"]:
             assert re.fullmatch(r"port_[a-z0-9_]+", port["portId"])
             assert port["label"] and port["connectorType"]
+            assert port["role"] in {"source", "sink", "bidirectional"}
+            assert 0 <= port["minVoltageV"] <= port["nominalVoltageV"] <= port["maxVoltageV"]
+            assert port["maxCurrentA"] > 0
             assert port["busKind"] in {"dc_power", "usb_data", "ttl_serial", "i2c_spi_uart", "pwm_signal", "brushless_phase"}
             x, y, z = port["localPositionMeters"]
             position = np.array([x, -z, y]) * 1000

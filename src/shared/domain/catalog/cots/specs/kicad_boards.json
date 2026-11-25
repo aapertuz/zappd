@@ -1,0 +1,890 @@
+[
+  {
+    "cotsId": "kicad_so100_bus_servo_adapter",
+    "name": "SO-100 bus servo adapter",
+    "widthMm": 36,
+    "lengthMm": 44,
+    "rotationXDegrees": -90,
+    "category": "servo_controller",
+    "tags": ["so100", "robotic-arm", "ttl-serial"],
+    "mountingInterfaces": [
+      {
+        "interfaceId": "mount_board",
+        "label": "Four-hole PCB mount",
+        "kind": "m2_5_standoff",
+        "holeDiameterMm": 2.5,
+        "boltPitchMm": [29, 37],
+        "localPositionMeters": [0, 0, 0],
+        "normalDirection": [0, 0, -1]
+      }
+    ],
+    "footprints": [
+      {
+        "reference": "J1",
+        "xMm": 5,
+        "yMm": 18.5,
+        "model": "usb_c",
+        "port": {
+          "portId": "port_usb",
+          "label": "USB data",
+          "connectorType": "USB-C",
+          "busKind": "usb_data",
+          "modelAnchorMm": [0, -3.675, 1.65],
+          "modelExitDirection": [0, -1, 0],
+          "role": "bidirectional",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 0.5
+        }
+      },
+      {
+        "reference": "J2",
+        "xMm": -4.8,
+        "yMm": 7.5,
+        "model": "barrel",
+        "port": {
+          "portId": "port_dc_in",
+          "label": "DC power input",
+          "connectorType": "DC barrel jack",
+          "busKind": "dc_power",
+          "modelAnchorMm": [-13.8, 0, 6.4],
+          "modelExitDirection": [-1, 0, 0],
+          "role": "sink",
+          "minVoltageV": 5,
+          "nominalVoltageV": 5.5,
+          "maxVoltageV": 6,
+          "maxCurrentA": 3,
+          "wireColorsHex": ["#cc2929", "#222428"]
+        }
+      },
+      {
+        "reference": "J3",
+        "xMm": -11,
+        "yMm": -9,
+        "model": "jst_ph",
+        "port": {
+          "portId": "port_servo_1",
+          "label": "Servo bus 1",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "ttl_serial",
+          "modelAnchorMm": [2, 0, 6],
+          "modelExitDirection": [0, 0, 1],
+          "role": "source",
+          "minVoltageV": 5,
+          "nominalVoltageV": 5.5,
+          "maxVoltageV": 6,
+          "maxCurrentA": 1,
+          "wireColorsHex": ["#cc2929", "#222428", "#e5c158"]
+        }
+      },
+      {
+        "reference": "J4",
+        "xMm": 2,
+        "yMm": -9,
+        "model": "jst_ph",
+        "port": {
+          "portId": "port_servo_2",
+          "label": "Servo bus 2",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "ttl_serial",
+          "modelAnchorMm": [2, 0, 6],
+          "modelExitDirection": [0, 0, 1],
+          "role": "source",
+          "minVoltageV": 5,
+          "nominalVoltageV": 5.5,
+          "maxVoltageV": 6,
+          "maxCurrentA": 1,
+          "wireColorsHex": ["#cc2929", "#222428", "#e5c158"]
+        }
+      },
+      {
+        "reference": "U1",
+        "xMm": 9,
+        "yMm": 0,
+        "model": "soic"
+      },
+      {
+        "reference": "C1",
+        "xMm": 0,
+        "yMm": -17,
+        "model": "capacitor"
+      }
+    ]
+  },
+  {
+    "cotsId": "kicad_quad_4in1_esc",
+    "name": "Quadcopter 4-in-1 brushless ESC",
+    "widthMm": 36,
+    "lengthMm": 36,
+    "rotationXDegrees": 0,
+    "category": "motor_controller",
+    "tags": ["quadcopter", "esc", "brushless"],
+    "mountingInterfaces": [
+      {
+        "interfaceId": "mount_board",
+        "label": "Four-hole PCB mount",
+        "kind": "m3_standoff",
+        "holeDiameterMm": 3.2,
+        "boltPitchMm": [30.5, 30.5],
+        "localPositionMeters": [0, 0, 0],
+        "normalDirection": [0, 1, 0]
+      }
+    ],
+    "footprints": [
+      {
+        "reference": "J1",
+        "xMm": -3.6,
+        "yMm": 11,
+        "model": "xt60",
+        "port": {
+          "portId": "port_dc_in",
+          "label": "Battery input",
+          "connectorType": "XT60",
+          "busKind": "dc_power",
+          "modelAnchorMm": [3.6, 0, 16],
+          "modelExitDirection": [0, 0, 1],
+          "role": "sink",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 25.2,
+          "maxCurrentA": 30,
+          "wireColorsHex": ["#cc2929", "#222428"]
+        }
+      },
+      {
+        "reference": "J2",
+        "xMm": 13.03,
+        "yMm": 6,
+        "model": "jst_gh",
+        "port": {
+          "portId": "port_esc",
+          "label": "Flight controller / ESC link",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "pwm_signal",
+          "modelAnchorMm": [0, 0, 4.2],
+          "modelExitDirection": [0, 0, 1],
+          "role": "sink",
+          "minVoltageV": 3,
+          "nominalVoltageV": 3.3,
+          "maxVoltageV": 3.6,
+          "maxCurrentA": 0.25,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"]
+        }
+      },
+      {
+        "reference": "C1",
+        "xMm": -14.5,
+        "yMm": 7.2,
+        "model": "capacitor"
+      },
+      {
+        "reference": "Q1",
+        "xMm": -12.75,
+        "yMm": -8,
+        "model": "mosfet"
+      },
+      {
+        "reference": "Q2",
+        "xMm": -4.25,
+        "yMm": -8,
+        "model": "mosfet"
+      },
+      {
+        "reference": "Q3",
+        "xMm": 4.25,
+        "yMm": -8,
+        "model": "mosfet"
+      },
+      {
+        "reference": "Q4",
+        "xMm": 12.75,
+        "yMm": -8,
+        "model": "mosfet"
+      },
+      {
+        "reference": "Q5",
+        "xMm": -12.75,
+        "yMm": -0.5,
+        "model": "mosfet"
+      },
+      {
+        "reference": "Q6",
+        "xMm": -4.25,
+        "yMm": -0.5,
+        "model": "mosfet"
+      },
+      {
+        "reference": "Q7",
+        "xMm": 4.25,
+        "yMm": -0.5,
+        "model": "mosfet"
+      },
+      {
+        "reference": "Q8",
+        "xMm": 12.75,
+        "yMm": -0.5,
+        "model": "mosfet"
+      },
+      {
+        "reference": "MP1",
+        "xMm": -10.5,
+        "yMm": -15,
+        "model": "motor_phase_pads",
+        "port": {
+          "portId": "port_motor_1",
+          "label": "Motor 1 phase pads",
+          "connectorType": "3 solder pads",
+          "busKind": "brushless_phase",
+          "modelAnchorMm": [0, 0, 0],
+          "modelExitDirection": [0, 0, 1],
+          "role": "source",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 25.2,
+          "maxCurrentA": 15,
+          "wireColorsHex": ["#cc2929", "#222428", "#d99b26"]
+        }
+      },
+      {
+        "reference": "MP2",
+        "xMm": 10.5,
+        "yMm": -15,
+        "model": "motor_phase_pads",
+        "port": {
+          "portId": "port_motor_2",
+          "label": "Motor 2 phase pads",
+          "connectorType": "3 solder pads",
+          "busKind": "brushless_phase",
+          "modelAnchorMm": [0, 0, 0],
+          "modelExitDirection": [0, 0, 1],
+          "role": "source",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 25.2,
+          "maxCurrentA": 15,
+          "wireColorsHex": ["#cc2929", "#222428", "#d99b26"]
+        }
+      },
+      {
+        "reference": "MP3",
+        "xMm": 10.5,
+        "yMm": 15,
+        "model": "motor_phase_pads",
+        "port": {
+          "portId": "port_motor_3",
+          "label": "Motor 3 phase pads",
+          "connectorType": "3 solder pads",
+          "busKind": "brushless_phase",
+          "modelAnchorMm": [0, 0, 0],
+          "modelExitDirection": [0, 0, 1],
+          "role": "source",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 25.2,
+          "maxCurrentA": 15,
+          "wireColorsHex": ["#cc2929", "#222428", "#d99b26"]
+        }
+      },
+      {
+        "reference": "MP4",
+        "xMm": -10.5,
+        "yMm": 15,
+        "model": "motor_phase_pads",
+        "port": {
+          "portId": "port_motor_4",
+          "label": "Motor 4 phase pads",
+          "connectorType": "3 solder pads",
+          "busKind": "brushless_phase",
+          "modelAnchorMm": [0, 0, 0],
+          "modelExitDirection": [0, 0, 1],
+          "role": "source",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 25.2,
+          "maxCurrentA": 15,
+          "wireColorsHex": ["#cc2929", "#222428", "#d99b26"]
+        }
+      }
+    ]
+  },
+  {
+    "cotsId": "kicad_quad_flight_controller",
+    "name": "Quadcopter flight controller",
+    "widthMm": 36,
+    "lengthMm": 36,
+    "rotationXDegrees": 0,
+    "category": "flight_controller",
+    "tags": ["quadcopter", "flight-controller"],
+    "mountingInterfaces": [
+      {
+        "interfaceId": "mount_board",
+        "label": "Four-hole PCB mount",
+        "kind": "m3_standoff",
+        "holeDiameterMm": 3.2,
+        "boltPitchMm": [30.5, 30.5],
+        "localPositionMeters": [0, 0, 0],
+        "normalDirection": [0, 1, 0]
+      }
+    ],
+    "footprints": [
+      {
+        "reference": "U1",
+        "xMm": 0,
+        "yMm": 0,
+        "model": "lqfp"
+      },
+      {
+        "reference": "J1",
+        "xMm": 0,
+        "yMm": 14.5,
+        "model": "usb_c",
+        "port": {
+          "portId": "port_usb",
+          "label": "USB data",
+          "connectorType": "USB-C",
+          "busKind": "usb_data",
+          "modelAnchorMm": [0, -3.675, 1.65],
+          "modelExitDirection": [0, -1, 0],
+          "role": "bidirectional",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 0.5
+        }
+      },
+      {
+        "reference": "J2",
+        "xMm": -8,
+        "yMm": -11,
+        "model": "jst_gh",
+        "port": {
+          "portId": "port_esc",
+          "label": "Flight controller / ESC link",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "pwm_signal",
+          "modelAnchorMm": [0, 0, 4.2],
+          "modelExitDirection": [0, 0, 1],
+          "role": "source",
+          "minVoltageV": 3,
+          "nominalVoltageV": 3.3,
+          "maxVoltageV": 3.6,
+          "maxCurrentA": 0.25,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"]
+        }
+      },
+      {
+        "reference": "J3",
+        "xMm": 8,
+        "yMm": -11,
+        "model": "jst_gh",
+        "port": {
+          "portId": "port_rx",
+          "label": "Receiver UART",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "i2c_spi_uart",
+          "modelAnchorMm": [0, 0, 4.2],
+          "modelExitDirection": [0, 0, 1],
+          "role": "bidirectional",
+          "minVoltageV": 3,
+          "nominalVoltageV": 3.3,
+          "maxVoltageV": 3.6,
+          "maxCurrentA": 0.25,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"]
+        }
+      }
+    ]
+  },
+  {
+    "cotsId": "kicad_quad_elrs_receiver",
+    "name": "ELRS 2.4 GHz receiver",
+    "widthMm": 18,
+    "lengthMm": 14,
+    "rotationXDegrees": 0,
+    "category": "radio_receiver",
+    "tags": ["quadcopter", "elrs", "uart"],
+    "mountingInterfaces": [
+      {
+        "interfaceId": "mount_board",
+        "label": "Edge clamp mount",
+        "kind": "clamp",
+        "holeDiameterMm": 3.2,
+        "localPositionMeters": [0, 0, 0],
+        "normalDirection": [0, 1, 0]
+      }
+    ],
+    "footprints": [
+      {
+        "reference": "U1",
+        "xMm": -5,
+        "yMm": 0,
+        "model": "soic"
+      },
+      {
+        "reference": "J1",
+        "xMm": 3.5,
+        "yMm": 0,
+        "model": "jst_gh",
+        "port": {
+          "portId": "port_rx",
+          "label": "Receiver UART",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "i2c_spi_uart",
+          "modelAnchorMm": [0, 0, 4.2],
+          "modelExitDirection": [0, 0, 1],
+          "role": "bidirectional",
+          "minVoltageV": 3,
+          "nominalVoltageV": 3.3,
+          "maxVoltageV": 3.6,
+          "maxCurrentA": 0.25,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"]
+        }
+      }
+    ]
+  },
+  {
+    "cotsId": "kicad_nova2_jetson_carrier",
+    "name": "Nova2 Jetson Orin Nano carrier and servo hub",
+    "widthMm": 96,
+    "lengthMm": 76,
+    "rotationXDegrees": 0,
+    "category": "compute_carrier",
+    "tags": ["nova2", "jetson", "rover", "ttl-serial"],
+    "mountingInterfaces": [
+      {
+        "interfaceId": "mount_board",
+        "label": "Edge clamp mount",
+        "kind": "clamp",
+        "holeDiameterMm": 3.2,
+        "localPositionMeters": [0, 0, 0],
+        "normalDirection": [0, 1, 0]
+      }
+    ],
+    "footprints": [
+      {
+        "reference": "U1",
+        "xMm": 6,
+        "yMm": 6,
+        "model": "lqfp"
+      },
+      {
+        "reference": "J1",
+        "xMm": 42,
+        "yMm": -24,
+        "model": "pin_2x20",
+        "port": {
+          "portId": "port_gpio",
+          "label": "Jetson GPIO",
+          "connectorType": "40-pin GPIO",
+          "busKind": "i2c_spi_uart",
+          "modelAnchorMm": [1.27, -24.13, 8.54],
+          "modelExitDirection": [0, 0, 1],
+          "role": "bidirectional",
+          "minVoltageV": 3,
+          "nominalVoltageV": 3.3,
+          "maxVoltageV": 3.6,
+          "maxCurrentA": 0.25,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"]
+        }
+      },
+      {
+        "reference": "J2",
+        "xMm": 15,
+        "yMm": 34.5,
+        "model": "usb_c",
+        "port": {
+          "portId": "port_usb",
+          "label": "ZED 2i USB data",
+          "connectorType": "USB-C",
+          "busKind": "usb_data",
+          "modelAnchorMm": [0, -3.675, 1.65],
+          "modelExitDirection": [0, -1, 0],
+          "role": "bidirectional",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 0.5
+        }
+      },
+      {
+        "reference": "J3",
+        "xMm": -34.5,
+        "yMm": 13,
+        "model": "barrel",
+        "port": {
+          "portId": "port_dc_in",
+          "label": "DC power input",
+          "connectorType": "DC barrel jack",
+          "busKind": "dc_power",
+          "modelAnchorMm": [-13.8, 0, 6.4],
+          "modelExitDirection": [-1, 0, 0],
+          "role": "sink",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 12.6,
+          "maxCurrentA": 3,
+          "wireColorsHex": ["#cc2929", "#222428"]
+        }
+      },
+      {
+        "reference": "J4",
+        "xMm": -19,
+        "yMm": -19,
+        "model": "jst_ph",
+        "port": {
+          "portId": "port_servo_1",
+          "label": "Servo bus 1",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "ttl_serial",
+          "modelAnchorMm": [2, 0, 6],
+          "modelExitDirection": [0, 0, 1],
+          "role": "source",
+          "minVoltageV": 5,
+          "nominalVoltageV": 5.5,
+          "maxVoltageV": 6,
+          "maxCurrentA": 1,
+          "wireColorsHex": ["#cc2929", "#222428", "#e5c158"]
+        }
+      },
+      {
+        "reference": "J5",
+        "xMm": 4,
+        "yMm": -19,
+        "model": "jst_ph",
+        "port": {
+          "portId": "port_servo_2",
+          "label": "Servo bus 2",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "ttl_serial",
+          "modelAnchorMm": [2, 0, 6],
+          "modelExitDirection": [0, 0, 1],
+          "role": "source",
+          "minVoltageV": 5,
+          "nominalVoltageV": 5.5,
+          "maxVoltageV": 6,
+          "maxCurrentA": 1,
+          "wireColorsHex": ["#cc2929", "#222428", "#e5c158"]
+        }
+      },
+      {
+        "reference": "C1",
+        "xMm": -23,
+        "yMm": 13,
+        "model": "capacitor"
+      }
+    ]
+  },
+  {
+    "cotsId": "kicad_quadruped_servo_hub",
+    "name": "Open Quadruped 12-servo hub",
+    "widthMm": 72,
+    "lengthMm": 56,
+    "rotationXDegrees": 0,
+    "category": "servo_controller",
+    "tags": ["open-quadruped", "12-servo", "pwm", "xt60"],
+    "mountingInterfaces": [
+      {
+        "interfaceId": "mount_board",
+        "label": "Four-hole M3 PCB mount",
+        "kind": "m3_standoff",
+        "holeDiameterMm": 3.2,
+        "boltPitchMm": [64, 48],
+        "localPositionMeters": [0, 0, 0],
+        "normalDirection": [0, 1, 0]
+      }
+    ],
+    "footprints": [
+      {
+        "reference": "U1",
+        "xMm": 0,
+        "yMm": 0,
+        "model": "lqfp"
+      },
+      {
+        "reference": "J1",
+        "xMm": -11,
+        "yMm": 24.5,
+        "model": "usb_c",
+        "port": {
+          "portId": "port_usb",
+          "label": "USB data",
+          "connectorType": "USB-C",
+          "busKind": "usb_data",
+          "modelAnchorMm": [0, -3.675, 1.65],
+          "modelExitDirection": [0, -1, 0],
+          "role": "bidirectional",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 0.5
+        }
+      },
+      {
+        "reference": "J2",
+        "xMm": 3,
+        "yMm": 19,
+        "model": "xt60",
+        "port": {
+          "portId": "port_dc_in",
+          "label": "3S battery input",
+          "connectorType": "XT60",
+          "busKind": "dc_power",
+          "modelAnchorMm": [3.6, 0, 16],
+          "modelExitDirection": [0, 0, 1],
+          "role": "sink",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 12.6,
+          "maxCurrentA": 15,
+          "wireColorsHex": ["#cc2929", "#222428"]
+        }
+      },
+      {
+        "reference": "C1",
+        "xMm": -19,
+        "yMm": 8,
+        "model": "capacitor"
+      },
+      {
+        "reference": "J3",
+        "xMm": -28,
+        "yMm": -20,
+        "model": "jst_ph",
+        "port": {
+          "portId": "port_servo_1",
+          "label": "PWM servo channel 1",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "pwm_signal",
+          "modelAnchorMm": [2, 0, 6],
+          "modelExitDirection": [0, 0, 1],
+          "role": "source",
+          "minVoltageV": 4.8,
+          "nominalVoltageV": 6,
+          "maxVoltageV": 6.5,
+          "maxCurrentA": 1.5,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"]
+        }
+      },
+      {
+        "reference": "J4",
+        "xMm": -28,
+        "yMm": -12,
+        "model": "jst_ph",
+        "port": {
+          "portId": "port_servo_2",
+          "label": "PWM servo channel 2",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "pwm_signal",
+          "modelAnchorMm": [2, 0, 6],
+          "modelExitDirection": [0, 0, 1],
+          "role": "source",
+          "minVoltageV": 4.8,
+          "nominalVoltageV": 6,
+          "maxVoltageV": 6.5,
+          "maxCurrentA": 1.5,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"]
+        }
+      },
+      {
+        "reference": "J5",
+        "xMm": -28,
+        "yMm": -4,
+        "model": "jst_ph",
+        "port": {
+          "portId": "port_servo_3",
+          "label": "PWM servo channel 3",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "pwm_signal",
+          "modelAnchorMm": [2, 0, 6],
+          "modelExitDirection": [0, 0, 1],
+          "role": "source",
+          "minVoltageV": 4.8,
+          "nominalVoltageV": 6,
+          "maxVoltageV": 6.5,
+          "maxCurrentA": 1.5,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"]
+        }
+      },
+      {
+        "reference": "J6",
+        "xMm": -28,
+        "yMm": 4,
+        "model": "jst_ph",
+        "port": {
+          "portId": "port_servo_4",
+          "label": "PWM servo channel 4",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "pwm_signal",
+          "modelAnchorMm": [2, 0, 6],
+          "modelExitDirection": [0, 0, 1],
+          "role": "source",
+          "minVoltageV": 4.8,
+          "nominalVoltageV": 6,
+          "maxVoltageV": 6.5,
+          "maxCurrentA": 1.5,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"]
+        }
+      },
+      {
+        "reference": "J7",
+        "xMm": -28,
+        "yMm": 12,
+        "model": "jst_ph",
+        "port": {
+          "portId": "port_servo_5",
+          "label": "PWM servo channel 5",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "pwm_signal",
+          "modelAnchorMm": [2, 0, 6],
+          "modelExitDirection": [0, 0, 1],
+          "role": "source",
+          "minVoltageV": 4.8,
+          "nominalVoltageV": 6,
+          "maxVoltageV": 6.5,
+          "maxCurrentA": 1.5,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"]
+        }
+      },
+      {
+        "reference": "J8",
+        "xMm": -28,
+        "yMm": 20,
+        "model": "jst_ph",
+        "port": {
+          "portId": "port_servo_6",
+          "label": "PWM servo channel 6",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "pwm_signal",
+          "modelAnchorMm": [2, 0, 6],
+          "modelExitDirection": [0, 0, 1],
+          "role": "source",
+          "minVoltageV": 4.8,
+          "nominalVoltageV": 6,
+          "maxVoltageV": 6.5,
+          "maxCurrentA": 1.5,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"]
+        }
+      },
+      {
+        "reference": "J9",
+        "xMm": 24,
+        "yMm": -20,
+        "model": "jst_ph",
+        "port": {
+          "portId": "port_servo_7",
+          "label": "PWM servo channel 7",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "pwm_signal",
+          "modelAnchorMm": [2, 0, 6],
+          "modelExitDirection": [0, 0, 1],
+          "role": "source",
+          "minVoltageV": 4.8,
+          "nominalVoltageV": 6,
+          "maxVoltageV": 6.5,
+          "maxCurrentA": 1.5,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"]
+        }
+      },
+      {
+        "reference": "J10",
+        "xMm": 24,
+        "yMm": -12,
+        "model": "jst_ph",
+        "port": {
+          "portId": "port_servo_8",
+          "label": "PWM servo channel 8",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "pwm_signal",
+          "modelAnchorMm": [2, 0, 6],
+          "modelExitDirection": [0, 0, 1],
+          "role": "source",
+          "minVoltageV": 4.8,
+          "nominalVoltageV": 6,
+          "maxVoltageV": 6.5,
+          "maxCurrentA": 1.5,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"]
+        }
+      },
+      {
+        "reference": "J11",
+        "xMm": 24,
+        "yMm": -4,
+        "model": "jst_ph",
+        "port": {
+          "portId": "port_servo_9",
+          "label": "PWM servo channel 9",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "pwm_signal",
+          "modelAnchorMm": [2, 0, 6],
+          "modelExitDirection": [0, 0, 1],
+          "role": "source",
+          "minVoltageV": 4.8,
+          "nominalVoltageV": 6,
+          "maxVoltageV": 6.5,
+          "maxCurrentA": 1.5,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"]
+        }
+      },
+      {
+        "reference": "J12",
+        "xMm": 24,
+        "yMm": 4,
+        "model": "jst_ph",
+        "port": {
+          "portId": "port_servo_10",
+          "label": "PWM servo channel 10",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "pwm_signal",
+          "modelAnchorMm": [2, 0, 6],
+          "modelExitDirection": [0, 0, 1],
+          "role": "source",
+          "minVoltageV": 4.8,
+          "nominalVoltageV": 6,
+          "maxVoltageV": 6.5,
+          "maxCurrentA": 1.5,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"]
+        }
+      },
+      {
+        "reference": "J13",
+        "xMm": 24,
+        "yMm": 12,
+        "model": "jst_ph",
+        "port": {
+          "portId": "port_servo_11",
+          "label": "PWM servo channel 11",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "pwm_signal",
+          "modelAnchorMm": [2, 0, 6],
+          "modelExitDirection": [0, 0, 1],
+          "role": "source",
+          "minVoltageV": 4.8,
+          "nominalVoltageV": 6,
+          "maxVoltageV": 6.5,
+          "maxCurrentA": 1.5,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"]
+        }
+      },
+      {
+        "reference": "J14",
+        "xMm": 24,
+        "yMm": 20,
+        "model": "jst_ph",
+        "port": {
+          "portId": "port_servo_12",
+          "label": "PWM servo channel 12",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "pwm_signal",
+          "modelAnchorMm": [2, 0, 6],
+          "modelExitDirection": [0, 0, 1],
+          "role": "source",
+          "minVoltageV": 4.8,
+          "nominalVoltageV": 6,
+          "maxVoltageV": 6.5,
+          "maxCurrentA": 1.5,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"]
+        }
+      }
+    ]
+  }
+]

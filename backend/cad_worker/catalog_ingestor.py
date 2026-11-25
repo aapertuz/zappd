@@ -32,6 +32,7 @@ STEP_PRESENTATION_START = re.compile(rf"^#(\d+) = {STEP_PRESENTATION[:-1]}\(", r
 STEP_ENTITY = re.compile(r"^#(\d+) = ", re.MULTILINE)
 STEP_TOKENS = re.compile(r"'(?:[^']|'')*'|#(\d+)|\s+")
 STEP_OCCURRENCE = re.compile(r"(?<=NEXT_ASSEMBLY_USAGE_OCCURRENCE\()'\d+'")
+STEP_OCCURRENCE_RECORD = re.compile(r"^#\d+ = NEXT_ASSEMBLY_USAGE_OCCURRENCE\([^;]+\);", re.MULTILINE)
 STEP_PRESENTATION_ITEMS = re.compile(r"(?<=,\()#\d+(?:,#\d+)*(?=\),#\d+\);$)")
 
 
@@ -78,6 +79,11 @@ def stabilize_step_presentation(path: Path) -> None:
     geometry = source[:presentation.start()]
     occurrence_ids = count(1)
     geometry = STEP_OCCURRENCE.sub(lambda _: f"'{next(occurrence_ids)}'", geometry)
+    def join_short_occurrence(match: re.Match[str]) -> str:
+        record = match[0].replace("\n  ", "")
+        return record if len(record) < 72 else match[0]
+
+    geometry = STEP_OCCURRENCE_RECORD.sub(join_short_occurrence, geometry)
     if any(int(match[1]) >= first_style for match in re.finditer(r"#(\d+)", geometry)):
         raise RuntimeError(f"STEP geometry references presentation entities in {path}")
 

@@ -1,0 +1,122 @@
+{
+  "usb_c": {
+    "library": "Connector_USB",
+    "name": "USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal",
+    "footprintName": "USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal",
+    "stepSha256": "6338ce740fa231c2d3dcc6384e0576994a47240a312a21413cb85d76990a69a0",
+    "footprintSha256": "3b8d7da3cae5114ec83022a759a78925113bc2eeec100ea447594f6d8687e4b8",
+    "modelRevision": "706ebf838bc436fbfd8ff19ad9da44e89574bc11",
+    "footprintRevision": "99c3ec924043f946957f50630b653cc6698d877a",
+    "spdxLicense": "CC-BY-SA-4.0"
+  },
+  "barrel": {
+    "library": "Connector_BarrelJack",
+    "name": "BarrelJack_Horizontal",
+    "footprintName": "BarrelJack_Horizontal",
+    "stepSha256": "53f1b2714ed169b5e314b9b42cc9943303769e29e0debdfb4ef7a0e2c4f369dd",
+    "footprintSha256": "dabae1eb824b47f8565afa86ff93f2f5f473e1eaf02cab77eae4090f77e4e6f4",
+    "modelRevision": "706ebf838bc436fbfd8ff19ad9da44e89574bc11",
+    "footprintRevision": "99c3ec924043f946957f50630b653cc6698d877a",
+    "spdxLicense": "CC-BY-SA-4.0"
+  },
+  "jst_ph": {
+    "library": "Connector_JST",
+    "name": "JST_PH_B3B-PH-K_1x03_P2.00mm_Vertical",
+    "footprintName": "JST_PH_B3B-PH-K_1x03_P2.00mm_Vertical",
+    "stepSha256": "00cbe1522070150893f96728ffaa78070972f025d63c45f899e18b3060a41f2d",
+    "footprintSha256": "dd50eb4b509c1f7584aff9b58968d46cfac74ce253d4d5cf31c0565c3bf53f4c",
+    "modelRevision": "706ebf838bc436fbfd8ff19ad9da44e89574bc11",
+    "footprintRevision": "99c3ec924043f946957f50630b653cc6698d877a",
+    "spdxLicense": "CC-BY-SA-4.0"
+  },
+  "jst_ph_horizontal": {
+    "library": "Connector_JST",
+    "name": "JST_PH_S3B-PH-K_1x03_P2.00mm_Horizontal",
+    "footprintName": "JST_PH_S3B-PH-K_1x03_P2.00mm_Horizontal",
+    "stepSha256": "7e9becae7d5b98a52563a1a638b94fd3c90d7e56e71caedeb779862e91147739",
+    "footprintSha256": "e1536f71fadb2bcb735cc91360ecf558f92ed45bcc42831e606aa2c128c38c63",
+    "modelRevision": "706ebf838bc436fbfd8ff19ad9da44e89574bc11",
+    "footprintRevision": "99c3ec924043f946957f50630b653cc6698d877a",
+    "spdxLicense": "CC-BY-SA-4.0"
+  },
+  "jst_gh": {
+    "library": "Connector_JST",
+    "name": "JST_GH_BM04B-GHS-TBT_1x04-1MP_P1.25mm_Vertical",
+    "footprintName": "JST_GH_BM04B-GHS-TBT_1x04-1MP_P1.25mm_Vertical",
+    "stepSha256": "ebc503b4b58cad5873c7cdeb695315baf8bea08dd22aa49873b0104671b78d59",
+    "footprintSha256": "c0e5c962366864b39ad3a295bb6419547e18f0f5ac49060d75ea51d0e7079732",
+    "modelRevision": "706ebf838bc436fbfd8ff19ad9da44e89574bc11",
+    "footprintRevision": "99c3ec924043f946957f50630b653cc6698d877a",
+    "spdxLicense": "CC-BY-SA-4.0"
+  },
+  "xt60": {
+    "library": "Connector_AMASS",
+    "name": "AMASS_XT60-M_1x02_P7.2mm_Vertical",
+    "footprintName": "AMASS_XT60-M_1x02_P7.20mm_Vertical",
+    "stepSha256": "79c46051de822e2939ebbdbe2d708897adffa66bdc61a011b7f559c4a8565679",
+    "footprintSha256": "45053251eebf98805e9e7e301c7fc5405cb9c8df6ee612adf55f7866b8dade97",
+    "modelRevision": "706ebf838bc436fbfd8ff19ad9da44e89574bc11",
+    "footprintRevision": "99c3ec924043f946957f50630b653cc6698d877a",
+    "spdxLicense": "CC-BY-SA-4.0"
+  },
+  "pin_1x03": {
+    "library": "Connector_PinHeader_2.54mm",
+    "name": "PinHeader_1x03_P2.54mm_Vertical",
+    "footprintName": "PinHeader_1x03_P2.54mm_Vertical",
+    "stepSha256": "b91b4ac5acf1a0d28a676703db972d17b8f11ef26a85b58d60786a69246b921b",
+    "footprintSha256": "e5f24b6fea852f86171042806da48490229c9c8025b6d266b8cad6485b26e79f",
+    "modelRevision": "706ebf838bc436fbfd8ff19ad9da44e89574bc11",
+    "footprintRevision": "99c3ec924043f946957f50630b653cc6698d877a",
+    "spdxLicense": "CC-BY-SA-4.0"
+  },
+  "pin_2x20": {
+    "library": "Connector_PinHeader_2.54mm",
+    "name": "PinHeader_2x20_P2.54mm_Vertical",
+    "footprintName": "PinHeader_2x20_P2.54mm_Vertical",
+    "stepSha256": "3e3ee5e050716acbc8e6e4fc2778dce66ea1c9b17bdf6583ec399dabef67e264",
+    "footprintSha256": "0d860de8c4c7b7413ad8b13cf4f1aa389bafeec053f4004834c98c1b95582cd0",
+    "modelRevision": "706ebf838bc436fbfd8ff19ad9da44e89574bc11",
+    "footprintRevision": "99c3ec924043f946957f50630b653cc6698d877a",
+    "spdxLicense": "CC-BY-SA-4.0"
+  },
+  "lqfp": {
+    "library": "Package_QFP",
+    "name": "LQFP-64_10x10mm_P0.5mm",
+    "footprintName": "LQFP-64_10x10mm_P0.5mm",
+    "stepSha256": "b0c827bc5c05552175d28affe44a5bd2ab45c9c36efff6ff07a74cc449b13db4",
+    "footprintSha256": "f5a3abeefd7fdfa39fb685c0d80538f6fed111d00da42bf82decb0b6d2293101",
+    "modelRevision": "706ebf838bc436fbfd8ff19ad9da44e89574bc11",
+    "footprintRevision": "99c3ec924043f946957f50630b653cc6698d877a",
+    "spdxLicense": "CC-BY-SA-4.0"
+  },
+  "soic": {
+    "library": "Package_SO",
+    "name": "SOIC-16_3.9x9.9mm_P1.27mm",
+    "footprintName": "SOIC-16_3.9x9.9mm_P1.27mm",
+    "stepSha256": "d5eeddb4c0b304dc61950919b126fc61d7586abd5f16ab71a2a79759ec6498bf",
+    "footprintSha256": "f9b5075740f7816c540ae1137f025d659beaec522ed7b86b1a5274cc9a2d8a25",
+    "modelRevision": "706ebf838bc436fbfd8ff19ad9da44e89574bc11",
+    "footprintRevision": "99c3ec924043f946957f50630b653cc6698d877a",
+    "spdxLicense": "CC-BY-SA-4.0"
+  },
+  "capacitor": {
+    "library": "Capacitor_THT",
+    "name": "CP_Radial_D8.0mm_P3.50mm",
+    "footprintName": "CP_Radial_D8.0mm_P3.50mm",
+    "stepSha256": "abedfe603cd28231e16fb158d7b3f8875be74514f602e356364f48f073d0ef8e",
+    "footprintSha256": "e7256cc327aa5d1bc5410a487248fa9b5e3d25153b2315201d5da5108cb49580",
+    "modelRevision": "706ebf838bc436fbfd8ff19ad9da44e89574bc11",
+    "footprintRevision": "99c3ec924043f946957f50630b653cc6698d877a",
+    "spdxLicense": "CC-BY-SA-4.0"
+  },
+  "mosfet": {
+    "library": "Package_TO_SOT_SMD",
+    "name": "TDSON-8-1",
+    "footprintName": "TDSON-8-1",
+    "stepSha256": "5a963e380dc0ff0eec7e2ba3f7e348613ee7c8d464841726d7b5dfbac6af3411",
+    "footprintSha256": "fb0d8fb645f7d7c8733df1fe07e21dff3777accce665701217fb738337cc7a56",
+    "modelRevision": "706ebf838bc436fbfd8ff19ad9da44e89574bc11",
+    "footprintRevision": "99c3ec924043f946957f50630b653cc6698d877a",
+    "spdxLicense": "CC-BY-SA-4.0"
+  }
+}
