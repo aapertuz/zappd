@@ -296,3 +296,13 @@ bounds comparison and stable node mapping to the fixture provenance and interfer
 Its 0.1 mm comparison threshold is a rendering check, not a manufacturing tolerance.
 Material properties, manufacturing tolerances, loads and constraints remain unknown or unverified.
 The report always retains `manufacturingReadiness: not_established` for this partial source assembly.
+
+The captured `cad_worker/tests/evidence/poppy-interference.json` analyzes 199
+source solids and excludes the two surface thighs and rejected head CAD.
+AABB filtering reduces 19,701 possible pairs to 595 candidates.
+OCCT common finds 101 intersections above 0.001 mm³, 491 contact-or-below-threshold
+results, and three timed-out pairs. Those three remain unresolved.
+The largest reported common volume is 486.074918567 mm³.
+These are source-placement measurements, not an intended-fit classification.
+No overlap has been removed by changing placement or CAD.
+The report pins its input catalog and each analyzed fixture by SHA-256.

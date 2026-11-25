@@ -1,0 +1,4809 @@
+{
+  "status": "partial",
+  "method": "source placement AABB then OCCT common",
+  "solidCount": 199,
+  "excludedComponents": [
+    {
+      "componentId": "poppy_1_6_1",
+      "reason": {
+        "kind": "available",
+        "role": "surface"
+      }
+    },
+    {
+      "componentId": "poppy_1_7_1",
+      "reason": {
+        "kind": "available",
+        "role": "surface"
+      }
+    },
+    {
+      "componentId": "poppy_1_28_5",
+      "reason": {
+        "kind": "unavailable",
+        "reason": "Source BRep topology validation failed; geometry excluded"
+      }
+    }
+  ],
+  "sourceComponents": [
+    {
+      "componentId": "poppy_1_1_1",
+      "fixture": "poppy_1_1_1.step",
+      "sha256": "cc47fbb5a4e5e285b3bf70b047c37fac73aa70ba1e83641a90d2371bd208670d",
+      "restPositionMeters": [-0.000208, 0.015666, 0.006237]
+    },
+    {
+      "componentId": "poppy_1_1_2_1",
+      "fixture": "poppy_1_1_2_1.step",
+      "sha256": "e1b87fb8934cf398c636c3513201e23d373274ed73d80e4908137f850926dcfb",
+      "restPositionMeters": [-0.014695, 0.010738, 0.001675]
+    },
+    {
+      "componentId": "poppy_1_1_2_2",
+      "fixture": "poppy_1_1_2_2.step",
+      "sha256": "bdde30b425f38ebefc1f0dcc9ada451fc46f0a263a477c3d872c017156a08616",
+      "restPositionMeters": [-0.022542, 0.0, 0.018175]
+    },
+    {
+      "componentId": "poppy_1_1_2_3",
+      "fixture": "poppy_1_1_2_3.step",
+      "sha256": "76813220c893547063f9096933f55b8a515fd1ce33fc0ecddd6038d9d503db44",
+      "restPositionMeters": [-0.022542, 0.0, 0.020425]
+    },
+    {
+      "componentId": "poppy_1_1_2_4",
+      "fixture": "poppy_1_1_2_4.step",
+      "sha256": "74f024e3d1a73a37440ede9a18b04fd2409abecc36cd6f7a690a28565b35e5e6",
+      "restPositionMeters": [-0.022542, 0.0, 0.0206]
+    },
+    {
+      "componentId": "poppy_1_1_2_5",
+      "fixture": "poppy_1_1_2_5.step",
+      "sha256": "649b94b5f1db3b26b0eaf3dde2b9ef35c89b4ae245650668c1ea9fc34bd3a91a",
+      "restPositionMeters": [-0.022542, -0.0, -0.02025]
+    },
+    {
+      "componentId": "poppy_1_1_2_6",
+      "fixture": "poppy_1_1_2_6.step",
+      "sha256": "4a5b43c6fcee1ae8e006b186b97e2103e4d43bacecd22f7d6387d4610c7f56a6",
+      "restPositionMeters": [-0.022542, -0.0, -0.01885]
+    },
+    {
+      "componentId": "poppy_1_1_2_7",
+      "fixture": "poppy_1_1_2_7.step",
+      "sha256": "64260c2918afefd050ffa03bd493230289fd116896e3cbc8d45a29e8c26fa99c",
+      "restPositionMeters": [-0.022542, -0.0, -0.0174]
+    },
+    {
+      "componentId": "poppy_1_1_2_8",
+      "fixture": "poppy_1_1_2_8.step",
+      "sha256": "e4e3d7597bac1a536e653ab95145989b90995d035eba7defa794acd01d841350",
+      "restPositionMeters": [-0.022542, 0.0, -0.018975]
+    },
+    {
+      "componentId": "poppy_1_1_3_1",
+      "fixture": "poppy_1_1_3_1.step",
+      "sha256": "831153fb6223633073065d9fa07d2a67d05c60d5eb835215c6366d631a5ce2d4",
+      "restPositionMeters": [0.014695, -0.010738, 0.001675]
+    },
+    {
+      "componentId": "poppy_1_1_3_2",
+      "fixture": "poppy_1_1_3_2.step",
+      "sha256": "e5de7f873eacb88a34027b47227abab6ca718ae7b3330703ab9fc5401e817c3f",
+      "restPositionMeters": [0.022542, 0.0, 0.018175]
+    },
+    {
+      "componentId": "poppy_1_1_3_3",
+      "fixture": "poppy_1_1_3_3.step",
+      "sha256": "65c9a86240cfc300437fbaf7086ac9dba0238d569156b4090aaa32e4edb05c41",
+      "restPositionMeters": [0.022542, 0.0, 0.020425]
+    },
+    {
+      "componentId": "poppy_1_1_3_4",
+      "fixture": "poppy_1_1_3_4.step",
+      "sha256": "dc76ec595491b02bf97b460d7a741ebb344bda4c293174beda881583b409fc1b",
+      "restPositionMeters": [0.022542, -0.0, 0.0206]
+    },
+    {
+      "componentId": "poppy_1_1_3_5",
+      "fixture": "poppy_1_1_3_5.step",
+      "sha256": "ef7c56c753e7c4844395784e0a49a5ca7de934635eade1143c03729bbdbb8876",
+      "restPositionMeters": [0.022542, 0.0, -0.02025]
+    },
+    {
+      "componentId": "poppy_1_1_3_6",
+      "fixture": "poppy_1_1_3_6.step",
+      "sha256": "f2e216115f510a7422409c8105b3260d6d7e254d052d46e496fb6979cfae262d",
+      "restPositionMeters": [0.022542, 0.0, -0.01885]
+    },
+    {
+      "componentId": "poppy_1_1_3_7",
+      "fixture": "poppy_1_1_3_7.step",
+      "sha256": "e527eac9192ba604681e3178a4a2dddf287a995271ac3369aa1a71fca08b366b",
+      "restPositionMeters": [0.022542, 0.0, -0.0174]
+    },
+    {
+      "componentId": "poppy_1_1_3_8",
+      "fixture": "poppy_1_1_3_8.step",
+      "sha256": "90dcfc6fef3b17523db5a3228fa795e630841e773237f04484c41abe387a91f2",
+      "restPositionMeters": [0.022542, 0.0, -0.018975]
+    },
+    {
+      "componentId": "poppy_1_2_1",
+      "fixture": "poppy_1_2_1.step",
+      "sha256": "2f21492658faa96d0aa8bc691b4bfbd404e0cdc3c72dbf6856305ff1db487dd1",
+      "restPositionMeters": [-0.048691, 0.013375, -0.002178]
+    },
+    {
+      "componentId": "poppy_1_2_2_1",
+      "fixture": "poppy_1_2_2_1.step",
+      "sha256": "1562f610627e63abdfd923745731d0b67eb394e2fa8fed156eb87d2aaf941acf",
+      "restPositionMeters": [-0.06654, 0.018825, -0.0083]
+    },
+    {
+      "componentId": "poppy_1_2_2_2",
+      "fixture": "poppy_1_2_2_2.step",
+      "sha256": "6c15c0156a79da9f1247a4266be1a8621f1d3f8d96738a07042c2ac762dc3c91",
+      "restPositionMeters": [-0.06654, 0.002325, 0.005]
+    },
+    {
+      "componentId": "poppy_1_2_2_3",
+      "fixture": "poppy_1_2_2_3.step",
+      "sha256": "4229fbff1bb0c9a729894e4ce8a2fdd74073599ea08e300ade760242c524e6f2",
+      "restPositionMeters": [-0.06654, 7.5e-5, 0.005]
+    },
+    {
+      "componentId": "poppy_1_2_2_4",
+      "fixture": "poppy_1_2_2_4.step",
+      "sha256": "9c5d5349c11a13c60ac8c554fd68e1f9279ea97060290075ed12281632815e75",
+      "restPositionMeters": [-0.06654, -0.0001, 0.005]
+    },
+    {
+      "componentId": "poppy_1_3_1",
+      "fixture": "poppy_1_3_1.step",
+      "sha256": "20d87513bbea37b274ccc641ed1a51e52c162e67370df4d5c5617cb0dd5cea21",
+      "restPositionMeters": [0.048691, 0.013375, -0.002178]
+    },
+    {
+      "componentId": "poppy_1_3_2_1",
+      "fixture": "poppy_1_3_2_1.step",
+      "sha256": "94403c619dccceaed3631f601697b064724e3ba16318071c4a56dc9d2460e7c4",
+      "restPositionMeters": [0.06654, 0.018825, -0.0083]
+    },
+    {
+      "componentId": "poppy_1_3_2_2",
+      "fixture": "poppy_1_3_2_2.step",
+      "sha256": "db04000a33694627dfffd1f049719ed868ba16af17adaeb7757e68a9d2d0034c",
+      "restPositionMeters": [0.06654, 0.002325, 0.005]
+    },
+    {
+      "componentId": "poppy_1_3_2_3",
+      "fixture": "poppy_1_3_2_3.step",
+      "sha256": "3de29d1d1091c30b47d7021d9915a7bcb05d8eb4bc22c76da6f249fbca9909f1",
+      "restPositionMeters": [0.06654, 7.5e-5, 0.005]
+    },
+    {
+      "componentId": "poppy_1_3_2_4",
+      "fixture": "poppy_1_3_2_4.step",
+      "sha256": "4e6c6f17efb696ea19e1b27a5a0987c4ba0580f98108c95d0856d514bc1f39f6",
+      "restPositionMeters": [0.06654, -0.0001, 0.005]
+    },
+    {
+      "componentId": "poppy_1_4_1",
+      "fixture": "poppy_1_4_1.step",
+      "sha256": "fbc001fe12778dcf01f07b8cb43be8ee1ea444993565b51174864ff758346f8b",
+      "restPositionMeters": [-0.06654, -0.00465, -0.00025]
+    },
+    {
+      "componentId": "poppy_1_4_2_1",
+      "fixture": "poppy_1_4_2_1.step",
+      "sha256": "24039322a8da8a972a8766d49fa607ae5cef5a5b300f58a4053a12174bf6f4c0",
+      "restPositionMeters": [-0.06759, -0.024, -0.01255]
+    },
+    {
+      "componentId": "poppy_1_4_2_2",
+      "fixture": "poppy_1_4_2_2.step",
+      "sha256": "c83bed0f72388003ef3537f1a78926ebb96369ef44694b4f72c6c91d5983324e",
+      "restPositionMeters": [-0.04502, -0.024, 0.005]
+    },
+    {
+      "componentId": "poppy_1_4_2_3",
+      "fixture": "poppy_1_4_2_3.step",
+      "sha256": "c5e164d87f102ceffee11707d1f23946734b9ad2b932373e266e73d8011d6b4e",
+      "restPositionMeters": [-0.04338, -0.024, 0.005]
+    },
+    {
+      "componentId": "poppy_1_4_2_4",
+      "fixture": "poppy_1_4_2_4.step",
+      "sha256": "3d3dec666a3b1ff2051ebca457fc135193385d2a1420605f70837e3cd6519000",
+      "restPositionMeters": [-0.04494, -0.024, 0.005]
+    },
+    {
+      "componentId": "poppy_1_4_2_5",
+      "fixture": "poppy_1_4_2_5.step",
+      "sha256": "d5a556e7e097812665782aff54e084092d1d1b8546c32c4621cacee9bfe085c0",
+      "restPositionMeters": [-0.08919, -0.024, 0.005]
+    },
+    {
+      "componentId": "poppy_1_5_1",
+      "fixture": "poppy_1_5_1.step",
+      "sha256": "c4f702088a1787cd79b1b2f74fe0fa7cfe47c778b2dae7bc1e7f6848191c7bd5",
+      "restPositionMeters": [0.06654, -0.00465, -0.00025]
+    },
+    {
+      "componentId": "poppy_1_5_2_1",
+      "fixture": "poppy_1_5_2_1.step",
+      "sha256": "08d01f34d8dec8b837e938e879361500df242c4ac4bf162024ce29d83db68738",
+      "restPositionMeters": [0.06759, -0.024, -0.01255]
+    },
+    {
+      "componentId": "poppy_1_5_2_2",
+      "fixture": "poppy_1_5_2_2.step",
+      "sha256": "b67bfd0151e50b8f7c4d79a81d07113443767a58fc5a74278f52aa8716c6fa99",
+      "restPositionMeters": [0.04502, -0.024, 0.005]
+    },
+    {
+      "componentId": "poppy_1_5_2_3",
+      "fixture": "poppy_1_5_2_3.step",
+      "sha256": "d3f0fdebdae3b6dce86ddbf0b86daf3d5db12052c642c7b745ca1ab48100a160",
+      "restPositionMeters": [0.04338, -0.024, 0.005]
+    },
+    {
+      "componentId": "poppy_1_5_2_4",
+      "fixture": "poppy_1_5_2_4.step",
+      "sha256": "99174eb4b6f9779590010ce48ecd82f71f80087689e8445d45aee8f7ae928f2c",
+      "restPositionMeters": [0.04494, -0.024, 0.005]
+    },
+    {
+      "componentId": "poppy_1_5_2_5",
+      "fixture": "poppy_1_5_2_5.step",
+      "sha256": "79445fb1d4c2986a6821037b56d6280b44f30ef8eb680f16aacb18f9a3d5a557",
+      "restPositionMeters": [0.08919, -0.024, 0.005]
+    },
+    {
+      "componentId": "poppy_1_6_2_1",
+      "fixture": "poppy_1_6_2_1.step",
+      "sha256": "72fb317a18dec45912aaa615e1360de2c8e3f54f97dce3b8ce2675e736c774f3",
+      "restPositionMeters": [-0.045362, -0.1927, 0.005]
+    },
+    {
+      "componentId": "poppy_1_6_2_2",
+      "fixture": "poppy_1_6_2_2.step",
+      "sha256": "5333ec8266d3ebcca8ba2dbd0992f99d7b2668f4482d65da0b16357e0f3b457f",
+      "restPositionMeters": [-0.061862, -0.206, 0.005]
+    },
+    {
+      "componentId": "poppy_1_6_2_3",
+      "fixture": "poppy_1_6_2_3.step",
+      "sha256": "44e6a39f9c8dcf96a0084f1ec3d86b0de94974ff02d7752ca599ad8316cdb40c",
+      "restPositionMeters": [-0.064112, -0.206, 0.005]
+    },
+    {
+      "componentId": "poppy_1_6_2_4",
+      "fixture": "poppy_1_6_2_4.step",
+      "sha256": "aa69b97a9735fb9b8903757e4285d97c43740aad89589437205f415ba364fef9",
+      "restPositionMeters": [-0.064287, -0.206, 0.005]
+    },
+    {
+      "componentId": "poppy_1_6_2_5",
+      "fixture": "poppy_1_6_2_5.step",
+      "sha256": "6803772cbe1e242cc0a52abb96bcb8fce4cf3a57ff622334aa86fe53aa7614e9",
+      "restPositionMeters": [-0.023437, -0.206, 0.005]
+    },
+    {
+      "componentId": "poppy_1_6_2_6",
+      "fixture": "poppy_1_6_2_6.step",
+      "sha256": "74fd173d7c4adbced9c4698c777283873b1737819195da1cf62e6adc252f90ed",
+      "restPositionMeters": [-0.024837, -0.206, 0.005]
+    },
+    {
+      "componentId": "poppy_1_6_2_7",
+      "fixture": "poppy_1_6_2_7.step",
+      "sha256": "ce9066800943886801521451b09646a09aa62beae734b2f7de0c5a1687e5623c",
+      "restPositionMeters": [-0.026287, -0.206, 0.005]
+    },
+    {
+      "componentId": "poppy_1_6_2_8",
+      "fixture": "poppy_1_6_2_8.step",
+      "sha256": "ee5c5650bd71bae3340c2675cb5bd068eefed6835041f51474f3f67def691f1c",
+      "restPositionMeters": [-0.024712, -0.206, 0.005]
+    },
+    {
+      "componentId": "poppy_1_6_3",
+      "fixture": "poppy_1_6_3.step",
+      "sha256": "24bb106a6ef1ab303271b781d23afad5183a602d3f3822d7944078688af9a2f3",
+      "restPositionMeters": [-0.043687, -0.198402, 0.032864]
+    },
+    {
+      "componentId": "poppy_1_7_2_1",
+      "fixture": "poppy_1_7_2_1.step",
+      "sha256": "770500510cdc2b6d7e8dc88e8bac615b2bce73b9e622f735f2924a6e2b226820",
+      "restPositionMeters": [0.045362, -0.1927, 0.005]
+    },
+    {
+      "componentId": "poppy_1_7_2_2",
+      "fixture": "poppy_1_7_2_2.step",
+      "sha256": "0e8451ef803bb5a32eae168391fe58636e3a4ceaed01a84840e9001596cf36a1",
+      "restPositionMeters": [0.061862, -0.206, 0.005]
+    },
+    {
+      "componentId": "poppy_1_7_2_3",
+      "fixture": "poppy_1_7_2_3.step",
+      "sha256": "7c112efa7aad544748cf7932dab4ebc47c8a835cc2bb5408f578b996a856f603",
+      "restPositionMeters": [0.064112, -0.206, 0.005]
+    },
+    {
+      "componentId": "poppy_1_7_2_4",
+      "fixture": "poppy_1_7_2_4.step",
+      "sha256": "c39d99cf976d5c67ea2752e5cba087b78701565da7f2a15888a15676486242f8",
+      "restPositionMeters": [0.064287, -0.206, 0.005]
+    },
+    {
+      "componentId": "poppy_1_7_2_5",
+      "fixture": "poppy_1_7_2_5.step",
+      "sha256": "29099a8a957703f454ce0ae5d18d29ee8a609afffdf8a54fb415c180323f9039",
+      "restPositionMeters": [0.023437, -0.206, 0.005]
+    },
+    {
+      "componentId": "poppy_1_7_2_6",
+      "fixture": "poppy_1_7_2_6.step",
+      "sha256": "b840ab8bb1f00659d4cdd4983ece841a5f06bcbdce5a4c0492ac7733d5d0a21a",
+      "restPositionMeters": [0.024837, -0.206, 0.005]
+    },
+    {
+      "componentId": "poppy_1_7_2_7",
+      "fixture": "poppy_1_7_2_7.step",
+      "sha256": "7aca08e478419b977a267ca4247dc9e5dbbb6f2b42d5515d4acd51fe38509bcd",
+      "restPositionMeters": [0.026287, -0.206, 0.005]
+    },
+    {
+      "componentId": "poppy_1_7_2_8",
+      "fixture": "poppy_1_7_2_8.step",
+      "sha256": "50ac6615ed418560c9063c93cef35382c75f057b781e461035f5ad11da7b3d16",
+      "restPositionMeters": [0.024712, -0.206, 0.005]
+    },
+    {
+      "componentId": "poppy_1_7_3",
+      "fixture": "poppy_1_7_3.step",
+      "sha256": "53402866070fe6ae982a00351f389b80d416693045d661b9bcb2265cab44a248",
+      "restPositionMeters": [0.043687, -0.198402, 0.032864]
+    },
+    {
+      "componentId": "poppy_1_8_1",
+      "fixture": "poppy_1_8_1.step",
+      "sha256": "d321be3f981a92509ce96b850d22ba3a5f798eb4fa8d56586d6a07f4c7ab28a2",
+      "restPositionMeters": [-0.043687, -0.289022, 0.007971]
+    },
+    {
+      "componentId": "poppy_1_8_2_1",
+      "fixture": "poppy_1_8_2_1.step",
+      "sha256": "a1b197bbe9acece90099f10bd6bc5ed95a03dc2b9718b255e6d2845b6c44f4e6",
+      "restPositionMeters": [-0.042012, -0.3727, 0.005]
+    },
+    {
+      "componentId": "poppy_1_8_2_2",
+      "fixture": "poppy_1_8_2_2.step",
+      "sha256": "1950c5dead7aeab2a9553dd26165079a82c8037c24e85dc4fa550dfa8302669c",
+      "restPositionMeters": [-0.025512, -0.386, 0.005]
+    },
+    {
+      "componentId": "poppy_1_8_2_3",
+      "fixture": "poppy_1_8_2_3.step",
+      "sha256": "2e29afac708b366c2f430fcc362abc5ae7e98bc5c8211dbb4fe4e6f059666418",
+      "restPositionMeters": [-0.023262, -0.386, 0.005]
+    },
+    {
+      "componentId": "poppy_1_8_2_4",
+      "fixture": "poppy_1_8_2_4.step",
+      "sha256": "f4c87565229f88a74d1ad188c8ce355c1b9ff912f3646c20aa74cc88e1ced2cb",
+      "restPositionMeters": [-0.023087, -0.386, 0.005]
+    },
+    {
+      "componentId": "poppy_1_8_2_5",
+      "fixture": "poppy_1_8_2_5.step",
+      "sha256": "fd638bba0096d3865bcd3f914ed7ce27536def90dad303ef3c6dd3cb8bfad467",
+      "restPositionMeters": [-0.063937, -0.386, 0.005]
+    },
+    {
+      "componentId": "poppy_1_8_2_6",
+      "fixture": "poppy_1_8_2_6.step",
+      "sha256": "4e0a3a0c410a56ff87c4745d1992d4203d0dbbb1d2493cc8454a7e9748bae831",
+      "restPositionMeters": [-0.062537, -0.386, 0.005]
+    },
+    {
+      "componentId": "poppy_1_8_2_7",
+      "fixture": "poppy_1_8_2_7.step",
+      "sha256": "ba3c6ca3762aa405b10fe9d0a9cdb4d024aec6c3b679f71c1494bedab28cea15",
+      "restPositionMeters": [-0.061087, -0.386, 0.005]
+    },
+    {
+      "componentId": "poppy_1_8_2_8",
+      "fixture": "poppy_1_8_2_8.step",
+      "sha256": "0920719e4397d192b9c8230e1700ad83923d0e6acefdd8616d920294b917c7e5",
+      "restPositionMeters": [-0.062662, -0.386, 0.005]
+    },
+    {
+      "componentId": "poppy_1_9_1",
+      "fixture": "poppy_1_9_1.step",
+      "sha256": "8d382625e98c78bb832980b5ae10da7b27ebbd354e8da6c18b3323d9b82aca17",
+      "restPositionMeters": [0.043687, -0.289022, 0.007971]
+    },
+    {
+      "componentId": "poppy_1_9_2_1",
+      "fixture": "poppy_1_9_2_1.step",
+      "sha256": "af169dbaeba5b2819146c20f9fc21334205c32254f4bbd6c7659daa1a50aec56",
+      "restPositionMeters": [0.042012, -0.3727, 0.005]
+    },
+    {
+      "componentId": "poppy_1_9_2_2",
+      "fixture": "poppy_1_9_2_2.step",
+      "sha256": "5d750beb671c8ae2c94e0465211a3b34cce7189b2ffbcfca5a935874c9d5ea28",
+      "restPositionMeters": [0.025512, -0.386, 0.005]
+    },
+    {
+      "componentId": "poppy_1_9_2_3",
+      "fixture": "poppy_1_9_2_3.step",
+      "sha256": "2bbfc6100e6f4d26c4c89af14a64b629083e5b2cfbdd178644e37ac2c946fabf",
+      "restPositionMeters": [0.023262, -0.386, 0.005]
+    },
+    {
+      "componentId": "poppy_1_9_2_4",
+      "fixture": "poppy_1_9_2_4.step",
+      "sha256": "304208587aca45833edd358417223162d48cc156b743d8ac1115f26ad39470c9",
+      "restPositionMeters": [0.023087, -0.386, 0.005]
+    },
+    {
+      "componentId": "poppy_1_9_2_5",
+      "fixture": "poppy_1_9_2_5.step",
+      "sha256": "fd29c8a48f104b98b918a072ff5df7875b253789b464db7c387879c036e56f7d",
+      "restPositionMeters": [0.063937, -0.386, 0.005]
+    },
+    {
+      "componentId": "poppy_1_9_2_6",
+      "fixture": "poppy_1_9_2_6.step",
+      "sha256": "3af51044d21f0843a7a5ff4f55b59ad8003599d1ce3ffbb1170ad8732be41ec8",
+      "restPositionMeters": [0.062537, -0.386, 0.005]
+    },
+    {
+      "componentId": "poppy_1_9_2_7",
+      "fixture": "poppy_1_9_2_7.step",
+      "sha256": "d94efce5ce4d531332826a98d3d9bbc2ed41b370774f3c59d2306ce48491f726",
+      "restPositionMeters": [0.061087, -0.386, 0.005]
+    },
+    {
+      "componentId": "poppy_1_9_2_8",
+      "fixture": "poppy_1_9_2_8.step",
+      "sha256": "2d35e30ee9c15ea28c8538d1669eadc050689b88d8a7a36418e9f2f59108e35e",
+      "restPositionMeters": [0.062662, -0.386, 0.005]
+    },
+    {
+      "componentId": "poppy_1_10",
+      "fixture": "poppy_1_10.step",
+      "sha256": "2d71e0dd0842973ec18cd7bf7fa6b96a67cf6cf7eacd7841ad4fec99a972da13",
+      "restPositionMeters": [-0.037127, -0.398617, 0.034133]
+    },
+    {
+      "componentId": "poppy_1_11",
+      "fixture": "poppy_1_11.step",
+      "sha256": "499d4cc39a051f1d19f2b0d1eceaa1820e7385d0c9936e14cb896a3e8c2d9c7b",
+      "restPositionMeters": [0.037127, -0.398617, 0.034133]
+    },
+    {
+      "componentId": "poppy_1_12",
+      "fixture": "poppy_1_12.step",
+      "sha256": "952421cd541fa37030d938d6c9f82a822ec11a037532ea7a5e77426366d32488",
+      "restPositionMeters": [-0.0, -9.6e-5, -0.022199]
+    },
+    {
+      "componentId": "poppy_1_13_1_1",
+      "fixture": "poppy_1_13_1_1.step",
+      "sha256": "aae6776bfd65d2bf2e224fdba0115ea3326adaa1d64e4e39b463514d2b237927",
+      "restPositionMeters": [0.00105, 0.07855, 0.017]
+    },
+    {
+      "componentId": "poppy_1_13_1_2",
+      "fixture": "poppy_1_13_1_2.step",
+      "sha256": "23ad726ebac6585dcb1b5c3f6a5cc6db1355558e37a088c8c3f96cacdded3e71",
+      "restPositionMeters": [-0.02152, 0.061, 0.017]
+    },
+    {
+      "componentId": "poppy_1_13_1_3",
+      "fixture": "poppy_1_13_1_3.step",
+      "sha256": "614c1893467c2e8b0915749f006df08b36020abfbc8d6666a10f10e957278dcf",
+      "restPositionMeters": [-0.02316, 0.061, 0.017]
+    },
+    {
+      "componentId": "poppy_1_13_1_4",
+      "fixture": "poppy_1_13_1_4.step",
+      "sha256": "cfdd316a45caad96dffd63fb368d443db05f6606ab722a8eff6dfba065a38342",
+      "restPositionMeters": [-0.0216, 0.061, 0.017]
+    },
+    {
+      "componentId": "poppy_1_13_1_5",
+      "fixture": "poppy_1_13_1_5.step",
+      "sha256": "d69248143ca92016beb4d1330e69bbfaaba62db3927717c4b6c13ed4aacd5ba2",
+      "restPositionMeters": [0.02265, 0.061, 0.017]
+    },
+    {
+      "componentId": "poppy_1_13_2",
+      "fixture": "poppy_1_13_2.step",
+      "sha256": "957f316d6c8f3b5c5a92d4ea2419d8c0d277e2e283f2486809db4ef0031de40d",
+      "restPositionMeters": [0.0184, 0.068, -0.0051]
+    },
+    {
+      "componentId": "poppy_1_13_3",
+      "fixture": "poppy_1_13_3.step",
+      "sha256": "593fd546991c4ee4637b0a3da666d6571bb4b3c437b4bc53fe1d7e6b8ced74af",
+      "restPositionMeters": [0.0, 0.06509, 0.035775]
+    },
+    {
+      "componentId": "poppy_1_13_4_1",
+      "fixture": "poppy_1_13_4_1.step",
+      "sha256": "3a19df693bb5b0094365bbcca67497ac72806d238b0b0781e6de2bcbb0a95240",
+      "restPositionMeters": [-0.0, 0.061, 0.03942]
+    },
+    {
+      "componentId": "poppy_1_13_4_2",
+      "fixture": "poppy_1_13_4_2.step",
+      "sha256": "a57250703fc13257673a73222bece564734a40eebfcac0041b860b75ad8329dc",
+      "restPositionMeters": [0.0, 0.061, 0.03934]
+    },
+    {
+      "componentId": "poppy_1_13_4_3",
+      "fixture": "poppy_1_13_4_3.step",
+      "sha256": "578835f95453e247b4b3879b3951582a777a92476bb42e635f22e8b8e607f2ab",
+      "restPositionMeters": [-0.0, 0.061, 0.04098]
+    },
+    {
+      "componentId": "poppy_1_13_5_1",
+      "fixture": "poppy_1_13_5_1.step",
+      "sha256": "099fbb563f603787f7edd0cd57ef9dd5379b2007ef6e7d96cd5f34d4f41f5951",
+      "restPositionMeters": [0.0, 0.07855, -0.02595]
+    },
+    {
+      "componentId": "poppy_1_13_5_2",
+      "fixture": "poppy_1_13_5_2.step",
+      "sha256": "91215d28d153847ac53aa0fdedbd32184ecfa1a33c82e184cc64c5de8479ec0f",
+      "restPositionMeters": [-0.0, 0.061, -0.0483]
+    },
+    {
+      "componentId": "poppy_1_13_5_3",
+      "fixture": "poppy_1_13_5_3.step",
+      "sha256": "48041a9d50b24a4b5529cf96755ce750148c4e31ecd78acc9bc67b949fa08423",
+      "restPositionMeters": [-0.0, 0.061, -0.0464]
+    },
+    {
+      "componentId": "poppy_1_13_6",
+      "fixture": "poppy_1_13_6.step",
+      "sha256": "32c0d4f154975fbe91cdfd5efd88949f6668e7cd3786d413d847e25c9f587c07",
+      "restPositionMeters": [-0.0184, 0.068, -0.0051]
+    },
+    {
+      "componentId": "poppy_1_14",
+      "fixture": "poppy_1_14.step",
+      "sha256": "535af6c8519f72ff907f589f957a3c44c7dfd7fce608a216317117ca43b02b4e",
+      "restPositionMeters": [0.0, 0.083444, -0.00425]
+    },
+    {
+      "componentId": "poppy_1_15_1_1",
+      "fixture": "poppy_1_15_1_1.step",
+      "sha256": "ab1468d849e12acab3a5cace5d3aedd867a350aea9d2ccfd72b8f8dee2ea49f8",
+      "restPositionMeters": [0.0, 0.136812, 0.0037]
+    },
+    {
+      "componentId": "poppy_1_15_1_2",
+      "fixture": "poppy_1_15_1_2.step",
+      "sha256": "b6eacd3251f0cf804354d48d993ee4ad9a92459f49ca288381d500c52d8149bf",
+      "restPositionMeters": [0.0, 0.120312, 0.017]
+    },
+    {
+      "componentId": "poppy_1_15_1_3",
+      "fixture": "poppy_1_15_1_3.step",
+      "sha256": "59d5b9c8bba6dc67f2cbaa382a445ababe0529937de6dc4a953e6a2ffa1ebbcb",
+      "restPositionMeters": [0.0, 0.118062, 0.017]
+    },
+    {
+      "componentId": "poppy_1_15_1_4",
+      "fixture": "poppy_1_15_1_4.step",
+      "sha256": "eafc37dc450f901823881c8fae5f7a9b935f0d935f075fe7aa6f2754ef9d03db",
+      "restPositionMeters": [-0.0, 0.117887, 0.017]
+    },
+    {
+      "componentId": "poppy_1_15_2",
+      "fixture": "poppy_1_15_2.step",
+      "sha256": "0c36b52d70656578cfb4c9202412c9f02dff40271494871fe9a61cd28716859b",
+      "restPositionMeters": [0.0, 0.163512, 0.01115]
+    },
+    {
+      "componentId": "poppy_1_16_1_1",
+      "fixture": "poppy_1_16_1_1.step",
+      "sha256": "fa1137081a49137d2b6c51904d96a4c7e9e05fdf42aa87fa265ab977516c5146",
+      "restPositionMeters": [0.001675, 0.205787, 0.0198]
+    },
+    {
+      "componentId": "poppy_1_16_1_2",
+      "fixture": "poppy_1_16_1_2.step",
+      "sha256": "700a116ed3bbef95501b7b1931f704354f75019e678f3649d7e408f3243b8e45",
+      "restPositionMeters": [0.018175, 0.192487, 0.0198]
+    },
+    {
+      "componentId": "poppy_1_16_1_3",
+      "fixture": "poppy_1_16_1_3.step",
+      "sha256": "710bb79bbc5fed95c7ac8c2ec318e71aa445cc78d5e361988af3dc1299d688b5",
+      "restPositionMeters": [0.020425, 0.192487, 0.0198]
+    },
+    {
+      "componentId": "poppy_1_16_1_4",
+      "fixture": "poppy_1_16_1_4.step",
+      "sha256": "42f5e6ab95cd5ccf08c72810968511fe8afff1d2c0910ca4a1aa4bf6f7bad644",
+      "restPositionMeters": [0.0206, 0.192487, 0.0198]
+    },
+    {
+      "componentId": "poppy_1_16_1_5",
+      "fixture": "poppy_1_16_1_5.step",
+      "sha256": "9451773ccaab97216b47963d487cb6eaa5d7886aee16284859b5b9f573a054cc",
+      "restPositionMeters": [-0.02025, 0.192487, 0.0198]
+    },
+    {
+      "componentId": "poppy_1_16_1_6",
+      "fixture": "poppy_1_16_1_6.step",
+      "sha256": "1fc29b79513c32c7959a5109f70f1aac57042cb1eaa064d222d00ff34f4a6cc2",
+      "restPositionMeters": [-0.01885, 0.192487, 0.0198]
+    },
+    {
+      "componentId": "poppy_1_16_1_7",
+      "fixture": "poppy_1_16_1_7.step",
+      "sha256": "eddaa17ff7173feda4490f8149d7759421fa25ccf63a4a37c9189632db24581b",
+      "restPositionMeters": [-0.0174, 0.192487, 0.0198]
+    },
+    {
+      "componentId": "poppy_1_16_1_8",
+      "fixture": "poppy_1_16_1_8.step",
+      "sha256": "c0bbd7a07bd046b3beee658f71a7db701583c26ae34253d91ada702bcdd39c0d",
+      "restPositionMeters": [-0.018975, 0.192487, 0.0198]
+    },
+    {
+      "componentId": "poppy_1_16_2_1",
+      "fixture": "poppy_1_16_2_1.step",
+      "sha256": "92d1d9158895f84b82132d292ae1fc59638b9f90a5a14d8f2f6406c259e4a141",
+      "restPositionMeters": [0.0, 0.205787, -0.018875]
+    },
+    {
+      "componentId": "poppy_1_16_2_2",
+      "fixture": "poppy_1_16_2_2.step",
+      "sha256": "ddcccea296f9fc5e68e82fc70927ba0a85d07672bb8a16bdb2fdff9f3246a5b6",
+      "restPositionMeters": [0.0, 0.192487, -0.035375]
+    },
+    {
+      "componentId": "poppy_1_16_2_3",
+      "fixture": "poppy_1_16_2_3.step",
+      "sha256": "7b21d6cba4a09b869d071ed0a5c3ec3b48298b285228dc2d30ee030cf1c581ed",
+      "restPositionMeters": [0.0, 0.192487, -0.037625]
+    },
+    {
+      "componentId": "poppy_1_16_2_4",
+      "fixture": "poppy_1_16_2_4.step",
+      "sha256": "333b4f0dcb0f15686d853522dbede531067f07165f99f70a95f3be7e8c9cbaee",
+      "restPositionMeters": [0.0, 0.192487, -0.0378]
+    },
+    {
+      "componentId": "poppy_1_16_3",
+      "fixture": "poppy_1_16_3.step",
+      "sha256": "1ca53d095e2bfcfdf131f2e8fc2e3ade9676a94fc5aee70785127c6bc6ab024a",
+      "restPositionMeters": [0.0161, 0.196487, 0.00035]
+    },
+    {
+      "componentId": "poppy_1_16_4",
+      "fixture": "poppy_1_16_4.step",
+      "sha256": "6f4df0f63808885c1804877a069d5ce28928adf9643535d975f77df5cabb4732",
+      "restPositionMeters": [0.0, 0.195325, 0.036275]
+    },
+    {
+      "componentId": "poppy_1_16_5_1",
+      "fixture": "poppy_1_16_5_1.step",
+      "sha256": "dddd8dda64a5a9135bb85d0d9bccd177789e9c785444ae861ccae590902199aa",
+      "restPositionMeters": [0.0, 0.192487, 0.039875]
+    },
+    {
+      "componentId": "poppy_1_16_5_2",
+      "fixture": "poppy_1_16_5_2.step",
+      "sha256": "2403881a6a2638aecad717541b0a7b1383a44ef5c5fcb3a61773d96fbf9687ce",
+      "restPositionMeters": [0.0, 0.192487, 0.03975]
+    },
+    {
+      "componentId": "poppy_1_16_5_3",
+      "fixture": "poppy_1_16_5_3.step",
+      "sha256": "a7810fc652255d055612a2c16c164dfd75e33a2be404a4adc6803ea62156e1a8",
+      "restPositionMeters": [0.0, 0.192487, 0.04115]
+    },
+    {
+      "componentId": "poppy_1_16_6",
+      "fixture": "poppy_1_16_6.step",
+      "sha256": "1ae79d42b395182dd68122d7c3c0daad17c97d8aa9e4201a61c4f4841ac257d7",
+      "restPositionMeters": [-0.0161, 0.196487, 0.00035]
+    },
+    {
+      "componentId": "poppy_1_17_1",
+      "fixture": "poppy_1_17_1.step",
+      "sha256": "daf5ed2f6db6590b878648655c22605093fb721710d9ba48771caad2d6c7ab9b",
+      "restPositionMeters": [0.0, 0.228211, -0.005165]
+    },
+    {
+      "componentId": "poppy_1_17_2_1",
+      "fixture": "poppy_1_17_2_1.step",
+      "sha256": "70fea788ca0ecf7abe873bf8f68d0feb4b962a9a99aef62aa2095b537e5e68d4",
+      "restPositionMeters": [0.0, 0.255487, 0.0113]
+    },
+    {
+      "componentId": "poppy_1_17_2_2",
+      "fixture": "poppy_1_17_2_2.step",
+      "sha256": "217cddff60d7aeaa9d3d763c48eb07c262c12bfc4f17cc2a068f2fdfbaec513d",
+      "restPositionMeters": [0.0, 0.273077, 0.024799]
+    },
+    {
+      "componentId": "poppy_1_17_2_3",
+      "fixture": "poppy_1_17_2_3.step",
+      "sha256": "07ff9893cf0eff847f676c933ddd04c25e89806bd920d34f83f71a62d029dc8f",
+      "restPositionMeters": [-0.0, 0.27182, 0.0248]
+    },
+    {
+      "componentId": "poppy_1_17_3_1",
+      "fixture": "poppy_1_17_3_1.step",
+      "sha256": "363266a1bfcc79e5aad44ca90dfdeb3a7014afdbc2a0e796816b394acaf3bb46",
+      "restPositionMeters": [-0.059675, 0.242487, 0.0105]
+    },
+    {
+      "componentId": "poppy_1_17_3_2",
+      "fixture": "poppy_1_17_3_2.step",
+      "sha256": "02f1bfc62fa5bf004d8b87c87b474d7b98ff860ac7e8ef661a5c6b98a2e626f3",
+      "restPositionMeters": [-0.076175, 0.242487, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_17_3_3",
+      "fixture": "poppy_1_17_3_3.step",
+      "sha256": "2435a48c17a7132c869321484d2f79c7fd433cd0fac9251198820cb85e5ce7ae",
+      "restPositionMeters": [-0.078425, 0.242487, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_17_3_4",
+      "fixture": "poppy_1_17_3_4.step",
+      "sha256": "fe5d5a58a9b754354016a9b1f108461ae0de94037058ad07f877df8476d1eeb4",
+      "restPositionMeters": [-0.0786, 0.242487, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_17_4_1",
+      "fixture": "poppy_1_17_4_1.step",
+      "sha256": "87da2b39aa8d929d85c57d79927eed1eddab466a04563b803d0e7c3a5ca8b85b",
+      "restPositionMeters": [0.059675, 0.242487, 0.0105]
+    },
+    {
+      "componentId": "poppy_1_17_4_2",
+      "fixture": "poppy_1_17_4_2.step",
+      "sha256": "f3e7cd74813e37010d4378a5c8038323598d01d0f2c47ba36c1660febe103b9c",
+      "restPositionMeters": [0.076175, 0.242487, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_17_4_3",
+      "fixture": "poppy_1_17_4_3.step",
+      "sha256": "8287c81e04c27be69257b465edbf0bf8e17535bb34a1efa8872904b38c12b5cf",
+      "restPositionMeters": [0.078425, 0.242487, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_17_4_4",
+      "fixture": "poppy_1_17_4_4.step",
+      "sha256": "245ec14ccc8e4b4d3cd222a5458b011dd1fcec34835c2796b4dc884c3375392d",
+      "restPositionMeters": [0.0786, 0.242487, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_18",
+      "fixture": "poppy_1_18.step",
+      "sha256": "a25232dcba562bf1d963fa40264a6b5a0657d52c54337692341db37588a8d992",
+      "restPositionMeters": [0.0, 0.215487, -0.04315]
+    },
+    {
+      "componentId": "poppy_1_19",
+      "fixture": "poppy_1_19.step",
+      "sha256": "e272dfdf9e9e4a4674f3833a6f04b47bc3f55d86e8c82b9b890732c04ea94c76",
+      "restPositionMeters": [0.0, 0.091, -0.05595]
+    },
+    {
+      "componentId": "poppy_1_20",
+      "fixture": "poppy_1_20.step",
+      "sha256": "2599f53cc6f1d6e0001b183fec264f77d60f9c3b86e1358cae5c1ab59f636048",
+      "restPositionMeters": [0.09765, 0.233987, 0.021902]
+    },
+    {
+      "componentId": "poppy_1_21_1_1",
+      "fixture": "poppy_1_21_1_1.step",
+      "sha256": "64e1401a306269e0389f0664102abd10e85941d7c0698bb9cd5b2c13040ea913",
+      "restPositionMeters": [0.1188, 0.235662, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_21_1_2",
+      "fixture": "poppy_1_21_1_2.step",
+      "sha256": "eae5f5840e63207e575ed1ffb7a64b1a8eab034113071be098f84f55d597c244",
+      "restPositionMeters": [0.1055, 0.252162, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_21_1_3",
+      "fixture": "poppy_1_21_1_3.step",
+      "sha256": "c7cfe94b498a90f73eece4f5d4dc27bed370745a26f9292e679ea28f2b038fab",
+      "restPositionMeters": [0.1055, 0.254412, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_21_1_4",
+      "fixture": "poppy_1_21_1_4.step",
+      "sha256": "014fad3fb0db9449a9c1885558df679730f35a61896bd58d7a7d176a7a47c280",
+      "restPositionMeters": [0.1055, 0.254587, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_21_1_5",
+      "fixture": "poppy_1_21_1_5.step",
+      "sha256": "0d2d1c2e8ccd6b45f6117f4d03574765dbe1fa5283305327b445179bfe299c20",
+      "restPositionMeters": [0.1055, 0.213737, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_21_1_6",
+      "fixture": "poppy_1_21_1_6.step",
+      "sha256": "7b163fd6e5f254b73919b086cda3058ce9da0b0c8d1937fe39dfd983600427f7",
+      "restPositionMeters": [0.1055, 0.215137, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_21_1_7",
+      "fixture": "poppy_1_21_1_7.step",
+      "sha256": "9be2476ef431fc23806bb92ba2dd320fc05c023c6a27c2f85c83a594b4265dfb",
+      "restPositionMeters": [0.1055, 0.216587, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_21_1_8",
+      "fixture": "poppy_1_21_1_8.step",
+      "sha256": "8b595abb93c3a91d90dba6c179548e5b34cb802d95bac3aee6d59c1ab585db21",
+      "restPositionMeters": [0.1055, 0.215012, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_21_2",
+      "fixture": "poppy_1_21_2.step",
+      "sha256": "8aac55ad3d8c46c01d2ebc5281f6ba0a530c4374e4c9d480a3290dbf9efe049a",
+      "restPositionMeters": [0.140675, 0.231862, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_22_1",
+      "fixture": "poppy_1_22_1.step",
+      "sha256": "b2bfbe55791ee2183c75702b3b435f8b36aef3f07f7b342f403e0caa8d05f5ec",
+      "restPositionMeters": [0.20102, 0.235072, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_22_2_1",
+      "fixture": "poppy_1_22_2_1.step",
+      "sha256": "ec3c9bfa5b2cf27cce1fc188615983c155484855434fa3e438886945fb67ddbc",
+      "restPositionMeters": [0.166925, 0.237287, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_22_2_2",
+      "fixture": "poppy_1_22_2_2.step",
+      "sha256": "0e1d2a2819d3341461d61636ace32cfc634b31841f5cfad639bfbdb58f3304cf",
+      "restPositionMeters": [0.150425, 0.223987, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_22_2_3",
+      "fixture": "poppy_1_22_2_3.step",
+      "sha256": "89fec0bbbbc59ca93060bebf6fad2d6f340f5798de1d2f365d590829371d60bd",
+      "restPositionMeters": [0.148175, 0.223987, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_22_2_4",
+      "fixture": "poppy_1_22_2_4.step",
+      "sha256": "26258a734047db616cf4f194d0e451b3f6f387396f58539cf4517137139026fe",
+      "restPositionMeters": [0.148, 0.223987, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_22_3_1",
+      "fixture": "poppy_1_22_3_1.step",
+      "sha256": "2eec4e742f2ed82fdb95252a31ba34ab18d19af535479c10b5d96546f14c0a52",
+      "restPositionMeters": [0.2412, 0.233987, 0.022125]
+    },
+    {
+      "componentId": "poppy_1_22_3_2",
+      "fixture": "poppy_1_22_3_2.step",
+      "sha256": "9705e07df3c66947611e4a62d9bdddcfef25e68971e0f9db5644a184b41ba427",
+      "restPositionMeters": [0.2545, 0.233987, 0.005625]
+    },
+    {
+      "componentId": "poppy_1_22_3_3",
+      "fixture": "poppy_1_22_3_3.step",
+      "sha256": "5fd802937cd39521e54b13a8626dc3adbde8323d405969fa0ff99fb42d9ca092",
+      "restPositionMeters": [0.2545, 0.233987, 0.003375]
+    },
+    {
+      "componentId": "poppy_1_22_3_4",
+      "fixture": "poppy_1_22_3_4.step",
+      "sha256": "e2741a4701862b897766f7339a0b99530e33429de7c35c690e83dadc7b79d7b4",
+      "restPositionMeters": [0.2545, 0.233987, 0.0032]
+    },
+    {
+      "componentId": "poppy_1_22_3_5",
+      "fixture": "poppy_1_22_3_5.step",
+      "sha256": "b26966897f418cf9cf2ea013481df9b3d42df4a5dd4703f7a9e196342fa0682d",
+      "restPositionMeters": [0.2545, 0.233987, 0.04405]
+    },
+    {
+      "componentId": "poppy_1_22_3_6",
+      "fixture": "poppy_1_22_3_6.step",
+      "sha256": "e7f3583a43908b7ca6d8671dc5db25413b633681198515aed3657b25ac8b0762",
+      "restPositionMeters": [0.2545, 0.233987, 0.04265]
+    },
+    {
+      "componentId": "poppy_1_22_3_7",
+      "fixture": "poppy_1_22_3_7.step",
+      "sha256": "f79202704087deae31dbebf8367a4f5173418d6d6eb7203ea3fec57840f084a2",
+      "restPositionMeters": [0.2545, 0.233987, 0.0412]
+    },
+    {
+      "componentId": "poppy_1_22_3_8",
+      "fixture": "poppy_1_22_3_8.step",
+      "sha256": "c5966f6783479216bf186d486dc561540ed4b99d9ec60608addabaf3e7764173",
+      "restPositionMeters": [0.2545, 0.233987, 0.042775]
+    },
+    {
+      "componentId": "poppy_1_23_1",
+      "fixture": "poppy_1_23_1.step",
+      "sha256": "b5137e9bdcf91058c1d4876f41c3bea6688d009e2edeaeccb0845bc368e41d24",
+      "restPositionMeters": [0.306547, 0.226698, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_23_2",
+      "fixture": "poppy_1_23_2.step",
+      "sha256": "922cd7bb96c391d0bcfffa6d124958586c9c2cd46bf9c39c3648844a887e2343",
+      "restPositionMeters": [0.415796, 0.235009, 0.02014]
+    },
+    {
+      "componentId": "poppy_1_24",
+      "fixture": "poppy_1_24.step",
+      "sha256": "590a1a90930dff08a30adf09a3474fed40a5b276f2de28b1b1f006864938a785",
+      "restPositionMeters": [-0.09765, 0.233987, 0.021902]
+    },
+    {
+      "componentId": "poppy_1_25_1_1",
+      "fixture": "poppy_1_25_1_1.step",
+      "sha256": "87473b7aba36d48bb65b1e4da5008a8e392980ff65ffeb49c8f87abe9c6b82d2",
+      "restPositionMeters": [-0.1188, 0.235662, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_25_1_2",
+      "fixture": "poppy_1_25_1_2.step",
+      "sha256": "f9f7445fd48ab9af59798ef23ac6b242e25b9acdab8d7ca13536650957ae6e1b",
+      "restPositionMeters": [-0.1055, 0.252162, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_25_1_3",
+      "fixture": "poppy_1_25_1_3.step",
+      "sha256": "eb6b48dd422a702ce448789a645352f10dae67e532022d7af64bed0327b20c37",
+      "restPositionMeters": [-0.1055, 0.254412, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_25_1_4",
+      "fixture": "poppy_1_25_1_4.step",
+      "sha256": "89d40de05d834800613f8ca854e2f371bf8f1973b62f0fcf91cd002971b7b989",
+      "restPositionMeters": [-0.1055, 0.254587, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_25_1_5",
+      "fixture": "poppy_1_25_1_5.step",
+      "sha256": "41679af71f0dd386331ba9ec0145c5b8b49ae0d738c189e7dd37e8bb654152de",
+      "restPositionMeters": [-0.1055, 0.213737, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_25_1_6",
+      "fixture": "poppy_1_25_1_6.step",
+      "sha256": "9b856c06d56c8ace454f1333bef8c6c3593f7a00d1a2d3d888f01aaf27104eae",
+      "restPositionMeters": [-0.1055, 0.215137, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_25_1_7",
+      "fixture": "poppy_1_25_1_7.step",
+      "sha256": "15b206c6794a7f8a92314b30837e7f0210ae2ee68e0c2d16f0eea2ebc8e11796",
+      "restPositionMeters": [-0.1055, 0.216587, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_25_1_8",
+      "fixture": "poppy_1_25_1_8.step",
+      "sha256": "fdf0345f2bca7ebfb2e48892019de8615a28cf64f08c583537742f04b38ade0d",
+      "restPositionMeters": [-0.1055, 0.215012, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_25_2",
+      "fixture": "poppy_1_25_2.step",
+      "sha256": "4909d7ad30725b166fd38374ba6a37519d1ddef3ef25a49b0e31587854fe45f0",
+      "restPositionMeters": [-0.140675, 0.231862, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_26_1",
+      "fixture": "poppy_1_26_1.step",
+      "sha256": "477b05c24d59085cf6755067194abfd41c8f4cbc60a04423f77714e786d7e2ce",
+      "restPositionMeters": [-0.20102, 0.235072, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_26_2_1",
+      "fixture": "poppy_1_26_2_1.step",
+      "sha256": "d55497f71fa577069b37b334e8fafa6aa2ffa8f7965d90c5dee6d5ef6ab27d23",
+      "restPositionMeters": [-0.166925, 0.237287, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_26_2_2",
+      "fixture": "poppy_1_26_2_2.step",
+      "sha256": "5546e428a3e6988c2badd3f0e4889714ac75a7e12ee06ec04135136ea5fd8815",
+      "restPositionMeters": [-0.150425, 0.223987, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_26_2_3",
+      "fixture": "poppy_1_26_2_3.step",
+      "sha256": "7a198fe1edaf228c2811c1d63c7691486f3149f6cca3e4e104bf8cbe06133f93",
+      "restPositionMeters": [-0.148175, 0.223987, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_26_2_4",
+      "fixture": "poppy_1_26_2_4.step",
+      "sha256": "615cf328166a8620bad31dbe9184d9186c1ce7e8fbd1b2e7244c7fc542265f2c",
+      "restPositionMeters": [-0.148, 0.223987, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_26_3_1",
+      "fixture": "poppy_1_26_3_1.step",
+      "sha256": "570c77d121576549781193dffc733d2e1a4370cbf3c13c55a4bae4dd6ea765c6",
+      "restPositionMeters": [-0.2412, 0.233987, 0.022125]
+    },
+    {
+      "componentId": "poppy_1_26_3_2",
+      "fixture": "poppy_1_26_3_2.step",
+      "sha256": "564d464a138b32e3a88eacb7d5f2f53a82ab12da15498530dedf14ee35113cc7",
+      "restPositionMeters": [-0.2545, 0.233987, 0.005625]
+    },
+    {
+      "componentId": "poppy_1_26_3_3",
+      "fixture": "poppy_1_26_3_3.step",
+      "sha256": "a4a3b8078aa083a703737fe2ff5cd21e1b0be0259118ac7a15179f6cbbf0d608",
+      "restPositionMeters": [-0.2545, 0.233987, 0.003375]
+    },
+    {
+      "componentId": "poppy_1_26_3_4",
+      "fixture": "poppy_1_26_3_4.step",
+      "sha256": "8f4b0ccf93e78c99e1bba0bc1dc60540dd17f9b3836182ad07339469e8b1663e",
+      "restPositionMeters": [-0.2545, 0.233987, 0.0032]
+    },
+    {
+      "componentId": "poppy_1_26_3_5",
+      "fixture": "poppy_1_26_3_5.step",
+      "sha256": "9aa47e81db58c8de34d03955867983da8b790aecb5c18ff63ae44fbd7ebf40a5",
+      "restPositionMeters": [-0.2545, 0.233987, 0.04405]
+    },
+    {
+      "componentId": "poppy_1_26_3_6",
+      "fixture": "poppy_1_26_3_6.step",
+      "sha256": "088cec7134d5fe3bd883b2edcf4ba065b37c0f9b976654a2941cafb2802de1c4",
+      "restPositionMeters": [-0.2545, 0.233987, 0.04265]
+    },
+    {
+      "componentId": "poppy_1_26_3_7",
+      "fixture": "poppy_1_26_3_7.step",
+      "sha256": "dfffc961d155c73581ec15ec8cb0db4aa930d62bc294324b4e9c6f52cb7bbf3c",
+      "restPositionMeters": [-0.2545, 0.233987, 0.0412]
+    },
+    {
+      "componentId": "poppy_1_26_3_8",
+      "fixture": "poppy_1_26_3_8.step",
+      "sha256": "6ab3fedd3031ea42101f76fd180dc6df3c010b3f648d7194ef61a11fec96d79f",
+      "restPositionMeters": [-0.2545, 0.233987, 0.042775]
+    },
+    {
+      "componentId": "poppy_1_27_1",
+      "fixture": "poppy_1_27_1.step",
+      "sha256": "ea952020defdea24cd0f364862080be1a9f07d3c0b10ccb1d975374bf9e376f1",
+      "restPositionMeters": [-0.306547, 0.226698, 0.0238]
+    },
+    {
+      "componentId": "poppy_1_27_2",
+      "fixture": "poppy_1_27_2.step",
+      "sha256": "c77bb0140677b8c74b2dbdd2482c39040cb4b4da1134f7bfc1708cdc4ad04c1a",
+      "restPositionMeters": [-0.415796, 0.235009, 0.020138]
+    },
+    {
+      "componentId": "poppy_1_28_1",
+      "fixture": "poppy_1_28_1.step",
+      "sha256": "43850d0b86f545f4079b7c8b1f407631bfa82ddac32084c7fa31cda688e8d735",
+      "restPositionMeters": [-0.0, 0.330335, -0.021144]
+    },
+    {
+      "componentId": "poppy_1_28_2_1",
+      "fixture": "poppy_1_28_2_1.step",
+      "sha256": "64499fcddb6b76bce8954556e8c0cd3a044c791a70e3c6fd5268f8f2de322669",
+      "restPositionMeters": [-0.0, 0.296487, 0.0113]
+    },
+    {
+      "componentId": "poppy_1_28_2_2",
+      "fixture": "poppy_1_28_2_2.step",
+      "sha256": "eccb903cc506033acb6e4483a437b21291330bb433bb7adb6d11c2501d9f97ca",
+      "restPositionMeters": [0.01759, 0.296487, 0.024799]
+    },
+    {
+      "componentId": "poppy_1_28_2_3",
+      "fixture": "poppy_1_28_2_3.step",
+      "sha256": "95a81c914f3857fbdfb258dbd3e8385574766e4e2e8f4fb892f5999b6d0e1086",
+      "restPositionMeters": [0.016333, 0.296487, 0.0248]
+    },
+    {
+      "componentId": "poppy_1_28_3",
+      "fixture": "poppy_1_28_3.step",
+      "sha256": "1cca2466627b05e058ac11b13d23906c97ec0d7fecbf14c8721c04426ea69fe8",
+      "restPositionMeters": [-0.002642, 0.335324, -0.034092]
+    },
+    {
+      "componentId": "poppy_1_28_4",
+      "fixture": "poppy_1_28_4.step",
+      "sha256": "867ff448fcb33957d3da55a1279761f83a72eaa5cc506df2eff0e1773f88dd24",
+      "restPositionMeters": [-0.0, 0.342572, 0.02941]
+    },
+    {
+      "componentId": "poppy_1_28_6",
+      "fixture": "poppy_1_28_6.step",
+      "sha256": "1511d4878ec09cf974c0e266e5a7e98377579b9c389c638ac40668c2141da193",
+      "restPositionMeters": [0.0, 0.352967, 0.026733]
+    },
+    {
+      "componentId": "poppy_1_28_7",
+      "fixture": "poppy_1_28_7.step",
+      "sha256": "612e612e18cff3587462e1a41a6dcda1d47e31e8d5021d869235289588c1d92c",
+      "restPositionMeters": [0.0, 0.354776, 0.028996]
+    },
+    {
+      "componentId": "poppy_1_28_8_1",
+      "fixture": "poppy_1_28_8_1.step",
+      "sha256": "d0ef6633f910dfa2c7baf59b1cdc8de9ef0c458aab4188caf40c11671b404832",
+      "restPositionMeters": [0.0025, 0.374528, 0.006474]
+    },
+    {
+      "componentId": "poppy_1_28_8_2",
+      "fixture": "poppy_1_28_8_2.step",
+      "sha256": "4663a561e23908ac1cd73e32965983ab75a502793777581703d0fc0390cf3a0b",
+      "restPositionMeters": [-0.025475, 0.37541, 0.008017]
+    },
+    {
+      "componentId": "poppy_1_28_8_3",
+      "fixture": "poppy_1_28_8_3.step",
+      "sha256": "43e69099528b5ae292dfe0f74c3fb907e1c9f1512da8f41f8b02c1bd7d27bc04",
+      "restPositionMeters": [0.0, 0.37793, 0.012087]
+    },
+    {
+      "componentId": "poppy_1_28_8_4",
+      "fixture": "poppy_1_28_8_4.step",
+      "sha256": "3909c54f4fb2a42172aebd72f70e43b67abf80429d5f6f5f4584545028b49188",
+      "restPositionMeters": [0.0, 0.379142, 0.013405]
+    },
+    {
+      "componentId": "poppy_1_28_9",
+      "fixture": "poppy_1_28_9.step",
+      "sha256": "2130a2f7b91233b2f27343bcb030f2e06f2867cb14224f2969ab2e4534681f50",
+      "restPositionMeters": [0.000129, 0.376223, 0.008571]
+    },
+    {
+      "componentId": "poppy_1_28_10",
+      "fixture": "poppy_1_28_10.step",
+      "sha256": "571db9a6181452e76069e0b8b687a5a32548cbe3b361f2d9ab41bffb4e9047f2",
+      "restPositionMeters": [-0.057124, 0.343374, 0.012382]
+    },
+    {
+      "componentId": "poppy_1_28_11",
+      "fixture": "poppy_1_28_11.step",
+      "sha256": "4d57712f8f6cb5a44884e94f4223a6a8b97031e42c09db4c2eb1f72a1e4de763",
+      "restPositionMeters": [0.057124, 0.343374, 0.012382]
+    },
+    {
+      "componentId": "poppy_1_28_12",
+      "fixture": "poppy_1_28_12.step",
+      "sha256": "7913fba1f1542b2e7d37b87735681790827bccc6d78dc4c3a1d4ac3b1c9f8fd8",
+      "restPositionMeters": [0.057989, 0.34308, 0.011924]
+    },
+    {
+      "componentId": "poppy_1_28_13",
+      "fixture": "poppy_1_28_13.step",
+      "sha256": "853880ca52546b2efcd193311c08a2e4b2c36858b1a45453d44849ba4b4526a5",
+      "restPositionMeters": [-0.057989, 0.34308, 0.011924]
+    },
+    {
+      "componentId": "poppy_1_28_14",
+      "fixture": "poppy_1_28_14.step",
+      "sha256": "f01f1aaef41726223ccbad021881703258c892a88686f0493af22201e857fbc7",
+      "restPositionMeters": [0.0, 0.320538, 0.014468]
+    },
+    {
+      "componentId": "poppy_1_29",
+      "fixture": "poppy_1_29.step",
+      "sha256": "b62a5e12d8e61e617507c59d5e71a54f74c82b33ae5bc0907d5b8be38a21878a",
+      "restPositionMeters": [0.0, 0.292237, 0.0248]
+    }
+  ],
+  "possiblePairCount": 19701,
+  "candidatePairCount": 595,
+  "volumeThresholdMm3": 0.001,
+  "aabbToleranceMm": 1e-7,
+  "timeoutSecondsPerPair": 30,
+  "pairs": [
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_1_2_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_1_2_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_1_2_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_1_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_1_2_5"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_1_2_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_1_2_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_1_2_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_1_3_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_1_3_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_1_3_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_1_3_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_1_3_5"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_1_3_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_1_3_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_1_3_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_2_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_3_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_12"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_13_1_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_13_1_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_13_1_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_13_1_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_13_1_5"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_13_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_13_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_13_5_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_13_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "poppy_1_14"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_2_1", "poppy_1_1_2_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_2_1", "poppy_1_1_2_3"],
+      "status": "intersection",
+      "volumeMm3": 14.095520992424298,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_2_1", "poppy_1_1_2_4"],
+      "status": "intersection",
+      "volumeMm3": 35.35305636448017,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_2_1", "poppy_1_1_2_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_2_1", "poppy_1_1_2_7"],
+      "status": "intersection",
+      "volumeMm3": 23.81752083978595,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_2_1", "poppy_1_1_2_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_2_1", "poppy_1_1_3_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_2_1", "poppy_1_2_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_2_1", "poppy_1_3_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_2_1", "poppy_1_12"],
+      "status": "intersection",
+      "volumeMm3": 0.0989287915931095,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_2_2", "poppy_1_1_2_3"],
+      "status": "intersection",
+      "volumeMm3": 30.348825759543796,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_2_2", "poppy_1_1_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_2_2", "poppy_1_2_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_2_3", "poppy_1_1_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_2_3", "poppy_1_2_1"],
+      "status": "intersection",
+      "volumeMm3": 0.15229981265359763,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_2_4", "poppy_1_2_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_2_5", "poppy_1_1_2_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_2_5", "poppy_1_1_2_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_2_5", "poppy_1_1_2_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_2_5", "poppy_1_2_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_2_6", "poppy_1_1_2_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_2_6", "poppy_1_1_2_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_2_6", "poppy_1_2_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_2_7", "poppy_1_1_2_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_2_7", "poppy_1_2_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_2_8", "poppy_1_2_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_3_1", "poppy_1_1_3_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_3_1", "poppy_1_1_3_3"],
+      "status": "intersection",
+      "volumeMm3": 14.095520992421125,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_3_1", "poppy_1_1_3_4"],
+      "status": "intersection",
+      "volumeMm3": 35.35305636447986,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_3_1", "poppy_1_1_3_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_3_1", "poppy_1_1_3_7"],
+      "status": "intersection",
+      "volumeMm3": 23.81752083978595,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_3_1", "poppy_1_1_3_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_3_1", "poppy_1_2_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_3_1", "poppy_1_3_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_3_1", "poppy_1_12"],
+      "status": "intersection",
+      "volumeMm3": 0.14348404553770178,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_3_2", "poppy_1_1_3_3"],
+      "status": "intersection",
+      "volumeMm3": 30.348825759542493,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_3_2", "poppy_1_1_3_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_3_2", "poppy_1_3_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_3_3", "poppy_1_1_3_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_3_3", "poppy_1_3_1"],
+      "status": "intersection",
+      "volumeMm3": 0.15230101642136162,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_3_4", "poppy_1_3_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_3_5", "poppy_1_1_3_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_3_5", "poppy_1_1_3_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_3_5", "poppy_1_1_3_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_3_5", "poppy_1_3_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_3_6", "poppy_1_1_3_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_3_6", "poppy_1_1_3_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_3_6", "poppy_1_3_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_3_7", "poppy_1_1_3_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_3_7", "poppy_1_3_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_3_8", "poppy_1_3_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_2_1", "poppy_1_2_2_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_2_1", "poppy_1_2_2_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_2_1", "poppy_1_2_2_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_2_1", "poppy_1_2_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_2_1", "poppy_1_4_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_2_1", "poppy_1_4_2_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_2_1", "poppy_1_4_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_2_2_1", "poppy_1_2_2_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_2_2_1", "poppy_1_2_2_3"],
+      "status": "intersection",
+      "volumeMm3": 14.095520906491481,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_2_2_1", "poppy_1_2_2_4"],
+      "status": "intersection",
+      "volumeMm3": 35.35305636447705,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_2_2_1", "poppy_1_4_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_2_2_2", "poppy_1_2_2_3"],
+      "status": "intersection",
+      "volumeMm3": 30.348825759541732,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_2_2_2", "poppy_1_2_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_2_2_3", "poppy_1_2_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_2_2_3", "poppy_1_4_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_2_2_4", "poppy_1_4_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_2_2_4", "poppy_1_4_2_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_3_1", "poppy_1_3_2_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_3_1", "poppy_1_3_2_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_3_1", "poppy_1_3_2_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_3_1", "poppy_1_3_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_3_1", "poppy_1_5_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_3_1", "poppy_1_5_2_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_3_1", "poppy_1_5_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_3_2_1", "poppy_1_3_2_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_3_2_1", "poppy_1_3_2_3"],
+      "status": "intersection",
+      "volumeMm3": 14.095520906494723,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_3_2_1", "poppy_1_3_2_4"],
+      "status": "intersection",
+      "volumeMm3": 35.35305636447705,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_3_2_1", "poppy_1_5_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_3_2_2", "poppy_1_3_2_3"],
+      "status": "intersection",
+      "volumeMm3": 30.348825759541725,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_3_2_2", "poppy_1_3_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_3_2_3", "poppy_1_3_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_3_2_3", "poppy_1_5_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_3_2_4", "poppy_1_5_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_3_2_4", "poppy_1_5_2_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_4_1", "poppy_1_4_2_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_4_2_1", "poppy_1_4_2_2"],
+      "status": "intersection",
+      "volumeMm3": 0.5654866776458888,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_4_2_1", "poppy_1_4_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_4_2_1", "poppy_1_4_2_5"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_4_2_2", "poppy_1_4_2_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_4_2_2", "poppy_1_4_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_4_2_3", "poppy_1_4_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_5_1", "poppy_1_5_2_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_5_2_1", "poppy_1_5_2_2"],
+      "status": "intersection",
+      "volumeMm3": 0.5654866774196742,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_5_2_1", "poppy_1_5_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_5_2_1", "poppy_1_5_2_5"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_5_2_2", "poppy_1_5_2_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_5_2_2", "poppy_1_5_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_5_2_3", "poppy_1_5_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_6_2_1", "poppy_1_6_2_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_6_2_1", "poppy_1_6_2_3"],
+      "status": "intersection",
+      "volumeMm3": 14.095520906139944,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_6_2_1", "poppy_1_6_2_4"],
+      "status": "intersection",
+      "volumeMm3": 35.35305636443508,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_6_2_1", "poppy_1_6_2_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_6_2_1", "poppy_1_6_2_7"],
+      "status": "intersection",
+      "volumeMm3": 23.81752083978709,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_6_2_1", "poppy_1_6_2_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_6_2_1", "poppy_1_8_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_6_2_2", "poppy_1_6_2_3"],
+      "status": "intersection",
+      "volumeMm3": 30.34882575953647,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_6_2_2", "poppy_1_6_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_6_2_2", "poppy_1_8_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_6_2_3", "poppy_1_6_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_6_2_3", "poppy_1_8_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_6_2_4", "poppy_1_8_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_6_2_5", "poppy_1_6_2_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_6_2_5", "poppy_1_6_2_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_6_2_5", "poppy_1_6_2_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_6_2_5", "poppy_1_8_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_6_2_6", "poppy_1_6_2_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_6_2_6", "poppy_1_6_2_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_6_2_6", "poppy_1_8_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_6_2_7", "poppy_1_6_2_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_6_2_7", "poppy_1_8_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_6_2_8", "poppy_1_8_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_6_3", "poppy_1_8_1"],
+      "status": "intersection",
+      "volumeMm3": 5.77376625241887,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_7_2_1", "poppy_1_7_2_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_7_2_1", "poppy_1_7_2_3"],
+      "status": "intersection",
+      "volumeMm3": 14.095520906496917,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_7_2_1", "poppy_1_7_2_4"],
+      "status": "intersection",
+      "volumeMm3": 35.353056364479265,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_7_2_1", "poppy_1_7_2_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_7_2_1", "poppy_1_7_2_7"],
+      "status": "intersection",
+      "volumeMm3": 23.817520839782183,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_7_2_1", "poppy_1_7_2_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_7_2_1", "poppy_1_9_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_7_2_2", "poppy_1_7_2_3"],
+      "status": "intersection",
+      "volumeMm3": 30.34882575953647,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_7_2_2", "poppy_1_7_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_7_2_2", "poppy_1_9_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_7_2_3", "poppy_1_7_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_7_2_3", "poppy_1_9_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_7_2_4", "poppy_1_9_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_7_2_5", "poppy_1_7_2_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_7_2_5", "poppy_1_7_2_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_7_2_5", "poppy_1_7_2_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_7_2_5", "poppy_1_9_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_7_2_6", "poppy_1_7_2_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_7_2_6", "poppy_1_7_2_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_7_2_6", "poppy_1_9_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_7_2_7", "poppy_1_7_2_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_7_2_7", "poppy_1_9_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_7_2_8", "poppy_1_9_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_7_3", "poppy_1_9_1"],
+      "status": "intersection",
+      "volumeMm3": 5.773766252408379,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_1", "poppy_1_8_2_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_1", "poppy_1_8_2_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_1", "poppy_1_8_2_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_1", "poppy_1_8_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_1", "poppy_1_8_2_5"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_1", "poppy_1_8_2_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_1", "poppy_1_8_2_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_1", "poppy_1_8_2_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_1", "poppy_1_10"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_2_1", "poppy_1_8_2_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_2_1", "poppy_1_8_2_3"],
+      "status": "intersection",
+      "volumeMm3": 14.095520966060185,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_2_1", "poppy_1_8_2_4"],
+      "status": "intersection",
+      "volumeMm3": 35.35305636447924,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_2_1", "poppy_1_8_2_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_2_1", "poppy_1_8_2_7"],
+      "status": "intersection",
+      "volumeMm3": 23.817520839742972,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_2_1", "poppy_1_8_2_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_2_1", "poppy_1_10"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_2_2", "poppy_1_8_2_3"],
+      "status": "intersection",
+      "volumeMm3": 30.348825759542056,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_2_2", "poppy_1_8_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_2_2", "poppy_1_10"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_2_3", "poppy_1_8_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_2_3", "poppy_1_10"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_2_4", "poppy_1_10"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_2_5", "poppy_1_8_2_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_2_5", "poppy_1_8_2_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_2_5", "poppy_1_8_2_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_2_5", "poppy_1_10"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_2_6", "poppy_1_8_2_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_2_6", "poppy_1_8_2_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_2_6", "poppy_1_10"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_2_7", "poppy_1_8_2_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_2_7", "poppy_1_10"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_2_8", "poppy_1_10"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_1", "poppy_1_9_2_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_1", "poppy_1_9_2_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_1", "poppy_1_9_2_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_1", "poppy_1_9_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_1", "poppy_1_9_2_5"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_1", "poppy_1_9_2_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_1", "poppy_1_9_2_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_1", "poppy_1_9_2_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_1", "poppy_1_11"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_2_1", "poppy_1_9_2_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_2_1", "poppy_1_9_2_3"],
+      "status": "intersection",
+      "volumeMm3": 14.095520966010307,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_2_1", "poppy_1_9_2_4"],
+      "status": "intersection",
+      "volumeMm3": 35.35305636447439,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_2_1", "poppy_1_9_2_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_2_1", "poppy_1_9_2_7"],
+      "status": "intersection",
+      "volumeMm3": 23.81752083978715,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_2_1", "poppy_1_9_2_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_2_1", "poppy_1_11"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_2_2", "poppy_1_9_2_3"],
+      "status": "intersection",
+      "volumeMm3": 30.348825759542954,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_2_2", "poppy_1_9_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_2_2", "poppy_1_11"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_2_3", "poppy_1_9_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_2_3", "poppy_1_11"],
+      "status": "timeout",
+      "volumeMm3": null,
+      "error": "Pair worker produced no result within deadline"
+    },
+    {
+      "componentIds": ["poppy_1_9_2_4", "poppy_1_11"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_2_5", "poppy_1_9_2_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_2_5", "poppy_1_9_2_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_2_5", "poppy_1_9_2_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_2_5", "poppy_1_11"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_2_6", "poppy_1_9_2_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_2_6", "poppy_1_9_2_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_2_6", "poppy_1_11"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_2_7", "poppy_1_9_2_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_2_7", "poppy_1_11"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_2_8", "poppy_1_11"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_1_1", "poppy_1_13_1_2"],
+      "status": "intersection",
+      "volumeMm3": 0.5654866776461759,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_1_1", "poppy_1_13_1_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_1_1", "poppy_1_13_1_5"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_1_1", "poppy_1_13_2"],
+      "status": "intersection",
+      "volumeMm3": 0.14711525584177573,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_1_1", "poppy_1_13_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_1_1", "poppy_1_13_5_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_1_1", "poppy_1_13_6"],
+      "status": "intersection",
+      "volumeMm3": 0.14711480979866526,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_1_1", "poppy_1_14"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_1_2", "poppy_1_13_1_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_1_2", "poppy_1_13_1_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_1_2", "poppy_1_14"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_1_3", "poppy_1_13_1_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_1_3", "poppy_1_14"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_1_4", "poppy_1_14"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_1_5", "poppy_1_14"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_2", "poppy_1_13_5_1"],
+      "status": "intersection",
+      "volumeMm3": 0.8575600465322907,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_2", "poppy_1_14"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_3", "poppy_1_13_4_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_3", "poppy_1_13_4_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_3", "poppy_1_14"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_4_1", "poppy_1_13_4_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_4_1", "poppy_1_13_4_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_4_1", "poppy_1_14"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_4_2", "poppy_1_13_4_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_4_2", "poppy_1_14"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_4_3", "poppy_1_14"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_5_1", "poppy_1_13_5_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_5_1", "poppy_1_13_5_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_5_1", "poppy_1_13_6"],
+      "status": "intersection",
+      "volumeMm3": 0.857548590998446,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_5_1", "poppy_1_14"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_5_2", "poppy_1_13_5_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_5_2", "poppy_1_14"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_5_3", "poppy_1_14"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_6", "poppy_1_14"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_14", "poppy_1_15_1_1"],
+      "status": "intersection",
+      "volumeMm3": 33.60722945458912,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_14", "poppy_1_15_1_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_14", "poppy_1_15_1_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_14", "poppy_1_15_1_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_14", "poppy_1_19"],
+      "status": "intersection",
+      "volumeMm3": 6.038364043315874,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_15_1_1", "poppy_1_15_1_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_15_1_1", "poppy_1_15_1_3"],
+      "status": "intersection",
+      "volumeMm3": 14.095520906419171,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_15_1_1", "poppy_1_15_1_4"],
+      "status": "intersection",
+      "volumeMm3": 35.35305636446944,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_15_1_1", "poppy_1_15_2"],
+      "status": "intersection",
+      "volumeMm3": 1.9805421854689045,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_15_1_2", "poppy_1_15_1_3"],
+      "status": "intersection",
+      "volumeMm3": 30.34882575953996,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_15_1_2", "poppy_1_15_1_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_15_1_3", "poppy_1_15_1_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_15_1_4", "poppy_1_15_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_15_2", "poppy_1_16_1_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_15_2", "poppy_1_16_1_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_15_2", "poppy_1_16_1_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_15_2", "poppy_1_16_1_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_15_2", "poppy_1_16_1_5"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_15_2", "poppy_1_16_1_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_15_2", "poppy_1_16_1_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_15_2", "poppy_1_16_1_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_15_2", "poppy_1_16_2_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_15_2", "poppy_1_16_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_15_2", "poppy_1_16_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_15_2", "poppy_1_16_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_15_2", "poppy_1_17_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_1", "poppy_1_16_1_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_1", "poppy_1_16_1_3"],
+      "status": "intersection",
+      "volumeMm3": 14.095520906491348,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_1", "poppy_1_16_1_4"],
+      "status": "intersection",
+      "volumeMm3": 35.353056364479784,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_1", "poppy_1_16_1_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_1", "poppy_1_16_1_7"],
+      "status": "intersection",
+      "volumeMm3": 23.817520839787676,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_1", "poppy_1_16_1_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_1", "poppy_1_16_2_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_1", "poppy_1_16_3"],
+      "status": "intersection",
+      "volumeMm3": 0.1131872367851347,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_1", "poppy_1_16_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_1", "poppy_1_16_6"],
+      "status": "intersection",
+      "volumeMm3": 0.1131874016137851,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_1", "poppy_1_17_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_2", "poppy_1_16_1_3"],
+      "status": "intersection",
+      "volumeMm3": 30.34882575954329,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_2", "poppy_1_16_1_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_2", "poppy_1_17_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_3", "poppy_1_16_1_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_3", "poppy_1_17_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_4", "poppy_1_17_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_5", "poppy_1_16_1_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_5", "poppy_1_16_1_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_5", "poppy_1_16_1_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_5", "poppy_1_17_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_6", "poppy_1_16_1_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_6", "poppy_1_16_1_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_6", "poppy_1_17_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_7", "poppy_1_16_1_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_7", "poppy_1_17_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_8", "poppy_1_17_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_1", "poppy_1_16_2_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_1", "poppy_1_16_2_3"],
+      "status": "intersection",
+      "volumeMm3": 14.095520906491208,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_1", "poppy_1_16_2_4"],
+      "status": "intersection",
+      "volumeMm3": 35.353056364479805,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_1", "poppy_1_16_3"],
+      "status": "intersection",
+      "volumeMm3": 0.15063397711703463,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_1", "poppy_1_16_6"],
+      "status": "intersection",
+      "volumeMm3": 0.15063397481453755,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_1", "poppy_1_17_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_1", "poppy_1_18"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_2", "poppy_1_16_2_3"],
+      "status": "intersection",
+      "volumeMm3": 30.348825759541278,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_2", "poppy_1_16_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_2", "poppy_1_17_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_3", "poppy_1_16_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_3", "poppy_1_17_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_3", "poppy_1_18"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_4", "poppy_1_17_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_4", "poppy_1_18"],
+      "status": "intersection",
+      "volumeMm3": 28.118657696011116,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_3", "poppy_1_17_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_4", "poppy_1_16_5_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_4", "poppy_1_16_5_2"],
+      "status": "intersection",
+      "volumeMm3": 4.39822971502595,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_4", "poppy_1_16_5_3"],
+      "status": "intersection",
+      "volumeMm3": 1.936006473036357,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_4", "poppy_1_17_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_5_1", "poppy_1_16_5_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_5_1", "poppy_1_16_5_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_5_1", "poppy_1_17_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_5_2", "poppy_1_16_5_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_5_2", "poppy_1_17_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_5_3", "poppy_1_17_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_6", "poppy_1_17_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_1", "poppy_1_17_2_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_1", "poppy_1_17_2_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_1", "poppy_1_17_2_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_1", "poppy_1_17_3_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_1", "poppy_1_17_3_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_1", "poppy_1_17_3_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_1", "poppy_1_17_3_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_1", "poppy_1_17_4_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_1", "poppy_1_17_4_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_1", "poppy_1_17_4_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_1", "poppy_1_17_4_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_1", "poppy_1_18"],
+      "status": "intersection",
+      "volumeMm3": 4.9727075049439495,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_1", "poppy_1_20"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_1", "poppy_1_24"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_2_1", "poppy_1_17_2_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_2_1", "poppy_1_17_2_3"],
+      "status": "intersection",
+      "volumeMm3": 14.564767153580629,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_2_2", "poppy_1_17_2_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_2_3", "poppy_1_29"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_3_1", "poppy_1_17_3_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_3_1", "poppy_1_17_3_3"],
+      "status": "intersection",
+      "volumeMm3": 14.095520906474604,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_3_1", "poppy_1_17_3_4"],
+      "status": "intersection",
+      "volumeMm3": 35.35305636447693,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_3_1", "poppy_1_24"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_3_2", "poppy_1_17_3_3"],
+      "status": "intersection",
+      "volumeMm3": 30.348825759545036,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_3_2", "poppy_1_17_3_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_3_3", "poppy_1_17_3_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_3_3", "poppy_1_24"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_3_4", "poppy_1_24"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_4_1", "poppy_1_17_4_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_4_1", "poppy_1_17_4_3"],
+      "status": "intersection",
+      "volumeMm3": 14.095520906489286,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_4_1", "poppy_1_17_4_4"],
+      "status": "intersection",
+      "volumeMm3": 35.35305636447692,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_4_1", "poppy_1_20"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_4_2", "poppy_1_17_4_3"],
+      "status": "intersection",
+      "volumeMm3": 30.34882575954408,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_4_2", "poppy_1_17_4_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_4_3", "poppy_1_17_4_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_4_3", "poppy_1_20"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_4_4", "poppy_1_20"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_20", "poppy_1_21_1_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_20", "poppy_1_21_1_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_20", "poppy_1_21_1_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_20", "poppy_1_21_1_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_20", "poppy_1_21_1_5"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_20", "poppy_1_21_1_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_20", "poppy_1_21_1_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_20", "poppy_1_21_1_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_21_1_1", "poppy_1_21_1_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_21_1_1", "poppy_1_21_1_3"],
+      "status": "intersection",
+      "volumeMm3": 14.095520906473762,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_21_1_1", "poppy_1_21_1_4"],
+      "status": "intersection",
+      "volumeMm3": 35.353056364479194,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_21_1_1", "poppy_1_21_1_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_21_1_1", "poppy_1_21_1_7"],
+      "status": "intersection",
+      "volumeMm3": 23.81752083977227,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_21_1_1", "poppy_1_21_1_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_21_1_1", "poppy_1_21_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_21_1_1", "poppy_1_22_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_21_1_2", "poppy_1_21_1_3"],
+      "status": "intersection",
+      "volumeMm3": 30.348825759531653,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_21_1_2", "poppy_1_21_1_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_21_1_3", "poppy_1_21_1_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_21_1_5", "poppy_1_21_1_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_21_1_5", "poppy_1_21_1_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_21_1_5", "poppy_1_21_1_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_21_1_6", "poppy_1_21_1_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_21_1_6", "poppy_1_21_1_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_21_1_7", "poppy_1_21_1_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_21_2", "poppy_1_22_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_21_2", "poppy_1_22_2_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_21_2", "poppy_1_22_2_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_21_2", "poppy_1_22_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_1", "poppy_1_22_2_1"],
+      "status": "intersection",
+      "volumeMm3": 2.467273809882251,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_1", "poppy_1_22_2_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_1", "poppy_1_22_2_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_1", "poppy_1_22_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_1", "poppy_1_22_3_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_1", "poppy_1_22_3_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_1", "poppy_1_22_3_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_1", "poppy_1_22_3_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_1", "poppy_1_22_3_5"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_1", "poppy_1_22_3_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_1", "poppy_1_22_3_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_1", "poppy_1_22_3_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_1", "poppy_1_23_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_2_1", "poppy_1_22_2_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_2_1", "poppy_1_22_2_3"],
+      "status": "intersection",
+      "volumeMm3": 14.095520906468513,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_2_1", "poppy_1_22_2_4"],
+      "status": "intersection",
+      "volumeMm3": 35.353056364479876,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_2_2", "poppy_1_22_2_3"],
+      "status": "intersection",
+      "volumeMm3": 30.34882575955018,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_2_2", "poppy_1_22_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_2_3", "poppy_1_22_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_3_1", "poppy_1_22_3_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_3_1", "poppy_1_22_3_3"],
+      "status": "intersection",
+      "volumeMm3": 14.095520906487204,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_3_1", "poppy_1_22_3_4"],
+      "status": "intersection",
+      "volumeMm3": 35.35305636447707,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_3_1", "poppy_1_22_3_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_3_1", "poppy_1_22_3_7"],
+      "status": "intersection",
+      "volumeMm3": 23.817520839787104,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_3_1", "poppy_1_22_3_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_3_1", "poppy_1_23_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_3_2", "poppy_1_22_3_3"],
+      "status": "intersection",
+      "volumeMm3": 30.348825759543374,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_3_2", "poppy_1_22_3_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_3_2", "poppy_1_23_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_3_3", "poppy_1_22_3_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_3_3", "poppy_1_23_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_3_4", "poppy_1_23_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_3_5", "poppy_1_22_3_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_3_5", "poppy_1_22_3_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_3_5", "poppy_1_22_3_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_3_5", "poppy_1_23_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_3_6", "poppy_1_22_3_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_3_6", "poppy_1_22_3_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_3_6", "poppy_1_23_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_3_7", "poppy_1_22_3_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_3_7", "poppy_1_23_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_3_8", "poppy_1_23_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_23_1", "poppy_1_23_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_24", "poppy_1_25_1_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_24", "poppy_1_25_1_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_24", "poppy_1_25_1_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_24", "poppy_1_25_1_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_24", "poppy_1_25_1_5"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_24", "poppy_1_25_1_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_24", "poppy_1_25_1_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_24", "poppy_1_25_1_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_25_1_1", "poppy_1_25_1_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_25_1_1", "poppy_1_25_1_3"],
+      "status": "intersection",
+      "volumeMm3": 14.095520906485605,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_25_1_1", "poppy_1_25_1_4"],
+      "status": "intersection",
+      "volumeMm3": 35.35305636447942,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_25_1_1", "poppy_1_25_1_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_25_1_1", "poppy_1_25_1_7"],
+      "status": "intersection",
+      "volumeMm3": 23.81752083977496,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_25_1_1", "poppy_1_25_1_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_25_1_1", "poppy_1_25_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_25_1_1", "poppy_1_26_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_25_1_2", "poppy_1_25_1_3"],
+      "status": "intersection",
+      "volumeMm3": 30.34882575953167,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_25_1_2", "poppy_1_25_1_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_25_1_3", "poppy_1_25_1_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_25_1_5", "poppy_1_25_1_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_25_1_5", "poppy_1_25_1_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_25_1_5", "poppy_1_25_1_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_25_1_6", "poppy_1_25_1_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_25_1_6", "poppy_1_25_1_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_25_1_7", "poppy_1_25_1_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_25_2", "poppy_1_26_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_25_2", "poppy_1_26_2_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_25_2", "poppy_1_26_2_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_25_2", "poppy_1_26_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_1", "poppy_1_26_2_1"],
+      "status": "intersection",
+      "volumeMm3": 2.4672738098919926,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_1", "poppy_1_26_2_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_1", "poppy_1_26_2_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_1", "poppy_1_26_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_1", "poppy_1_26_3_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_1", "poppy_1_26_3_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_1", "poppy_1_26_3_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_1", "poppy_1_26_3_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_1", "poppy_1_26_3_5"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_1", "poppy_1_26_3_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_1", "poppy_1_26_3_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_1", "poppy_1_26_3_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_1", "poppy_1_27_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_2_1", "poppy_1_26_2_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_2_1", "poppy_1_26_2_3"],
+      "status": "intersection",
+      "volumeMm3": 14.095520906496557,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_2_1", "poppy_1_26_2_4"],
+      "status": "intersection",
+      "volumeMm3": 35.35305636447956,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_2_2", "poppy_1_26_2_3"],
+      "status": "intersection",
+      "volumeMm3": 30.348825759550195,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_2_2", "poppy_1_26_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_2_3", "poppy_1_26_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_3_1", "poppy_1_26_3_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_3_1", "poppy_1_26_3_3"],
+      "status": "intersection",
+      "volumeMm3": 14.095520906507536,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_3_1", "poppy_1_26_3_4"],
+      "status": "intersection",
+      "volumeMm3": 35.35305636447746,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_3_1", "poppy_1_26_3_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_3_1", "poppy_1_26_3_7"],
+      "status": "intersection",
+      "volumeMm3": 23.817520839787765,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_3_1", "poppy_1_26_3_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_3_1", "poppy_1_27_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_3_2", "poppy_1_26_3_3"],
+      "status": "intersection",
+      "volumeMm3": 30.34882575954166,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_3_2", "poppy_1_26_3_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_3_2", "poppy_1_27_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_3_3", "poppy_1_26_3_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_3_3", "poppy_1_27_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_3_4", "poppy_1_27_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_3_5", "poppy_1_26_3_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_3_5", "poppy_1_26_3_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_3_5", "poppy_1_26_3_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_3_5", "poppy_1_27_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_3_6", "poppy_1_26_3_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_3_6", "poppy_1_26_3_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_3_6", "poppy_1_27_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_3_7", "poppy_1_26_3_8"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_3_7", "poppy_1_27_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_3_8", "poppy_1_27_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_27_1", "poppy_1_27_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "poppy_1_28_2_1"],
+      "status": "timeout",
+      "volumeMm3": null,
+      "error": "Pair worker produced no result within deadline"
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "poppy_1_28_2_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "poppy_1_28_2_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "poppy_1_28_3"],
+      "status": "timeout",
+      "volumeMm3": null,
+      "error": "Pair worker produced no result within deadline"
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "poppy_1_28_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "poppy_1_28_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "poppy_1_28_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "poppy_1_28_8_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "poppy_1_28_8_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "poppy_1_28_8_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "poppy_1_28_8_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "poppy_1_28_9"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "poppy_1_28_10"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "poppy_1_28_11"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "poppy_1_28_12"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "poppy_1_28_13"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "poppy_1_28_14"],
+      "status": "intersection",
+      "volumeMm3": 0.026632525197838763,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "poppy_1_29"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_2_1", "poppy_1_28_2_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_2_1", "poppy_1_28_2_3"],
+      "status": "intersection",
+      "volumeMm3": 4.937405554119889,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_2_1", "poppy_1_28_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_2_1", "poppy_1_29"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_2_2", "poppy_1_28_2_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_2_2", "poppy_1_29"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_2_3", "poppy_1_29"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_4", "poppy_1_28_6"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_4", "poppy_1_28_7"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_4", "poppy_1_28_8_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_4", "poppy_1_28_8_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_4", "poppy_1_28_9"],
+      "status": "intersection",
+      "volumeMm3": 13.131192444563524,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_4", "poppy_1_28_10"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_4", "poppy_1_28_11"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_4", "poppy_1_28_12"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_4", "poppy_1_28_13"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_4", "poppy_1_28_14"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_6", "poppy_1_28_7"],
+      "status": "intersection",
+      "volumeMm3": 0.03605196653761311,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_6", "poppy_1_28_8_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_6", "poppy_1_28_8_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_6", "poppy_1_28_8_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_6", "poppy_1_28_9"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_6", "poppy_1_28_10"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_6", "poppy_1_28_11"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_6", "poppy_1_28_12"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_6", "poppy_1_28_13"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_6", "poppy_1_28_14"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_7", "poppy_1_28_8_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_7", "poppy_1_28_8_4"],
+      "status": "intersection",
+      "volumeMm3": 0.1254847455562751,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_7", "poppy_1_28_10"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_7", "poppy_1_28_11"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_7", "poppy_1_28_12"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_7", "poppy_1_28_13"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_8_1", "poppy_1_28_8_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_8_1", "poppy_1_28_8_3"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_8_1", "poppy_1_28_8_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_8_1", "poppy_1_28_9"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_8_2", "poppy_1_28_9"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_8_3", "poppy_1_28_8_4"],
+      "status": "intersection",
+      "volumeMm3": 486.0749185670536,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_8_3", "poppy_1_28_9"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_8_4", "poppy_1_28_9"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_10", "poppy_1_28_13"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0007259398532507852,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_11", "poppy_1_28_12"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.000725946100366014,
+      "error": null
+    }
+  ],
+  "intersectionCount": 101,
+  "unresolvedPairCount": 3,
+  "limitations": [
+    "Excluded CAD is not clear of interference",
+    "Contacts below threshold do not establish intended fits",
+    "Materials, manufacturing tolerances, loads and assembly constraints are not verified"
+  ],
+  "catalogSha256": "c30726ba16336f7a221815cc7d3e1ba4d8cd12a9d506c3b4f97e9ba73bd70043"
+}
