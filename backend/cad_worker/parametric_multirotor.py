@@ -275,7 +275,7 @@ def materialize_multirotor(template: dict, cache_dir: Path, overrides: dict | No
         )
         cable_id = f"comp_multi_wire_{key}"
         nodes.append(_node(
-            cable_id, f"{cargo} harness", "cable", (0, 0, 0),
+            cable_id, f"{cargo} harness", "wiring", (0, 0, 0),
             colorHex="#cc2929", materialHint="silicone_wire", origin="procedural_harness",
             sourceUrl=f"harness://zappd/{ARCHETYPE_ID}/{cable_id}",
             stepFixtureName=str(wiring_dir / f"{cable_id}.step"),

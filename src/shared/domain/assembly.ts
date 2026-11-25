@@ -811,7 +811,7 @@ function parseAssetManifest(raw: unknown): AssemblyAssetManifest {
   };
 }
 
-function parseOrchestrationMetadata(raw: unknown): AiOrchestrationMetadata {
+export function parseOrchestrationMetadata(raw: unknown): AiOrchestrationMetadata {
   if (!isObjectRecord(raw)) {
     throw new Error('Expected AiOrchestrationMetadata object');
   }
@@ -841,6 +841,18 @@ const assemblyParametersSchema = z.object({
   parameters: z.array(assemblyParameterSchema).optional(),
   parameterValues: z.record(parameterNameSchema, z.number()).optional(),
 });
+
+export function canRenderAssembly({
+  nodes,
+  validation,
+  verificationStatus,
+}: Pick<VerifiedProjectAssembly, 'nodes' | 'validation' | 'verificationStatus'>): boolean {
+  return (
+    verificationStatus === 'unverified' ||
+    (canClassifyAsVerified(validation, verificationStatus) &&
+      hasVerifiedUpstreamProvenance(nodes, verificationStatus))
+  );
+}
 
 export function parseVerifiedProjectAssembly(raw: unknown): VerifiedProjectAssembly {
   if (!isObjectRecord(raw)) {

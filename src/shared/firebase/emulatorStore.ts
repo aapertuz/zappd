@@ -21,8 +21,7 @@ import {
   type ProjectId,
   type ProjectLearningDocuments,
   type VerifiedProjectAssembly,
-  canClassifyAsVerified,
-  hasVerifiedUpstreamProvenance,
+  canRenderAssembly,
   parseProjectLearningDocuments,
 } from '@/shared/domain';
 
@@ -133,14 +132,15 @@ export class FirebaseEmulatorRepository {
     assembly: VerifiedProjectAssembly,
     binaries?: Partial<Record<StoredBinaryFormat, Uint8Array>>,
     options?: {
+      readonly allowUnverified?: boolean;
       readonly syncLiveEmulator?: boolean;
       readonly componentExplanations?: readonly ComponentExplanationRecord[];
       readonly syncLearningDocuments?: boolean;
     },
   ): Promise<void> {
     if (
-      !canClassifyAsVerified(assembly.validation, assembly.verificationStatus) ||
-      !hasVerifiedUpstreamProvenance(assembly.nodes, assembly.verificationStatus)
+      !canRenderAssembly(assembly) ||
+      (assembly.verificationStatus === 'unverified' && options?.allowUnverified !== true)
     ) {
       throw new Error(
         `Refusing to persist unverified or invalid assembly "${assembly.projectId}": ${assembly.validation.failures.join('; ')}`,

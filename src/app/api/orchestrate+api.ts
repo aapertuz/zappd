@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 import { type AiProviderId, DEFAULT_AI_PROVIDER, parseAiProviderId } from '@/shared/domain';
 
 import {
@@ -10,6 +12,7 @@ type OrchestrateRequestBody = {
   readonly prompt: string;
   readonly provider: AiProviderId;
   readonly providerExplicitlySelected: boolean;
+  readonly parameterValues?: Record<string, number>;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -27,6 +30,7 @@ function parseOrchestrateRequestBody(raw: unknown): OrchestrateRequestBody {
     prompt: raw.prompt.trim(),
     provider: parseAiProviderId(raw.provider),
     providerExplicitlySelected: raw.providerExplicitlySelected === true,
+    parameterValues: z.record(z.string(), z.number()).optional().parse(raw.parameterValues),
   };
 }
 
@@ -47,6 +51,8 @@ export async function POST(request: Request): Promise<Response> {
       prompt: body.prompt,
       provider: effectiveProvider,
       requireLiveApiKey: true,
+      parameterValues: body.parameterValues,
+      allowUnverified: true,
     });
     return Response.json(assembly, { status: 200 });
   } catch (error: unknown) {

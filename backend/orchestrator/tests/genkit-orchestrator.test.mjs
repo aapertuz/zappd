@@ -5,7 +5,7 @@ import http from 'node:http';
 import { registerHooks } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
-import { describe, it } from 'node:test';
+import { after, describe, it } from 'node:test';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -35,7 +35,12 @@ registerHooks({
 });
 
 const { FirebaseEmulatorRepository } = await import('../../../src/shared/firebase/index.ts');
-const { orchestrateProjectAssemblyCreation } = await import('../genkitOrchestrator.ts');
+const { orchestrateProjectAssemblyCreation, rebuildAssemblyWithParameters } =
+  await import('../genkitOrchestrator.ts');
+const { planProjectWithProvider } = await import('../aiProviders.ts');
+const { shutdownWarmCadWorker } = await import('../warmCadClient.ts');
+
+after(shutdownWarmCadWorker);
 
 function assertReusesAvailableExports(assembly) {
   const manifestFile = path.join(
@@ -46,8 +51,15 @@ function assertReusesAvailableExports(assembly) {
     assembly.archetypeId,
     'manifest.json',
   );
-  if (fs.existsSync(manifestFile)) {
-    assert.deepEqual(assembly.manifest, JSON.parse(fs.readFileSync(manifestFile, 'utf8')));
+  if (!fs.existsSync(manifestFile)) return;
+  const cachedManifest = JSON.parse(fs.readFileSync(manifestFile, 'utf8'));
+  if (
+    Object.values(cachedManifest.files).every(
+      ({ publicUrl, format }) =>
+        publicUrl === `/assemblies/${cachedManifest.manifestHash}/model.${format}`,
+    )
+  ) {
+    assert.deepEqual(assembly.manifest, cachedManifest);
   }
 }
 
@@ -229,6 +241,137 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
       /OpenCascade validation rejected assembly/,
     );
     assert.equal(repository.listCollection('projects').length, 0);
+  });
+
+  it('extracts custom dimensions, rebuilds without a provider, and keeps both published bundles', async (t) => {
+    const repository = new FirebaseEmulatorRepository();
+    const prompt = 'Build a custom 6-rotor hexacopter with 320mm wheelbase';
+    const assembly = await orchestrateProjectAssemblyCreation({
+      prompt,
+      provider: 'gemini',
+      repository,
+    });
+    assert.equal(assembly.orchestration.executionMode, 'local_catalog_planner');
+    assert.equal(assembly.archetypeId, 'parametric_multirotor_v1');
+    assert.equal(assembly.parameterValues.rotor_count, 6);
+    assert.equal(assembly.parameterValues.wheelbase_mm, 320);
+    assert.equal(assembly.nodes.filter(({ category }) => category === 'motor').length, 6);
+    const originalDir = path.join(repoRoot, 'public', 'assemblies', assembly.manifest.manifestHash);
+    const originalGlb = fs.readFileSync(path.join(originalDir, 'model.glb'));
+
+    const providerCall = t.mock.method(globalThis, 'fetch', () => {
+      throw new Error('Parameter rebuild must not call an AI provider');
+    });
+    const rebuilt = await rebuildAssemblyWithParameters({
+      archetypeId: assembly.archetypeId,
+      parameterValues: { ...assembly.parameterValues, rotor_count: 4, wheelbase_mm: 264 },
+      title: assembly.title,
+      userPrompt: prompt,
+      orchestration: assembly.orchestration,
+      repository,
+    });
+
+    assert.equal(providerCall.mock.callCount(), 0);
+    assert.notEqual(rebuilt.manifest.manifestHash, assembly.manifest.manifestHash);
+    assert.equal(rebuilt.parameterValues.rotor_count, 4);
+    assert.equal(rebuilt.parameterValues.wheelbase_mm, 260);
+    assert.equal(rebuilt.parameters.find(({ name }) => name === 'wheelbase_mm').value, 260);
+    assert.equal(rebuilt.nodes.filter(({ category }) => category === 'motor').length, 4);
+    assert.ok(rebuilt.relationships.length < assembly.relationships.length);
+    assert.notDeepEqual(rebuilt.assemblySteps, assembly.assemblySteps);
+    assert.equal(rebuilt.validation.buildTimingMs.cacheMode, 'warm_ram');
+    assert.deepEqual(
+      repository.getProjectAssembly(rebuilt.projectId).parameterValues,
+      rebuilt.parameterValues,
+    );
+
+    for (const build of [assembly, rebuilt]) {
+      const publicPath = `/assemblies/${build.manifest.manifestHash}`;
+      for (const format of ['glb', 'step', 'usdz']) {
+        const url = `${publicPath}/model.${format}`;
+        assert.equal(build.manifest.files[format].publicUrl, url);
+        assert.equal(
+          fs.statSync(path.join(repoRoot, 'public', url)).size,
+          build.manifest.files[format].sizeBytes,
+        );
+      }
+      for (const file of ['manifest.json', 'pipeline_result.json']) {
+        assert.ok(fs.statSync(path.join(repoRoot, 'public', publicPath, file)).size > 0);
+      }
+    }
+    assert.deepEqual(fs.readFileSync(path.join(originalDir, 'model.glb')), originalGlb);
+  });
+
+  it('supplements partial live plans with clamped prompt parameters', async (t) => {
+    t.mock.method(globalThis, 'fetch', async () =>
+      Response.json({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                archetypeId: 'parametric_multirotor_v1',
+                projectTitle: 'Custom multirotor',
+                rationale: 'Requested custom dimensions',
+                plannedSubsystems: [],
+                parameterValues: { wheelbase_mm: 320 },
+              }),
+            },
+          },
+        ],
+      }),
+    );
+    const plan = await planProjectWithProvider({
+      prompt: 'Hexacopter with wheelbase 310 mm, 31mm deck gap, and 5mm arm',
+      provider: 'openai',
+      apiKey: 'sk-test-openai',
+    });
+    assert.deepEqual(plan.parameterValues, {
+      rotor_count: 6,
+      wheelbase_mm: 320,
+      deck_gap_mm: 32,
+      arm_thickness_mm: 5,
+    });
+
+    const localPlan = await planProjectWithProvider({
+      prompt: 'Drone with wheelbase of 400 mm',
+      provider: 'gemini',
+    });
+    assert.equal(localPlan.archetypeId, 'parametric_multirotor_v1');
+    assert.equal(localPlan.parameterValues.wheelbase_mm, 360);
+  });
+
+  it('persists and publishes colliding geometry with its original validation failures when allowed', async () => {
+    const repository = new FirebaseEmulatorRepository();
+    const assembly = await orchestrateProjectAssemblyCreation({
+      prompt: 'I want to build a quadcopter',
+      provider: 'gemini',
+      injectCollisionTest: true,
+      allowUnverified: true,
+      repository,
+    });
+    assert.equal(assembly.verificationStatus, 'unverified');
+    assert.equal(assembly.validation.valid, false);
+    assert.ok(assembly.validation.failures.length > 0);
+    assert.ok(assembly.validation.interferenceCount > 0);
+    const pipeline = JSON.parse(
+      fs.readFileSync(
+        path.join(
+          repoRoot,
+          'public',
+          'assemblies',
+          assembly.manifest.manifestHash,
+          'pipeline_result.json',
+        ),
+        'utf8',
+      ),
+    );
+    for (const field of ['failures', 'electricalFailures', 'floatingComponentIds']) {
+      assert.deepEqual(assembly.validation[field], pipeline.validation[field]);
+    }
+    assert.deepEqual(
+      repository.getProjectAssembly(assembly.projectId).validation,
+      assembly.validation,
+    );
   });
 
   it('requires a live provider key instead of falling back to keyword matching', async () => {
