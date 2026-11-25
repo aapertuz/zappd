@@ -290,3 +290,9 @@ Neither Xcode nor Android Studio is installed in `/Applications`.
 The native scene implementations still re-export a 2D part-list fallback and there are no custom native renderer modules.
 No native Poppy load, select, explode, reset or zoom interaction has been verified on this host.
 No native CAD authoring application was found to perform a new source-preserving head re-export.
+
+The export also writes `engineering.json`, tying the numerical CAD-to-render
+bounds comparison and stable node mapping to the fixture provenance and interference report.
+Its 0.1 mm comparison threshold is a rendering check, not a manufacturing tolerance.
+Material properties, manufacturing tolerances, loads and constraints remain unknown or unverified.
+The report always retains `manufacturingReadiness: not_established` for this partial source assembly.

@@ -144,6 +144,14 @@ def test_partial_pipeline_exports_only_available_source_geometry(tmp_path):
     nodes.append(rejected)
     result = run_poppy_pipeline({"archetypeId": "poppy_humanoid_v1", "nodes": nodes}, tmp_path / "exports", tmp_path / "cache")
     assert result["verificationStatus"] == "unverified"
+    engineering = result["engineeringReport"]
+    assert engineering["manufacturingReadiness"] == "not_established"
+    assert engineering["manufacturingTolerances"] == "unknown"
+    assert engineering["materials"] == "unknown"
+    assert engineering["renderDimensionComparison"]["thresholdMm"] == 0.1
+    assert engineering["rejectedCadComponentIds"] == ["rejected_head"]
+    assert engineering["sourceComponents"][0]["componentId"] == "comp_base_plate_lower"
+    assert (tmp_path / "exports/engineering.json").exists()
     assert result["validation"]["valid"] is False
     assert result["validation"]["brepValid"] is True
     assert result["validation"]["nodeMappingComplete"] is True

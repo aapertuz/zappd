@@ -61,6 +61,25 @@ def run_poppy_pipeline(
         node["id"] for node in spec["nodes"]
         if node["geometry"].get("role") == "surface"
     ]
+    engineering = {
+        "status": "unverified",
+        "manufacturingReadiness": "not_established",
+        "materials": "unknown",
+        "manufacturingTolerances": "unknown",
+        "loadsAndConstraints": "not_verified",
+        "renderDimensionComparison": {
+            "maximumErrorMm": validation["maxDimensionalErrorMm"],
+            "thresholdMm": 0.1,
+            "meaning": "CAD to render bounds comparison; not manufacturing tolerance",
+        },
+        "nodeMappingComplete": validation["nodeMappingComplete"],
+        "rejectedCadComponentIds": validation["rejectedCadComponentIds"],
+        "surfaceComponentIds": validation["surfaceComponentIds"],
+        "interferenceReport": "interference.json",
+        "sourceComponents": interference["sourceComponents"],
+    }
+    result["engineeringReport"] = engineering
+    (output_dir / "engineering.json").write_text(json.dumps(engineering, indent=2))
     result["verificationStatus"] = "unverified"
     validation["valid"] = False
     validation["failures"].append(
