@@ -212,8 +212,35 @@ async function applyViewport(cdp, viewport) {
   await cdp.send('Emulation.setDeviceMetricsOverride', {
     width: viewport.width,
     height: viewport.height,
-    deviceScaleFactor: 2,
+    deviceScaleFactor: 1,
     mobile: viewport.width < 600,
+  });
+}
+
+async function waitForAnimationFrames(cdp, frameCount = 2, maxWaitMs = 1500) {
+  await cdp.send('Runtime.evaluate', {
+    awaitPromise: true,
+    returnByValue: true,
+    expression: `new Promise((resolve) => {
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        resolve(true);
+      };
+      const timer = setTimeout(finish, ${Math.max(100, maxWaitMs)});
+      let remaining = ${Math.max(1, frameCount)};
+      const step = () => {
+        remaining -= 1;
+        if (remaining <= 0) {
+          clearTimeout(timer);
+          finish();
+          return;
+        }
+        requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    })`,
   });
 }
 
@@ -241,6 +268,8 @@ async function readPageDiagnostics(cdp) {
             glbNodeCount: Array.isArray(rawAssembly.glbNodeIds) ? rawAssembly.glbNodeIds.length : 0,
             selectedComponentId: rawAssembly.selectedComponentId ?? null,
             isolatedComponentId: rawAssembly.isolatedComponentId ?? null,
+            hoveredComponentId: rawAssembly.hoveredComponentId ?? null,
+            hoveredPartCallout: rawAssembly.hoveredPartCallout ?? null,
             viewMode: rawAssembly.viewMode ?? null,
             focusedPartCallout: rawAssembly.focusedPartCallout ?? null,
             nodeScreenPositions: rawAssembly.nodeScreenPositions ?? {},
@@ -249,6 +278,10 @@ async function readPageDiagnostics(cdp) {
             assemblyStatus: rawAssembly.assemblyStatus ?? null,
             assemblyProgress: rawAssembly.assemblyProgress ?? null,
             activeExplodeStage: rawAssembly.activeExplodeStage ?? null,
+            wiringVisibility: rawAssembly.wiringVisibility ?? null,
+            circuitHighlightIds: Array.isArray(rawAssembly.circuitHighlightIds)
+              ? rawAssembly.circuitHighlightIds
+              : [],
             camera: rawAssembly.camera ?? null,
             separatedOffsets: rawAssembly.separatedOffsets ?? {},
             selectedNodePositionMeters:
@@ -256,16 +289,22 @@ async function readPageDiagnostics(cdp) {
                 ? (rawAssembly.nodePositionsMeters[rawAssembly.selectedComponentId] ?? null)
                 : null,
             webglActive: Boolean(rawAssembly.webglActive),
+            reactRenderCount: rawAssembly.reactRenderCount ?? null,
+            framesRendered: rawAssembly.framesRendered ?? null,
           }
         : null;
       const bodyText = document.body ? document.body.innerText : '';
-      const isLoadingAssembly = bodyText.includes('Loading verified CAD assembly');
+      const isLoadingAssembly =
+        bodyText.includes('Loading verified CAD assembly') ||
+        document.querySelector('[role="progressbar"][aria-label="Loading verified CAD assembly"]') !==
+          null;
       const hasProviderToolbar = document.querySelector('[role="toolbar"]') !== null;
       return {
         url: window.location.href,
         title: document.title,
         readyState: document.readyState,
         promptValue: textarea ? textarea.value : null,
+        promptPlaceholder: textarea ? textarea.placeholder : null,
         promptHeight: textarea ? textarea.getBoundingClientRect().height : null,
         promptScrollHeight: textarea ? textarea.scrollHeight : null,
         promptMaxHeight: textareaStyle ? textareaStyle.maxHeight : null,
@@ -353,16 +392,36 @@ function findAxNode(nodes, role, name) {
   return null;
 }
 
-async function clickBackendNode(cdp, backendDOMNodeId) {
+async function resolveBackendNodeCenter(cdp, backendDOMNodeId) {
   await cdp.send('DOM.scrollIntoViewIfNeeded', { backendNodeId: backendDOMNodeId });
   const { model } = await cdp.send('DOM.getBoxModel', { backendNodeId: backendDOMNodeId });
   const content = model?.content;
   if (!Array.isArray(content) || content.length < 8) {
     throw new Error(`Missing box model for backendDOMNodeId=${backendDOMNodeId}`);
   }
-  const x = (content[0] + content[2] + content[4] + content[6]) / 4;
-  const y = (content[1] + content[3] + content[5] + content[7]) / 4;
+  return {
+    x: (content[0] + content[2] + content[4] + content[6]) / 4,
+    y: (content[1] + content[3] + content[5] + content[7]) / 4,
+  };
+}
+
+async function clickBackendNode(cdp, backendDOMNodeId) {
+  const { x, y } = await resolveBackendNodeCenter(cdp, backendDOMNodeId);
   await clickPoint(cdp, x, y);
+}
+
+async function hoverPoint(cdp, x, y) {
+  await cdp.send('Input.dispatchMouseEvent', {
+    type: 'mouseMoved',
+    x,
+    y,
+    pointerType: 'mouse',
+  });
+}
+
+async function hoverBackendNode(cdp, backendDOMNodeId) {
+  const { x, y } = await resolveBackendNodeCenter(cdp, backendDOMNodeId);
+  await hoverPoint(cdp, x, y);
 }
 
 async function clickPoint(cdp, x, y) {
@@ -440,6 +499,9 @@ export async function launchChromeSession({
       '--use-gl=angle',
       '--use-angle=swiftshader',
       '--enable-unsafe-swiftshader',
+      '--disable-background-timer-throttling',
+      '--disable-backgrounding-occluded-windows',
+      '--disable-renderer-backgrounding',
       '--no-first-run',
       '--no-default-browser-check',
       `--user-data-dir=${profileDir}`,
@@ -606,6 +668,21 @@ export async function performBrowserAction(pageWsUrl, options) {
         await clickBackendNode(cdp, targetNode.backendDOMNodeId);
         break;
       }
+      case 'hover': {
+        if (options.x !== undefined && options.y !== undefined) {
+          await hoverPoint(cdp, options.x, options.y);
+          break;
+        }
+        const { nodes } = await cdp.send('Accessibility.getFullAXTree');
+        const targetNode = findAxNode(nodes, options.role, options.name);
+        if (!targetNode) {
+          throw new Error(
+            `Control not found: role=${options.role} name=${JSON.stringify(options.name)}`,
+          );
+        }
+        await hoverBackendNode(cdp, targetNode.backendDOMNodeId);
+        break;
+      }
       case 'type': {
         const { nodes } = await cdp.send('Accessibility.getFullAXTree');
         const targetNode = findAxNode(nodes, options.role, options.name);
@@ -693,6 +770,7 @@ export async function performBrowserAction(pageWsUrl, options) {
     }
 
     await delay(120);
+    await waitForAnimationFrames(cdp, 2);
     const diagnostics = await readPageDiagnostics(cdp);
     return {
       diagnostics,
@@ -730,13 +808,37 @@ export async function waitForBrowserState(pageWsUrl, options) {
         ? assembly?.archetypeId === options.archetype && glbReady
         : true;
       const providerMatched = options.provider ? assembly?.provider === options.provider : true;
+      const settledMatched = options.settled
+        ? glbReady && assembly?.assemblyStatus === 'settled'
+        : true;
+      const learningCard = options.learningReady
+        ? (diagnostics?.learning?.[options.learningReady] ?? null)
+        : null;
+      const learningMatched = options.learningReady
+        ? learningCard !== null &&
+          learningCard.kind === 'ready' &&
+          learningCard.isWriting === false &&
+          learningCard.fullLength > 0 &&
+          learningCard.visibleLength === learningCard.fullLength
+        : true;
       const defaultSettled =
-        !options.text && !options.archetype && !options.provider
+        !options.text &&
+        !options.archetype &&
+        !options.provider &&
+        !options.settled &&
+        !options.learningReady
           ? !diagnostics?.isLoadingAssembly &&
             (glbReady || diagnostics?.hasProviderToolbar === true)
           : true;
 
-      if (textMatched && archetypeMatched && providerMatched && defaultSettled) {
+      if (
+        textMatched &&
+        archetypeMatched &&
+        providerMatched &&
+        settledMatched &&
+        learningMatched &&
+        defaultSettled
+      ) {
         return {
           diagnostics,
           errors: diagnostics?.errors ?? [],
@@ -747,7 +849,7 @@ export async function waitForBrowserState(pageWsUrl, options) {
     }
 
     throw new Error(
-      `Timed out waiting for browser state after ${timeoutMs}ms (archetype=${options.archetype ?? 'any'}, provider=${options.provider ?? 'any'}, text=${options.text ? JSON.stringify(options.text) : 'any'}, lastArchetype=${lastDiagnostics?.assembly?.archetypeId ?? 'none'}, loading=${String(lastDiagnostics?.isLoadingAssembly)})`,
+      `Timed out waiting for browser state after ${timeoutMs}ms (archetype=${options.archetype ?? 'any'}, provider=${options.provider ?? 'any'}, settled=${String(Boolean(options.settled))}, learningReady=${options.learningReady ?? 'none'}, text=${options.text ? JSON.stringify(options.text) : 'any'}, lastArchetype=${lastDiagnostics?.assembly?.archetypeId ?? 'none'}, assemblyStatus=${lastDiagnostics?.assembly?.assemblyStatus ?? 'none'}, loading=${String(lastDiagnostics?.isLoadingAssembly)})`,
     );
   });
 }
