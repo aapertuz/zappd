@@ -3,6 +3,7 @@ from copy import deepcopy
 from pathlib import Path
 
 from geometry_pipeline import run_cad_pipeline
+from poppy_interference import analyze
 from poppy_visual import HEAD_ID, load_head_visual, visual_state
 
 
@@ -41,7 +42,15 @@ def run_poppy_pipeline(
     if set(result["glbNodeIds"]) != expected_geometry:
         raise RuntimeError("Poppy geometry coverage differs from source validation states")
     validation = result["validation"]
-    validation["interferenceCheck"] = "not_performed"
+    interference = analyze(spec, cache_dir)
+    validation["interferenceCheck"] = "partial"
+    validation["interferenceCount"] = interference["intersectionCount"]
+    validation["sourceInterferenceReport"] = interference
+    validation["failures"] = [failure for failure in validation["failures"]
+                              if failure != "Volumetric interference analysis not performed for source inspection"]
+    if interference["intersectionCount"] or interference["unresolvedPairCount"]:
+        validation["failures"].append("Source interference report contains overlaps or unresolved pairs")
+    (output_dir / "interference.json").write_text(json.dumps(interference, indent=2))
     validation["availableGeometryCount"] = len(expected_geometry) - len(visual_geometry)
     validation["visualOnlyComponentIds"] = list(visual_geometry)
     validation["rejectedCadComponentIds"] = sorted(excluded_geometry | set(visual_geometry))

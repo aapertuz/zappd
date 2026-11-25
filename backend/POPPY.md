@@ -266,3 +266,27 @@ mesh sampling and are not surface error, CAD validity, or an equivalence proof.
 The captured bounds and samples are in
 `cad_worker/tests/evidence/poppy-head-visual-alignment.json`.
 The source mesh remains explicitly visual-only even though its bounds align.
+
+## Reproducible source interference report
+
+Run `backend/.venv/bin/python backend/cad_worker/poppy_interference.py backend/data/poppy-catalog.json backend/data/open_step_cache /tmp/poppy-interference.json`.
+The Poppy export pipeline also writes `interference.json` and includes the report in its validation record.
+The analyzer restores source placements from the centered, digest-checked STEP fixtures.
+It caches conservative CAD bounds once, filters separated pairs, then computes OCCT common volumes for candidate pairs.
+Each pair runs in an isolated process with a 30 second deadline.
+Boolean failures and timeouts remain unresolved rather than being counted as clear.
+The report retains stable pair IDs, measured volumes, the 0.001 mm³ reporting threshold, and exclusions.
+A zero or below-threshold volume does not prove a designed contact or fit.
+There is no name-based intended-contact whitelist.
+
+The rejected head and the two source-defined surface thighs remain outside volumetric analysis.
+Materials, manufacturing tolerances, loads, assembly constraints and manufacturing certification remain unverified.
+No source placement or geometry is changed to remove an overlap.
+
+Local native inspection on 2026-11-25 found only Apple Command Line Tools at
+`/Library/Developer/CommandLineTools`; `xcrun simctl` is unavailable.
+Neither Xcode nor Android Studio is installed in `/Applications`.
+`adb`, `emulator`, and `~/Library/Android/sdk` are absent.
+The native scene implementations still re-export a 2D part-list fallback and there are no custom native renderer modules.
+No native Poppy load, select, explode, reset or zoom interaction has been verified on this host.
+No native CAD authoring application was found to perform a new source-preserving head re-export.

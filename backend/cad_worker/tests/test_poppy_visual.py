@@ -64,6 +64,11 @@ def test_visual_shell_exports_both_formats_without_entering_engineering_cad(tmp_
     head.update(id=HEAD_ID, name="head_face", stepFixtureName=None, geometry={"kind": "unavailable", "reason": "Invalid source topology"})
     nodes.append(head)
     result = run_poppy_pipeline({"archetypeId": "poppy_humanoid_v1", "nodes": nodes}, tmp_path / "exports", cache)
+    assert result["validation"]["interferenceCheck"] == "partial"
+    report = result["validation"]["sourceInterferenceReport"]
+    assert report["solidCount"] == 1
+    assert report["excludedComponents"][0]["componentId"] == HEAD_ID
+    assert (tmp_path / "exports/interference.json").exists()
     assert result["validation"]["availableGeometryCount"] == 1
     assert result["validation"]["visualOnlyComponentIds"] == [HEAD_ID]
     assert result["validation"]["rejectedCadComponentIds"] == [HEAD_ID]

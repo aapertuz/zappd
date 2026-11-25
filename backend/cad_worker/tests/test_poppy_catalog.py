@@ -147,7 +147,8 @@ def test_partial_pipeline_exports_only_available_source_geometry(tmp_path):
     assert result["validation"]["valid"] is False
     assert result["validation"]["brepValid"] is True
     assert result["validation"]["nodeMappingComplete"] is True
-    assert result["validation"]["interferenceCheck"] == "not_performed"
+    assert result["validation"]["interferenceCheck"] == "partial"
+    assert result["validation"]["sourceInterferenceReport"]["excludedComponents"][0]["componentId"] == "rejected_head"
     assert result["validation"]["availableGeometryCount"] == 1
     assert result["validation"]["unavailableComponentIds"] == ["rejected_head"]
     assert result["glbNodeIds"] == ["comp_base_plate_lower"]
