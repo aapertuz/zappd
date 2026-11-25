@@ -167,3 +167,55 @@ def test_partial_pipeline_exports_only_available_source_geometry(tmp_path):
     assert result["glbNodeIds"] == ["comp_base_plate_lower"]
     assert any(node["id"] == "rejected_head" and node["geometry"]["kind"] == "unavailable" for node in result["nodes"])
     assert all(node["provenance"]["verificationStatus"] == "unverified" for node in result["nodes"])
+
+
+def test_default_ingest_cleanup_preserves_poppy_fixtures(tmp_path: Path) -> None:
+    from ingest_upstream_catalog import clean_default_step_fixtures
+
+    for name in (
+        "drone_cad_base_lower.step",
+        "so100_base_housing.step",
+        "nova2_chassis_plate.step",
+        "poppy_1_1_1.step",
+        "Poppy_Humanoid.STEP",
+    ):
+        (tmp_path / name).write_bytes(b"step")
+
+    clean_default_step_fixtures(tmp_path)
+    remaining = sorted(path.name for path in tmp_path.iterdir())
+    assert remaining == ["Poppy_Humanoid.STEP", "poppy_1_1_1.step"]
+
+
+def test_poppy_inject_collision_test_recomputes_shifted_interference(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import copy
+    import poppy_pipeline
+    from catalog_specs import CATALOG_SPECS
+
+    def fail_if_cached_used(_spec, _cache):
+        raise AssertionError("cached interference report must not be reused during inject_collision_test")
+
+    monkeypatch.setattr(poppy_pipeline, "load_cached_report", fail_if_cached_used)
+    source = CATALOG_SPECS["quadcopter_drone_v1"]["nodes"]
+    root = copy.deepcopy(source[0])
+    first = copy.deepcopy(next(node for node in source if node["id"] == "comp_base_plate_lower"))
+    second = copy.deepcopy(next(node for node in source if node["id"] == "comp_base_plate_upper"))
+    first["parentId"] = root["id"]
+    first["depth"] = 1
+    second["parentId"] = root["id"]
+    second["depth"] = 1
+    second["restPositionMeters"] = [first["restPositionMeters"][0] + 0.5, first["restPositionMeters"][1], first["restPositionMeters"][2]]
+    for node in (root, first, second):
+        node["geometry"] = {"kind": "available", "role": "solid"} if node["stepFixtureName"] else {"kind": "assembly"}
+        node["specifications"]["sourceSha256"] = "a" * 64
+
+    result = poppy_pipeline.run_poppy_pipeline(
+        {"archetypeId": "poppy_humanoid_v1", "semantics": "source_inspection", "nodes": [root, first, second]},
+        tmp_path / "exports",
+        tmp_path / "cache",
+        inject_collision_test=True,
+    )
+    shifted = next(node for node in result["nodes"] if node["id"] == second["id"])
+    assert shifted["restPositionMeters"] == first["restPositionMeters"]
+    report = result["validation"]["sourceInterferenceReport"]
+    assert report["intersectionCount"] == 1
+    assert result["validation"]["interferenceCount"] == 1

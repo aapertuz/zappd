@@ -21,19 +21,20 @@ The local Onshape re-export has digest
 investigated separately; its foot topology regression is not published.
 
 The project and component provenance remain `unverified`.
-The current tessellation also fails the 0.1 mm dimensional bound check on five
-components: `poppy_1_10` and `poppy_1_11` at about 19.5609 mm,
-`poppy_1_21_2` and `poppy_1_25_2` at 0.3500 mm, and `poppy_1_28_7` at
-0.1526 mm. These failures are preserved in the export report and exposed in the
-inspection UI. The displayed meshes are inspection approximations; they do not
-establish dimensionally validated geometry. Successful topology and
+All 201 available source CAD components pass the unchanged 0.1 mm CAD-to-render
+trimmed-bounds comparison (recorded in `engineering.json`). The displayed meshes
+remain inspection approximations; they do not establish manufacturing tolerances
+or dimensionally certified production geometry. Successful topology and
 mesh mapping checks establish inspection availability, not manufacturing validity.
-Source-placement volumetric interference analysis is reported separately with explicit
-exclusions and unresolved pairs. It cannot establish engineering verification.
+Source-placement volumetric interference analysis is reported separately in
+`interference.json` (199 solids, 595 candidate pairs, 102 measured intersections,
+0 unresolved pairs) with explicit exclusions for open surfaces and rejected CAD.
+It cannot establish engineering verification.
 Open surface bodies are never treated as solids for volumetric checks.
-No assembly instructions or connection claims are inferred. Explode offsets remain
-zero and the explode controls are disabled; selection, camera controls, hierarchy
-navigation, and part focus work through the existing renderer.
+No assembly instructions or connection claims are inferred. Deterministic
+inspection explode offsets are computed from source component centers for
+visualization; selection, camera controls, hierarchy navigation, part focus,
+and inspection explode/reset work through the existing renderer.
 
 Reproduce source extraction and generate the real normalized assets:
 
@@ -56,7 +57,7 @@ backend/.venv/bin/python backend/cad_worker/ingest_upstream_catalog.py --poppy
 
 The importer rejects changed downloads and Git LFS pointers before OpenCascade reads them. It retains STEP product names, occurrence hierarchy, and composed source placements. IDs use occurrence paths within this pinned release, so repeated motor instances have different identities. IDs are not guaranteed across upstream releases.
 
-Geometry uses the existing catalog centering and topology validation helper. Materials remain unspecified. Explode offsets remain zero until an authoritative assembly sequence supports them. No fastener relationships or build instructions are inferred from CAD product names.
+Geometry uses the existing catalog centering and topology validation helper. Materials remain unspecified. Deterministic inspection explode offsets are computed from source component centers for visualization without implying an authoritative assembly sequence. No fastener relationships or build instructions are inferred from CAD product names.
 
 A successful import writes the shared source-inspection catalog to `src/shared/domain/catalog/assemblies/poppy_humanoid_v1.json` and STEP fixtures to the existing cache. It does not classify the assembly as engineering-verified.
 

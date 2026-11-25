@@ -13,8 +13,15 @@ def run_poppy_pipeline(
     cache_dir: Path,
     inject_collision_test: bool = False,
 ) -> dict:
-    cached_interference = load_cached_report(spec, cache_dir)
+    cached_interference = None if inject_collision_test else load_cached_report(spec, cache_dir)
     spec = deepcopy(spec)
+    if inject_collision_test and spec["nodes"]:
+        first_geom_node = next(
+            (node for node in spec["nodes"] if node.get("stepFixtureName") is not None),
+            None,
+        )
+        if first_geom_node is not None and spec["nodes"][-1].get("stepFixtureName") is not None:
+            spec["nodes"][-1]["restPositionMeters"] = list(first_geom_node["restPositionMeters"])
     head = next((node for node in spec["nodes"] if node["id"] == HEAD_ID), None)
     visual_geometry = {}
     if head is not None:
@@ -24,6 +31,7 @@ def run_poppy_pipeline(
     result = run_cad_pipeline(
         spec, output_dir, cache_dir, inject_collision_test, check_interference=False,
         visual_geometry_by_id=visual_geometry,
+        allow_partial_geometry=True,
     )
     by_id = {node["id"]: node for node in result["nodes"]}
     for source in spec["nodes"]:

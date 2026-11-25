@@ -680,3 +680,49 @@ def test_surface_role_cannot_bypass_solid_interference_certification(tmp_path: P
     assert result["validation"]["valid"] is False
     assert result["validation"]["interferenceCount"] == 1
     assert any("declared surface contains CAD solids" in failure for failure in result["validation"]["failures"])
+
+
+def test_unavailable_or_visual_only_leaf_cannot_certify_as_verified(tmp_path: Path) -> None:
+    template = CATALOG_SPECS["quadcopter_drone_v1"]
+    root = copy.deepcopy(template["nodes"][0])
+    kept = copy.deepcopy(next(n for n in template["nodes"] if n["id"] == "comp_base_plate_lower"))
+    dropped = copy.deepcopy(next(n for n in template["nodes"] if n["id"] == "comp_base_plate_upper"))
+    kept["parentId"] = root["id"]
+    kept["depth"] = 1
+    dropped["parentId"] = root["id"]
+    dropped["depth"] = 1
+    dropped["stepFixtureName"] = None
+    dropped.pop("expectedStepSha256", None)
+    dropped["geometry"] = {"kind": "unavailable", "reason": "Missing upstream CAD"}
+
+    unavailable_result = run_cad_pipeline(
+        {**template, "nodes": [root, kept, dropped], "relationships": [], "assemblySteps": []},
+        output_dir=tmp_path / "exports_unavailable",
+        cache_dir=tmp_path / "cache",
+    )
+    assert unavailable_result["verificationStatus"] == "unverified"
+    assert unavailable_result["validation"]["valid"] is False
+    assert unavailable_result["validation"]["nodeMappingComplete"] is False
+    assert any("has unavailable CAD geometry" in f for f in unavailable_result["validation"]["failures"])
+
+    visual_only = copy.deepcopy(dropped)
+    visual_only["geometry"] = {
+        "kind": "visual_only",
+        "cadRejectionReason": "Invalid source topology",
+        "sourceName": "Visual mesh",
+        "sourceUrl": "https://example.com/mesh.zip",
+        "spdxLicense": "CC-BY-SA-4.0",
+        "archiveMember": "mesh.stl",
+        "archiveSha256": "a" * 64,
+        "sha256": "b" * 64,
+        "sourceOccurrencePath": "1_1",
+        "sourceCoordinateFrame": "assembly_y_up_millimeters",
+    }
+    visual_result = run_cad_pipeline(
+        {**template, "nodes": [root, kept, visual_only], "relationships": [], "assemblySteps": []},
+        output_dir=tmp_path / "exports_visual",
+        cache_dir=tmp_path / "cache",
+    )
+    assert visual_result["verificationStatus"] == "unverified"
+    assert visual_result["validation"]["valid"] is False
+    assert any("has visual_only CAD geometry" in f for f in visual_result["validation"]["failures"])

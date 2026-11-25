@@ -50,8 +50,14 @@ it('maps available components while retaining rejected component identities', ()
       usdzPrimPath: '/head',
     },
   ];
-  assert.equal(verifyOneToOneNodeMapping(nodes, ['available'], ['/available']), true);
-  assert.equal(verifyOneToOneNodeMapping(nodes, [], []), false);
+  assert.equal(verifyOneToOneNodeMapping(nodes, ['available'], ['/available']), false);
+  assert.equal(
+    verifyOneToOneNodeMapping(nodes, ['available'], ['/available'], {
+      allowUnavailableNodes: true,
+    }),
+    true,
+  );
+  assert.equal(verifyOneToOneNodeMapping(nodes, [], [], { allowUnavailableNodes: true }), false);
   assert.equal(
     canInspectSourceAssembly({
       nodes: [],

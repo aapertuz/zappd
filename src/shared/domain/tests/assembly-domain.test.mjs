@@ -30,6 +30,7 @@ import {
 import {
   CATALOG_ARCHETYPES,
   getCatalogArchetypeById,
+  isAllowedProjectAssembly,
   matchProjectArchetypeFromPrompt,
 } from '../catalog.ts';
 
@@ -397,5 +398,72 @@ describe('shared domain contracts', () => {
     });
     assert.equal(Object.hasOwn(parsed.validation, 'sourceInterferenceReport'), false);
     assert.equal(Object.hasOwn(parsed.validation, 'engineeringReport'), false);
+  });
+
+  it('rejects verified assemblies containing unavailable, visual-only, surface, or non-solid leaf geometry', () => {
+    const checksum = 'a'.repeat(64);
+    const blueprint = getCatalogArchetypeById('quadcopter_drone_v1').nodes.find(
+      (node) => node.id === 'comp_base_plate_lower',
+    );
+    const baseNode = {
+      ...blueprint,
+      provenance: {
+        origin: 'open_step_catalog',
+        verificationStatus: 'sourced_verified',
+        spdxLicense: blueprint.spdxLicense,
+        sourceUrl: blueprint.sourceUrl,
+        sourceName: blueprint.sourceName,
+        stepSha256: checksum,
+      },
+      glbNodeName: blueprint.id,
+      usdzPrimPath: `/World/${blueprint.id}`,
+    };
+    const validReport = {
+      valid: true,
+      brepValid: true,
+      interferenceCount: 0,
+      maxDimensionalErrorMm: 0.01,
+      nodeMappingComplete: true,
+      unitSystem: 'meters_y_up',
+      checkedAtIso: '2026-11-25T00:00:00.000Z',
+      failures: [],
+    };
+    const makeAssembly = (geometry) => ({
+      archetypeId: 'quadcopter_drone_v1',
+      verificationStatus: 'sourced_verified',
+      validation: validReport,
+      nodes: [geometry === undefined ? baseNode : { ...baseNode, geometry }],
+    });
+
+    assert.equal(isAllowedProjectAssembly(makeAssembly(undefined)), true);
+    assert.equal(
+      isAllowedProjectAssembly(makeAssembly({ kind: 'available', role: 'solid' })),
+      true,
+    );
+
+    for (const disallowedGeometry of [
+      { kind: 'unavailable', reason: 'Missing source CAD' },
+      {
+        kind: 'visual_only',
+        cadRejectionReason: 'Invalid source topology',
+        sourceName: 'Visual mesh',
+        sourceUrl: 'https://example.com/mesh.zip',
+        spdxLicense: 'CC-BY-SA-4.0',
+        archiveMember: 'mesh.stl',
+        archiveSha256: checksum,
+        sha256: checksum,
+        sourceOccurrencePath: '1_1',
+        sourceCoordinateFrame: 'assembly_y_up_millimeters',
+      },
+      { kind: 'available', role: 'surface' },
+      { kind: 'assembly' },
+    ]) {
+      const assembly = makeAssembly(disallowedGeometry);
+      assert.equal(hasVerifiedUpstreamProvenance(assembly.nodes, 'sourced_verified'), false);
+      assert.equal(isAllowedProjectAssembly(assembly), false);
+    }
+
+    const unavailableAssembly = makeAssembly({ kind: 'unavailable', reason: 'Missing source CAD' });
+    assert.equal(verifyOneToOneNodeMapping(unavailableAssembly.nodes, [], []), false);
   });
 });

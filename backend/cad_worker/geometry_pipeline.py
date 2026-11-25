@@ -783,6 +783,7 @@ def run_cad_pipeline(
     inject_collision_test: bool = False,
     check_interference: bool = True,
     visual_geometry_by_id: dict[str, MeshGeometry | dict[str, Any]] | None = None,
+    allow_partial_geometry: bool = False,
 ) -> dict[str, Any]:
     archetype_id = archetype_spec["archetypeId"]
     nodes_spec = list(archetype_spec["nodes"])
@@ -821,6 +822,15 @@ def run_cad_pipeline(
         provenance_failure = resolved.get("provenanceFailure")
         if provenance_failure is not None:
             failures.append(provenance_failure)
+
+        geometry_state = node_spec.get("geometry") or {}
+        geometry_kind = geometry_state.get("kind")
+        if geometry_kind in ("unavailable", "visual_only"):
+            failures.append(
+                f"Component {cid} has {geometry_kind} CAD geometry and cannot be verified"
+            )
+        elif node_spec["level"] in ("component", "subcomponent") and not resolved["hasGeometry"]:
+            failures.append(f"Component {cid} is missing CAD geometry")
 
         if not resolved["hasGeometry"]:
             continue
@@ -919,7 +929,12 @@ def run_cad_pipeline(
     parsed_glb_ids, _ = parse_glb_diagnostics(glb_out)
     usda_text = parse_usdz_prim_paths(usdz_out)
 
-    expected_leaf_ids = [n["id"] for n in nodes_spec if n["level"] in ("component", "subcomponent") and n.get("geometry", {}).get("kind") != "unavailable"]
+    expected_leaf_ids = [
+        n["id"]
+        for n in nodes_spec
+        if n["level"] in ("component", "subcomponent")
+        and (not allow_partial_geometry or n.get("geometry", {}).get("kind") != "unavailable")
+    ]
     glb_mapping_ok = set(expected_leaf_ids) == set(parsed_glb_ids) == set(exported_glb_ids)
     usdz_mapping_ok = all(f'custom string componentId = "{cid}"' in usda_text for cid in expected_leaf_ids)
     node_mapping_complete = glb_mapping_ok and usdz_mapping_ok

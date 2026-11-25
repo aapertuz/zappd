@@ -416,7 +416,20 @@ export function hasVerifiedUpstreamProvenance(
     return false;
   }
   let hasComposedNode = false;
-  for (const { provenance } of nodes) {
+  for (const node of nodes) {
+    const { provenance, geometry } = node;
+    if (geometry !== undefined) {
+      const hasUnverifiableGeometry =
+        geometry.kind === 'unavailable' ||
+        geometry.kind === 'visual_only' ||
+        (geometry.kind === 'available' && geometry.role === 'surface');
+      const hasNonSolidLeafGeometry =
+        (node.level === 'component' || node.level === 'subcomponent') &&
+        (geometry.kind !== 'available' || geometry.role !== 'solid');
+      if (hasUnverifiableGeometry || hasNonSolidLeafGeometry) {
+        return false;
+      }
+    }
     if (!isGeometryOrigin(provenance.origin)) {
       return false;
     }
@@ -524,11 +537,13 @@ export function verifyOneToOneNodeMapping(
   nodes: readonly AssemblyNode[],
   glbNodeIds: readonly string[],
   usdzPrimPaths: readonly string[],
+  options?: { readonly allowUnavailableNodes?: boolean },
 ): boolean {
+  const allowUnavailableNodes = options?.allowUnavailableNodes === true;
   const leafNodes = nodes.filter(
     (node) =>
       (node.level === 'component' || node.level === 'subcomponent') &&
-      node.geometry?.kind !== 'unavailable',
+      (!allowUnavailableNodes || node.geometry?.kind !== 'unavailable'),
   );
   if (leafNodes.length === 0) {
     return false;

@@ -179,6 +179,7 @@ async function tryReuseVerifiedExports(args: {
       workerResult.nodes,
       workerResult.glbNodeIds,
       workerResult.usdzPrimPaths,
+      { allowUnavailableNodes: catalogArchetype.semantics === 'source_inspection' },
     );
     if (!mappingOk) {
       return null;
@@ -266,10 +267,12 @@ async function runCadAssemblyAndValidation(args: {
   const workerResult = parseCadWorkerPayload(rawJson);
 
   const { nodes } = workerResult;
+  const catalogArchetype = getCatalogArchetypeById(args.archetypeId);
   const mappingOk = verifyOneToOneNodeMapping(
     nodes,
     workerResult.glbNodeIds,
     workerResult.usdzPrimPaths,
+    { allowUnavailableNodes: catalogArchetype?.semantics === 'source_inspection' },
   );
   if (!mappingOk || !isAllowedProjectAssembly(workerResult)) {
     throw new Error(
