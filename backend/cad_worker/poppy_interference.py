@@ -48,6 +48,10 @@ def exact_pair(shape_a, shape_b, ids: list[str], threshold: float) -> PairResult
     return result
 
 
+def _shape_worker(queue, first, second, ids, threshold):
+    queue.put(exact_pair(first, second, ids, threshold))
+
+
 def _worker(queue, nodes, cache: Path, threshold: float):
     shapes = [translate_shape_mm(resolve_component_step(node, cache)['shape'],
                                 world_rest_to_cad_mm(node['restPositionMeters'])) for node in nodes]
@@ -59,6 +63,7 @@ def analyze(spec: dict, cache: Path, timeout_seconds: float = 30, threshold_mm3:
         raise ValueError('Timeout must be positive and volume threshold nonnegative')
     nodes = []
     bounds = {}
+    placed_shapes = {}
     provenance = []
     exclusions = []
     for node in spec['nodes']:
@@ -74,6 +79,7 @@ def analyze(spec: dict, cache: Path, timeout_seconds: float = 30, threshold_mm3:
         if not TopExp_Explorer(shape, TopAbs_SOLID).More():
             raise ValueError(f"Component {node['id']} declared solid has no CAD solid")
         placed = translate_shape_mm(shape, world_rest_to_cad_mm(node['restPositionMeters']))
+        placed_shapes[node['id']] = placed
         bounds[node['id']] = shape_bounds_mm(placed)
         nodes.append(node)
     candidates = []
@@ -83,11 +89,14 @@ def analyze(spec: dict, cache: Path, timeout_seconds: float = 30, threshold_mm3:
             low_b, high_b = bounds[second['id']]
             if all(low_a[axis] <= high_b[axis] + 1e-7 and low_b[axis] <= high_a[axis] + 1e-7 for axis in range(3)):
                 candidates.append((first, second))
-    context = multiprocessing.get_context('spawn')
+    context = multiprocessing.get_context('fork' if 'fork' in multiprocessing.get_all_start_methods() else 'spawn')
     results = []
     for first, second in candidates:
         queue = context.Queue()
-        process = context.Process(target=_worker, args=(queue, (first, second), cache, threshold_mm3))
+        if context.get_start_method() == 'fork':
+            process = context.Process(target=_shape_worker, args=(queue, placed_shapes[first['id']], placed_shapes[second['id']], [first['id'], second['id']], threshold_mm3))
+        else:
+            process = context.Process(target=_worker, args=(queue, (first, second), cache, threshold_mm3))
         process.start()
         try:
             result = queue.get(timeout=timeout_seconds)
