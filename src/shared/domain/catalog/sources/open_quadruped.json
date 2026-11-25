@@ -1,0 +1,121 @@
+{
+  "poseReferenceUrl": "https://raw.githubusercontent.com/adham-elarabawy/open-quadruped/b0ab4fa599f94460828bf3aa4514240ae917ed38/ros-workspace/src/open_quadruped/urdf/spot.urdf",
+  "fixtures": {
+    "oq_chassis_left.step": {
+      "rotationDeg": [90.0, 90.0, 0],
+      "upstreamStepSha256": "d7de4b8929818e7e57f04c58aa1cf71ccde093ada113e6f19ed0f83b47815ada",
+      "sourceUrl": "https://raw.githubusercontent.com/adham-elarabawy/open-quadruped/b0ab4fa599f94460828bf3aa4514240ae917ed38/hardware/3d-printing/Body/step/Chassis_Left_Side.step",
+      "spdxLicense": "MIT"
+    },
+    "oq_chassis_right.step": {
+      "rotationDeg": [-90.0, 90.0, 0],
+      "upstreamStepSha256": "e54b6b86a4ef10b43dc52b7b283a230828500f1b4fbc929b7107a136170a9a52",
+      "sourceUrl": "https://raw.githubusercontent.com/adham-elarabawy/open-quadruped/b0ab4fa599f94460828bf3aa4514240ae917ed38/hardware/3d-printing/Body/step/Chassis_Left_Side%20-%20Chassis_Right_Side.step",
+      "spdxLicense": "MIT"
+    },
+    "oq_bottom.step": {
+      "rotationDeg": [0, 0, 180.0],
+      "upstreamStepSha256": "cb3db97723f485b32d20ebc8c511f56b27eb7d3b026e1d6c2ccde836b0c8dfc1",
+      "sourceUrl": "https://raw.githubusercontent.com/adham-elarabawy/open-quadruped/b0ab4fa599f94460828bf3aa4514240ae917ed38/hardware/3d-printing/Covers/step/Bottom.step",
+      "spdxLicense": "MIT"
+    },
+    "oq_top.step": {
+      "rotationDeg": [0, 0, 0],
+      "upstreamStepSha256": "e9812e066f753d012df59da1f336b75531e7e8e6553b864c69f7a3200681acdb",
+      "sourceUrl": "https://raw.githubusercontent.com/adham-elarabawy/open-quadruped/b0ab4fa599f94460828bf3aa4514240ae917ed38/hardware/3d-printing/Covers/step/Top.step",
+      "spdxLicense": "MIT"
+    },
+    "oq_electronics_plate.step": {
+      "rotationDeg": [0, 0, -90.0],
+      "upstreamStepSha256": "0d0d07e5ab8435f03b9811e40e9fed82aa0f7ffe36dcfe0b809f4dd1b62528f7",
+      "sourceUrl": "https://raw.githubusercontent.com/adham-elarabawy/open-quadruped/b0ab4fa599f94460828bf3aa4514240ae917ed38/hardware/3d-printing/Body/step/Electronics_Plate.step",
+      "spdxLicense": "MIT"
+    },
+    "oq_front_shoulder.step": {
+      "rotationDeg": [-90.0, 0, -90.0],
+      "upstreamStepSha256": "9d9a11420ace7e69b4ea88f67b66734f30f3a60975f10f3b59013b1a04eccd73",
+      "sourceUrl": "https://raw.githubusercontent.com/adham-elarabawy/open-quadruped/b0ab4fa599f94460828bf3aa4514240ae917ed38/hardware/3d-printing/Body/step/Front_Inner_Shoulder.step",
+      "spdxLicense": "MIT"
+    },
+    "oq_rear_shoulder.step": {
+      "rotationDeg": [-90.0, 0, 90.0],
+      "upstreamStepSha256": "fe8052715bc5deb992cf81f4c928102ac8492cd7553426052bce0821e9dfa287",
+      "sourceUrl": "https://raw.githubusercontent.com/adham-elarabawy/open-quadruped/b0ab4fa599f94460828bf3aa4514240ae917ed38/hardware/3d-printing/Body/step/Back_Inner_Shoulder.step",
+      "spdxLicense": "MIT"
+    },
+    "oq_left_hip.step": {
+      "rotationDeg": [90.0, 0, 180.0],
+      "upstreamStepSha256": "f2635926a460dca333d5e6642f104eb7f49253ed4814097431cb69da740aa95f",
+      "sourceUrl": "https://raw.githubusercontent.com/adham-elarabawy/open-quadruped/b0ab4fa599f94460828bf3aa4514240ae917ed38/hardware/3d-printing/Legs/Left/step/Left_Hip_Joint.step",
+      "spdxLicense": "MIT"
+    },
+    "oq_left_upper.step": {
+      "rotationDeg": [0, -76.0, 0],
+      "upstreamStepSha256": "bf7ffe92fbe848b7832171a9fc574be5e9c882e7118f0ea550a35a50552e2a9d",
+      "sourceUrl": "https://raw.githubusercontent.com/adham-elarabawy/open-quadruped/b0ab4fa599f94460828bf3aa4514240ae917ed38/hardware/3d-printing/Legs/Left/step/Upper_Leg.step",
+      "spdxLicense": "MIT"
+    },
+    "oq_left_lower.step": {
+      "rotationDeg": [0, 40.0, 0],
+      "upstreamStepSha256": "b70b34990cb7f52e408da18998159dde5d93c9ea3862c4e065746b5fd4b8f68f",
+      "sourceUrl": "https://raw.githubusercontent.com/adham-elarabawy/open-quadruped/b0ab4fa599f94460828bf3aa4514240ae917ed38/hardware/3d-printing/Legs/Left/step/Lower_Leg.step",
+      "spdxLicense": "MIT"
+    },
+    "oq_left_foot.step": {
+      "rotationDeg": [0, 40.0, 0],
+      "upstreamStepSha256": "857be6f896c057e9b1c210c1af5659e93d832c53591cdff02a075be280af0c4f",
+      "sourceUrl": "https://raw.githubusercontent.com/adham-elarabawy/open-quadruped/b0ab4fa599f94460828bf3aa4514240ae917ed38/hardware/3d-printing/Legs/Left/step/Foot.step",
+      "spdxLicense": "MIT"
+    },
+    "oq_left_bridge.step": {
+      "rotationDeg": [0, 0, 0],
+      "upstreamStepSha256": "72451e7707bbbc5d68d726ace09cf2d5ce7fd3fd45a5254a93eceb6070a103b6",
+      "sourceUrl": "https://raw.githubusercontent.com/adham-elarabawy/open-quadruped/b0ab4fa599f94460828bf3aa4514240ae917ed38/hardware/3d-printing/Legs/Left/step/Bridge.step",
+      "spdxLicense": "MIT"
+    },
+    "oq_right_hip.step": {
+      "rotationDeg": [90.0, 0, 0],
+      "upstreamStepSha256": "521bd1de3781c8710198d9daa1735f9f4cd8e19d76cbd2e1ef45d5aeeebefc4e",
+      "sourceUrl": "https://raw.githubusercontent.com/adham-elarabawy/open-quadruped/b0ab4fa599f94460828bf3aa4514240ae917ed38/hardware/3d-printing/Legs/Right/step/Right_Hip_Joint.step",
+      "spdxLicense": "MIT"
+    },
+    "oq_right_upper.step": {
+      "rotationDeg": [0, -76.0, 0],
+      "upstreamStepSha256": "70bc14c054004824f84a3948f0dc22cbd34051e089bbcf148dd185d6e76ae8b5",
+      "sourceUrl": "https://raw.githubusercontent.com/adham-elarabawy/open-quadruped/b0ab4fa599f94460828bf3aa4514240ae917ed38/hardware/3d-printing/Legs/Right/step/Upper_Leg.step",
+      "spdxLicense": "MIT"
+    },
+    "oq_right_lower.step": {
+      "rotationDeg": [0, 40.0, 0],
+      "upstreamStepSha256": "089696e5e9747ae41adc880fb9731a4cdbbf4f77ad5450224294bf9b884d2b6d",
+      "sourceUrl": "https://raw.githubusercontent.com/adham-elarabawy/open-quadruped/b0ab4fa599f94460828bf3aa4514240ae917ed38/hardware/3d-printing/Legs/Right/step/Lower_Leg.step",
+      "spdxLicense": "MIT"
+    },
+    "oq_right_foot.step": {
+      "rotationDeg": [0, 40.0, 0],
+      "upstreamStepSha256": "82bca094aaf61a2b57796e0fa22ee1337b603d6273126de95d52dd847ce777eb",
+      "sourceUrl": "https://raw.githubusercontent.com/adham-elarabawy/open-quadruped/b0ab4fa599f94460828bf3aa4514240ae917ed38/hardware/3d-printing/Legs/Right/step/Foot.step",
+      "spdxLicense": "MIT"
+    },
+    "oq_right_bridge.step": {
+      "rotationDeg": [0, 0, 0],
+      "upstreamStepSha256": "4d0441ad1ee74cab0814e33199ba69ae576566bd39f1540a75d2cc8b4da3b474",
+      "sourceUrl": "https://raw.githubusercontent.com/adham-elarabawy/open-quadruped/b0ab4fa599f94460828bf3aa4514240ae917ed38/hardware/3d-printing/Legs/Right/step/Bridge.step",
+      "spdxLicense": "MIT"
+    },
+    "oq_left_servo.step": {
+      "rotationDeg": [180.0, 0, 180.0],
+      "upstreamStepSha256": "cbc981ab738014f7c1d624946762246c504a1886d349c4cd1bdc33a9952ee4cd",
+      "sourceUrl": "https://raw.githubusercontent.com/Xon4/RobotQuadrupedCAD/9dc9f53194a32a4885cf98b57febe645d0905e59/legAssembly.STEP",
+      "spdxLicense": "NOASSERTION",
+      "productName": "DS3218MG MS24 Digital Servo 270"
+    },
+    "oq_right_servo.step": {
+      "rotationDeg": [180.0, 0, 0],
+      "upstreamStepSha256": "cbc981ab738014f7c1d624946762246c504a1886d349c4cd1bdc33a9952ee4cd",
+      "sourceUrl": "https://raw.githubusercontent.com/Xon4/RobotQuadrupedCAD/9dc9f53194a32a4885cf98b57febe645d0905e59/legAssembly.STEP",
+      "spdxLicense": "NOASSERTION",
+      "productName": "DS3218MG MS24 Digital Servo 270"
+    }
+  }
+}

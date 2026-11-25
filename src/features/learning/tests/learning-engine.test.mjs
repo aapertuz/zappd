@@ -327,17 +327,18 @@ describe('component learning context', () => {
   });
 
   it('introduces each catalog machine and describes its groups and guide', async () => {
-    const plainDescriptions = [
-      /aircraft with several propellers/i,
-      /robot arm that follows another arm/i,
-      /vehicle designed to explore terrain/i,
-    ];
+    const plainDescriptions = {
+      quadcopter_drone_v1: /aircraft with several propellers/i,
+      robotic_arm_3dof_v1: /robot arm that follows another arm/i,
+      open_source_rover_v1: /vehicle designed to explore terrain/i,
+      open_quadruped_v1: /four-legged walking robot by Adham Elarabawy/i,
+    };
     for (const [index, archetype] of CATALOG_ARCHETYPES.entries()) {
       const project = verifiedAssembly(archetype, `proj_learning_overview_${index}`);
       const context = await createLearningContext(project);
       const explanation = formatOfflineLearningFallback(context, request);
-      assert.match(explanation, plainDescriptions[index]);
-      assert.match(explanation, /Its main groups are/);
+      assert.match(explanation, plainDescriptions[archetype.archetypeId]);
+      assert.match(explanation, /Its main groups (are|include)/);
       assert.match(
         explanation,
         new RegExp(`build guide breaks it down into ${project.assemblySteps.length} steps`),

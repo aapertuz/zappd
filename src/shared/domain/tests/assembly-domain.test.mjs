@@ -2,7 +2,12 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { describe, it } from 'node:test';
 
-import { COTS_CATALOG_PARTS, getCotsPartById, searchCotsParts } from '@/shared/domain';
+import {
+  COTS_CATALOG_PARTS,
+  OPEN_QUADRUPED_ARCHETYPE,
+  getCotsPartById,
+  searchCotsParts,
+} from '@/shared/domain';
 
 import {
   AI_PROVIDER_REGISTRY,
@@ -102,8 +107,8 @@ describe('shared domain contracts', () => {
     assert.throws(() => parseAiProviderId('unknown_provider'));
   });
 
-  it('matches extensible robotics archetypes across aerial, manipulator, and rover categories', () => {
-    assert.ok(CATALOG_ARCHETYPES.length >= 3);
+  it('matches drones, arms, rovers, and quadrupeds from project prompts', () => {
+    assert.ok(CATALOG_ARCHETYPES.length >= 4);
     const drone = matchProjectArchetypeFromPrompt('I want to learn how to build a quadcopter');
     assert.equal(drone.archetypeId, 'quadcopter_drone_v1');
     assert.equal(getCatalogArchetypeById('quadcopter_drone_v1')?.nodes.length, 42);
@@ -117,6 +122,11 @@ describe('shared domain contracts', () => {
     );
     assert.equal(rover.archetypeId, 'open_source_rover_v1');
     assert.equal(getCatalogArchetypeById('open_source_rover_v1')?.nodes.length, 21);
+
+    const quadruped = matchProjectArchetypeFromPrompt('Build a four-legged quadruped robot dog');
+    assert.equal(quadruped, OPEN_QUADRUPED_ARCHETYPE);
+    assert.equal(getCatalogArchetypeById('open_quadruped_v1'), quadruped);
+    assert.equal(quadruped.generationMode, 'reference_catalog');
   });
 
   it('prevents classifying unvalidated, colliding, or ungrounded models as verified', () => {

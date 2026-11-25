@@ -53,8 +53,8 @@ function buildOverview(
     operatingPrinciple:
       children.length === 0
         ? 'The saved details don’t break it down into smaller groups.'
-        : describesGroups && children.length <= 4
-          ? `Its main groups are ${listedNames}.`
+        : describesGroups
+          ? `Its main groups ${children.length === names.length ? 'are' : 'include'} ${listedNames}.`
           : `You can explore ${listedNames} in this model.`,
     systemRole:
       steps.length === 0

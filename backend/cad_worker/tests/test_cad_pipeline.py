@@ -14,6 +14,7 @@ import numpy as np
 import pytest
 from PIL import Image
 from OCP.BRepCheck import BRepCheck_Analyzer
+from OCP.BRepExtrema import BRepExtrema_DistShapeShape
 from OCP.TopAbs import TopAbs_SOLID
 from OCP.TopExp import TopExp_Explorer
 from pygltflib import FLOAT, GLTF2
@@ -24,7 +25,11 @@ from build_cots_library import load_cots_specs
 from catalog_ingestor import count_brep_faces, read_and_validate_step, read_xcaf_face_colors, resolve_component_step
 from catalog_specs import CATALOG_SPECS, resolve_catalog_spec
 from cots_catalog import get_cots_part, load_cots_catalog, search_cots_parts
-from geometry_pipeline import parse_glb_diagnostics, parse_usdz_prim_paths, run_cad_pipeline, shape_bounds_mm
+from geometry_pipeline import (
+    parse_glb_diagnostics, parse_usdz_prim_paths, run_cad_pipeline, shape_bounds_mm,
+    translate_shape_mm, world_rest_to_cad_mm,
+)
+from ingest_upstream_catalog import OPEN_QUADRUPED_SOURCES
 from material_skins import build_skin_texture_set, resolve_material_skin, srgb_hex_to_linear_rgba
 
 
@@ -32,6 +37,7 @@ EXPECTED_NODE_COUNTS = {
     "quadcopter_drone_v1": 42,
     "robotic_arm_3dof_v1": 31,
     "open_source_rover_v1": 21,
+    "open_quadruped_v1": 40,
 }
 @pytest.fixture(scope="module")
 def cots_parts() -> dict[str, dict]:
@@ -382,6 +388,7 @@ def test_all_robotics_categories_pass_opencascade_validation(tmp_path: Path) -> 
             catalog_node = nodes_by_id[node["id"]]
             prov = node["provenance"]
             assert prov["origin"] == catalog_node["origin"]
+            assert node.get("mountingInterfaces") == catalog_node.get("mountingInterfaces")
             expected_status, allowed_prefix = {
                 "open_step_catalog": ("sourced_verified", "https://"),
                 "cots_library_step": ("sourced_verified", "https://"),
@@ -404,6 +411,58 @@ def test_all_robotics_categories_pass_opencascade_validation(tmp_path: Path) -> 
         assert (out_dir / "model.step").stat().st_size > 0
         assert (out_dir / "model.glb").stat().st_size > 0
         assert (out_dir / "model.usdz").stat().st_size > 0
+
+
+def test_open_quadruped_documents_pinned_parts_and_rated_circuits(tmp_path: Path) -> None:
+    spec = resolve_catalog_spec("open_quadruped_v1")
+    assert spec["generationMode"] == "reference_catalog"
+    source = json.loads(OPEN_QUADRUPED_SOURCES.read_text(encoding="utf-8"))
+    assert "/b0ab4fa599f94460828bf3aa4514240ae917ed38/" in source["poseReferenceUrl"]
+    nodes_by_id = {node["id"]: node for node in spec["nodes"]}
+    relationships = {relation["id"]: relation for relation in spec["relationships"]}
+    connected = {
+        cid for relationship in relationships.values()
+        for cid in (relationship["fromComponentId"], relationship["toComponentId"])
+    }
+    assert connected == nodes_by_id.keys()
+
+    installed = {cid for step in spec["assemblySteps"] for cid in step["componentIds"]}
+    leaves = [node for node in spec["nodes"] if node["stepFixtureName"] is not None]
+    assert installed == {node["id"] for node in leaves}
+    cables = [node for node in leaves if node["origin"] == "procedural_harness"]
+    assert len(cables) == 3
+    for node in leaves:
+        if node["origin"] == "open_step_catalog":
+            fixture = source["fixtures"][node["stepFixtureName"]]
+            assert node["sourceUrl"] == fixture["sourceUrl"]
+            assert node["specifications"]["upstreamStepSha256"] == fixture["upstreamStepSha256"]
+            assert node["spdxLicense"] == fixture["spdxLicense"]
+
+    mount = relationships["rel_oq_battery_mount"]
+    mounted_shapes = []
+    for side in ("from", "to"):
+        mounted_node = nodes_by_id[mount[f"{side}ComponentId"]]
+        resolved = resolve_component_step(mounted_node, tmp_path)
+        mounted_shapes.append(
+            translate_shape_mm(resolved["shape"], world_rest_to_cad_mm(mounted_node["restPositionMeters"]))
+        )
+    mount_distance = BRepExtrema_DistShapeShape(*mounted_shapes)
+    assert mount_distance.IsDone() and mount_distance.Value() <= 0.1
+
+    for cable in cables:
+        relation_id = cable["specifications"]["relationshipId"]
+        electrical = relationships[relation_id]
+        start, end = (
+            next(port for port in nodes_by_id[electrical[f"{side}ComponentId"]]["ports"]
+                 if port["portId"] == electrical[f"{side}PortId"])
+            for side in ("from", "to")
+        )
+        assert start["busKind"] == end["busKind"]
+        assert start["role"] == "source" and end["role"] == "sink"
+        assert end["minVoltageV"] <= start["nominalVoltageV"] <= end["maxVoltageV"]
+        assert start["maxCurrentA"] >= end["maxCurrentA"]
+        assert any(cable["id"] in step["componentIds"] and relation_id in step["relationshipIds"]
+                   for step in spec["assemblySteps"])
 
 
 def test_collision_injection_rejects_and_marks_unverified(tmp_path: Path) -> None:

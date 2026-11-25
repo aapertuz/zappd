@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import hashlib
 import io
 import json
@@ -8,9 +9,11 @@ import tempfile
 import urllib.request
 import xml.etree.ElementTree as ET
 import zipfile
+from functools import cache
 from pathlib import Path
 from typing import Any
 
+from OCP.APIHeaderSection import APIHeaderSection_MakeHeader
 from OCP.Bnd import Bnd_Box
 from OCP.BRep import BRep_Builder
 from OCP.BRepAlgoAPI import BRepAlgoAPI_Cut
@@ -19,11 +22,17 @@ from OCP.BRepBuilderAPI import BRepBuilderAPI_Transform
 from OCP.BRepCheck import BRepCheck_Analyzer
 from OCP.BRepTools import BRepTools
 from OCP.IFSelect import IFSelect_RetDone
+from OCP.STEPCAFControl import STEPCAFControl_Reader
 from OCP.STEPControl import STEPControl_AsIs, STEPControl_Reader, STEPControl_Writer
+from OCP.TCollection import TCollection_ExtendedString, TCollection_HAsciiString
+from OCP.TDataStd import TDataStd_Name
+from OCP.TDocStd import TDocStd_Document
 from OCP.TopAbs import TopAbs_FACE, TopAbs_SOLID
 from OCP.TopExp import TopExp_Explorer
 from OCP.TopoDS import TopoDS_Shape
-from OCP.gp import gp_Ax1, gp_Dir, gp_Pnt, gp_Quaternion, gp_Trsf, gp_Vec
+from OCP.XCAFDoc import XCAFDoc_DocumentTool
+from OCP.collections import Sequence_TDF_Label
+from OCP.gp import gp_Ax1, gp_Dir, gp_Extrinsic_XYZ, gp_Pnt, gp_Quaternion, gp_Trsf, gp_Vec
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -32,6 +41,8 @@ CACHE_DIR = REPO_ROOT / "backend" / "data" / "open_step_cache"
 DRONE_RAW_BASE = "https://raw.githubusercontent.com/AnupAdhikari64/Drone-CAD/main"
 SO100_RAW_BASE = "https://raw.githubusercontent.com/TheRobotStudio/SO-ARM100/main"
 NOVA2_RAW_BASE = "https://raw.githubusercontent.com/AstroX-OpenRover/NOVA2/main"
+OPEN_QUADRUPED_SOURCES = REPO_ROOT / "src/shared/domain/catalog/sources/open_quadruped.json"
+OPEN_QUADRUPED_STEP_TIMESTAMP = "2026-01-01T00:00:00"
 
 
 def fetch_bytes(url: str) -> bytes:
@@ -58,7 +69,9 @@ def count_faces(shape: Any) -> int:
     return count
 
 
-def center_and_write_step(shape: Any, step_path: Path) -> dict[str, Any]:
+def center_and_write_step(
+    shape: Any, step_path: Path, *, timestamp: str | None = None,
+) -> dict[str, Any]:
     if not BRepCheck_Analyzer(shape).IsValid():
         raise RuntimeError(f"Invalid BRep topology before writing {step_path.name}")
 
@@ -89,7 +102,11 @@ def center_and_write_step(shape: Any, step_path: Path) -> dict[str, Any]:
 
     step_path.parent.mkdir(parents=True, exist_ok=True)
     writer = STEPControl_Writer()
-    writer.Transfer(centered_shape, STEPControl_AsIs)
+    if writer.Transfer(centered_shape, STEPControl_AsIs) != IFSelect_RetDone:
+        raise RuntimeError(f"Failed to transfer STEP geometry: {step_path}")
+    if timestamp is not None:
+        header = APIHeaderSection_MakeHeader(writer.Model())
+        header.SetTimeStamp(TCollection_HAsciiString(timestamp))
     status = writer.Write(str(step_path))
     if status != IFSelect_RetDone:
         raise RuntimeError(f"Failed to write STEP file: {step_path}")
@@ -281,16 +298,78 @@ def ingest_nova2(cache_dir: Path) -> dict[str, dict[str, Any]]:
     return results
 
 
-def main() -> int:
-    CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    for stale in CACHE_DIR.glob("*.step"):
-        stale.unlink()
+def read_step_product(payload: bytes, product_name: str) -> TopoDS_Shape:
+    with tempfile.NamedTemporaryFile(suffix=".step") as source:
+        source.write(payload)
+        source.flush()
+        reader = STEPCAFControl_Reader()
+        document = TDocStd_Document(TCollection_ExtendedString("MDTV-XCAF"))
+        if reader.ReadFile(source.name) != IFSelect_RetDone or not reader.Transfer(document):
+            raise RuntimeError(f"Could not read the STEP assembly for {product_name}")
+        tool = XCAFDoc_DocumentTool.ShapeTool_s(document.Main())
+        labels = Sequence_TDF_Label()
+        tool.GetShapes(labels)
+        matches = []
+        for label in labels:
+            name = TDataStd_Name()
+            if label.FindAttribute(TDataStd_Name.GetID_s(), name) and name.Get().ToExtString() == product_name:
+                matches.append(tool.GetShape_s(label))
+        if len(matches) != 1:
+            raise RuntimeError(f"Expected one STEP product named {product_name}, got {len(matches)}")
+        return matches[0]
 
-    summary = {
-        "quadcopter_drone_v1": ingest_drone_cad(CACHE_DIR),
-        "robotic_arm_3dof_v1": ingest_so100(CACHE_DIR),
-        "open_source_rover_v1": ingest_nova2(CACHE_DIR),
+
+def ingest_open_quadruped(cache_dir: Path) -> dict[str, dict[str, Any]]:
+    source_specs = json.loads(OPEN_QUADRUPED_SOURCES.read_text(encoding="utf-8"))
+
+    @cache
+    def load_shape(url: str, expected_sha256: str, product_name: str | None) -> TopoDS_Shape:
+        payload = fetch_bytes(url)
+        sha256 = hashlib.sha256(payload).hexdigest()
+        if sha256 != expected_sha256:
+            raise RuntimeError(f"Upstream STEP digest mismatch for {url}: {sha256}")
+        return read_step_product(payload, product_name) if product_name is not None else read_step_bytes(payload)
+
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    results = {}
+    with tempfile.TemporaryDirectory(dir=cache_dir) as staging:
+        staged = Path(staging)
+        for fixture, spec in source_specs["fixtures"].items():
+            url = spec["sourceUrl"]
+            shape = load_shape(url, spec["upstreamStepSha256"], spec.get("productName"))
+            rotation = gp_Quaternion()
+            rotation.SetEulerAngles(gp_Extrinsic_XYZ, *(math.radians(value) for value in spec["rotationDeg"]))
+            transform = gp_Trsf()
+            transform.SetRotation(rotation)
+            oriented = BRepBuilderAPI_Transform(shape, transform, True).Shape()
+            path = staged / fixture
+            metadata = center_and_write_step(oriented, path, timestamp=OPEN_QUADRUPED_STEP_TIMESTAMP)
+            exported = read_step_bytes(path.read_bytes())
+            if metadata["faceCount"] < 4 or not BRepCheck_Analyzer(exported).IsValid():
+                raise RuntimeError(f"Invalid Open Quadruped fixture: {fixture}")
+            results[fixture] = {
+                **metadata,
+                "sourceUrl": url,
+                "upstreamStepSha256": spec["upstreamStepSha256"],
+                "spdxLicense": spec["spdxLicense"],
+            }
+        for fixture in results:
+            (staged / fixture).replace(cache_dir / fixture)
+    return results
+
+
+def main() -> int:
+    ingestors = {
+        "quadcopter_drone_v1": ingest_drone_cad,
+        "robotic_arm_3dof_v1": ingest_so100,
+        "open_source_rover_v1": ingest_nova2,
+        "open_quadruped_v1": ingest_open_quadruped,
     }
+    parser = argparse.ArgumentParser(description="Ingest pinned upstream CAD fixtures")
+    parser.add_argument("--archetype", choices=ingestors)
+    args = parser.parse_args()
+    targets = (args.archetype,) if args.archetype else ingestors
+    summary = {archetype_id: ingestors[archetype_id](CACHE_DIR) for archetype_id in targets}
     print(json.dumps(summary, indent=2))
     return 0
 

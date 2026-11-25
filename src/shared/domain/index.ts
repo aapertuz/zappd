@@ -85,6 +85,7 @@ export {
   QUADCOPTER_ARCHETYPE,
   ROBOTIC_ARM_ARCHETYPE,
   ROVER_ARCHETYPE,
+  OPEN_QUADRUPED_ARCHETYPE,
   getCatalogArchetypeById,
   listCatalogArchetypes,
   matchProjectArchetypeFromPrompt,

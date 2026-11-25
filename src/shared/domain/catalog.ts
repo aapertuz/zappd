@@ -18,6 +18,7 @@ import {
   isComponentId,
   isGeometryOrigin,
 } from './assembly';
+import openQuadrupedCatalog from './catalog/assemblies/open_quadruped_v1.json' with { type: 'json' };
 import roverCatalog from './catalog/assemblies/open_source_rover_v1.json' with { type: 'json' };
 import quadcopterCatalog from './catalog/assemblies/quadcopter_drone_v1.json' with { type: 'json' };
 import roboticArmCatalog from './catalog/assemblies/robotic_arm_3dof_v1.json' with { type: 'json' };
@@ -78,11 +79,13 @@ export function parseCatalogArchetype(raw: unknown): CatalogArchetypeDefinition 
 export const QUADCOPTER_ARCHETYPE = parseCatalogArchetype(quadcopterCatalog);
 export const ROBOTIC_ARM_ARCHETYPE = parseCatalogArchetype(roboticArmCatalog);
 export const ROVER_ARCHETYPE = parseCatalogArchetype(roverCatalog);
+export const OPEN_QUADRUPED_ARCHETYPE = parseCatalogArchetype(openQuadrupedCatalog);
 
 export const CATALOG_ARCHETYPES: readonly CatalogArchetypeDefinition[] = [
   QUADCOPTER_ARCHETYPE,
   ROBOTIC_ARM_ARCHETYPE,
   ROVER_ARCHETYPE,
+  OPEN_QUADRUPED_ARCHETYPE,
 ];
 
 export function listCatalogArchetypes(): readonly CatalogArchetypeDefinition[] {
