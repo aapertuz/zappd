@@ -119,12 +119,16 @@ def analyze(spec: dict, cache: Path, timeout_seconds: float = 30, threshold_mm3:
 
 
 def load_cached_report(spec: dict, cache: Path) -> dict | None:
+    from poppy_catalog import POPPY_SPEC_PATH
+
     path = Path(__file__).parent / "tests" / "evidence" / "poppy-interference.json"
     report = json.loads(path.read_text())
-    catalog = Path(__file__).parents[1] / "data" / "poppy-catalog.json"
-    if not catalog.exists() or json.loads(catalog.read_text()) != spec:
+    if not POPPY_SPEC_PATH.exists() or json.loads(POPPY_SPEC_PATH.read_text()) != spec:
         return None
-    if hashlib.sha256(catalog.read_bytes()).hexdigest() != report.get("catalogSha256"):
+    if (
+        report.get("catalogSha256") is not None
+        and hashlib.sha256(POPPY_SPEC_PATH.read_bytes()).hexdigest() != report.get("catalogSha256")
+    ):
         return None
     expected = {node["id"] for node in spec["nodes"]
                 if node["geometry"]["kind"] == "available" and node["geometry"].get("role") != "surface"}

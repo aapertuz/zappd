@@ -37,6 +37,20 @@ registerHooks({
 const { FirebaseEmulatorRepository } = await import('../../../src/shared/firebase/index.ts');
 const { orchestrateProjectAssemblyCreation } = await import('../genkitOrchestrator.ts');
 
+function assertReusesAvailableExports(assembly) {
+  const manifestFile = path.join(
+    repoRoot,
+    'backend',
+    'data',
+    'exports',
+    assembly.archetypeId,
+    'manifest.json',
+  );
+  if (fs.existsSync(manifestFile)) {
+    assert.deepEqual(assembly.manifest, JSON.parse(fs.readFileSync(manifestFile, 'utf8')));
+  }
+}
+
 describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emulator persistence', () => {
   it('orchestrates a quadcopter request end-to-end and persists hierarchy and binaries', async () => {
     const repository = new FirebaseEmulatorRepository();
@@ -47,12 +61,14 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
     });
 
     assert.equal(assembly.archetypeId, 'quadcopter_drone_v1');
-    assert.equal(assembly.verificationStatus, 'sourced_verified');
+    assert.equal(assembly.verificationStatus, 'composed_validated');
     assert.equal(assembly.validation.valid, true);
     assert.equal(assembly.validation.brepValid, true);
     assert.equal(assembly.validation.interferenceCount, 0);
     assert.ok(assembly.validation.maxDimensionalErrorMm <= 0.1);
-    assert.equal(assembly.nodes.length, 30);
+    assert.equal(assembly.nodes.length, 42);
+    assert.equal(assembly.assemblySteps.length, 6);
+    assertReusesAvailableExports(assembly);
     assert.equal(assembly.orchestration.provider, 'gemini');
     assert.equal(assembly.orchestration.apiFormat, 'google_genai');
 
@@ -89,10 +105,12 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
     });
 
     assert.equal(assembly.archetypeId, 'robotic_arm_3dof_v1');
+    assert.equal(assembly.verificationStatus, 'composed_validated');
     assert.equal(assembly.validation.valid, true);
     assert.equal(assembly.validation.interferenceCount, 0);
-    assert.equal(assembly.nodes.length, 24);
-    assert.equal(assembly.assemblySteps.length, 4);
+    assert.equal(assembly.nodes.length, 31);
+    assert.equal(assembly.assemblySteps.length, 5);
+    assertReusesAvailableExports(assembly);
   });
 
   it('orchestrates a third robotics archetype (NOVA2 open-source rover)', async () => {
@@ -104,11 +122,29 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
     });
 
     assert.equal(assembly.archetypeId, 'open_source_rover_v1');
-    assert.equal(assembly.verificationStatus, 'sourced_verified');
+    assert.equal(assembly.verificationStatus, 'composed_validated');
     assert.equal(assembly.validation.valid, true);
     assert.equal(assembly.validation.interferenceCount, 0);
-    assert.equal(assembly.nodes.length, 15);
-    assert.equal(assembly.assemblySteps.length, 3);
+    assert.equal(assembly.nodes.length, 21);
+    assert.equal(assembly.assemblySteps.length, 4);
+    assertReusesAvailableExports(assembly);
+  });
+
+  it('orchestrates a fourth robotics archetype (HeyPCB Reachy Mini desktop robot)', async () => {
+    const repository = new FirebaseEmulatorRepository();
+    const assembly = await orchestrateProjectAssemblyCreation({
+      prompt: 'Build Reachy Mini desktop companion robot',
+      provider: 'gemini',
+      repository,
+    });
+
+    assert.equal(assembly.archetypeId, 'reachy_mini_v1');
+    assert.equal(assembly.verificationStatus, 'composed_validated');
+    assert.equal(assembly.validation.valid, true);
+    assert.equal(assembly.validation.interferenceCount, 0);
+    assert.equal(assembly.nodes.length, 98);
+    assert.equal(assembly.assemblySteps.length, 51);
+    assertReusesAvailableExports(assembly);
   });
 
   it('drives both OpenAI and DeepSeek through the shared OpenAI-compatible API integration', async () => {

@@ -6,6 +6,7 @@ import {
   type ResolvedComponentRelationship,
   type VerifiedProjectAssembly,
   getCatalogArchetypeById,
+  isVerifiedStatus,
   parseProjectLearningDocuments,
 } from '@/shared/domain';
 import {
@@ -34,7 +35,7 @@ function getBrowserStorage(): LearningOfflineStorage | undefined {
 }
 
 function cacheKey({ projectId, manifest }: VerifiedProjectAssembly): string {
-  return `zappd:learning:v1:${projectId}:${manifest.manifestHash}`;
+  return `zappd:learning:v2:${projectId}:${manifest.manifestHash}`;
 }
 
 function readCache(
@@ -127,8 +128,8 @@ function resolveContext(
     (record) => record.componentId === componentId,
   );
   if (
-    component?.provenance.verificationStatus !== 'sourced_verified' ||
-    storedExplanation?.verificationStatus !== 'sourced_verified'
+    !isVerifiedStatus(component?.provenance.verificationStatus) ||
+    !isVerifiedStatus(storedExplanation?.verificationStatus)
   )
     return null;
 

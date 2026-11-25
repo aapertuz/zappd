@@ -14,9 +14,11 @@ def main():
     args = parser.parse_args()
     if args.timeout <= 0:
         parser.error('timeout must be positive')
+    from poppy_catalog import POPPY_SPEC_PATH
+
     root = Path(__file__).parents[1]
     cache = root / 'data' / 'open_step_cache'
-    spec = json.loads((root / 'data' / 'poppy-catalog.json').read_text())
+    spec = json.loads(POPPY_SPEC_PATH.read_text())
     report = load_cached_report(spec, cache)
     if report is None:
         raise ValueError('Catalog or fixtures differ from captured report')

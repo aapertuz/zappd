@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync, readdirSync } from 'node:fs';
 import { describe, it } from 'node:test';
 
 import {
@@ -8,12 +9,22 @@ import {
   parseAiProviderId,
 } from '../aiProvider.ts';
 import {
+  GEOMETRY_ORIGINS,
   canClassifyAsVerified,
   computeExplodeStageWeight,
   computeNodeWorldPositionMeters,
   hasVerifiedUpstreamProvenance,
+  isGeometryOrigin,
+  isPortId,
   isVerificationStatus,
+  isVerifiedStatus,
+  parseAssemblyNode,
+  parseConnectorPort,
+  parseGeometryOrigin,
+  parseRelationship,
+  parseVerifiedProjectAssembly,
   toComponentId,
+  toPortId,
   verifyOneToOneNodeMapping,
 } from '../assembly.ts';
 import {
@@ -23,6 +34,18 @@ import {
 } from '../catalog.ts';
 
 describe('shared domain contracts', () => {
+  it('loads the same complete catalog specs as the CAD worker', () => {
+    const catalogDirectory = new URL('../catalog/assemblies/', import.meta.url);
+    const workerSpecFiles = readdirSync(catalogDirectory).filter((file) => file.endsWith('.json'));
+    const appSpecFiles = CATALOG_ARCHETYPES.map(({ archetypeId }) => `${archetypeId}.json`);
+
+    assert.deepEqual(appSpecFiles.toSorted(), workerSpecFiles.toSorted());
+    for (const specFile of workerSpecFiles) {
+      const workerSpec = JSON.parse(readFileSync(new URL(specFile, catalogDirectory), 'utf8'));
+      assert.deepEqual(getCatalogArchetypeById(workerSpec.archetypeId), workerSpec);
+    }
+  });
+
   it('routes gemini via google_genai and both openai and deepseek via openai_compatible api', () => {
     assert.equal(getAiProviderDescriptor('gemini').apiFormat, 'google_genai');
     assert.equal(getAiProviderDescriptor('openai').apiFormat, 'openai_compatible');
@@ -39,17 +62,22 @@ describe('shared domain contracts', () => {
     assert.ok(CATALOG_ARCHETYPES.length >= 3);
     const drone = matchProjectArchetypeFromPrompt('I want to learn how to build a quadcopter');
     assert.equal(drone.archetypeId, 'quadcopter_drone_v1');
-    assert.equal(getCatalogArchetypeById('quadcopter_drone_v1')?.nodes.length, 30);
+    assert.equal(getCatalogArchetypeById('quadcopter_drone_v1')?.nodes.length, 42);
 
     const arm = matchProjectArchetypeFromPrompt('Build a 5-DOF SO-100 robotic arm with gripper');
     assert.equal(arm.archetypeId, 'robotic_arm_3dof_v1');
-    assert.equal(getCatalogArchetypeById('robotic_arm_3dof_v1')?.nodes.length, 24);
+    assert.equal(getCatalogArchetypeById('robotic_arm_3dof_v1')?.nodes.length, 31);
 
     const rover = matchProjectArchetypeFromPrompt(
       'Inspect a planetary rover chassis with stereo camera',
     );
     assert.equal(rover.archetypeId, 'open_source_rover_v1');
-    assert.equal(getCatalogArchetypeById('open_source_rover_v1')?.nodes.length, 15);
+    assert.equal(getCatalogArchetypeById('open_source_rover_v1')?.nodes.length, 21);
+
+    const reachy = matchProjectArchetypeFromPrompt('Build Reachy Mini desktop companion robot');
+    assert.equal(reachy.archetypeId, 'reachy_mini_v1');
+    assert.equal(getCatalogArchetypeById('reachy_mini_v1')?.nodes.length, 98);
+    assert.equal(getCatalogArchetypeById('reachy_mini_v1')?.assemblySteps.length, 51);
   });
 
   it('prevents classifying unvalidated, colliding, or ungrounded models as verified', () => {
@@ -64,8 +92,12 @@ describe('shared domain contracts', () => {
       failures: [],
     };
     assert.equal(canClassifyAsVerified(validReport, 'sourced_verified'), true);
+    assert.equal(canClassifyAsVerified(validReport, 'composed_validated'), true);
     assert.equal(canClassifyAsVerified(validReport, 'unverified'), false);
     assert.equal(isVerificationStatus('synthesized_verified'), false);
+    assert.equal(isVerificationStatus('composed_validated'), true);
+    assert.equal(isVerifiedStatus('composed_validated'), true);
+    assert.equal(isVerifiedStatus('unverified'), false);
     assert.equal(
       canClassifyAsVerified({ ...validReport, interferenceCount: 1 }, 'sourced_verified'),
       false,
@@ -74,34 +106,179 @@ describe('shared domain contracts', () => {
       canClassifyAsVerified({ ...validReport, maxDimensionalErrorMm: 0.15 }, 'sourced_verified'),
       false,
     );
+    assert.equal(
+      canClassifyAsVerified({ ...validReport, nodeMappingComplete: false }, 'composed_validated'),
+      false,
+    );
+  });
 
-    const drone = matchProjectArchetypeFromPrompt('quadcopter');
-    const validNodes = drone.nodes.map((bp) => ({
-      ...bp,
+  it('requires each geometry origin to have its own allowed URI and verification status', () => {
+    const cases = [
+      [
+        'open_step_catalog',
+        'sourced_verified',
+        ['https://'],
+        ['kicad://', 'harness://', 'parametric://'],
+      ],
+      [
+        'cots_library_step',
+        'sourced_verified',
+        ['https://'],
+        ['kicad://', 'harness://', 'parametric://'],
+      ],
+      [
+        'kicad_pcb_step',
+        'composed_validated',
+        ['https://', 'kicad://'],
+        ['harness://', 'parametric://'],
+      ],
+      [
+        'procedural_harness',
+        'composed_validated',
+        ['https://', 'harness://'],
+        ['kicad://', 'parametric://'],
+      ],
+      [
+        'parametric_cad',
+        'composed_validated',
+        ['https://', 'parametric://'],
+        ['kicad://', 'harness://'],
+      ],
+    ];
+    const nodeWithProvenance = (provenance) => ({
+      provenance: { spdxLicense: 'MIT', stepSha256: 'a'.repeat(64), ...provenance },
+    });
+    const hasProvenance = (provenance) =>
+      hasVerifiedUpstreamProvenance([nodeWithProvenance(provenance)]);
+
+    assert.deepEqual(
+      GEOMETRY_ORIGINS,
+      cases.map(([origin]) => origin),
+    );
+    assert.equal(hasVerifiedUpstreamProvenance([]), false);
+    assert.equal(isGeometryOrigin('build123d_fallback'), false);
+    assert.throws(() => parseGeometryOrigin('build123d_fallback'));
+
+    const validNodes = [];
+    for (const [origin, verificationStatus, allowed, denied] of cases) {
+      assert.equal(isGeometryOrigin(origin), true);
+      assert.equal(parseGeometryOrigin(origin), origin);
+      for (const prefix of allowed) {
+        const provenance = { origin, verificationStatus, sourceUrl: `${prefix}example.test/part` };
+        assert.equal(hasProvenance(provenance), true);
+        validNodes.push(nodeWithProvenance(provenance));
+      }
+      for (const prefix of [...denied, 'http://', 'local://']) {
+        assert.equal(
+          hasProvenance({ origin, verificationStatus, sourceUrl: `${prefix}example.test/part` }),
+          false,
+        );
+      }
+      for (const invalidStatus of ['sourced_verified', 'composed_validated', 'unverified'].filter(
+        (status) => status !== verificationStatus,
+      )) {
+        assert.equal(
+          hasProvenance({
+            origin,
+            verificationStatus: invalidStatus,
+            sourceUrl: 'https://example.test/part',
+          }),
+          false,
+        );
+      }
+    }
+    assert.equal(hasVerifiedUpstreamProvenance(validNodes), true);
+    assert.equal(hasVerifiedUpstreamProvenance(validNodes, 'composed_validated'), true);
+    assert.equal(hasVerifiedUpstreamProvenance(validNodes, 'sourced_verified'), false);
+    const sourcedOnlyNodes = validNodes.filter(
+      ({ provenance }) => provenance.verificationStatus === 'sourced_verified',
+    );
+    assert.equal(hasVerifiedUpstreamProvenance(sourcedOnlyNodes, 'sourced_verified'), true);
+    assert.equal(hasVerifiedUpstreamProvenance(sourcedOnlyNodes, 'composed_validated'), false);
+    const reference = validNodes[0].provenance;
+    assert.equal(hasProvenance({ ...reference, origin: 'build123d_fallback' }), false);
+    assert.equal(hasProvenance({ ...reference, spdxLicense: '  ' }), false);
+    assert.equal(hasProvenance({ ...reference, stepSha256: 'g'.repeat(64) }), false);
+  });
+
+  it('parses connector ports and preserves optional ports only on nodes that have them', () => {
+    const port = {
+      portId: 'port_motor_power',
+      label: 'Motor power',
+      connectorType: 'XT30',
+      busKind: 'dc_power',
+      localPositionMeters: [0.01, 0, 0],
+      exitDirection: [1, 0, 0],
+    };
+    assert.equal(isPortId(port.portId), true);
+    assert.equal(toPortId(port.portId), port.portId);
+    assert.equal(isPortId('Invalid Port'), false);
+    assert.throws(() => toPortId('Invalid Port'));
+    assert.deepEqual(parseConnectorPort(port), port);
+    const wiredPort = {
+      ...port,
+      wireGaugeAwg: 18,
+      wireColorsHex: ['#ff0000', '#000000'],
+      nominalVoltageV: 12,
+    };
+    assert.deepEqual(parseConnectorPort(wiredPort), wiredPort);
+    for (const invalidFields of [
+      { portId: '' },
+      { label: ' ' },
+      { busKind: 'analog' },
+      { localPositionMeters: [0, 0] },
+      { exitDirection: [0, 0, 0] },
+      { exitDirection: [1, 0, Infinity] },
+      { wireColorsHex: ['red'] },
+      { wireGaugeAwg: NaN },
+    ]) {
+      assert.throws(() => parseConnectorPort({ ...port, ...invalidFields }));
+    }
+
+    const blueprint = getCatalogArchetypeById('quadcopter_drone_v1').nodes[0];
+    const node = {
+      ...blueprint,
       provenance: {
-        origin: bp.origin,
+        origin: blueprint.origin,
         verificationStatus: 'sourced_verified',
-        spdxLicense: bp.spdxLicense,
-        sourceUrl: bp.sourceUrl,
-        sourceName: bp.sourceName,
+        spdxLicense: blueprint.spdxLicense,
+        sourceUrl: blueprint.sourceUrl,
+        sourceName: blueprint.sourceName,
         stepSha256: 'a'.repeat(64),
       },
-      glbNodeName: bp.id,
-      usdzPrimPath: `/World/${bp.id}`,
-    }));
-    assert.equal(hasVerifiedUpstreamProvenance(validNodes), true);
+      glbNodeName: blueprint.id,
+      usdzPrimPath: `/World/${blueprint.id}`,
+    };
+    assert.equal(Object.hasOwn(parseAssemblyNode(node), 'ports'), false);
+    assert.deepEqual(parseAssemblyNode({ ...node, ports: [wiredPort] }).ports, [wiredPort]);
+    assert.throws(() => parseAssemblyNode({ ...node, ports: [null] }));
+  });
 
-    const unverifiedNodes = validNodes.map((n, index) =>
-      index === 0 ? { ...n, provenance: { ...n.provenance, verificationStatus: 'unverified' } } : n,
-    );
-    assert.equal(hasVerifiedUpstreamProvenance(unverifiedNodes), false);
-
-    const localUrlNodes = validNodes.map((n, index) =>
-      index === 0
-        ? { ...n, provenance: { ...n.provenance, sourceUrl: 'local://unverified/test' } }
-        : n,
-    );
-    assert.equal(hasVerifiedUpstreamProvenance(localUrlNodes), false);
+  it('parses electrical routing with a complete port pair and positive finite bundle diameter', () => {
+    const relationship = {
+      id: 'rel_motor_power',
+      fromComponentId: 'comp_motor',
+      toComponentId: 'comp_controller',
+      connectionType: 'power_bus',
+      howConnected: 'XT30',
+      whyConnected: 'Powers the motor',
+    };
+    assert.deepEqual(parseRelationship(relationship), relationship);
+    const routed = {
+      ...relationship,
+      fromPortId: 'port_motor_power',
+      toPortId: 'port_controller_out',
+      routingWaypointsMeters: [[0.01, 0.02, 0.03]],
+      wireBundleDiameterMm: 5,
+    };
+    assert.deepEqual(parseRelationship(routed), routed);
+    assert.throws(() => parseRelationship({ ...relationship, fromPortId: routed.fromPortId }));
+    assert.throws(() => parseRelationship({ ...relationship, toPortId: routed.toPortId }));
+    assert.throws(() => parseRelationship({ ...routed, toPortId: 'Invalid Port' }));
+    assert.throws(() => parseRelationship({ ...routed, routingWaypointsMeters: [[0, 0]] }));
+    for (const wireBundleDiameterMm of [0, -1, Infinity, NaN, '5']) {
+      assert.throws(() => parseRelationship({ ...routed, wireBundleDiameterMm }));
+    }
   });
 
   it('computes hierarchical constraint-axis explosion by assembly depth without axial drift', () => {
@@ -157,5 +334,68 @@ describe('shared domain contracts', () => {
       verifyOneToOneNodeMapping(Object.values(nodesById), glbIds.slice(1), usdzPrims),
       false,
     );
+  });
+
+  it('omits absent inspection report fields on parsed validation reports for Firestore compatibility', () => {
+    const checksum = 'a'.repeat(64);
+    const parsed = parseVerifiedProjectAssembly({
+      projectId: 'proj_firestore_clean',
+      archetypeId: 'quadcopter_drone_v1',
+      title: 'Quadcopter',
+      userPrompt: 'Build a quadcopter',
+      verificationStatus: 'sourced_verified',
+      rootNodeId: 'proj_quadcopter',
+      nodes: [],
+      relationships: [],
+      assemblySteps: [],
+      manifest: {
+        manifestHash: checksum,
+        archetypeId: 'quadcopter_drone_v1',
+        generatedAtIso: '2026-11-25T00:00:00.000Z',
+        files: {
+          step: {
+            format: 'step',
+            storagePath: 'assemblies/test/model.step',
+            publicUrl: '/assemblies/quadcopter_drone_v1/model.step',
+            sha256: checksum,
+            sizeBytes: 1,
+          },
+          glb: {
+            format: 'glb',
+            storagePath: 'assemblies/test/model.glb',
+            publicUrl: '/assemblies/quadcopter_drone_v1/model.glb',
+            sha256: checksum,
+            sizeBytes: 1,
+          },
+          usdz: {
+            format: 'usdz',
+            storagePath: 'assemblies/test/model.usdz',
+            publicUrl: '/assemblies/quadcopter_drone_v1/model.usdz',
+            sha256: checksum,
+            sizeBytes: 1,
+          },
+        },
+      },
+      validation: {
+        valid: true,
+        brepValid: true,
+        interferenceCount: 0,
+        maxDimensionalErrorMm: 0.01,
+        nodeMappingComplete: true,
+        unitSystem: 'meters_y_up',
+        checkedAtIso: '2026-11-25T00:00:00.000Z',
+        failures: [],
+      },
+      orchestration: {
+        provider: 'deepseek',
+        modelId: 'deepseek-chat',
+        apiFormat: 'openai_compatible',
+        baseUrl: 'https://api.deepseek.com',
+        executionMode: 'local_catalog_planner',
+        plannedSubsystems: [],
+      },
+    });
+    assert.equal(Object.hasOwn(parsed.validation, 'sourceInterferenceReport'), false);
+    assert.equal(Object.hasOwn(parsed.validation, 'engineeringReport'), false);
   });
 });

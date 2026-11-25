@@ -6,7 +6,7 @@ import type {
   VerifiedProjectAssembly,
 } from '@/shared/domain';
 
-import type { ExplorerCameraState } from '../types';
+import type { ExplorerCameraState, WiringVisibilityMode } from '../types';
 
 export type SpringConfig = {
   readonly stiffness: number;
@@ -20,6 +20,16 @@ export type SpringScalarState = { readonly value: number; readonly velocity: num
 export type AssemblyPlaybackPhase =
   | { readonly kind: 'assembling'; readonly elapsedSec: number; readonly totalDurationSec: number }
   | { readonly kind: 'settled' };
+
+type CameraTransition =
+  | { readonly kind: 'interactive' }
+  | {
+      readonly kind: 'glide';
+      readonly direction: 'focus_in' | 'focus_out';
+      readonly elapsedSec: number;
+      readonly durationSec: number;
+      readonly from: ExplorerCameraState;
+    };
 
 export type NodeAssemblyWindow = {
   readonly nodeId: ComponentId;
@@ -35,6 +45,8 @@ export type AssemblyAnimationTargets = {
   readonly camera: ExplorerCameraState;
   readonly isolatedComponentId: ComponentId | null;
   readonly focusedComponentId?: ComponentId | null;
+  readonly wiringVisibility?: WiringVisibilityMode;
+  readonly circuitHighlightIds?: ReadonlySet<ComponentId>;
   readonly separatedOffsets: Readonly<Record<string, Vector3Tuple>>;
 };
 
@@ -73,7 +85,7 @@ type AnimationNode = Pick<
   | 'restPositionMeters'
   | 'explodeDirection'
   | 'explodeDistanceMeters'
->;
+> & { readonly category?: AssemblyNode['category'] };
 
 type AnimationAssembly = {
   readonly nodes: readonly AnimationNode[];
@@ -90,9 +102,11 @@ const ZERO: Vector3Tuple = [0, 0, 0];
 const POSITION_EPSILON_METERS = 0.00001;
 const ANGLE_EPSILON_DEG = 0.01;
 const DAMPING_RATE = 14;
-const FOCUS_CAMERA_DAMPING_RATE = 3.2;
-const ISOLATION_FADE_RATE = 6.5;
-const ISOLATION_OPACITY_EPSILON = 0.005;
+export const FOCUS_IN_DURATION_SEC = 1.1;
+export const FOCUS_OUT_DURATION_SEC = 0.65;
+const VISIBILITY_FADE_OUT_RATE = 4.2;
+const VISIBILITY_FADE_IN_RATE = 6.5;
+const VISIBILITY_OPACITY_EPSILON = 0.02;
 
 function clamp01(value: number): number {
   return Math.min(1, Math.max(0, value));
@@ -101,6 +115,30 @@ function clamp01(value: number): number {
 function smoothstep(value: number): number {
   const u = clamp01(value);
   return u * u * (3 - 2 * u);
+}
+
+function autoWiringOpacity(explodeFactor: number): number {
+  return 1 - smoothstep((explodeFactor - 0.25) / 0.3);
+}
+
+function nodeVisibilityTarget(
+  node: AnimationNode,
+  { isolatedComponentId, circuitHighlightIds, wiringVisibility }: AssemblyAnimationTargets,
+  autoOpacity: number,
+): number {
+  if (node.id === isolatedComponentId) return 1;
+  const inCircuit = circuitHighlightIds?.has(node.id) === true;
+  if (node.category !== 'wiring') {
+    return isolatedComponentId === null ? 1 : inCircuit ? 0.38 : 0;
+  }
+  if (wiringVisibility === 'hide') return 0;
+  if (isolatedComponentId !== null) return inCircuit ? 0.85 : 0;
+  if (inCircuit || wiringVisibility === 'show') return 1;
+  return autoOpacity;
+}
+
+function smootherstep(u: number): number {
+  return u * u * u * (u * (u * 6 - 15) + 10);
 }
 
 function elapsedSeconds(dtSec: number): number {
@@ -215,14 +253,35 @@ function dampVector(value: Vector3Tuple, target: Vector3Tuple, alpha: number): V
   return x === value[0] && y === value[1] && z === value[2] ? value : [x, y, z];
 }
 
+function shortestAngleDelta(from: number, to: number): number {
+  return ((((to - from + 180) % 360) + 360) % 360) - 180;
+}
+
+function interpolateCamera(
+  from: ExplorerCameraState,
+  to: ExplorerCameraState,
+  weight: number,
+): ExplorerCameraState {
+  const lerp = (start: number, end: number) => start + (end - start) * weight;
+  return {
+    azimuthDeg: from.azimuthDeg + shortestAngleDelta(from.azimuthDeg, to.azimuthDeg) * weight,
+    elevationDeg: lerp(from.elevationDeg, to.elevationDeg),
+    distanceMeters: lerp(from.distanceMeters, to.distanceMeters),
+    targetMeters: [
+      lerp(from.targetMeters[0], to.targetMeters[0]),
+      lerp(from.targetMeters[1], to.targetMeters[1]),
+      lerp(from.targetMeters[2], to.targetMeters[2]),
+    ],
+  };
+}
+
 function dampCamera(
   camera: ExplorerCameraState,
   target: ExplorerCameraState,
   alpha: number,
 ): ExplorerCameraState {
-  const shortestAzimuthDelta =
-    ((((target.azimuthDeg - camera.azimuthDeg + 180) % 360) + 360) % 360) - 180;
-  const wrappedTarget = camera.azimuthDeg + shortestAzimuthDelta;
+  const wrappedTarget =
+    camera.azimuthDeg + shortestAngleDelta(camera.azimuthDeg, target.azimuthDeg);
   const azimuth = damp(camera.azimuthDeg, wrappedTarget, alpha, ANGLE_EPSILON_DEG);
   return {
     azimuthDeg: azimuth === wrappedTarget ? target.azimuthDeg : azimuth,
@@ -328,13 +387,11 @@ export function createAssemblyAnimationController({
   const schedule = buildAssemblySchedule(assembly);
   const windowsById = new Map(schedule.map((window) => [window.nodeId, window]));
   const nodesById = new Map(assembly.nodes.map((node) => [node.id, node]));
+  let previousAutoOpacity = autoWiringOpacity(initialTargets.explodeFactor);
   const nodes = assembly.nodes.map((node) => ({
     node,
     chain: getAncestorChain(node, nodesById),
-    isolationVisibility:
-      initialTargets.isolatedComponentId === null || initialTargets.isolatedComponentId === node.id
-        ? 1
-        : 0,
+    visibility: nodeVisibilityTarget(node, initialTargets, previousAutoOpacity),
   }));
   const totalDurationSec = schedule.at(-1)?.endSec ?? 0;
   let phase: AssemblyPlaybackPhase =
@@ -345,13 +402,13 @@ export function createAssemblyAnimationController({
   let spring: SpringScalarState = { value: initialTargets.explodeFactor, velocity: 0 };
   let multipliers = stageMultipliers(initialTargets.activeExplodeStage);
   let previousWeights: Vector3Tuple = ZERO;
-  let previousIsolation = initialTargets.isolatedComponentId;
-  let isolationFading = false;
+  let previousTargets = initialTargets;
+  let visibilityFading = false;
   const liveOffsets = new Map<ComponentId, Vector3Tuple>();
   let camera = initialTargets.camera;
   let previousFocusedId = initialTargets.focusedComponentId ?? null;
   let previousTargetCamera = initialTargets.camera;
-  let cameraTransitionMode: 'interactive' | 'focus_glide' = 'interactive';
+  let cameraTransition: CameraTransition = { kind: 'interactive' };
   let nodePoses: AssemblyFrameSnapshot['nodePoses'] = {};
 
   return {
@@ -375,6 +432,7 @@ export function createAssemblyAnimationController({
       const targetMultipliers = stageMultipliers(targets.activeExplodeStage);
       multipliers = dampVector(multipliers, targetMultipliers, alpha);
       const weights = explodeWeights(spring.value, multipliers);
+      const autoOpacity = autoWiringOpacity(spring.value);
       let offsetsChanged = false;
       let offsetsMoving = false;
       for (const { node } of nodes) {
@@ -393,31 +451,40 @@ export function createAssemblyAnimationController({
         phase !== previousPhase ||
         !vectorsEqual(weights, previousWeights) ||
         offsetsChanged ||
-        isolationFading ||
-        targets.isolatedComponentId !== previousIsolation
+        visibilityFading ||
+        targets.isolatedComponentId !== previousTargets.isolatedComponentId ||
+        targets.wiringVisibility !== previousTargets.wiringVisibility ||
+        targets.circuitHighlightIds !== previousTargets.circuitHighlightIds ||
+        autoOpacity !== previousAutoOpacity
       ) {
-        const fadeAlpha = prefersReducedMotion
+        const fadeInAlpha = prefersReducedMotion
           ? 1
-          : 1 - Math.exp(-ISOLATION_FADE_RATE * dampingDelta);
-        isolationFading = false;
+          : 1 - Math.exp(-VISIBILITY_FADE_IN_RATE * dampingDelta);
+        const fadeOutAlpha = prefersReducedMotion
+          ? 1
+          : 1 - Math.exp(-VISIBILITY_FADE_OUT_RATE * dampingDelta);
+        visibilityFading = false;
         const worldPoses: Record<string, Omit<AnimatedNodePose, 'localPositionMeters'>> = {};
         for (const part of nodes) {
           const { node, chain } = part;
-          const isolationTarget =
-            targets.isolatedComponentId === null || targets.isolatedComponentId === node.id ? 1 : 0;
-          part.isolationVisibility = damp(
-            part.isolationVisibility,
-            isolationTarget,
-            fadeAlpha,
-            ISOLATION_OPACITY_EPSILON,
+          const visibilityTarget = nodeVisibilityTarget(node, targets, autoOpacity);
+          part.visibility = damp(
+            part.visibility,
+            visibilityTarget,
+            node.category === 'wiring'
+              ? alpha
+              : visibilityTarget < part.visibility
+                ? fadeOutAlpha
+                : fadeInAlpha,
+            VISIBILITY_OPACITY_EPSILON,
           );
-          isolationFading ||= part.isolationVisibility !== isolationTarget;
+          visibilityFading ||= part.visibility !== visibilityTarget;
           const {
             approach,
             opacity: arrivalOpacity,
             scale,
           } = partArrival(windowsById.get(node.id), phase);
-          const opacity = arrivalOpacity * part.isolationVisibility;
+          const opacity = arrivalOpacity * part.visibility;
           worldPoses[node.id] = {
             worldPositionMeters: computeWorldPosition(node, chain, weights, liveOffsets, approach),
             opacity,
@@ -447,31 +514,53 @@ export function createAssemblyAnimationController({
         nodePoses = nextPoses;
         previousPhase = phase;
         previousWeights = weights;
-        previousIsolation = targets.isolatedComponentId;
+        previousTargets = targets;
+        previousAutoOpacity = autoOpacity;
       }
 
       const focusedId = targets.focusedComponentId ?? null;
-      if (focusedId !== previousFocusedId) {
-        cameraTransitionMode = 'focus_glide';
-        previousFocusedId = focusedId;
-        previousTargetCamera = targets.camera;
+      if (prefersReducedMotion) {
+        cameraTransition = { kind: 'interactive' };
+      } else if (focusedId !== previousFocusedId) {
+        cameraTransition = {
+          kind: 'glide',
+          direction: focusedId === null ? 'focus_out' : 'focus_in',
+          elapsedSec: 0,
+          durationSec: focusedId === null ? FOCUS_OUT_DURATION_SEC : FOCUS_IN_DURATION_SEC,
+          from: camera,
+        };
       } else if (!camerasEqual(targets.camera, previousTargetCamera)) {
-        cameraTransitionMode = 'interactive';
-        previousTargetCamera = targets.camera;
+        cameraTransition = { kind: 'interactive' };
       }
+      previousFocusedId = focusedId;
+      previousTargetCamera = targets.camera;
       const trackedId = targets.isolatedComponentId ?? focusedId;
       const tracked = trackedId === null ? undefined : nodePoses[trackedId];
       const cameraTarget =
         tracked === undefined
           ? targets.camera
           : { ...targets.camera, targetMeters: tracked.worldPositionMeters };
-      const cameraRate =
-        cameraTransitionMode === 'focus_glide' ? FOCUS_CAMERA_DAMPING_RATE : DAMPING_RATE;
-      const cameraAlpha = prefersReducedMotion ? 1 : 1 - Math.exp(-cameraRate * dampingDelta);
-      const nextCamera = dampCamera(camera, cameraTarget, cameraAlpha);
+      let nextCamera: ExplorerCameraState;
+      if (cameraTransition.kind === 'glide') {
+        const { elapsedSec, durationSec, from } = cameraTransition;
+        const elapsed = elapsedSec + dampingDelta;
+        if (elapsed >= durationSec - 1e-12) {
+          nextCamera = cameraTarget;
+          cameraTransition = { kind: 'interactive' };
+        } else {
+          nextCamera = interpolateCamera(
+            from,
+            cameraTarget,
+            smootherstep(clamp01(elapsed / durationSec)),
+          );
+          cameraTransition = { ...cameraTransition, elapsedSec: elapsed };
+        }
+      } else {
+        nextCamera = prefersReducedMotion ? cameraTarget : dampCamera(camera, cameraTarget, alpha);
+      }
       const cameraChanged = !camerasEqual(camera, nextCamera);
-      const cameraSettled = camerasEqual(nextCamera, cameraTarget);
-      if (cameraSettled) cameraTransitionMode = 'interactive';
+      const cameraSettled =
+        cameraTransition.kind === 'interactive' && camerasEqual(nextCamera, cameraTarget);
       camera = nextCamera;
 
       return {
@@ -481,7 +570,7 @@ export function createAssemblyAnimationController({
           spring.velocity !== 0 ||
           !vectorsEqual(multipliers, targetMultipliers) ||
           offsetsMoving ||
-          isolationFading ||
+          visibilityFading ||
           !cameraSettled,
         geometryChanged,
         cameraChanged,

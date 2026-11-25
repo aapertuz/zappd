@@ -5,6 +5,8 @@ import { getCatalogArchetypeById } from '../../../shared/domain/catalog.ts';
 import {
   buildAssemblySchedule,
   createAssemblyAnimationController,
+  FOCUS_IN_DURATION_SEC,
+  FOCUS_OUT_DURATION_SEC,
   settleAssemblyPlayback,
   stepSpringScalar,
 } from '../model/assemblyAnimation.ts';
@@ -38,9 +40,9 @@ function finishAnimation(controller, targets, dtSec = 1 / 60) {
 
 describe('assembly playback', () => {
   for (const [id, partCount, expectedDuration] of [
-    ['open_source_rover_v1', 11, 2.2],
-    ['robotic_arm_3dof_v1', 19, 2.8],
-    ['quadcopter_drone_v1', 26, 3.0],
+    ['open_source_rover_v1', 17, 2.7],
+    ['robotic_arm_3dof_v1', 26, 3.1],
+    ['quadcopter_drone_v1', 37, 3.1],
   ]) {
     it(`schedules all ${partCount} CAD parts in instruction order for ${id}`, () => {
       const assembly = getCatalogAssembly(id);
@@ -163,6 +165,110 @@ describe('assembly playback', () => {
       assert.deepEqual(frame.nodePoses[node.id].worldPositionMeters, node.restPositionMeters);
       assert.equal(frame.nodePoses[node.id].opacity, 1);
     }
+  });
+});
+
+describe('wiring visibility transitions', () => {
+  const assembly = getCatalogAssembly('quadcopter_drone_v1');
+  const cable = 'comp_quad_cable_battery_esc';
+  const battery = 'comp_quad_battery_pack';
+  const esc = 'comp_quad_4in1_esc';
+  const plate = 'comp_base_plate_upper';
+  const otherCable = 'comp_quad_cable_fc_esc';
+  const auto = { ...TARGETS, wiringVisibility: 'auto' };
+
+  function settledController(targets) {
+    const controller = createAssemblyAnimationController({ assembly, targets });
+    settleAssemblyPlayback(controller);
+    return controller;
+  }
+
+  it('fades wiring through partial opacity during an automatic explode', () => {
+    const controller = settledController(auto);
+    const initial = controller.step(0, auto);
+    assert.equal(initial.nodePoses[cable].opacity, 1);
+    assert.equal(initial.nodePoses[cable].visible, true);
+
+    const exploding = { ...auto, explodeFactor: 0.65 };
+    const transition = Array.from({ length: 25 }, () => controller.step(1 / 60, exploding));
+    assert.ok(
+      transition.some(({ geometryChanged, nodePoses }) => {
+        const { opacity } = nodePoses[cable];
+        return geometryChanged && opacity > 0 && opacity < 1;
+      }),
+    );
+    const exploded = finishAnimation(controller, exploding);
+    assert.equal(exploded.nodePoses[cable].opacity, 0);
+    assert.equal(exploded.nodePoses[cable].visible, false);
+    assert.equal(exploded.nodePoses[plate].opacity, 1);
+    assert.equal(controller.step(1 / 60, exploding).geometryChanged, false);
+
+    const halfway = { ...auto, explodeFactor: 0.4, activeExplodeStage: 1 };
+    assert.ok(Math.abs(finishAnimation(controller, halfway).nodePoses[cable].opacity - 0.5) < 1e-9);
+    assert.equal(finishAnimation(controller, auto).nodePoses[cable].opacity, 1);
+  });
+
+  it('shows wiring while exploded and hides it while assembled in manual modes', () => {
+    const exploded = { ...auto, explodeFactor: 0.65 };
+    const controller = settledController(exploded);
+    assert.equal(controller.step(0, exploded).nodePoses[cable].opacity, 0);
+
+    const shown = { ...exploded, wiringVisibility: 'show' };
+    const fadeIn = controller.step(1 / 60, shown);
+    assert.equal(fadeIn.isActive, true);
+    assert.equal(fadeIn.geometryChanged, true);
+    assert.ok(fadeIn.nodePoses[cable].opacity > 0 && fadeIn.nodePoses[cable].opacity < 1);
+    assert.equal(finishAnimation(controller, shown).nodePoses[cable].opacity, 1);
+
+    const resting = { ...shown, explodeFactor: 0 };
+    assert.equal(finishAnimation(controller, resting).nodePoses[cable].opacity, 1);
+    const hidden = { ...resting, wiringVisibility: 'hide' };
+    assert.equal(finishAnimation(controller, hidden).nodePoses[cable].opacity, 0);
+    assert.equal(controller.step(1 / 60, hidden).geometryChanged, false);
+  });
+
+  it('keeps traced cables and electrical counterparts visible in auto mode while honoring hidden wiring', () => {
+    const explodedAuto = { ...auto, explodeFactor: 0.65 };
+    const controller = settledController(explodedAuto);
+    const focused = { ...explodedAuto, isolatedComponentId: battery, focusedComponentId: battery };
+    assert.equal(finishAnimation(controller, focused).nodePoses[esc].opacity, 0);
+
+    const circuitHighlightIds = new Set([battery, cable, esc]);
+    const tracing = { ...focused, circuitHighlightIds };
+    const first = controller.step(1 / 60, tracing);
+    assert.equal(first.geometryChanged, true);
+    assert.equal(first.isActive, true);
+    const settled = finishAnimation(controller, tracing);
+    assert.equal(settled.nodePoses[battery].opacity, 1);
+    assert.equal(settled.nodePoses[cable].opacity, 0.85);
+    assert.equal(settled.nodePoses[esc].opacity, 0.38);
+    assert.equal(settled.nodePoses[otherCable].opacity, 0);
+    assert.equal(settled.nodePoses[plate].opacity, 0);
+    assert.equal(controller.step(1 / 60, tracing).geometryChanged, false);
+
+    const overview = finishAnimation(controller, { ...explodedAuto, circuitHighlightIds });
+    assert.equal(overview.nodePoses[cable].opacity, 1);
+    assert.equal(overview.nodePoses[otherCable].opacity, 0);
+
+    const hiddenFocused = finishAnimation(controller, { ...tracing, wiringVisibility: 'hide' });
+    assert.equal(hiddenFocused.nodePoses[battery].opacity, 1);
+    assert.equal(hiddenFocused.nodePoses[esc].opacity, 0.38);
+    assert.equal(hiddenFocused.nodePoses[cable].opacity, 0);
+    assert.equal(hiddenFocused.nodePoses[otherCable].opacity, 0);
+
+    const hiddenOverview = finishAnimation(controller, {
+      ...auto,
+      wiringVisibility: 'hide',
+      circuitHighlightIds,
+    });
+    assert.equal(hiddenOverview.nodePoses[cable].opacity, 0);
+
+    const focusedCable = finishAnimation(controller, {
+      ...auto,
+      wiringVisibility: 'hide',
+      isolatedComponentId: cable,
+    });
+    assert.equal(focusedCable.nodePoses[cable].opacity, 1);
   });
 });
 
@@ -322,18 +428,7 @@ describe('assembly pose transitions', () => {
       camera: { ...overview.camera, distanceMeters: 0.16 },
     };
 
-    const frames = Array.from({ length: 12 }, () => controller.step(1 / 60, targets));
-    const interactive = createAssemblyAnimationController({ assembly, targets: overview });
-    settleAssemblyPlayback(interactive);
-    const interactiveFrames = frames.map(() =>
-      interactive.step(1 / 60, { ...overview, camera: targets.camera }),
-    );
-    const glideDistance = frames.at(-1).animatedCamera.distanceMeters;
-    const interactiveDistance = interactiveFrames.at(-1).animatedCamera.distanceMeters;
-    assert.ok(
-      glideDistance - interactiveDistance >
-        (overview.camera.distanceMeters - targets.camera.distanceMeters) / 3,
-    );
+    const frames = Array.from({ length: 24 }, () => controller.step(1 / 60, targets));
 
     const firstFade = frames[0].nodePoses.comp_arm_fr;
     const lastFade = frames.at(-1).nodePoses.comp_arm_fr;
@@ -368,7 +463,7 @@ describe('assembly pose transitions', () => {
     assert.deepEqual(collapsed.animatedCamera.targetMeters, restingPosition);
     assert.equal(collapsed.animatedCamera.distanceMeters, targets.camera.distanceMeters);
 
-    const returning = Array.from({ length: 12 }, () => controller.step(1 / 60, overview));
+    const returning = Array.from({ length: 18 }, () => controller.step(1 / 60, overview));
     const firstRestore = returning[0].nodePoses.comp_arm_fr;
     const lastRestore = returning.at(-1).nodePoses.comp_arm_fr;
     assert.ok(firstRestore.opacity > 0 && firstRestore.opacity < lastRestore.opacity);
@@ -376,10 +471,6 @@ describe('assembly pose transitions', () => {
     assert.equal(firstRestore.visible, true);
     assert.equal(firstRestore.isAnimatingOpacity, true);
     assert.ok(returning.at(-1).animatedCamera.distanceMeters > targets.camera.distanceMeters);
-    assert.ok(
-      overview.camera.distanceMeters - returning.at(-1).animatedCamera.distanceMeters >
-        (overview.camera.distanceMeters - targets.camera.distanceMeters) / 3,
-    );
     const restored = finishAnimation(controller, overview);
     assert.deepEqual(restored.animatedCamera, overview.camera);
     for (const { id } of assembly.nodes) {
@@ -387,6 +478,82 @@ describe('assembly pose transitions', () => {
       assert.equal(restored.nodePoses[id].visible, true);
       assert.equal(restored.nodePoses[id].isAnimatingOpacity, false);
     }
+  });
+
+  it('eases in for 1.1 seconds and returns in 0.65 seconds along the shortest arc', () => {
+    const node = assembly.nodes.find(({ id }) => id === 'comp_arm_fl');
+    const overview = {
+      ...TARGETS,
+      camera: { ...TARGETS.camera, azimuthDeg: 358, elevationDeg: 20, distanceMeters: 1 },
+    };
+    const focused = {
+      ...overview,
+      focusedComponentId: node.id,
+      camera: {
+        azimuthDeg: 2,
+        elevationDeg: 40,
+        distanceMeters: 0.2,
+        targetMeters: node.restPositionMeters,
+      },
+    };
+    const controller = createAssemblyAnimationController({ assembly, targets: overview });
+    settleAssemblyPlayback(controller);
+    const start = controller.step(0, focused);
+    assert.equal(start.isActive, true);
+    assert.deepEqual(start.animatedCamera, overview.camera);
+
+    const first = controller.step(0.05, focused);
+    assert.ok(
+      first.animatedCamera.distanceMeters < 1 && first.animatedCamera.distanceMeters > 0.999,
+    );
+    assert.ok(first.animatedCamera.azimuthDeg > 358 && first.animatedCamera.azimuthDeg < 359);
+    let midpoint = first;
+    for (let elapsed = 0.05; elapsed < 0.549; elapsed += 0.05) {
+      midpoint = controller.step(0.05, focused);
+    }
+    assert.equal(FOCUS_IN_DURATION_SEC, 1.1);
+    assert.ok(Math.abs(midpoint.animatedCamera.distanceMeters - 0.6) < 1e-9);
+    assert.ok(Math.abs(midpoint.animatedCamera.elevationDeg - 30) < 1e-9);
+    assert.ok(Math.abs(midpoint.animatedCamera.azimuthDeg - 360) < 1e-9);
+    const midpointTarget = node.restPositionMeters.map(
+      (value, axis) => (value + overview.camera.targetMeters[axis]) / 2,
+    );
+    assert.ok(distance(midpoint.animatedCamera.targetMeters, midpointTarget) < 1e-9);
+    let nearEnd = midpoint;
+    for (let count = 0; count < 10; count += 1) nearEnd = controller.step(0.05, focused);
+    assert.equal(nearEnd.isActive, true);
+    const end = controller.step(0.05, focused);
+    assert.equal(end.isActive, false);
+    assert.deepEqual(end.animatedCamera, focused.camera);
+
+    assert.equal(FOCUS_OUT_DURATION_SEC, 0.65);
+    const firstReturn = controller.step(0.025, overview);
+    assert.ok(firstReturn.animatedCamera.distanceMeters > 0.2);
+    assert.ok(firstReturn.animatedCamera.distanceMeters < 0.201);
+    let halfwayBack = firstReturn;
+    for (let count = 0; count < 6; count += 1) halfwayBack = controller.step(0.05, overview);
+    assert.ok(Math.abs(halfwayBack.animatedCamera.distanceMeters - 0.6) < 1e-9);
+    let almostBack = halfwayBack;
+    for (let count = 0; count < 6; count += 1) almostBack = controller.step(0.05, overview);
+    assert.equal(almostBack.isActive, true);
+    const back = controller.step(0.025, overview);
+    assert.equal(back.isActive, false);
+    assert.deepEqual(back.animatedCamera, overview.camera);
+  });
+
+  it('keeps an unchanged camera transition active for the full duration', () => {
+    const node = assembly.nodes.find(({ id }) => id === 'comp_arm_fl');
+    const overview = {
+      ...TARGETS,
+      camera: { ...TARGETS.camera, targetMeters: node.restPositionMeters },
+    };
+    const controller = createAssemblyAnimationController({ assembly, targets: overview });
+    settleAssemblyPlayback(controller);
+    const focused = { ...overview, focusedComponentId: node.id };
+    const next = controller.step(1 / 60, focused);
+    assert.equal(next.cameraChanged, false);
+    assert.equal(next.isActive, true);
+    assert.equal(finishAnimation(controller, focused).isActive, false);
   });
 
   it('orbits and zooms at the interactive rate as soon as the camera is moved during focus', () => {

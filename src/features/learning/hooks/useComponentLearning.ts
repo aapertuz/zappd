@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useEffectEvent, useLayoutEffect, useReducer, useRef } from 'react';
 
-import { type AiProviderId, type ComponentId, type VerifiedProjectAssembly } from '@/shared/domain';
+import {
+  type AiProviderId,
+  type ComponentId,
+  type VerifiedProjectAssembly,
+  isVerifiedStatus,
+} from '@/shared/domain';
 
 import {
   INITIAL_LEARNING_STATE,
@@ -71,30 +76,30 @@ function useLearningRequest(
 export function useComponentLearning(inputs: LearningInputs) {
   const { assembly, focusedComponentId, submittedQuestion } = inputs;
   const projectId = assembly?.projectId ?? null;
+  const targetComponentId = assembly === null ? null : (focusedComponentId ?? assembly.rootNodeId);
   const [state, dispatch] = useReducer(reduceLearningState, INITIAL_LEARNING_STATE);
   const lastContext = useRef<{
     projectId: VerifiedProjectAssembly['projectId'] | null;
-    focusedComponentId: ComponentId | null;
+    targetComponentId: ComponentId | null;
     questionId: number | null;
-  }>({ projectId: null, focusedComponentId: null, questionId: null });
+  }>({ projectId: null, targetComponentId: null, questionId: null });
 
   useLayoutEffect(() => {
     const previous = lastContext.current;
     const questionId = submittedQuestion?.id ?? null;
-    lastContext.current = { projectId, focusedComponentId, questionId };
+    lastContext.current = { projectId, targetComponentId, questionId };
 
     const changedProject = previous.projectId !== projectId;
     if (changedProject) dispatch({ type: 'reset' });
-    if (assembly === null) return;
+    if (assembly === null || !isVerifiedStatus(assembly.verificationStatus)) return;
 
-    if (changedProject || previous.focusedComponentId !== focusedComponentId) {
-      const component = assembly.nodes.find(({ id }) => id === focusedComponentId);
+    if (changedProject || previous.targetComponentId !== targetComponentId) {
+      const component = assembly.nodes.find(({ id }) => id === targetComponentId);
       if (component === undefined) {
         dispatch({ type: 'reset', slot: 'explanation' });
       } else {
         dispatch({
-          type: 'start',
-          slot: 'explanation',
+          type: 'activateExplanation',
           componentId: component.id,
           componentName: component.name,
         });
@@ -113,7 +118,7 @@ export function useComponentLearning(inputs: LearningInputs) {
         });
       }
     }
-  }, [assembly, focusedComponentId, projectId, submittedQuestion]);
+  }, [assembly, projectId, submittedQuestion, targetComponentId]);
 
   useLearningRequest('explanation', state.explanation, inputs, dispatch);
   useLearningRequest('answer', state.answer, inputs, dispatch);

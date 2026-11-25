@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import math
+import re
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -14,17 +15,29 @@ from OCP.IFSelect import IFSelect_RetDone
 from OCP.STEPCAFControl import STEPCAFControl_Reader
 from OCP.TCollection import TCollection_ExtendedString
 from OCP.TDataStd import TDataStd_Name
-from OCP.TDF import TDF_Label, TDF_LabelSequence
+from OCP.TDF import TDF_Label
 from OCP.TDocStd import TDocStd_Document
 from OCP.TopLoc import TopLoc_Location
 from OCP.XCAFDoc import XCAFDoc_DocumentTool
+from OCP.collections import Sequence_TDF_Label
 
+from catalog_ingestor import stabilize_step_occurrences
 from ingest_upstream_catalog import center_and_write_step, exact_bounds_mm
 from poppy_explode import assign_inspection_offsets
 
 POPPY_SOURCE_URL = "https://github.com/poppy-project/poppy-humanoid/releases/download/1.0.2/Poppy_Humanoid.STEP"
 POPPY_SOURCE_SHA256 = "10e9d997f82787d4069f7edd4b88ec3ab6dcc51cb1686d761d84add709d38266"
-POPPY_SPEC_PATH = Path(__file__).resolve().parents[1] / "data/poppy-catalog.json"
+POPPY_STEP_TIMESTAMP = "2015-03-19T00:00:00"
+_STEP_TRANSLATOR_COUNTER = re.compile(r"Open CASCADE STEP translator (\d+\.\d+) \d+")
+POPPY_SPEC_PATH = (
+    Path(__file__).resolve().parents[2]
+    / "src"
+    / "shared"
+    / "domain"
+    / "catalog"
+    / "assemblies"
+    / "poppy_humanoid_v1.json"
+)
 
 
 def verify_poppy_source(payload: bytes) -> None:
@@ -51,7 +64,7 @@ def _import_poppy(source_path: Path, cache_dir: Path) -> dict:
     ):
         raise RuntimeError("Cannot transfer Poppy Humanoid STEP assembly")
     shape_tool = XCAFDoc_DocumentTool.ShapeTool_s(document.Main())
-    roots = TDF_LabelSequence()
+    roots = Sequence_TDF_Label()
     shape_tool.GetFreeShapes(roots)
     if roots.Length() != 1:
         raise RuntimeError("Expected one Poppy Humanoid assembly root")
@@ -70,7 +83,7 @@ def _import_poppy(source_path: Path, cache_dir: Path) -> dict:
             if definition.FindAttribute(TDataStd_Name.GetID_s(), name_attribute)
             else path
         )
-        children = TDF_LabelSequence()
+        children = Sequence_TDF_Label()
         shape_tool.GetComponents_s(definition, children)
         dimensions = [0.0, 0.0, 0.0]
         bounds_min = bounds_max = None
@@ -84,7 +97,16 @@ def _import_poppy(source_path: Path, cache_dir: Path) -> dict:
             dimensions = [round(b - a, 2) for a, b in zip(bounds_min, bounds_max)]
             fixture = f"{node_id}.step"
             if BRepCheck_Analyzer(shape).IsValid():
-                metadata = center_and_write_step(shape, cache_dir / fixture)
+                fixture_path = cache_dir / fixture
+                metadata = center_and_write_step(
+                    shape, fixture_path, timestamp=POPPY_STEP_TIMESTAMP
+                )
+                normalized_step = _STEP_TRANSLATOR_COUNTER.sub(
+                    r"Open CASCADE STEP translator \1 1",
+                    stabilize_step_occurrences(fixture_path.read_text(encoding="ascii")),
+                )
+                fixture_path.write_text(normalized_step, encoding="ascii")
+                metadata["stepSha256"] = hashlib.sha256(fixture_path.read_bytes()).hexdigest()
                 solids = TopExp_Explorer(shape, TopAbs_SOLID)
                 geometry = {"kind": "available", "role": "solid" if solids.More() else "surface"}
             else:
@@ -154,4 +176,18 @@ def _import_poppy(source_path: Path, cache_dir: Path) -> dict:
 
     visit(roots.Value(1), None, str(roots.Value(1).Tag()), TopLoc_Location(), 0)
     assign_inspection_offsets(nodes)
-    return {"archetypeId": "poppy_humanoid_v1", "nodes": nodes}
+    return {
+        "semantics": "source_inspection",
+        "archetypeId": "poppy_humanoid_v1",
+        "title": "Poppy Humanoid source CAD inspection",
+        "summary": (
+            "Official Poppy Humanoid 1.0.2 source assembly. Front shell uses an official "
+            "visual-only mesh; head_face CAD remains rejected. Engineering validation is not "
+            "established. CC-BY-SA-4.0, Poppy project and authors."
+        ),
+        "keywords": ["poppy", "humanoid", "biped"],
+        "rootNodeId": nodes[0]["id"],
+        "nodes": nodes,
+        "relationships": [],
+        "assemblySteps": [],
+    }

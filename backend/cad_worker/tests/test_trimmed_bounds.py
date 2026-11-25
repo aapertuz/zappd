@@ -1,4 +1,4 @@
-from OCP.TColgp import TColgp_Array2OfPnt
+from OCP.collections import Array2_gp_Pnt
 from OCP.gp import gp_Pnt
 from OCP.Geom import Geom_BezierSurface
 from OCP.GeomConvert import GeomConvert
@@ -13,7 +13,7 @@ from trimmed_bounds import trimmed_shape_bounds_mm
 
 
 def test_trimmed_bspline_has_boundary_and_interior_extrema():
-    poles = TColgp_Array2OfPnt(1, 3, 1, 3)
+    poles = Array2_gp_Pnt(1, 3, 1, 3)
     for i in range(3):
         for j in range(3):
             poles.SetValue(
@@ -46,7 +46,7 @@ def test_actual_poppy_trimmed_bounds(component_id):
     reader.TransferRoots()
     shape = reader.OneShape()
     bounds = np.array(trimmed_shape_bounds_mm(shape))
-    vertices, _, _ = tessellate_shape_meters_y_up(shape)
+    vertices, *_ = tessellate_shape_meters_y_up(shape)
     cad_coordinates = vertices[:, [0, 2, 1]] * np.array([1000, -1000, 1000])
     mesh_bounds = np.array([cad_coordinates.min(0), cad_coordinates.max(0)])
     assert np.abs(bounds - mesh_bounds).max() < 0.1
@@ -67,9 +67,9 @@ def test_pipeline_rejects_shifted_render_geometry(tmp_path, monkeypatch):
     ]
     tessellate = geometry_pipeline.tessellate_shape_meters_y_up
 
-    def shifted_mesh(shape):
-        vertices, normals, indices = tessellate(shape)
-        return vertices + np.array([0.001, 0, 0]), normals, indices
+    def shifted_mesh(shape, *args, **kwargs):
+        vertices, normals, indices, metric_uvs = tessellate(shape, *args, **kwargs)
+        return vertices + np.array([0.001, 0, 0]), normals, indices, metric_uvs
 
     monkeypatch.setattr(geometry_pipeline, "tessellate_shape_meters_y_up", shifted_mesh)
     result = geometry_pipeline.run_cad_pipeline(
@@ -83,7 +83,7 @@ def test_pipeline_rejects_shifted_render_geometry(tmp_path, monkeypatch):
 
 
 def test_nonrectangular_trim_excludes_underlying_surface_maximum():
-    poles = TColgp_Array2OfPnt(1, 3, 1, 3)
+    poles = Array2_gp_Pnt(1, 3, 1, 3)
     for i in range(3):
         for j in range(3):
             poles.SetValue(

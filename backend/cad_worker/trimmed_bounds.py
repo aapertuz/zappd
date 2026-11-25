@@ -22,7 +22,9 @@ def conservative_bounds(shape):
     box = Bnd_Box()
     BRepBndLib.AddOptimal_s(shape, box, False, False)
     box.SetGap(0.0)
-    return np.array(box.Get()).reshape(2, 3)
+    cmin = box.CornerMin()
+    cmax = box.CornerMax()
+    return np.array([[cmin.X(), cmin.Y(), cmin.Z()], [cmax.X(), cmax.Y(), cmax.Z()]])
 
 
 def solve_stationary_point(surface, axis, start, parameter_bounds):
@@ -57,7 +59,7 @@ def solve_stationary_point(surface, axis, start, parameter_bounds):
 
 
 def stationary_points(face, bounds):
-    face = TopoDS.Face_s(face)
+    face = TopoDS.Face(face)
     surface = BRepAdaptor_Surface(face)
     if surface.GetType() != GeomAbs_BSplineSurface:
         return []
@@ -117,7 +119,7 @@ def trimmed_shape_bounds_mm(shape):
     while faces.More():
         has_bspline = (
             has_bspline
-            or BRepAdaptor_Surface(TopoDS.Face_s(faces.Current())).GetType()
+            or BRepAdaptor_Surface(TopoDS.Face(faces.Current())).GetType()
             == GeomAbs_BSplineSurface
         )
         faces.Next()

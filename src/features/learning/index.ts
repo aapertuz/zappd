@@ -2,6 +2,7 @@ export { LearningCallouts } from './components/LearningCallouts';
 export {
   type LearningCalloutsHandle,
   type LearningCalloutsProps,
+  type LearningCalloutsRenderedRects,
 } from './components/calloutPresentation';
 export {
   useComponentLearning,
@@ -10,6 +11,7 @@ export {
 export { useTypewriterText } from './hooks/useTypewriterText';
 export {
   computeLearningCalloutsLayout,
+  type CalloutRect,
   type LearningCalloutPlacement,
   type LearningCalloutsGeometryFrame,
   type LearningCalloutsLayout,

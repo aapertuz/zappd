@@ -27,7 +27,7 @@ def main() -> int:
     repo_root = Path(__file__).resolve().parents[2]
     cache_dir = Path(args.cache_dir) if args.cache_dir else repo_root / "backend" / "data" / "open_step_cache"
 
-    targets = [*CATALOG_SPECS, "poppy_humanoid_v1"] if args.all_archetypes else [args.archetype]
+    targets = list(CATALOG_SPECS.keys()) if args.all_archetypes else [args.archetype]
     results = []
     for archetype_id in targets:
         out_dir = (
@@ -35,20 +35,7 @@ def main() -> int:
             if args.output_dir and not args.all_archetypes
             else repo_root / "backend" / "data" / "exports" / archetype_id
         )
-        if archetype_id == "poppy_humanoid_v1":
-            from poppy_catalog import POPPY_SPEC_PATH, POPPY_SOURCE_URL, import_poppy
-            from ingest_upstream_catalog import fetch_bytes
-            if not POPPY_SPEC_PATH.exists():
-                source = cache_dir / "Poppy_Humanoid.STEP"
-                cache_dir.mkdir(parents=True, exist_ok=True)
-                if not source.exists():
-                    source.write_bytes(fetch_bytes(POPPY_SOURCE_URL))
-                spec = import_poppy(source, cache_dir)
-                POPPY_SPEC_PATH.write_text(json.dumps(spec, indent=2))
-            else:
-                spec = json.loads(POPPY_SPEC_PATH.read_text())
-        else:
-            spec = resolve_catalog_spec(archetype_id, args.catalog_json)
+        spec = resolve_catalog_spec(archetype_id, args.catalog_json)
         pipeline = run_cad_pipeline
         if archetype_id == "poppy_humanoid_v1":
             from poppy_pipeline import run_poppy_pipeline
@@ -64,9 +51,10 @@ def main() -> int:
             pub_dir = pub_base / archetype_id
             pub_dir.mkdir(parents=True, exist_ok=True)
             for filename in ("model.glb", "model.step", "model.usdz", "manifest.json", "pipeline_result.json", "interference.json", "engineering.json"):
-                if filename in ("interference.json", "engineering.json") and archetype_id != "poppy_humanoid_v1":
+                source_file = out_dir / filename
+                if filename in ("interference.json", "engineering.json") and not source_file.exists():
                     continue
-                shutil.copy2(out_dir / filename, pub_dir / filename)
+                shutil.copy2(source_file, pub_dir / filename)
         results.append(result)
 
     payload = results if args.all_archetypes else results[0]

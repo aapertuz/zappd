@@ -6,6 +6,7 @@ import {
   type Vector3Tuple,
   type VerifiedProjectAssembly,
   computeNodeWorldPositionMeters,
+  isRelationshipId,
 } from '@/shared/domain/assembly';
 
 import type {
@@ -13,43 +14,132 @@ import type {
   AssemblyExplorerState,
   ExplorerCameraState,
   SeparationAxis,
+  WiringVisibilityMode,
 } from '../types';
 
 export const DEFAULT_EXPLODE_PRESET = 0.65;
 
 export const DEFAULT_EXPLORER_CAMERA: ExplorerCameraState = {
   azimuthDeg: 38,
-  elevationDeg: 28,
+  elevationDeg: 26,
   distanceMeters: 0.38,
   targetMeters: [0, 0.018, 0],
 };
 
+export type AssemblyBoundingBoxMeters = {
+  readonly min: Vector3Tuple;
+  readonly max: Vector3Tuple;
+  readonly center: Vector3Tuple;
+  readonly size: Vector3Tuple;
+};
+
+const AXES = [0, 1, 2] as const;
+const MIN_HALF_EXTENT_METERS = 0.0005;
+const DESKTOP_V_HALF_TAN = Math.tan(Math.PI / 9);
+const MOBILE_H_HALF_TAN = Math.tan((17 * Math.PI) / 180);
+const MOBILE_V_HALF_TAN = MOBILE_H_HALF_TAN / (390 / 844);
+const DEFAULT_ZOOM_LIMITS = { minDistanceMeters: 0.08, maxDistanceMeters: 1.8 };
+const NEXT_WIRING_VISIBILITY: Readonly<Record<WiringVisibilityMode, WiringVisibilityMode>> = {
+  auto: 'show',
+  show: 'hide',
+  hide: 'auto',
+};
+
+function halfExtentMeters(dimensionMm: number): number {
+  return Math.max(dimensionMm / 2000, MIN_HALF_EXTENT_METERS);
+}
+
+export function computeAssemblyBoundingBoxMeters(
+  assembly: VerifiedProjectAssembly,
+): AssemblyBoundingBoxMeters {
+  const parents = new Set(assembly.nodes.map(({ parentId }) => parentId));
+  const leaves = assembly.nodes.filter(
+    ({ id, level }) => !parents.has(id) && (level === 'component' || level === 'subcomponent'),
+  );
+  const nonRootNodes = assembly.nodes.filter(({ id }) => id !== assembly.rootNodeId);
+  const physicalNodes =
+    leaves.length > 0 ? leaves : nonRootNodes.length > 0 ? nonRootNodes : assembly.nodes;
+  const min: [number, number, number] = [Infinity, Infinity, Infinity];
+  const max: [number, number, number] = [-Infinity, -Infinity, -Infinity];
+  for (const { restPositionMeters, dimensionsMm } of physicalNodes) {
+    for (const axis of AXES) {
+      const halfExtent = halfExtentMeters(dimensionsMm[axis]);
+      min[axis] = Math.min(min[axis], restPositionMeters[axis] - halfExtent);
+      max[axis] = Math.max(max[axis], restPositionMeters[axis] + halfExtent);
+    }
+  }
+  if (physicalNodes.length === 0) {
+    min.fill(-MIN_HALF_EXTENT_METERS);
+    max.fill(MIN_HALF_EXTENT_METERS);
+  }
+  return {
+    min,
+    max,
+    center: [(min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2],
+    size: [max[0] - min[0], max[1] - min[1], max[2] - min[2]],
+  };
+}
+
+function computeFrustumDistance(
+  halfExtents: Vector3Tuple,
+  azimuthDeg: number,
+  elevationDeg: number,
+  desktopFill: number,
+  minimumDistance: number,
+): number {
+  const azimuth = (azimuthDeg * Math.PI) / 180;
+  const elevation = (elevationDeg * Math.PI) / 180;
+  const sinAz = Math.sin(azimuth);
+  const cosAz = Math.cos(azimuth);
+  const sinEl = Math.sin(elevation);
+  const cosEl = Math.cos(elevation);
+  const [halfX, halfY, halfZ] = halfExtents;
+  let distance = minimumDistance;
+  for (const x of [-halfX, halfX]) {
+    for (const y of [-halfY, halfY]) {
+      for (const z of [-halfZ, halfZ]) {
+        const horizontalDepth = x * sinAz + z * cosAz;
+        const right = Math.abs(x * cosAz - z * sinAz);
+        const up = Math.abs(y * cosEl - horizontalDepth * sinEl);
+        const towardCamera = horizontalDepth * cosEl + y * sinEl;
+        distance = Math.max(
+          distance,
+          towardCamera + right / (desktopFill * DESKTOP_V_HALF_TAN * 1.6),
+          towardCamera + up / (desktopFill * DESKTOP_V_HALF_TAN),
+          towardCamera + right / (0.72 * MOBILE_H_HALF_TAN),
+          towardCamera + up / (0.5 * MOBILE_V_HALF_TAN),
+        );
+      }
+    }
+  }
+  return distance;
+}
+
+export function computeFramedCameraForBoundingBox({
+  center,
+  size: [x, y, z],
+}: AssemblyBoundingBoxMeters): ExplorerCameraState {
+  const { azimuthDeg, elevationDeg } = DEFAULT_EXPLORER_CAMERA;
+  return {
+    azimuthDeg,
+    elevationDeg,
+    distanceMeters: computeFrustumDistance(
+      [x / 2, y / 2, z / 2],
+      azimuthDeg,
+      elevationDeg,
+      0.5,
+      0.03,
+    ),
+    targetMeters: center,
+  };
+}
+
 export function computeDefaultCameraForAssembly(
   assembly: VerifiedProjectAssembly | null,
 ): ExplorerCameraState {
-  if (assembly === null) {
-    return DEFAULT_EXPLORER_CAMERA;
-  }
-  switch (assembly.archetypeId) {
-    case 'poppy_humanoid_v1':
-      return { azimuthDeg: 22, elevationDeg: 12, distanceMeters: 1.5, targetMeters: [0, 0, 0] };
-    case 'robotic_arm_3dof_v1':
-      return {
-        azimuthDeg: 42,
-        elevationDeg: 24,
-        distanceMeters: 0.36,
-        targetMeters: [0, 0.082, 0.045],
-      };
-    case 'open_source_rover_v1':
-      return {
-        azimuthDeg: 36,
-        elevationDeg: 26,
-        distanceMeters: 0.42,
-        targetMeters: [0, 0.035, 0],
-      };
-    default:
-      return DEFAULT_EXPLORER_CAMERA;
-  }
+  return assembly === null
+    ? DEFAULT_EXPLORER_CAMERA
+    : computeFramedCameraForBoundingBox(computeAssemblyBoundingBoxMeters(assembly));
 }
 
 const INITIAL_EXPLORER_PROVIDER: AiProviderId = 'deepseek';
@@ -67,6 +157,7 @@ export const INITIAL_ASSEMBLY_EXPLORER_STATE: AssemblyExplorerState = {
   viewMode: { kind: 'overview' },
   explodeFactor: 0,
   activeExplodeStage: 'all',
+  wiringVisibility: 'auto',
   selectedComponentId: null,
   isolatedComponentId: null,
   separatedOffsets: {},
@@ -116,10 +207,33 @@ export function orbitExplorerCamera(
 export function zoomExplorerCamera(
   camera: ExplorerCameraState,
   deltaDistanceMeters: number,
+  {
+    minDistanceMeters = DEFAULT_ZOOM_LIMITS.minDistanceMeters,
+    maxDistanceMeters = DEFAULT_ZOOM_LIMITS.maxDistanceMeters,
+  }: { readonly minDistanceMeters?: number; readonly maxDistanceMeters?: number } = {},
 ): ExplorerCameraState {
   return {
     ...camera,
-    distanceMeters: clampNumber(camera.distanceMeters + deltaDistanceMeters, 0.08, 1.8),
+    distanceMeters: clampNumber(
+      camera.distanceMeters + deltaDistanceMeters,
+      minDistanceMeters,
+      maxDistanceMeters,
+    ),
+  };
+}
+
+export function computeCameraZoomLimits(assembly: VerifiedProjectAssembly | null) {
+  if (assembly === null) return DEFAULT_ZOOM_LIMITS;
+  const bounds = computeAssemblyBoundingBoxMeters(assembly);
+  return {
+    minDistanceMeters: Math.min(
+      DEFAULT_ZOOM_LIMITS.minDistanceMeters,
+      Math.max(...bounds.size) * 0.15,
+    ),
+    maxDistanceMeters: Math.max(
+      DEFAULT_ZOOM_LIMITS.maxDistanceMeters,
+      computeFramedCameraForBoundingBox(bounds).distanceMeters * 3.5,
+    ),
   };
 }
 
@@ -165,18 +279,21 @@ export function computeFocusedCameraForComponent(
   const node = nodesById[componentId];
   if (node === undefined) return camera;
 
-  const diagonalMeters = Math.hypot(...node.dimensionsMm) / 1000;
-  const overviewDistance = computeDefaultCameraForAssembly(assembly).distanceMeters;
+  const { azimuthDeg } = camera;
+  const elevationDeg =
+    camera.elevationDeg >= 10 && camera.elevationDeg <= 55
+      ? camera.elevationDeg
+      : clampNumber(camera.elevationDeg, 14, 48);
+  const [x, y, z] = node.dimensionsMm;
   return {
-    azimuthDeg: camera.azimuthDeg,
-    elevationDeg:
-      camera.elevationDeg >= 10 && camera.elevationDeg <= 55
-        ? camera.elevationDeg
-        : clampNumber(camera.elevationDeg, 14, 48),
-    distanceMeters: clampNumber(
-      Math.max(diagonalMeters * 2.1, 0.12),
-      0.11,
-      Math.min(0.24, overviewDistance * 0.62),
+    azimuthDeg,
+    elevationDeg,
+    distanceMeters: computeFrustumDistance(
+      [halfExtentMeters(x), halfExtentMeters(y), halfExtentMeters(z)],
+      azimuthDeg,
+      elevationDeg,
+      0.4,
+      0.025,
     ),
     targetMeters: computeNodeWorldPositionMeters(
       node,
@@ -186,6 +303,45 @@ export function computeFocusedCameraForComponent(
       activeExplodeStage,
     ),
   };
+}
+
+export function computeCircuitComponentIds(
+  assembly: VerifiedProjectAssembly | null,
+  activeComponentId: ComponentId | null,
+): ReadonlySet<ComponentId> {
+  if (assembly === null || activeComponentId === null) return new Set();
+  const activeNode = assembly.nodes.find(({ id }) => id === activeComponentId);
+  if (activeNode === undefined) return new Set();
+
+  const drivingRelationshipId =
+    activeNode.category === 'wiring' ? activeNode.specifications.relationshipId : undefined;
+  const electricalRelationships = assembly.relationships.filter(
+    ({ id, connectionType, fromComponentId, toComponentId }) =>
+      (connectionType === 'electrical_bus' || connectionType === 'power_bus') &&
+      (id === drivingRelationshipId ||
+        fromComponentId === activeComponentId ||
+        toComponentId === activeComponentId),
+  );
+  const circuitIds = new Set([activeComponentId]);
+  for (const { fromComponentId, toComponentId } of electricalRelationships) {
+    circuitIds.add(fromComponentId);
+    circuitIds.add(toComponentId);
+  }
+  if (activeNode.category !== 'wiring') {
+    const relationshipIds = new Set(electricalRelationships.map(({ id }) => id));
+    for (const { id, category, specifications } of assembly.nodes) {
+      const { relationshipId } = specifications;
+      if (
+        category === 'wiring' &&
+        isRelationshipId(relationshipId) &&
+        relationshipIds.has(relationshipId)
+      ) {
+        circuitIds.add(id);
+      }
+    }
+  }
+  if (circuitIds.size < 2) circuitIds.clear();
+  return circuitIds;
 }
 
 export function reduceAssemblyExplorerState(
@@ -244,6 +400,7 @@ export function reduceAssemblyExplorerState(
         viewMode: { kind: 'overview' },
         explodeFactor: 0,
         activeExplodeStage: 'all',
+        wiringVisibility: 'auto',
         selectedComponentId: null,
         isolatedComponentId: null,
         separatedOffsets: {},
@@ -270,7 +427,11 @@ export function reduceAssemblyExplorerState(
     case 'zoomCamera': {
       return {
         ...state,
-        camera: zoomExplorerCamera(state.camera, action.deltaDistanceMeters),
+        camera: zoomExplorerCamera(
+          state.camera,
+          action.deltaDistanceMeters,
+          computeCameraZoomLimits(state.assembly),
+        ),
       };
     }
     case 'resetCamera': {
@@ -290,6 +451,14 @@ export function reduceAssemblyExplorerState(
     }
     case 'toggleExplodePreset': {
       return { ...state, explodeFactor: state.explodeFactor > 0.001 ? 0 : DEFAULT_EXPLODE_PRESET };
+    }
+    case 'cycleWiringVisibility': {
+      return { ...state, wiringVisibility: NEXT_WIRING_VISIBILITY[state.wiringVisibility] };
+    }
+    case 'setWiringVisibility': {
+      return state.wiringVisibility === action.mode
+        ? state
+        : { ...state, wiringVisibility: action.mode };
     }
     case 'focusComponent': {
       const { componentId } = action;

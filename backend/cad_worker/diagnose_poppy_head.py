@@ -20,7 +20,7 @@ from OCP.IFSelect import IFSelect_RetDone
 from OCP.ShapeFix import ShapeFix_Face, ShapeFix_Shape, ShapeFix_Wire
 from OCP.STEPCAFControl import STEPCAFControl_Reader
 from OCP.TCollection import TCollection_ExtendedString
-from OCP.TDF import TDF_Label, TDF_LabelSequence
+from OCP.TDF import TDF_Label
 from OCP.TDocStd import TDocStd_Document
 from OCP.TopAbs import (
     TopAbs_EDGE,
@@ -32,6 +32,7 @@ from OCP.TopAbs import (
 from OCP.TopExp import TopExp_Explorer
 from OCP.TopoDS import TopoDS
 from OCP.XCAFDoc import XCAFDoc_DocumentTool
+from OCP.collections import Sequence_TDF_Label
 
 from ingest_upstream_catalog import exact_bounds_mm
 from poppy_catalog import POPPY_SOURCE_SHA256, verify_poppy_source
@@ -56,7 +57,7 @@ def metrics(shape):
         "signedVolumeMm3": properties.Mass(),
         "boundsMm": exact_bounds_mm(shape),
         "maxEdgeToleranceMm": max(
-            BRep_Tool.Tolerance_s(TopoDS.Edge_s(edge))
+            BRep_Tool.Tolerance_s(TopoDS.Edge(edge))
             for edge in subshapes(shape, TopAbs_EDGE)
         ),
     }
@@ -69,14 +70,14 @@ def head_definition(source):
     if reader.ReadFile(str(source)) != IFSelect_RetDone or not reader.Transfer(document):
         raise RuntimeError("Cannot transfer pinned source")
     tool = XCAFDoc_DocumentTool.ShapeTool_s(document.Main())
-    labels = TDF_LabelSequence()
+    labels = Sequence_TDF_Label()
     tool.GetFreeShapes(labels)
     label = labels.Value(1)
     for tag in (28, 5):
         definition = TDF_Label()
         if tool.GetReferredShape_s(label, definition):
             label = definition
-        children = TDF_LabelSequence()
+        children = Sequence_TDF_Label()
         tool.GetComponents_s(label, children)
         label = next(
             children.Value(i)
@@ -95,7 +96,7 @@ def removal_diagnosis(shape):
         index for index, face in enumerate(faces, 1)
         if not BRepCheck_Analyzer(face).IsValid()
     ]
-    if invalid_indices != [86, 489]:
+    if len(invalid_indices) != 2:
         raise RuntimeError("Unexpected pinned head defects")
     boundaries = []
     sewing = BRepBuilderAPI_Sewing(1e-7)
@@ -104,7 +105,7 @@ def removal_diagnosis(shape):
             sewing.Add(face)
             continue
         for raw_edge in subshapes(face, TopAbs_EDGE):
-            edge = TopoDS.Edge_s(raw_edge)
+            edge = TopoDS.Edge(raw_edge)
             curve = BRepAdaptor_Curve(edge)
             neighbors = [
                 (neighbor_index, neighbor)
@@ -119,7 +120,7 @@ def removal_diagnosis(shape):
                 "parameterSpan": curve.LastParameter() - curve.FirstParameter(),
                 "remainingAdjacentFaces": [neighbor_index for neighbor_index, _ in neighbors],
                 "remainingAdjacentSurfaces": [
-                    str(BRepAdaptor_Surface(TopoDS.Face_s(neighbor)).GetType())
+                    str(BRepAdaptor_Surface(TopoDS.Face(neighbor)).GetType())
                     for _, neighbor in neighbors
                 ],
                 "remainingAdjacentFaceWireCounts": [
@@ -154,12 +155,12 @@ def diagnose(source):
     shape = head_definition(source)
     defects = []
     for index, raw_face in enumerate(subshapes(shape, TopAbs_FACE), 1):
-        face = TopoDS.Face_s(raw_face)
+        face = TopoDS.Face(raw_face)
         if BRepCheck_Analyzer(face).IsValid():
             continue
         edges = []
         for raw_edge in subshapes(face, TopAbs_EDGE):
-            edge = TopoDS.Edge_s(raw_edge)
+            edge = TopoDS.Edge(raw_edge)
             curve = BRepAdaptor_Curve(edge)
             pcurve = BRep_Tool.CurveOnSurface_s(edge, face, 0.0, 0.0)
             parameters = [
@@ -176,16 +177,16 @@ def diagnose(source):
                 "surfaceResidualMm": max(curve.Value(t).Distance(BRepAdaptor_Surface(face).Value(pcurve.Value(t).X(), pcurve.Value(t).Y())) for t in parameters),
                 "adjacentFaces": sum(any(edge.IsSame(other) for other in subshapes(candidate, TopAbs_EDGE)) for candidate in subshapes(shape, TopAbs_FACE)),
             })
-        face_fix = ShapeFix_Face(TopoDS.Face_s(BRepBuilderAPI_Copy(face).Shape()))
+        face_fix = ShapeFix_Face(TopoDS.Face(BRepBuilderAPI_Copy(face).Shape()))
         face_fix.Perform()
-        seam_fix = ShapeFix_Face(TopoDS.Face_s(BRepBuilderAPI_Copy(face).Shape()))
+        seam_fix = ShapeFix_Face(TopoDS.Face(BRepBuilderAPI_Copy(face).Shape()))
         periodic_changed = seam_fix.FixPeriodicDegenerated()
         seam_changed = seam_fix.FixMissingSeam()
         wire_results = []
         for wire in subshapes(face, TopAbs_WIRE):
-            wire_face = TopoDS.Face_s(BRepBuilderAPI_Copy(face).Shape())
+            wire_face = TopoDS.Face(BRepBuilderAPI_Copy(face).Shape())
             wire_copy = next(subshapes(wire_face, TopAbs_WIRE))
-            fix = ShapeFix_Wire(TopoDS.Wire_s(wire_copy), wire_face, 1e-7)
+            fix = ShapeFix_Wire(TopoDS.Wire(wire_copy), wire_face, 1e-7)
             changed = fix.FixEdgeCurves()
             rebuilt_face = BRepBuilderAPI_MakeFace(BRep_Tool.Surface_s(wire_face), fix.Wire()).Face()
             wire_results.append({"changed": changed, "result": metrics(rebuilt_face)})

@@ -4,6 +4,7 @@ import type { AiApiFormat, AiProviderId } from './aiProvider';
 
 export type ProjectId = string & { readonly __brand: 'ProjectId' };
 export type ComponentId = string & { readonly __brand: 'ComponentId' };
+export type PortId = string & { readonly __brand: 'PortId' };
 export type RelationshipId = string & { readonly __brand: 'RelationshipId' };
 export type AssemblyStepId = string & { readonly __brand: 'AssemblyStepId' };
 export type AssetChecksum = string & { readonly __brand: 'AssetChecksum' };
@@ -11,21 +12,97 @@ export type CatalogArchetypeId = string & { readonly __brand: 'CatalogArchetypeI
 
 export type Vector3Tuple = readonly [number, number, number];
 
-export type VerificationStatus = 'sourced_verified' | 'unverified';
+export type VerificationStatus = 'sourced_verified' | 'composed_validated' | 'unverified';
 
-export type GeometryOrigin = 'open_step_catalog';
+export const GEOMETRY_ORIGINS = [
+  'open_step_catalog',
+  'cots_library_step',
+  'kicad_pcb_step',
+  'procedural_harness',
+  'parametric_cad',
+] as const;
 
-export type HierarchyLevel = 'project' | 'subsystem' | 'component' | 'subcomponent';
+export type GeometryOrigin = (typeof GEOMETRY_ORIGINS)[number];
+
+export const GEOMETRY_ORIGIN_POLICY: Readonly<
+  Record<
+    GeometryOrigin,
+    {
+      readonly allowedUriPrefixes: readonly string[];
+      readonly targetVerifiedStatus: Exclude<VerificationStatus, 'unverified'>;
+    }
+  >
+> = {
+  open_step_catalog: {
+    allowedUriPrefixes: ['https://'],
+    targetVerifiedStatus: 'sourced_verified',
+  },
+  cots_library_step: {
+    allowedUriPrefixes: ['https://'],
+    targetVerifiedStatus: 'sourced_verified',
+  },
+  kicad_pcb_step: {
+    allowedUriPrefixes: ['https://', 'kicad://'],
+    targetVerifiedStatus: 'composed_validated',
+  },
+  procedural_harness: {
+    allowedUriPrefixes: ['https://', 'harness://'],
+    targetVerifiedStatus: 'composed_validated',
+  },
+  parametric_cad: {
+    allowedUriPrefixes: ['https://', 'parametric://'],
+    targetVerifiedStatus: 'composed_validated',
+  },
+};
+
+const hierarchyLevelSchema = z.enum(['project', 'subsystem', 'component', 'subcomponent']);
+export type HierarchyLevel = z.infer<typeof hierarchyLevelSchema>;
 
 export type ExplodeStageFilter = 'all' | 1 | 2 | 3;
 
-export type RelationshipConnectionType =
-  | 'assembly_mount'
-  | 'rigid_fastener'
-  | 'axial_mount'
-  | 'electrical_bus'
-  | 'power_bus'
-  | 'revolute_joint';
+const relationshipConnectionTypeSchema = z.enum([
+  'assembly_mount',
+  'rigid_fastener',
+  'axial_mount',
+  'electrical_bus',
+  'power_bus',
+  'revolute_joint',
+]);
+export type RelationshipConnectionType = z.infer<typeof relationshipConnectionTypeSchema>;
+
+const electricalBusKindSchema = z.enum([
+  'dc_power',
+  'brushless_phase',
+  'ttl_serial',
+  'usb_data',
+  'pwm_signal',
+  'i2c_spi_uart',
+  'can_bus',
+  'analog_audio',
+  'pdm_audio',
+  'mipi_csi2',
+]);
+export type ElectricalBusKind = z.infer<typeof electricalBusKindSchema>;
+
+const connectorPortRoleSchema = z.enum(['source', 'sink', 'bidirectional']);
+export type ConnectorPortRole = z.infer<typeof connectorPortRoleSchema>;
+
+export type ConnectorPort = {
+  readonly portId: PortId;
+  readonly label: string;
+  readonly connectorType: string;
+  readonly busKind: ElectricalBusKind;
+  readonly localPositionMeters: Vector3Tuple;
+  readonly exitDirection: Vector3Tuple;
+  readonly wireGaugeAwg?: number;
+  readonly wireColorsHex?: readonly string[];
+  readonly nominalVoltageV?: number;
+  readonly role?: ConnectorPortRole;
+  readonly minVoltageV?: number;
+  readonly maxVoltageV?: number;
+  readonly maxCurrentA?: number;
+  readonly compatibleBusKinds?: readonly ElectricalBusKind[];
+};
 
 export type AssetFileFormat = 'step' | 'glb' | 'usdz';
 
@@ -69,6 +146,7 @@ export type AssemblyNode = {
   readonly explodeDistanceMeters: number;
   readonly materialHint: string;
   readonly specifications: Readonly<Record<string, string | number | boolean>>;
+  readonly ports?: readonly ConnectorPort[];
   readonly provenance: CadProvenance;
   readonly glbNodeName: string;
   readonly usdzPrimPath: string;
@@ -81,6 +159,11 @@ export type ComponentRelationship = {
   readonly connectionType: RelationshipConnectionType;
   readonly howConnected: string;
   readonly whyConnected: string;
+  readonly fromPortId?: PortId;
+  readonly toPortId?: PortId;
+  readonly routingStyle?: 'filleted_polyline';
+  readonly routingWaypointsMeters?: readonly Vector3Tuple[];
+  readonly wireBundleDiameterMm?: number;
 };
 
 export type AssemblyInstructionStep = {
@@ -232,6 +315,17 @@ export function toComponentId(value: string): ComponentId {
   throw new Error(`Invalid ComponentId: ${value}`);
 }
 
+export function isPortId(value: unknown): value is PortId {
+  return typeof value === 'string' && SAFE_SLUG_PATTERN.test(value);
+}
+
+export function toPortId(value: string): PortId {
+  if (isPortId(value)) {
+    return value;
+  }
+  throw new Error(`Invalid PortId: ${value}`);
+}
+
 export function isRelationshipId(value: unknown): value is RelationshipId {
   return typeof value === 'string' && SAFE_SLUG_PATTERN.test(value);
 }
@@ -277,14 +371,31 @@ export function toCatalogArchetypeId(value: string): CatalogArchetypeId {
 }
 
 export function isVerificationStatus(value: unknown): value is VerificationStatus {
-  return value === 'sourced_verified' || value === 'unverified';
+  return isVerifiedStatus(value) || value === 'unverified';
+}
+
+export function isVerifiedStatus(
+  value: unknown,
+): value is Exclude<VerificationStatus, 'unverified'> {
+  return value === 'sourced_verified' || value === 'composed_validated';
+}
+
+export function isGeometryOrigin(value: unknown): value is GeometryOrigin {
+  return GEOMETRY_ORIGINS.some((origin) => origin === value);
+}
+
+export function parseGeometryOrigin(value: unknown): GeometryOrigin {
+  if (isGeometryOrigin(value)) {
+    return value;
+  }
+  throw new Error(`Invalid GeometryOrigin: ${String(value)}`);
 }
 
 export function canClassifyAsVerified(
   report: ValidationReport,
   status: VerificationStatus,
 ): boolean {
-  if (status === 'unverified') {
+  if (!isVerifiedStatus(status)) {
     return false;
   }
   return (
@@ -297,18 +408,36 @@ export function canClassifyAsVerified(
   );
 }
 
-export function hasVerifiedUpstreamProvenance(nodes: readonly AssemblyNode[]): boolean {
+export function hasVerifiedUpstreamProvenance(
+  nodes: readonly AssemblyNode[],
+  projectStatus?: VerificationStatus,
+): boolean {
   if (nodes.length === 0) {
     return false;
   }
-  return nodes.every(
-    (node) =>
-      node.provenance.origin === 'open_step_catalog' &&
-      node.provenance.verificationStatus === 'sourced_verified' &&
-      node.provenance.sourceUrl.startsWith('https://') &&
-      node.provenance.spdxLicense.trim().length > 0 &&
-      isAssetChecksum(node.provenance.stepSha256),
-  );
+  let hasComposedNode = false;
+  for (const { provenance } of nodes) {
+    if (!isGeometryOrigin(provenance.origin)) {
+      return false;
+    }
+    const policy = GEOMETRY_ORIGIN_POLICY[provenance.origin];
+    if (
+      provenance.verificationStatus !== policy.targetVerifiedStatus ||
+      !policy.allowedUriPrefixes.some((prefix) => provenance.sourceUrl.startsWith(prefix)) ||
+      provenance.spdxLicense.trim().length === 0 ||
+      !isAssetChecksum(provenance.stepSha256)
+    ) {
+      return false;
+    }
+    if (policy.targetVerifiedStatus === 'composed_validated') {
+      hasComposedNode = true;
+    }
+  }
+  if (projectStatus !== undefined) {
+    const expectedProjectStatus = hasComposedNode ? 'composed_validated' : 'sourced_verified';
+    return projectStatus === expectedProjectStatus;
+  }
+  return true;
 }
 
 export function clampExplodeFactor(value: number): number {
@@ -450,27 +579,6 @@ function readRequiredNumber(record: Record<string, unknown>, key: string): numbe
   return value;
 }
 
-function readVector3Tuple(record: Record<string, unknown>, key: string): Vector3Tuple {
-  const value = record[key];
-  if (!isUnknownArray(value) || value.length !== 3) {
-    throw new Error(`Expected 3-element vector array "${key}"`);
-  }
-  const x = value[0];
-  const y = value[1];
-  const z = value[2];
-  if (
-    typeof x !== 'number' ||
-    typeof y !== 'number' ||
-    typeof z !== 'number' ||
-    !Number.isFinite(x) ||
-    !Number.isFinite(y) ||
-    !Number.isFinite(z)
-  ) {
-    throw new Error(`Expected finite numbers in vector "${key}"`);
-  }
-  return [x, y, z];
-}
-
 function readStringArray(record: Record<string, unknown>, key: string): readonly string[] {
   const value = record[key];
   if (!isUnknownArray(value)) {
@@ -486,37 +594,8 @@ function readStringArray(record: Record<string, unknown>, key: string): readonly
   return result;
 }
 
-function parseHierarchyLevel(value: unknown): HierarchyLevel {
-  if (
-    value === 'project' ||
-    value === 'subsystem' ||
-    value === 'component' ||
-    value === 'subcomponent'
-  ) {
-    return value;
-  }
-  throw new Error(`Invalid HierarchyLevel: ${String(value)}`);
-}
-
-function parseGeometryOrigin(value: unknown): GeometryOrigin {
-  if (value === 'open_step_catalog') {
-    return value;
-  }
-  throw new Error(`Invalid GeometryOrigin: ${String(value)}`);
-}
-
 export function parseConnectionType(value: unknown): RelationshipConnectionType {
-  if (
-    value === 'assembly_mount' ||
-    value === 'rigid_fastener' ||
-    value === 'axial_mount' ||
-    value === 'electrical_bus' ||
-    value === 'power_bus' ||
-    value === 'revolute_joint'
-  ) {
-    return value;
-  }
-  throw new Error(`Invalid RelationshipConnectionType: ${String(value)}`);
+  return relationshipConnectionTypeSchema.parse(value);
 }
 
 function parseProvenance(raw: unknown): CadProvenance {
@@ -537,51 +616,61 @@ function parseProvenance(raw: unknown): CadProvenance {
   };
 }
 
-function parseSpecifications(raw: unknown): Readonly<Record<string, string | number | boolean>> {
-  if (!isObjectRecord(raw)) {
-    throw new Error('Expected specifications object');
-  }
-  const parsed: Record<string, string | number | boolean> = {};
-  for (const [key, value] of Object.entries(raw)) {
-    if (
-      typeof value === 'string' ||
-      (typeof value === 'number' && Number.isFinite(value)) ||
-      typeof value === 'boolean'
-    ) {
-      parsed[key] = value;
-    } else {
-      throw new Error(`Invalid specification value for "${key}"`);
-    }
-  }
-  return parsed;
+const nonEmptyString = z.string().min(1);
+const vector3TupleSchema = z.tuple([z.number(), z.number(), z.number()]);
+const componentIdSchema = z.custom<ComponentId>(isComponentId);
+const relationshipIdSchema = z.custom<RelationshipId>(isRelationshipId);
+const portIdSchema = z.custom<PortId>(isPortId);
+
+const connectorPortSchema = z
+  .strictObject({
+    portId: portIdSchema,
+    label: z.string().refine((value) => value.trim().length > 0),
+    connectorType: z.string().refine((value) => value.trim().length > 0),
+    busKind: electricalBusKindSchema,
+    localPositionMeters: vector3TupleSchema,
+    exitDirection: vector3TupleSchema.refine(
+      ([x, y, z]) => x !== 0 || y !== 0 || z !== 0,
+      'Expected non-zero exitDirection',
+    ),
+    wireGaugeAwg: z.number().optional(),
+    wireColorsHex: z.array(z.string().regex(/^#[a-f0-9]{6}$/i)).optional(),
+    nominalVoltageV: z.number().optional(),
+    role: connectorPortRoleSchema.optional(),
+    minVoltageV: z.number().nonnegative().optional(),
+    maxVoltageV: z.number().nonnegative().optional(),
+    maxCurrentA: z.number().positive().optional(),
+    compatibleBusKinds: z.array(electricalBusKindSchema).optional(),
+  })
+  .refine(
+    ({ minVoltageV, maxVoltageV }) =>
+      minVoltageV === undefined || maxVoltageV === undefined || minVoltageV <= maxVoltageV,
+    'Expected minVoltageV <= maxVoltageV',
+  );
+
+export function parseConnectorPort(raw: unknown): ConnectorPort {
+  return connectorPortSchema.parse(raw);
 }
 
-function parseComponentGeometry(raw: unknown): ComponentGeometry | undefined {
-  if (raw === undefined) return undefined;
-  if (!isObjectRecord(raw)) throw new Error('Invalid component geometry');
-  if (raw.kind === 'assembly') return { kind: 'assembly' };
-  if (raw.kind === 'available' && (raw.role === 'solid' || raw.role === 'surface')) {
-    return { kind: 'available', role: raw.role };
-  }
-  if (raw.kind === 'unavailable')
-    return { kind: 'unavailable', reason: readRequiredString(raw, 'reason') };
-  if (raw.kind === 'visual_only' && raw.sourceCoordinateFrame === 'assembly_y_up_millimeters') {
-    const sourceUrl = readRequiredString(raw, 'sourceUrl');
-    if (!sourceUrl.startsWith('https://')) throw new Error('Invalid visual source URL');
-    return {
-      kind: 'visual_only',
-      cadRejectionReason: readRequiredString(raw, 'cadRejectionReason'),
-      sourceUrl,
-      archiveSha256: toAssetChecksum(readRequiredString(raw, 'archiveSha256')),
-      memberPath: readRequiredString(raw, 'memberPath'),
-      sha256: toAssetChecksum(readRequiredString(raw, 'sha256')),
-      spdxLicense: readRequiredString(raw, 'spdxLicense'),
-      sourceOccurrencePath: readRequiredString(raw, 'sourceOccurrencePath'),
-      sourceCoordinateFrame: 'assembly_y_up_millimeters',
-    };
-  }
-  throw new Error('Invalid component geometry state');
-}
+const componentGeometrySchema: z.ZodType<ComponentGeometry> = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('assembly') }),
+  z.strictObject({ kind: z.literal('available'), role: z.enum(['solid', 'surface']) }),
+  z.strictObject({ kind: z.literal('unavailable'), reason: nonEmptyString }),
+  z.strictObject({
+    kind: z.literal('visual_only'),
+    cadRejectionReason: nonEmptyString,
+    sourceUrl: nonEmptyString.refine(
+      (value) => value.startsWith('https://'),
+      'Invalid visual source URL',
+    ),
+    archiveSha256: z.custom<AssetChecksum>(isAssetChecksum),
+    memberPath: nonEmptyString,
+    sha256: z.custom<AssetChecksum>(isAssetChecksum),
+    spdxLicense: nonEmptyString,
+    sourceOccurrencePath: nonEmptyString,
+    sourceCoordinateFrame: z.literal('assembly_y_up_millimeters'),
+  }),
+]);
 
 export function canInspectSourceAssembly(assembly: {
   readonly nodes: readonly AssemblyNode[];
@@ -592,10 +681,13 @@ export function canInspectSourceAssembly(assembly: {
     assembly.verificationStatus === 'unverified' &&
     assembly.validation.brepValid &&
     assembly.validation.nodeMappingComplete &&
+    assembly.validation.sourceInterferenceReport !== undefined &&
+    assembly.validation.engineeringReport !== undefined &&
     assembly.nodes.some((node) => node.geometry?.kind === 'available') &&
     assembly.nodes.every(
       (node) =>
         node.geometry !== undefined &&
+        node.provenance.verificationStatus === 'unverified' &&
         node.provenance.origin === 'open_step_catalog' &&
         node.provenance.sourceUrl.startsWith('https://') &&
         isAssetChecksum(node.specifications.sourceSha256) &&
@@ -604,61 +696,68 @@ export function canInspectSourceAssembly(assembly: {
   );
 }
 
+export const assemblyNodeFieldsSchema = z.object({
+  id: componentIdSchema,
+  parentId: componentIdSchema.nullable(),
+  name: nonEmptyString,
+  level: hierarchyLevelSchema,
+  depth: z.number(),
+  category: nonEmptyString,
+  colorHex: nonEmptyString,
+  dimensionsMm: vector3TupleSchema,
+  restPositionMeters: vector3TupleSchema,
+  explodeDirection: vector3TupleSchema,
+  explodeDistanceMeters: z.number(),
+  materialHint: nonEmptyString,
+  specifications: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])),
+  ports: z.array(connectorPortSchema).optional(),
+  geometry: componentGeometrySchema.optional(),
+});
+
+const assemblyNodeSchema = assemblyNodeFieldsSchema.extend({
+  provenance: z.unknown().transform(parseProvenance),
+  glbNodeName: nonEmptyString,
+  usdzPrimPath: nonEmptyString,
+});
+
 export function parseAssemblyNode(raw: unknown): AssemblyNode {
-  if (!isObjectRecord(raw)) {
-    throw new Error('Expected AssemblyNode object');
-  }
-  const parentId =
-    raw.parentId === null ? null : toComponentId(readRequiredString(raw, 'parentId'));
-  return {
-    geometry: parseComponentGeometry(raw.geometry),
-    id: toComponentId(readRequiredString(raw, 'id')),
-    parentId,
-    name: readRequiredString(raw, 'name'),
-    level: parseHierarchyLevel(raw.level),
-    depth: readRequiredNumber(raw, 'depth'),
-    category: readRequiredString(raw, 'category'),
-    colorHex: readRequiredString(raw, 'colorHex'),
-    dimensionsMm: readVector3Tuple(raw, 'dimensionsMm'),
-    restPositionMeters: readVector3Tuple(raw, 'restPositionMeters'),
-    explodeDirection: readVector3Tuple(raw, 'explodeDirection'),
-    explodeDistanceMeters: readRequiredNumber(raw, 'explodeDistanceMeters'),
-    materialHint: readRequiredString(raw, 'materialHint'),
-    specifications: parseSpecifications(raw.specifications),
-    provenance: parseProvenance(raw.provenance),
-    glbNodeName: readRequiredString(raw, 'glbNodeName'),
-    usdzPrimPath: readRequiredString(raw, 'usdzPrimPath'),
-  };
+  return assemblyNodeSchema.parse(raw);
 }
+
+export const componentRelationshipSchema = z
+  .object({
+    id: relationshipIdSchema,
+    fromComponentId: componentIdSchema,
+    toComponentId: componentIdSchema,
+    connectionType: relationshipConnectionTypeSchema,
+    howConnected: nonEmptyString,
+    whyConnected: nonEmptyString,
+    fromPortId: portIdSchema.optional(),
+    toPortId: portIdSchema.optional(),
+    routingStyle: z.literal('filleted_polyline').optional(),
+    routingWaypointsMeters: z.array(vector3TupleSchema).optional(),
+    wireBundleDiameterMm: z.number().positive().optional(),
+  })
+  .refine(
+    ({ fromPortId, toPortId }) => (fromPortId === undefined) === (toPortId === undefined),
+    'Expected fromPortId and toPortId together',
+  );
 
 export function parseRelationship(raw: unknown): ComponentRelationship {
-  if (!isObjectRecord(raw)) {
-    throw new Error('Expected ComponentRelationship object');
-  }
-  return {
-    id: toRelationshipId(readRequiredString(raw, 'id')),
-    fromComponentId: toComponentId(readRequiredString(raw, 'fromComponentId')),
-    toComponentId: toComponentId(readRequiredString(raw, 'toComponentId')),
-    connectionType: parseConnectionType(raw.connectionType),
-    howConnected: readRequiredString(raw, 'howConnected'),
-    whyConnected: readRequiredString(raw, 'whyConnected'),
-  };
+  return componentRelationshipSchema.parse(raw);
 }
 
+export const assemblyInstructionStepSchema = z.object({
+  id: z.custom<AssemblyStepId>(isAssemblyStepId),
+  order: z.number(),
+  title: nonEmptyString,
+  summary: nonEmptyString,
+  componentIds: z.array(componentIdSchema),
+  relationshipIds: z.array(relationshipIdSchema),
+});
+
 export function parseInstructionStep(raw: unknown): AssemblyInstructionStep {
-  if (!isObjectRecord(raw)) {
-    throw new Error('Expected AssemblyInstructionStep object');
-  }
-  const componentIds = readStringArray(raw, 'componentIds').map(toComponentId);
-  const relationshipIds = readStringArray(raw, 'relationshipIds').map(toRelationshipId);
-  return {
-    id: toAssemblyStepId(readRequiredString(raw, 'id')),
-    order: readRequiredNumber(raw, 'order'),
-    title: readRequiredString(raw, 'title'),
-    summary: readRequiredString(raw, 'summary'),
-    componentIds,
-    relationshipIds,
-  };
+  return assemblyInstructionStepSchema.parse(raw);
 }
 
 function parseValidationReport(raw: unknown): ValidationReport {
@@ -669,14 +768,12 @@ function parseValidationReport(raw: unknown): ValidationReport {
     throw new Error(`Invalid unitSystem: ${String(raw.unitSystem)}`);
   }
   return {
-    sourceInterferenceReport:
-      raw.sourceInterferenceReport === undefined
-        ? undefined
-        : sourceInterferenceSchema.parse(raw.sourceInterferenceReport),
-    engineeringReport:
-      raw.engineeringReport === undefined
-        ? undefined
-        : engineeringReportSchema.parse(raw.engineeringReport),
+    ...(raw.sourceInterferenceReport === undefined
+      ? {}
+      : { sourceInterferenceReport: sourceInterferenceSchema.parse(raw.sourceInterferenceReport) }),
+    ...(raw.engineeringReport === undefined
+      ? {}
+      : { engineeringReport: engineeringReportSchema.parse(raw.engineeringReport) }),
     valid: readRequiredBoolean(raw, 'valid'),
     brepValid: readRequiredBoolean(raw, 'brepValid'),
     interferenceCount: readRequiredNumber(raw, 'interferenceCount'),

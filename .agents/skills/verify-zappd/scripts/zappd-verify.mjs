@@ -29,7 +29,7 @@ const DEFAULT_PORT_END = 18999;
 const DEFAULT_CDP_PORT_START = 19222;
 const DEFAULT_CDP_PORT_END = 19999;
 const DEFAULT_TIMEOUT_MS = 60000;
-const BOOLEAN_FLAGS = new Set(['clear']);
+const BOOLEAN_FLAGS = new Set(['clear', 'settled']);
 
 function printJson(payload) {
   process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
@@ -809,16 +809,16 @@ async function handleBrowserAct(flags) {
     },
   };
 
-  if (action === 'click') {
+  if (action === 'click' || action === 'hover') {
     const hasCoordinates = options.x !== undefined || options.y !== undefined;
     if (hasCoordinates && (!Number.isFinite(options.x) || !Number.isFinite(options.y))) {
-      fail('Coordinate click requires finite --x and --y');
+      fail(`Coordinate ${action} requires finite --x and --y`);
     }
     if (hasCoordinates && (options.role !== undefined || options.name !== undefined)) {
-      fail('Choose --x and --y or --role and --name for a click');
+      fail(`Choose --x and --y or --role and --name for a ${action}`);
     }
     if (!hasCoordinates && (!options.role || !options.name)) {
-      fail('click action requires --role and --name or --x and --y');
+      fail(`${action} action requires --role and --name or --x and --y`);
     }
   }
   if (action === 'type' && (!options.role || !options.name)) {
@@ -866,11 +866,22 @@ async function handleBrowserWait(flags) {
     fail(`Invalid --timeout-ms value: ${flags['timeout-ms']}`);
   }
 
+  const learningReady = flags['learning-ready'];
+  if (
+    learningReady !== undefined &&
+    learningReady !== 'explanation' &&
+    learningReady !== 'answer'
+  ) {
+    fail(`Invalid --learning-ready value: ${learningReady} (expected "explanation" or "answer")`);
+  }
+
   try {
     const result = await waitForBrowserState(state.browser.pageWsUrl, {
       archetype: flags.archetype,
       provider: flags.provider,
       text: flags.text,
+      settled: Boolean(flags.settled),
+      learningReady,
       timeoutMs,
       viewport: {
         width: state.browser.width,

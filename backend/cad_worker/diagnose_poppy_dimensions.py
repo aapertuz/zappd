@@ -64,7 +64,7 @@ def inspect_dimensions(step_path: Path, deflections: tuple[float, ...]) -> dict:
         index = 0
         while explorer.More():
             index += 1
-            face = TopoDS.Face_s(explorer.Current())
+            face = TopoDS.Face(explorer.Current())
             location = TopLoc_Location()
             triangulation = BRep_Tool.Triangulation_s(face, location)
             if triangulation is None:
@@ -108,7 +108,7 @@ def inspect_dimensions(step_path: Path, deflections: tuple[float, ...]) -> dict:
         explorer = TopExp_Explorer(shape, TopAbs_FACE)
         for _ in range(worst_face["faceIndex"] - 1):
             explorer.Next()
-        worst_face_samples = {"faceIndex": worst_face["faceIndex"], **sample_face_bounds(TopoDS.Face_s(explorer.Current()))}
+        worst_face_samples = {"faceIndex": worst_face["faceIndex"], **sample_face_bounds(TopoDS.Face(explorer.Current()))}
     return {
         "worstFaceSamples": worst_face_samples,
         "componentId": step_path.stem,

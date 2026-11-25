@@ -8,6 +8,7 @@ import {
   DEFAULT_AI_PROVIDER,
   type ExplodeStageFilter,
   getAiProviderDescriptor,
+  isVerifiedStatus,
   SUPPORTED_AI_PROVIDERS,
 } from '@/shared/domain';
 
@@ -116,7 +117,7 @@ export function AssemblyExplorerView({
 
   useLayoutEffect(() => {
     onActiveLearningContextChange?.(
-      assembly === null
+      assembly === null || !isVerifiedStatus(assembly.verificationStatus)
         ? null
         : {
             assembly,
@@ -242,6 +243,7 @@ export function AssemblyExplorerView({
           dispatch({ type: 'setExplodeFactor', explodeFactor })
         }
         onToggleExplodePreset={() => dispatch({ type: 'toggleExplodePreset' })}
+        onCycleWiringVisibility={() => dispatch({ type: 'cycleWiringVisibility' })}
         onFocusComponent={(componentId) => dispatch({ type: 'focusComponent', componentId })}
         onExitPartFocus={exitPartFocus}
         onSetExplodeStage={(stage: ExplodeStageFilter) =>

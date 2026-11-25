@@ -94,6 +94,11 @@ def test_poppy_preserves_repeated_occurrences_and_nested_placements(tmp_path, mo
     assert parts[0]["restPositionMeters"] == pytest.approx([0.098, 0.011, 0.003])
     assert parts[1]["restPositionMeters"] == pytest.approx([0.098, 0.001, 0.003])
     assert parts[0]["dimensionsMm"] == [4.0, 6.0, 2.0]
+    repeated = poppy_catalog.import_poppy(source, tmp_path / "cache_repeat")
+    repeated_parts = [node for node in repeated["nodes"] if node["stepFixtureName"]]
+    assert [part["expectedStepSha256"] for part in repeated_parts] == [
+        part["expectedStepSha256"] for part in parts
+    ]
 
 
 def test_invalid_poppy_occurrence_retains_identity_without_export(tmp_path, monkeypatch):

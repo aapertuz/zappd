@@ -91,8 +91,11 @@ modules/
 
 ## CAD and Asset Pipeline
 
-- **Geometry authoring (Phase 2 only):** build123d on top of OpenCascade, executed on a backend. Do not use build123d or procedural fallback synthesis in Phase 1.
+- **Geometry authoring (Phase 2 only):** Use build123d on OpenCascade for custom CAD. Phase 1 forbids custom CAD generation, procedural primitive fallbacks, and fabricated or unfetched source URLs.
 - Preserve original parametric/CAD definitions and use **STEP** for precise engineering geometry interchange.
+- The TypeScript app and Python CAD worker load the same assembly specs from `src/shared/domain/catalog/assemblies/`. Catalog STEP fixtures use real source references and pinned SHA-256 digests.
+- `open_step_catalog` and `cots_library_step` require HTTPS provenance and qualify for `sourced_verified`. `kicad_pcb_step` accepts HTTPS or `kicad://` provenance. `procedural_harness` accepts HTTPS or `harness://` provenance. Both composed origins qualify for `composed_validated`.
+- Every verified node requires an SPDX license identifier and a valid STEP SHA-256 digest. The worker checks fixture digests, BRep topology, interference, dimensional tolerance, and component ID mapping before marking the project verified. A valid project with any composed node is `composed_validated`.
 - Export or convert geometry into **GLB** for web/Android and **USDZ** for iOS; preserve part boundaries and stable IDs for selection.
 - **Firebase Storage** holds source CAD artifacts, STEP files, generated render assets, and versioned asset manifests.
 - Firestore holds metadata, asset references, hierarchy, and assembly data; Storage holds binary files.

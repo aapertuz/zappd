@@ -39,13 +39,11 @@ Reproduce source extraction and generate the real normalized assets:
 
 ```sh
 backend/.venv/bin/python backend/cad_worker/ingest_upstream_catalog.py --poppy
-python scripts/generate-poppy-catalog.py
 backend/.venv/bin/python backend/cad_worker/cli.py --archetype poppy_humanoid_v1 --public-dir public/assemblies
 ```
 
-The catalog generator emits source metadata into the shared catalog. Generated
+The importer writes source metadata directly into `src/shared/domain/catalog/assemblies/poppy_humanoid_v1.json`, which both the TypeScript app and Python CAD worker load. Generated
 binary files follow the repository's existing ignored cache/export conventions.
-The CLI fetches and verifies the pinned upstream source when no candidate exists.
 The source URL, SHA-256, occurrence path, attribution, and license are preserved.
 
 ## Import
@@ -60,7 +58,7 @@ The importer rejects changed downloads and Git LFS pointers before OpenCascade r
 
 Geometry uses the existing catalog centering and topology validation helper. Materials remain unspecified. Explode offsets remain zero until an authoritative assembly sequence supports them. No fastener relationships or build instructions are inferred from CAD product names.
 
-A successful import writes a candidate catalog to `backend/data/poppy-catalog.json` and STEP fixtures to the existing cache. It does not register the candidate in the verified backend or frontend catalog.
+A successful import writes the shared source-inspection catalog to `src/shared/domain/catalog/assemblies/poppy_humanoid_v1.json` and STEP fixtures to the existing cache. It does not classify the assembly as engineering-verified.
 
 ## Historical rejected full-assembly import
 
@@ -269,7 +267,7 @@ The source mesh remains explicitly visual-only even though its bounds align.
 
 ## Reproducible source interference report
 
-Run `backend/.venv/bin/python backend/cad_worker/poppy_interference.py backend/data/poppy-catalog.json backend/data/open_step_cache /tmp/poppy-interference.json`.
+Run `backend/.venv/bin/python backend/cad_worker/poppy_interference.py src/shared/domain/catalog/assemblies/poppy_humanoid_v1.json backend/data/open_step_cache /tmp/poppy-interference.json`.
 The Poppy export pipeline also writes `interference.json` and includes the report in its validation record.
 The analyzer restores source placements from the centered, digest-checked STEP fixtures.
 It caches conservative CAD bounds once, filters separated pairs, then computes OCCT common volumes for candidate pairs.

@@ -4,10 +4,63 @@ import {
   type ComponentExplanationRecord,
   type ComponentRelationship,
   type VerifiedProjectAssembly,
+  getCatalogArchetypeById,
 } from '@/shared/domain';
 
-function finishSentence(text: string): string {
-  return /[.!?]$/.test(text) ? text : `${text}.`;
+import {
+  describePurpose,
+  formatConnection,
+  formatDimensions,
+  formatSpecification,
+  humanizeMaterial,
+  humanizeName,
+  humanizeTechnicalText,
+} from './learningLanguage';
+
+function purposeSpecification({ specifications }: AssemblyNode): string | undefined {
+  return [specifications.purpose, specifications.function, specifications.role].find(
+    (value): value is string => typeof value === 'string' && value.trim().length > 0,
+  );
+}
+
+function buildOverview(
+  assembly: VerifiedProjectAssembly,
+  node: AssemblyNode,
+  steps: readonly AssemblyInstructionStep[],
+): Omit<ComponentExplanationRecord, 'componentId' | 'verificationStatus'> {
+  const children = assembly.nodes.filter(({ parentId }) => parentId === node.id);
+  const catalogIntro = getCatalogArchetypeById(assembly.archetypeId)?.summary.split(' with ')[0];
+  const detail =
+    catalogIntro === undefined
+      ? undefined
+      : humanizeTechnicalText(catalogIntro).replace(/^Open-source\b/, 'open-source');
+  const article = detail !== undefined && /^[aeiou]/i.test(detail) ? 'an' : 'a';
+  const names = children.slice(0, 4).map(({ name }) => humanizeName(name));
+  const listedNames =
+    names.length <= 1 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
+  const describesGroups =
+    children.length > 1 && children.every(({ level }) => level === 'subsystem');
+  const purpose = purposeSpecification(node);
+
+  return {
+    summary: `This is the ${humanizeName(assembly.title)}${detail === undefined ? '' : `, ${article} ${detail}`}.`,
+    purpose:
+      purpose !== undefined
+        ? describePurpose(purpose)
+        : detail !== undefined || children.length === 0
+          ? `The whole model measures ${formatDimensions(node.dimensionsMm)}.`
+          : `The model shows ${assembly.nodes.length - 1} ${assembly.nodes.length === 2 ? 'piece' : 'pieces'} in the build.`,
+    operatingPrinciple:
+      children.length === 0
+        ? 'The saved details don’t break it down into smaller groups.'
+        : describesGroups && children.length <= 4
+          ? `Its main groups are ${listedNames}.`
+          : `You can explore ${listedNames} in this model.`,
+    systemRole:
+      steps.length === 0
+        ? 'The saved details don’t include a build guide yet.'
+        : `The build guide breaks it down into ${steps.length} ${steps.length === 1 ? 'step' : 'steps'}.`,
+  };
 }
 
 export function buildGroundedComponentExplanation(
@@ -16,45 +69,46 @@ export function buildGroundedComponentExplanation(
   relationships: readonly ComponentRelationship[],
   steps: readonly AssemblyInstructionStep[],
 ): ComponentExplanationRecord {
-  const outgoing = relationships.find((relationship) => relationship.fromComponentId === node.id);
-  const connections = relationships.filter(
-    (relationship) =>
-      relationship.fromComponentId === node.id || relationship.toComponentId === node.id,
-  );
-  const documentedConnection = outgoing ?? connections[0];
+  const identity = { componentId: node.id, verificationStatus: node.provenance.verificationStatus };
+  if (node.level === 'project' || node.parentId === null || node.materialHint === 'assembly_root') {
+    return { ...identity, ...buildOverview(assembly, node, steps) };
+  }
+
+  const outgoing = relationships.find(({ fromComponentId }) => fromComponentId === node.id);
+  const connection =
+    outgoing ?? relationships.find(({ toComponentId }) => toComponentId === node.id);
+  const counterpartId =
+    connection?.fromComponentId === node.id
+      ? connection.toComponentId
+      : connection?.fromComponentId;
+  const counterpart = assembly.nodes.find(({ id }) => id === counterpartId);
   const parent = assembly.nodes.find(({ id }) => id === node.parentId);
   const relatedStep = steps.find(({ componentIds }) => componentIds.includes(node.id));
-  const role =
-    node.specifications.purpose ?? node.specifications.function ?? node.specifications.role;
-  const purpose =
-    typeof role === 'string' && role.trim().length > 0
-      ? finishSentence(role.trim())
-      : (outgoing?.whyConnected ?? 'The component records do not specify a separate purpose.');
-  const material = node.materialHint.replaceAll('_', ' ');
-  const specification = Object.entries(node.specifications).find(([key]) => key !== 'brepFaces');
-  const recordedDetails =
-    specification === undefined
-      ? ''
-      : ` The recorded ${specification[0]} value is ${String(specification[1])}.`;
-
-  const summary = `${node.name} is listed in ${assembly.title}. Its recorded material is ${material} and its dimensions are ${node.dimensionsMm.join(' × ')} mm.`;
-  const operatingPrinciple =
-    documentedConnection === undefined
-      ? `The records describe the component's physical properties.${recordedDetails}`
-      : finishSentence(documentedConnection.howConnected);
-  const systemRole =
-    relatedStep !== undefined
-      ? `The assembly guide lists ${node.name} in step ${relatedStep.order}, “${relatedStep.title}”.`
-      : parent === undefined
-        ? `${node.name} is the top-level assembly in ${assembly.title}.`
-        : `${node.name} is part of ${parent.name}.`;
+  const role = purposeSpecification(node) ?? outgoing?.whyConnected;
+  const material = humanizeMaterial(node.materialHint);
+  const specification = Object.entries(node.specifications).find(
+    ([key]) => !['brepFaces', 'purpose', 'function', 'role'].includes(key),
+  );
+  const name = `${humanizeName(node.name)}${node.level === 'subsystem' ? ' group' : ''}`;
 
   return {
-    componentId: node.id,
-    summary,
-    purpose,
-    operatingPrinciple,
-    systemRole,
-    verificationStatus: node.provenance.verificationStatus,
+    ...identity,
+    summary: `The ${name} measures ${formatDimensions(node.dimensionsMm)}${material === null ? '' : ` and is made of ${material}`}.`,
+    purpose:
+      role !== undefined
+        ? describePurpose(role)
+        : connection === undefined
+          ? 'You can look at it on its own to see its shape.'
+          : 'It works with the connected parts to support the whole build.',
+    operatingPrinciple:
+      connection !== undefined
+        ? formatConnection(counterpart?.name, connection.howConnected)
+        : specification === undefined
+          ? 'The model shows its shape as it fits into the build.'
+          : formatSpecification(...specification),
+    systemRole:
+      relatedStep !== undefined
+        ? `It goes on in step ${relatedStep.order} (${humanizeName(relatedStep.title)}).`
+        : `It is part of the ${humanizeName(parent?.name ?? assembly.title)}.`,
   };
 }

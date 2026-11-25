@@ -10,11 +10,10 @@ import { z } from 'genkit';
 import {
   type AiProviderId,
   type AssemblyNode,
+  type VerificationStatus,
   type VerifiedProjectAssembly,
-  canClassifyAsVerified,
-  canInspectSourceAssembly,
   getCatalogArchetypeById,
-  hasVerifiedUpstreamProvenance,
+  isAllowedProjectAssembly,
   matchProjectArchetypeFromPrompt,
   parseVerifiedProjectAssembly,
   toCatalogArchetypeId,
@@ -51,6 +50,8 @@ const PUBLISHED_ASSEMBLY_FILE_NAMES = [
   'pipeline_result.json',
 ] as const;
 
+const OPTIONAL_INSPECTION_REPORT_FILE_NAMES = ['interference.json', 'engineering.json'] as const;
+
 const RetrievalInputSchema = z.object({
   archetypeId: z.string().min(1),
 });
@@ -72,7 +73,7 @@ export type ComponentRetrievalSummary = {
 
 type CadWorkerPayload = {
   readonly archetypeId: string;
-  readonly verificationStatus: string;
+  readonly verificationStatus: VerificationStatus;
   readonly nodes: readonly AssemblyNode[];
   readonly manifest: VerifiedProjectAssembly['manifest'];
   readonly validation: VerifiedProjectAssembly['validation'];
@@ -161,22 +162,7 @@ async function tryReuseVerifiedExports(args: {
       await fs.readFile(path.join(precomputedDir, 'pipeline_result.json'), 'utf8'),
     );
     const workerResult = parseCadWorkerPayload(rawJson);
-    if (
-      workerResult.verificationStatus !== 'sourced_verified' &&
-      !canInspectSourceAssembly(workerResult)
-    ) {
-      return null;
-    }
-    if (
-      !canClassifyAsVerified(workerResult.validation, 'sourced_verified') &&
-      !canInspectSourceAssembly(workerResult)
-    ) {
-      return null;
-    }
-    if (
-      !hasVerifiedUpstreamProvenance(workerResult.nodes) &&
-      !canInspectSourceAssembly(workerResult)
-    ) {
+    if (!isAllowedProjectAssembly(workerResult)) {
       return null;
     }
     const expectedIds = new Set(catalogArchetype.nodes.map((node) => node.id));
@@ -210,11 +196,19 @@ async function tryReuseVerifiedExports(args: {
       return null;
     }
     await fs.mkdir(args.outputDir, { recursive: true });
-    await Promise.all(
-      PUBLISHED_ASSEMBLY_FILE_NAMES.map((fileName) =>
+    await Promise.all([
+      ...PUBLISHED_ASSEMBLY_FILE_NAMES.map((fileName) =>
         fs.copyFile(path.join(precomputedDir, fileName), path.join(args.outputDir, fileName)),
       ),
-    );
+      ...OPTIONAL_INSPECTION_REPORT_FILE_NAMES.map(async (fileName) => {
+        try {
+          await fs.copyFile(
+            path.join(precomputedDir, fileName),
+            path.join(args.outputDir, fileName),
+          );
+        } catch {}
+      }),
+    ]);
     return workerResult;
   } catch {
     return null;
@@ -271,21 +265,13 @@ async function runCadAssemblyAndValidation(args: {
   const rawJson: unknown = JSON.parse(await fs.readFile(jsonOutPath, 'utf8'));
   const workerResult = parseCadWorkerPayload(rawJson);
 
-  const status =
-    workerResult.verificationStatus === 'sourced_verified' ? 'sourced_verified' : 'unverified';
+  const { nodes } = workerResult;
   const mappingOk = verifyOneToOneNodeMapping(
-    workerResult.nodes,
+    nodes,
     workerResult.glbNodeIds,
     workerResult.usdzPrimPaths,
   );
-  const provenanceOk =
-    status === 'sourced_verified' ? hasVerifiedUpstreamProvenance(workerResult.nodes) : false;
-  if (
-    (!canClassifyAsVerified(workerResult.validation, status) &&
-      !canInspectSourceAssembly(workerResult)) ||
-    !mappingOk ||
-    (!provenanceOk && !canInspectSourceAssembly(workerResult))
-  ) {
+  if (!mappingOk || !isAllowedProjectAssembly(workerResult)) {
     throw new Error(
       `OpenCascade validation rejected assembly "${args.archetypeId}": ${workerResult.validation.failures.join('; ')}`,
     );
@@ -297,11 +283,16 @@ async function runCadAssemblyAndValidation(args: {
 async function publishAssemblyArtifacts(workDir: string, archetypeId: string): Promise<void> {
   const publicDir = path.join(resolveRepoRoot(), 'public', 'assemblies', archetypeId);
   await fs.mkdir(publicDir, { recursive: true });
-  await Promise.all(
-    PUBLISHED_ASSEMBLY_FILE_NAMES.map((fileName) =>
+  await Promise.all([
+    ...PUBLISHED_ASSEMBLY_FILE_NAMES.map((fileName) =>
       fs.copyFile(path.join(workDir, fileName), path.join(publicDir, fileName)),
     ),
-  );
+    ...OPTIONAL_INSPECTION_REPORT_FILE_NAMES.map(async (fileName) => {
+      try {
+        await fs.copyFile(path.join(workDir, fileName), path.join(publicDir, fileName));
+      } catch {}
+    }),
+  ]);
 }
 
 async function executeProjectOrchestration(
@@ -336,9 +327,6 @@ async function executeProjectOrchestration(
       getCatalogArchetypeById(retrieval.archetypeId) ??
       matchProjectArchetypeFromPrompt(args.prompt);
 
-    const verificationStatus =
-      cadResult.verificationStatus === 'sourced_verified' ? 'sourced_verified' : 'unverified';
-
     const assembly: VerifiedProjectAssembly = {
       projectId: toProjectId(
         `proj_${archetype.archetypeId}_${cadResult.manifest.manifestHash.slice(0, 8)}`,
@@ -346,7 +334,7 @@ async function executeProjectOrchestration(
       archetypeId: toCatalogArchetypeId(archetype.archetypeId),
       title: plan.projectTitle,
       userPrompt: args.prompt,
-      verificationStatus,
+      verificationStatus: cadResult.verificationStatus,
       rootNodeId: archetype.rootNodeId,
       nodes: cadResult.nodes,
       relationships: archetype.relationships,
