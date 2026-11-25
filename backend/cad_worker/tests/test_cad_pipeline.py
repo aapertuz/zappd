@@ -30,6 +30,7 @@ EXPECTED_NODE_COUNTS = {
     "quadcopter_drone_v1": 42,
     "robotic_arm_3dof_v1": 31,
     "open_source_rover_v1": 21,
+    "reachy_mini_v1": 98,
 }
 COTS_REGISTRY = (
     Path(__file__).resolve().parents[3] / "src/shared/domain/catalog/cots/index.json"
@@ -342,10 +343,11 @@ def test_all_robotics_categories_pass_opencascade_validation(tmp_path: Path) -> 
             prov = node["provenance"]
             assert prov["origin"] == catalog_node["origin"]
             expected_status, allowed_prefix = {
-                "open_step_catalog": ("sourced_verified", "https://"),
-                "cots_library_step": ("sourced_verified", "https://"),
-                "kicad_pcb_step": ("composed_validated", "kicad://"),
-                "procedural_harness": ("composed_validated", "harness://"),
+                "open_step_catalog": ("sourced_verified", ("https://",)),
+                "cots_library_step": ("sourced_verified", ("https://",)),
+                "kicad_pcb_step": ("composed_validated", ("https://", "kicad://")),
+                "procedural_harness": ("composed_validated", ("https://", "harness://")),
+                "parametric_cad": ("composed_validated", ("https://", "parametric://")),
             }[prov["origin"]]
             assert prov["verificationStatus"] == expected_status
             assert prov["spdxLicense"]
@@ -359,6 +361,15 @@ def test_all_robotics_categories_pass_opencascade_validation(tmp_path: Path) -> 
                 assert node["dimensionsMm"] == pytest.approx(catalog_node["dimensionsMm"], abs=1e-5)
                 lower, upper = np.asarray(glb_bounds[node["id"]]) * 1000
                 assert upper - lower == pytest.approx(catalog_node["dimensionsMm"], abs=0.2)
+
+        if archetype_id == "reachy_mini_v1":
+            boards = {node["id"] for node in spec["nodes"] if node["origin"] == "kicad_pcb_step"}
+            assert boards == {"comp_reachy_power_board", "comp_reachy_head_board", "comp_reachy_mic_strip"}
+            cables = {node["id"]: node for node in spec["nodes"] if node["origin"] == "procedural_harness"}
+            assert len(cables) == 17
+            assert len(spec["assemblySteps"]) == 51
+            assert set(cables) <= set(result["glbNodeIds"])
+            assert all((cache_dir / node["stepFixtureName"]).is_file() for node in cables.values())
 
         assert (out_dir / "model.step").stat().st_size > 0
         assert (out_dir / "model.glb").stat().st_size > 0
@@ -403,10 +414,13 @@ def test_disallowed_fallback_origin_is_rejected(tmp_path: Path, has_geometry: bo
         ("kicad_pcb_step", "https://example.test/board.step", "composed_validated"),
         ("procedural_harness", "harness://catalog/route", "composed_validated"),
         ("procedural_harness", "https://example.test/harness.step", "composed_validated"),
+        ("parametric_cad", "parametric://catalog/part", "composed_validated"),
+        ("parametric_cad", "https://example.test/part", "composed_validated"),
         ("open_step_catalog", "kicad://board/revision", None),
         ("cots_library_step", "http://example.test/connector.step", None),
         ("kicad_pcb_step", "harness://catalog/route", None),
         ("procedural_harness", "kicad://board/revision", None),
+        ("parametric_cad", "kicad://board/revision", None),
     ],
 )
 def test_step_ingestion_enforces_origin_uri_and_status(

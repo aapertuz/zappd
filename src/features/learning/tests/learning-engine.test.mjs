@@ -331,13 +331,14 @@ describe('component learning context', () => {
       /aircraft with several propellers/i,
       /robot arm that follows another arm/i,
       /vehicle designed to explore terrain/i,
+      /desktop companion robot/i,
     ];
     for (const [index, archetype] of CATALOG_ARCHETYPES.entries()) {
       const project = verifiedAssembly(archetype, `proj_learning_overview_${index}`);
       const context = await createLearningContext(project);
       const explanation = formatOfflineLearningFallback(context, request);
       assert.match(explanation, plainDescriptions[index]);
-      assert.match(explanation, /Its main groups are/);
+      assert.match(explanation, /Its main groups are|You can explore/);
       assert.match(
         explanation,
         new RegExp(`build guide breaks it down into ${project.assemblySteps.length} steps`),

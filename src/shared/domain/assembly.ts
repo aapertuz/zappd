@@ -19,6 +19,7 @@ export const GEOMETRY_ORIGINS = [
   'cots_library_step',
   'kicad_pcb_step',
   'procedural_harness',
+  'parametric_cad',
 ] as const;
 
 export type GeometryOrigin = (typeof GEOMETRY_ORIGINS)[number];
@@ -48,6 +49,10 @@ export const GEOMETRY_ORIGIN_POLICY: Readonly<
     allowedUriPrefixes: ['https://', 'harness://'],
     targetVerifiedStatus: 'composed_validated',
   },
+  parametric_cad: {
+    allowedUriPrefixes: ['https://', 'parametric://'],
+    targetVerifiedStatus: 'composed_validated',
+  },
 };
 
 const hierarchyLevelSchema = z.enum(['project', 'subsystem', 'component', 'subcomponent']);
@@ -73,8 +78,14 @@ const electricalBusKindSchema = z.enum([
   'pwm_signal',
   'i2c_spi_uart',
   'can_bus',
+  'analog_audio',
+  'pdm_audio',
+  'mipi_csi2',
 ]);
 export type ElectricalBusKind = z.infer<typeof electricalBusKindSchema>;
+
+const connectorPortRoleSchema = z.enum(['source', 'sink', 'bidirectional']);
+export type ConnectorPortRole = z.infer<typeof connectorPortRoleSchema>;
 
 export type ConnectorPort = {
   readonly portId: PortId;
@@ -86,6 +97,11 @@ export type ConnectorPort = {
   readonly wireGaugeAwg?: number;
   readonly wireColorsHex?: readonly string[];
   readonly nominalVoltageV?: number;
+  readonly role?: ConnectorPortRole;
+  readonly minVoltageV?: number;
+  readonly maxVoltageV?: number;
+  readonly maxCurrentA?: number;
+  readonly compatibleBusKinds?: readonly ElectricalBusKind[];
 };
 
 export type AssetFileFormat = 'step' | 'glb' | 'usdz';
@@ -128,6 +144,7 @@ export type ComponentRelationship = {
   readonly whyConnected: string;
   readonly fromPortId?: PortId;
   readonly toPortId?: PortId;
+  readonly routingStyle?: 'filleted_polyline';
   readonly routingWaypointsMeters?: readonly Vector3Tuple[];
   readonly wireBundleDiameterMm?: number;
 };
@@ -520,20 +537,31 @@ const componentIdSchema = z.custom<ComponentId>(isComponentId);
 const relationshipIdSchema = z.custom<RelationshipId>(isRelationshipId);
 const portIdSchema = z.custom<PortId>(isPortId);
 
-const connectorPortSchema = z.strictObject({
-  portId: portIdSchema,
-  label: z.string().refine((value) => value.trim().length > 0),
-  connectorType: z.string().refine((value) => value.trim().length > 0),
-  busKind: electricalBusKindSchema,
-  localPositionMeters: vector3TupleSchema,
-  exitDirection: vector3TupleSchema.refine(
-    ([x, y, z]) => x !== 0 || y !== 0 || z !== 0,
-    'Expected non-zero exitDirection',
-  ),
-  wireGaugeAwg: z.number().optional(),
-  wireColorsHex: z.array(z.string().regex(/^#[a-f0-9]{6}$/i)).optional(),
-  nominalVoltageV: z.number().optional(),
-});
+const connectorPortSchema = z
+  .strictObject({
+    portId: portIdSchema,
+    label: z.string().refine((value) => value.trim().length > 0),
+    connectorType: z.string().refine((value) => value.trim().length > 0),
+    busKind: electricalBusKindSchema,
+    localPositionMeters: vector3TupleSchema,
+    exitDirection: vector3TupleSchema.refine(
+      ([x, y, z]) => x !== 0 || y !== 0 || z !== 0,
+      'Expected non-zero exitDirection',
+    ),
+    wireGaugeAwg: z.number().optional(),
+    wireColorsHex: z.array(z.string().regex(/^#[a-f0-9]{6}$/i)).optional(),
+    nominalVoltageV: z.number().optional(),
+    role: connectorPortRoleSchema.optional(),
+    minVoltageV: z.number().nonnegative().optional(),
+    maxVoltageV: z.number().nonnegative().optional(),
+    maxCurrentA: z.number().positive().optional(),
+    compatibleBusKinds: z.array(electricalBusKindSchema).optional(),
+  })
+  .refine(
+    ({ minVoltageV, maxVoltageV }) =>
+      minVoltageV === undefined || maxVoltageV === undefined || minVoltageV <= maxVoltageV,
+    'Expected minVoltageV <= maxVoltageV',
+  );
 
 export function parseConnectorPort(raw: unknown): ConnectorPort {
   return connectorPortSchema.parse(raw);
@@ -576,6 +604,7 @@ export const componentRelationshipSchema = z
     whyConnected: nonEmptyString,
     fromPortId: portIdSchema.optional(),
     toPortId: portIdSchema.optional(),
+    routingStyle: z.literal('filleted_polyline').optional(),
     routingWaypointsMeters: z.array(vector3TupleSchema).optional(),
     wireBundleDiameterMm: z.number().positive().optional(),
   })

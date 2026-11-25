@@ -72,6 +72,11 @@ describe('shared domain contracts', () => {
     );
     assert.equal(rover.archetypeId, 'open_source_rover_v1');
     assert.equal(getCatalogArchetypeById('open_source_rover_v1')?.nodes.length, 21);
+
+    const reachy = matchProjectArchetypeFromPrompt('Build Reachy Mini desktop companion robot');
+    assert.equal(reachy.archetypeId, 'reachy_mini_v1');
+    assert.equal(getCatalogArchetypeById('reachy_mini_v1')?.nodes.length, 98);
+    assert.equal(getCatalogArchetypeById('reachy_mini_v1')?.assemblySteps.length, 51);
   });
 
   it('prevents classifying unvalidated, colliding, or ungrounded models as verified', () => {
@@ -108,10 +113,36 @@ describe('shared domain contracts', () => {
 
   it('requires each geometry origin to have its own allowed URI and verification status', () => {
     const cases = [
-      ['open_step_catalog', 'sourced_verified', ['https://'], ['kicad://', 'harness://']],
-      ['cots_library_step', 'sourced_verified', ['https://'], ['kicad://', 'harness://']],
-      ['kicad_pcb_step', 'composed_validated', ['https://', 'kicad://'], ['harness://']],
-      ['procedural_harness', 'composed_validated', ['https://', 'harness://'], ['kicad://']],
+      [
+        'open_step_catalog',
+        'sourced_verified',
+        ['https://'],
+        ['kicad://', 'harness://', 'parametric://'],
+      ],
+      [
+        'cots_library_step',
+        'sourced_verified',
+        ['https://'],
+        ['kicad://', 'harness://', 'parametric://'],
+      ],
+      [
+        'kicad_pcb_step',
+        'composed_validated',
+        ['https://', 'kicad://'],
+        ['harness://', 'parametric://'],
+      ],
+      [
+        'procedural_harness',
+        'composed_validated',
+        ['https://', 'harness://'],
+        ['kicad://', 'parametric://'],
+      ],
+      [
+        'parametric_cad',
+        'composed_validated',
+        ['https://', 'parametric://'],
+        ['kicad://', 'harness://'],
+      ],
     ];
     const nodeWithProvenance = (provenance) => ({
       provenance: { spdxLicense: 'MIT', stepSha256: 'a'.repeat(64), ...provenance },

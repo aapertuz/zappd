@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from itertools import combinations
-from math import pi
+from math import acos, pi, tan
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
@@ -19,6 +19,7 @@ from OCP.BRepCheck import BRepCheck_Analyzer
 from OCP.BRepExtrema import BRepExtrema_DistShapeShape
 from OCP.BRepGProp import BRepGProp
 from OCP.BRepOffsetAPI import BRepOffsetAPI_MakePipeShell
+from OCP.GC import GC_MakeArcOfCircle
 from OCP.Geom import Geom_BSplineCurve
 from OCP.GeomAPI import GeomAPI_Interpolate, GeomAPI_PointsToBSpline
 from OCP.GProp import GProp_GProps
@@ -241,11 +242,79 @@ def write_colored_step(
             entity.SetId(TCollection_HAsciiString(str(occurrence_id)))
     if writer.Write(str(step_path)) != IFSelect_RetDone:
         raise RuntimeError(f"Could not write colored STEP file {step_path}")
-    stabilize_step_presentation(step_path)
+    if any(colors for _, _, colors in components):
+        stabilize_step_presentation(step_path)
+
+
+def _rounded_bundle(
+    points: list[np.ndarray], start_exit: np.ndarray, wire_count: int, diameter_mm: float,
+) -> TopoDS_Compound:
+    radius = (diameter_mm + (wire_count - 1) * (diameter_mm + _WIRE_GAP_MM)) / 2
+    route = BRepBuilderAPI_MakeWire()
+    cursor = points[0]
+    for before, corner, after in zip(points, points[1:], points[2:]):
+        incoming, outgoing = _unit(corner - before), _unit(after - corner)
+        dot = float(np.clip(np.dot(incoming, outgoing), -1, 1))
+        if dot > 1 - 1e-7:
+            continue
+        if dot < -1 + 1e-7:
+            raise RuntimeError("Cable route doubles back at a corner")
+        half_turn = tan(acos(dot) / 2)
+        span = min(5.0 * half_turn, np.linalg.norm(corner - before) * 0.48,
+                   np.linalg.norm(after - corner) * 0.48)
+        if span / half_turn <= radius + _SPLINE_TOLERANCE_MM:
+            raise RuntimeError("Cable bend radius is too small for the conductor bundle")
+        first, last = corner - incoming * span, corner + outgoing * span
+        route.Add(BRepBuilderAPI_MakeEdge(gp_Pnt(*cursor), gp_Pnt(*first)).Edge())
+        arc = GC_MakeArcOfCircle(gp_Pnt(*first), gp_Vec(*incoming), gp_Pnt(*last))
+        route.Add(BRepBuilderAPI_MakeEdge(arc.Value()).Edge())
+        cursor = last
+    route.Add(BRepBuilderAPI_MakeEdge(gp_Pnt(*cursor), gp_Pnt(*points[-1])).Edge())
+    spine = route.Wire()
+
+    lateral = np.cross(start_exit, [0, 0, 1])
+    if np.linalg.norm(lateral) < 0.1:
+        lateral = np.cross(start_exit, [1, 0, 0])
+    lateral = _unit(lateral)
+    builder = BRep_Builder()
+    bundle = TopoDS_Compound()
+    builder.MakeCompound(bundle)
+    for index in range(wire_count):
+        offset = (index - (wire_count - 1) / 2) * (diameter_mm + _WIRE_GAP_MM)
+        center = points[0] + offset * lateral
+        profile = gp_Circ(gp_Ax2(gp_Pnt(*center), gp_Dir(*start_exit)), diameter_mm / 2)
+        section = BRepBuilderAPI_MakeWire(
+            BRepBuilderAPI_MakeEdge(profile, 0.0, pi).Edge(),
+            BRepBuilderAPI_MakeEdge(profile, pi, 2 * pi).Edge(),
+        ).Wire()
+        swept = BRepOffsetAPI_MakePipeShell(spine)
+        swept.SetMode(False)
+        swept.Add(section)
+        swept.Build()
+        if not swept.IsDone() or not swept.MakeSolid():
+            raise RuntimeError("Could not sweep the rounded cable route")
+        solid = swept.Shape()
+        if not BRepCheck_Analyzer(solid).IsValid() or count_brep_faces(solid) < MIN_CAD_BREP_FACES:
+            raise RuntimeError("Rounded cable conductor produced an invalid BRep")
+        children = TopoDS_Iterator(bundle)
+        while children.More():
+            common = BRepAlgoAPI_Common(solid, children.Value())
+            properties = GProp_GProps()
+            if not common.IsDone():
+                raise RuntimeError("Could not validate rounded cable conductor clearance")
+            BRepGProp.VolumeProperties_s(common.Shape(), properties)
+            if properties.Mass() > 1e-6:
+                raise RuntimeError("Rounded cable bundle has overlapping conductors")
+            children.Next()
+        builder.Add(bundle, solid)
+    return bundle
 
 
 def route_harness_for_node(
-    node_spec: dict[str, Any], archetype_spec: dict[str, Any], cache_dir: Path
+    node_spec: dict[str, Any],
+    archetype_spec: dict[str, Any],
+    cache_dir: Path,
+    _obstacles: dict[str, TopoDS_Shape] | None = None,
 ) -> dict[str, Any]:
     from geometry_pipeline import shape_bounds_mm, translate_shape_mm, world_rest_to_cad_mm
 
@@ -277,7 +346,6 @@ def route_harness_for_node(
     waypoints = [
         np.asarray(world_rest_to_cad_mm(point)) for point in relationship.get("routingWaypointsMeters", [])
     ]
-    points = _route_points(start, end, start_exit, end_exit, waypoints)
     colors = tuple(
         from_port.get("wireColorsHex") or to_port.get("wireColorsHex")
         or _DEFAULT_COLORS.get(from_port["busKind"], (node_spec["colorHex"],))
@@ -288,27 +356,32 @@ def route_harness_for_node(
         else min(2.2, max(0.9, bundle_mm / (len(colors) * 0.85)))
     )
 
-    if len(colors) == 1:
-        conductors = [_sweep_conductor(_spline(points, start_exit, end_exit), diameter_mm / 2)]
+    if relationship.get("routingStyle") == "filleted_polyline":
+        points = [start, *waypoints, end]
+        compound = _rounded_bundle(points, _unit(points[1] - points[0]), len(colors), diameter_mm)
     else:
-        axes = _ribbon_axes(points, start_exit, end_exit)
-        parameters = HArray1_double(1, len(points))
-        parameters.SetValue(1, 0.0)
-        for index, (before, after) in enumerate(zip(points, points[1:]), start=2):
-            parameters.SetValue(index, parameters.Value(index - 1) + np.linalg.norm(after - before))
-        conductors = []
-        for index in range(len(colors)):
-            offset = (index - (len(colors) - 1) / 2) * (diameter_mm + _WIRE_GAP_MM)
-            wire_points = [point + offset * axis for point, axis in zip(points, axes)]
-            curve = _spline(wire_points, start_exit, end_exit, parameters)
-            conductors.append(_sweep_conductor(curve, diameter_mm / 2))
-        _validate_conductor_clearance(conductors, diameter_mm)
+        points = _route_points(start, end, start_exit, end_exit, waypoints)
+        if len(colors) == 1:
+            conductors = [_sweep_conductor(_spline(points, start_exit, end_exit), diameter_mm / 2)]
+        else:
+            axes = _ribbon_axes(points, start_exit, end_exit)
+            parameters = HArray1_double(1, len(points))
+            parameters.SetValue(1, 0.0)
+            for index, (before, after) in enumerate(zip(points, points[1:]), start=2):
+                parameters.SetValue(index, parameters.Value(index - 1) + np.linalg.norm(after - before))
+            conductors = []
+            for index in range(len(colors)):
+                offset = (index - (len(colors) - 1) / 2) * (diameter_mm + _WIRE_GAP_MM)
+                wire_points = [point + offset * axis for point, axis in zip(points, axes)]
+                curve = _spline(wire_points, start_exit, end_exit, parameters)
+                conductors.append(_sweep_conductor(curve, diameter_mm / 2))
+            _validate_conductor_clearance(conductors, diameter_mm)
 
-    compound = TopoDS_Compound()
-    builder = BRep_Builder()
-    builder.MakeCompound(compound)
-    for _, solid in conductors:
-        builder.Add(compound, solid)
+        compound = TopoDS_Compound()
+        builder = BRep_Builder()
+        builder.MakeCompound(compound)
+        for _, solid in conductors:
+            builder.Add(compound, solid)
 
     lower, upper = shape_bounds_mm(compound)
     x, y, z = ((lo + hi) / 2 for lo, hi in zip(lower, upper))

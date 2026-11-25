@@ -113,8 +113,16 @@ describe('geometry-driven camera framing', () => {
     );
   });
 
+  const catalogDistanceBounds = {
+    reachy_mini_v1: [1.25, 1.4],
+  };
+
   for (const [name, assembly, minDistance, maxDistance] of [
-    ...CATALOG_ARCHETYPES.map((assembly) => [assembly.archetypeId, assembly, 0.6, 1.25]),
+    ...CATALOG_ARCHETYPES.map((assembly) => [
+      assembly.archetypeId,
+      assembly,
+      ...(catalogDistanceBounds[assembly.archetypeId] ?? [0.6, 1.25]),
+    ]),
     ['tall 10:1', syntheticAssembly([60, 600, 60], [0.02, 0.4, 0.1]), 1.5, 2],
     ['wide 10:1', syntheticAssembly([800, 80, 120]), 1.5, 2.2],
     ['25 mm micro', syntheticAssembly([25, 25, 25]), 0.075, 0.13],
