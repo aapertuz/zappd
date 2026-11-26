@@ -1,0 +1,1839 @@
+{
+  "sourcePorts": {
+    "poppy_1_28_3": {
+      "specifications": {
+        "headComputer": "Odroid XU4",
+        "connectorPlacement": "Reference wiring datums on the pinned head computer."
+      },
+      "ports": [
+        {
+          "portId": "port_usb_upper",
+          "label": "Upper interface USB",
+          "connectorType": "USB-A",
+          "busKind": "usb_data",
+          "localPositionMeters": [-0.035358, -0.005324, -0.03054],
+          "exitDirection": [0.0, 0.0, -1.0],
+          "wireColorsHex": ["#222428", "#cc2929", "#ececec", "#2bb673"]
+        },
+        {
+          "portId": "port_usb_lower",
+          "label": "Lower interface USB",
+          "connectorType": "USB-A",
+          "busKind": "usb_data",
+          "localPositionMeters": [0.024642, -0.0099573, -0.0197423],
+          "exitDirection": [0.0, -1.0, 0.0],
+          "wireColorsHex": ["#222428", "#cc2929", "#ececec", "#2bb673"]
+        },
+        {
+          "portId": "port_usb_camera",
+          "label": "Camera USB",
+          "connectorType": "USB-A",
+          "busKind": "usb_data",
+          "localPositionMeters": [0.004642, -0.010324, -0.015051],
+          "exitDirection": [0.0, 0.0, -1.0],
+          "wireColorsHex": ["#222428", "#cc2929", "#ececec", "#2bb673"]
+        },
+        {
+          "portId": "port_imu",
+          "label": "IMU serial connection",
+          "connectorType": "Serial header",
+          "busKind": "i2c_spi_uart",
+          "localPositionMeters": [0.029642, 0.002176, 0.0245761],
+          "exitDirection": [0.0, 0.0, 1.0],
+          "wireColorsHex": ["#222428", "#cc2929", "#3b82f6"]
+        }
+      ]
+    },
+    "poppy_1_18": {
+      "specifications": {
+        "nominalVoltageV": 12,
+        "controller": "upper_body_controller"
+      },
+      "ports": [
+        {
+          "portId": "port_dxl_power",
+          "label": "12 V power output",
+          "connectorType": "Bioloid 3P",
+          "busKind": "dc_power",
+          "localPositionMeters": [-0.00715, 0.0278399, 0.0002],
+          "exitDirection": [0.0, 1.0, 0.0],
+          "wireColorsHex": ["#cc2929", "#222428"],
+          "nominalVoltageV": 12
+        }
+      ]
+    },
+    "poppy_1_17_2_1": {
+      "specifications": {
+        "motorName": "head_z",
+        "motorId": 36,
+        "motorModel": "AX-12A",
+        "controller": "upper_body_controller",
+        "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
+      },
+      "ports": [
+        {
+          "portId": "port_dxl_in",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.0, -0.0166495, -0.0015],
+          "exitDirection": [0.0, -1.0, 0.0]
+        },
+        {
+          "portId": "port_dxl_out",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.0134717, -0.013, -0.0015],
+          "exitDirection": [1.0, 0.0, 0.0]
+        }
+      ]
+    },
+    "poppy_1_28_2_1": {
+      "specifications": {
+        "motorName": "head_y",
+        "motorId": 37,
+        "motorModel": "AX-12A",
+        "controller": "upper_body_controller",
+        "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
+      },
+      "ports": [
+        {
+          "portId": "port_dxl_in",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.01995, -0.008, -0.014],
+          "exitDirection": [-1.0, 0.0, 0.0]
+        },
+        {
+          "portId": "port_dxl_out",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.005, 0.002, -0.02445],
+          "exitDirection": [0.0, 0.0, -1.0]
+        }
+      ]
+    },
+    "poppy_1_16_2_1": {
+      "specifications": {
+        "motorName": "bust_y",
+        "motorId": 34,
+        "motorModel": "MX-28AT",
+        "controller": "upper_body_controller",
+        "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
+      },
+      "ports": [
+        {
+          "portId": "port_dxl_in",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.014, -0.0227245, -0.0105],
+          "exitDirection": [0.0, -1.0, 0.0]
+        },
+        {
+          "portId": "port_dxl_out",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.014, -0.0227245, -0.0105],
+          "exitDirection": [0.0, -1.0, 0.0]
+        }
+      ]
+    },
+    "poppy_1_16_1_1": {
+      "specifications": {
+        "motorName": "bust_x",
+        "motorId": 35,
+        "motorModel": "MX-28AT",
+        "controller": "upper_body_controller",
+        "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
+      },
+      "ports": [
+        {
+          "portId": "port_dxl_in",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.014, -0.0227245, -0.013],
+          "exitDirection": [0.0, -1.0, 0.0]
+        },
+        {
+          "portId": "port_dxl_out",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.009, -0.0227245, -0.013],
+          "exitDirection": [0.0, -1.0, 0.0]
+        }
+      ]
+    },
+    "poppy_1_15_1_1": {
+      "specifications": {
+        "motorName": "abs_z",
+        "motorId": 33,
+        "motorModel": "MX-28AT",
+        "controller": "upper_body_controller",
+        "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
+      },
+      "ports": [
+        {
+          "portId": "port_dxl_in",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.004, 0.0, -0.02065],
+          "exitDirection": [0.0, 0.0, -1.0]
+        },
+        {
+          "portId": "port_dxl_out",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.004, 0.0, -0.02065],
+          "exitDirection": [0.0, 0.0, -1.0]
+        }
+      ]
+    },
+    "poppy_1_13_5_1": {
+      "specifications": {
+        "motorName": "abs_y",
+        "motorId": 31,
+        "motorModel": "MX-64AT",
+        "controller": "upper_body_controller",
+        "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
+      },
+      "ports": [
+        {
+          "portId": "port_dxl_in",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.01545, 0.0, -0.008],
+          "exitDirection": [-1.0, 0.0, 0.0]
+        },
+        {
+          "portId": "port_dxl_out",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.01545, 0.0, -0.008],
+          "exitDirection": [1.0, 0.0, 0.0]
+        }
+      ]
+    },
+    "poppy_1_13_1_1": {
+      "specifications": {
+        "motorName": "abs_x",
+        "motorId": 32,
+        "motorModel": "MX-64AT",
+        "controller": "upper_body_controller",
+        "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
+      },
+      "ports": [
+        {
+          "portId": "port_dxl_in",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.004, 0.00325, -0.018],
+          "exitDirection": [0.0, -1.0, 0.0]
+        },
+        {
+          "portId": "port_dxl_out",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0035, 0.02015, -0.018],
+          "exitDirection": [0.0, 1.0, 0.0]
+        }
+      ]
+    },
+    "poppy_1_17_4_1": {
+      "specifications": {
+        "motorName": "l_shoulder_y",
+        "motorId": 41,
+        "motorModel": "MX-28AT",
+        "controller": "upper_body_controller",
+        "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
+      },
+      "ports": [
+        {
+          "portId": "port_dxl_in",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.004, 0.0, -0.02065],
+          "exitDirection": [0.0, 0.0, -1.0]
+        },
+        {
+          "portId": "port_dxl_out",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.004, 0.0, -0.02065],
+          "exitDirection": [0.0, 0.0, -1.0]
+        }
+      ]
+    },
+    "poppy_1_21_1_1": {
+      "specifications": {
+        "motorName": "l_shoulder_x",
+        "motorId": 42,
+        "motorModel": "MX-28AT",
+        "controller": "upper_body_controller",
+        "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
+      },
+      "ports": [
+        {
+          "portId": "port_dxl_in",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.004, 0.0, -0.01315],
+          "exitDirection": [0.0, 0.0, -1.0]
+        },
+        {
+          "portId": "port_dxl_out",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.004, 0.0025, -0.01255],
+          "exitDirection": [0.0, 0.0, -1.0]
+        }
+      ]
+    },
+    "poppy_1_22_2_1": {
+      "specifications": {
+        "motorName": "l_arm_z",
+        "motorId": 43,
+        "motorModel": "MX-28AT",
+        "controller": "upper_body_controller",
+        "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
+      },
+      "ports": [
+        {
+          "portId": "port_dxl_in",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.004, 0.0, -0.01315],
+          "exitDirection": [0.0, 0.0, -1.0]
+        },
+        {
+          "portId": "port_dxl_out",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.004, -0.0025, -0.01315],
+          "exitDirection": [0.0, 0.0, -1.0]
+        }
+      ]
+    },
+    "poppy_1_22_3_1": {
+      "specifications": {
+        "motorName": "l_elbow_y",
+        "motorId": 44,
+        "motorModel": "MX-28AT",
+        "controller": "upper_body_controller",
+        "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
+      },
+      "ports": [
+        {
+          "portId": "port_dxl_in",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.004, 0.0, -0.017025],
+          "exitDirection": [0.0, 0.0, -1.0]
+        },
+        {
+          "portId": "port_dxl_out",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.001, -0.005, -0.017025],
+          "exitDirection": [0.0, 0.0, -1.0]
+        }
+      ]
+    },
+    "poppy_1_17_3_1": {
+      "specifications": {
+        "motorName": "r_shoulder_y",
+        "motorId": 51,
+        "motorModel": "MX-28AT",
+        "controller": "upper_body_controller",
+        "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
+      },
+      "ports": [
+        {
+          "portId": "port_dxl_in",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.004, 0.0, -0.02065],
+          "exitDirection": [0.0, 0.0, -1.0]
+        },
+        {
+          "portId": "port_dxl_out",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.004, -0.0025, -0.02065],
+          "exitDirection": [0.0, 0.0, -1.0]
+        }
+      ]
+    },
+    "poppy_1_25_1_1": {
+      "specifications": {
+        "motorName": "r_shoulder_x",
+        "motorId": 52,
+        "motorModel": "MX-28AT",
+        "controller": "upper_body_controller",
+        "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
+      },
+      "ports": [
+        {
+          "portId": "port_dxl_in",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.004, 0.0025, -0.01255],
+          "exitDirection": [0.0, 0.0, -1.0]
+        },
+        {
+          "portId": "port_dxl_out",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.004, -0.0025, -0.01315],
+          "exitDirection": [0.0, 0.0, -1.0]
+        }
+      ]
+    },
+    "poppy_1_26_2_1": {
+      "specifications": {
+        "motorName": "r_arm_z",
+        "motorId": 53,
+        "motorModel": "MX-28AT",
+        "controller": "upper_body_controller",
+        "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
+      },
+      "ports": [
+        {
+          "portId": "port_dxl_in",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.004, -0.0025, -0.01315],
+          "exitDirection": [0.0, 0.0, -1.0]
+        },
+        {
+          "portId": "port_dxl_out",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.004, 0.0, -0.01315],
+          "exitDirection": [0.0, 0.0, -1.0]
+        }
+      ]
+    },
+    "poppy_1_26_3_1": {
+      "specifications": {
+        "motorName": "r_elbow_y",
+        "motorId": 54,
+        "motorModel": "MX-28AT",
+        "controller": "upper_body_controller",
+        "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
+      },
+      "ports": [
+        {
+          "portId": "port_dxl_in",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.001, 0.0, -0.017025],
+          "exitDirection": [0.0, 0.0, -1.0]
+        },
+        {
+          "portId": "port_dxl_out",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.004, -0.005, -0.017025],
+          "exitDirection": [0.0, 0.0, -1.0]
+        }
+      ]
+    },
+    "poppy_1_12": {
+      "specifications": {
+        "controller": "lower_body_controller",
+        "connectorPlacement": "Reference exits at the pinned Bioloid hub."
+      },
+      "ports": [
+        {
+          "portId": "port_hub_1",
+          "label": "Dynamixel hub port 1",
+          "connectorType": "Bioloid 3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0045, 0.002896, -0.0056646],
+          "exitDirection": [0.0, 0.0, -1.0]
+        },
+        {
+          "portId": "port_hub_2",
+          "label": "Dynamixel hub port 2",
+          "connectorType": "Bioloid 3P",
+          "busKind": "dc_power",
+          "localPositionMeters": [0.0055, 0.002896, -0.0056646],
+          "exitDirection": [0.0, 0.0, -1.0],
+          "wireColorsHex": ["#cc2929", "#222428"],
+          "nominalVoltageV": 12
+        },
+        {
+          "portId": "port_hub_3",
+          "label": "Dynamixel hub port 3",
+          "connectorType": "Bioloid 3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.003, -0.002104, -0.0055804],
+          "exitDirection": [0.0, 0.0, -1.0]
+        },
+        {
+          "portId": "port_hub_4",
+          "label": "Dynamixel hub port 4",
+          "connectorType": "Bioloid 3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.0045, -0.007104, -0.0054962],
+          "exitDirection": [0.0, 0.0, -1.0]
+        },
+        {
+          "portId": "port_hub_5",
+          "label": "Dynamixel hub port 5",
+          "connectorType": "Bioloid 3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.0055, -0.012104, 0.0004806],
+          "exitDirection": [0.0, 0.0, -1.0]
+        },
+        {
+          "portId": "port_hub_6",
+          "label": "Dynamixel hub port 6",
+          "connectorType": "Bioloid 3P",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.007, -0.002104, -0.0055804],
+          "exitDirection": [0.0, 0.0, -1.0]
+        }
+      ]
+    },
+    "poppy_1_19": {
+      "specifications": {
+        "nominalVoltageV": 12,
+        "controller": "lower_body_controller"
+      },
+      "ports": [
+        {
+          "portId": "port_dxl_power",
+          "label": "12 V power output",
+          "connectorType": "Bioloid 3P",
+          "busKind": "dc_power",
+          "localPositionMeters": [-0.00715, -0.0249, -0.00515],
+          "exitDirection": [0.0, 0.0, -1.0],
+          "wireColorsHex": ["#cc2929", "#222428"],
+          "nominalVoltageV": 12
+        }
+      ]
+    },
+    "poppy_1_1_2_1": {
+      "specifications": {
+        "motorName": "r_hip_x",
+        "motorId": 21,
+        "motorModel": "MX-28AT",
+        "controller": "lower_body_controller",
+        "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
+      },
+      "ports": [
+        {
+          "portId": "port_dxl_in",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.006, 0.01, -0.020375],
+          "exitDirection": [0.0, 0.0, -1.0]
+        },
+        {
+          "portId": "port_dxl_out",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.014, 0.005, -0.020375],
+          "exitDirection": [0.0, 0.0, -1.0]
+        }
+      ]
+    },
+    "poppy_1_1_3_1": {
+      "specifications": {
+        "motorName": "l_hip_x",
+        "motorId": 11,
+        "motorModel": "MX-28AT",
+        "controller": "lower_body_controller",
+        "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
+      },
+      "ports": [
+        {
+          "portId": "port_dxl_in",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.004, -0.01, -0.020375],
+          "exitDirection": [0.0, 0.0, -1.0]
+        },
+        {
+          "portId": "port_dxl_out",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.0015, -0.015, -0.020375],
+          "exitDirection": [0.0, 0.0, -1.0]
+        }
+      ]
+    },
+    "poppy_1_3_2_1": {
+      "specifications": {
+        "motorName": "l_hip_z",
+        "motorId": 12,
+        "motorModel": "MX-28AT",
+        "controller": "lower_body_controller",
+        "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
+      },
+      "ports": [
+        {
+          "portId": "port_dxl_in",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.004, 0.0, -0.02065],
+          "exitDirection": [0.0, 0.0, -1.0]
+        },
+        {
+          "portId": "port_dxl_out",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.004, 0.0, -0.02065],
+          "exitDirection": [0.0, 0.0, -1.0]
+        }
+      ]
+    },
+    "poppy_1_5_2_1": {
+      "specifications": {
+        "motorName": "l_hip_y",
+        "motorId": 13,
+        "motorModel": "MX-64AT",
+        "controller": "lower_body_controller",
+        "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
+      },
+      "ports": [
+        {
+          "portId": "port_dxl_in",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.004, 0.0, -0.0259],
+          "exitDirection": [0.0, 0.0, -1.0]
+        },
+        {
+          "portId": "port_dxl_out",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.004, 0.0, -0.0259],
+          "exitDirection": [0.0, 0.0, -1.0]
+        }
+      ]
+    },
+    "poppy_1_7_2_1": {
+      "specifications": {
+        "motorName": "l_knee_y",
+        "motorId": 14,
+        "motorModel": "MX-28AT",
+        "controller": "lower_body_controller",
+        "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
+      },
+      "ports": [
+        {
+          "portId": "port_dxl_in",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.004, 0.0, -0.01315],
+          "exitDirection": [0.0, 0.0, -1.0]
+        },
+        {
+          "portId": "port_dxl_out",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.004, 0.0, -0.01315],
+          "exitDirection": [0.0, 0.0, -1.0]
+        }
+      ]
+    },
+    "poppy_1_9_2_1": {
+      "specifications": {
+        "motorName": "l_ankle_y",
+        "motorId": 15,
+        "motorModel": "MX-28AT",
+        "controller": "lower_body_controller",
+        "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
+      },
+      "ports": [
+        {
+          "portId": "port_dxl_in",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.004, 0.0, -0.01315],
+          "exitDirection": [0.0, 0.0, -1.0]
+        },
+        {
+          "portId": "port_dxl_out",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.004, 0.0, -0.01315],
+          "exitDirection": [0.0, 0.0, -1.0]
+        }
+      ]
+    },
+    "poppy_1_2_2_1": {
+      "specifications": {
+        "motorName": "r_hip_z",
+        "motorId": 22,
+        "motorModel": "MX-28AT",
+        "controller": "lower_body_controller",
+        "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
+      },
+      "ports": [
+        {
+          "portId": "port_dxl_in",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.004, 0.0, -0.02065],
+          "exitDirection": [0.0, 0.0, -1.0]
+        },
+        {
+          "portId": "port_dxl_out",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.004, 0.0025, -0.02065],
+          "exitDirection": [0.0, 0.0, -1.0]
+        }
+      ]
+    },
+    "poppy_1_4_2_1": {
+      "specifications": {
+        "motorName": "r_hip_y",
+        "motorId": 23,
+        "motorModel": "MX-64AT",
+        "controller": "lower_body_controller",
+        "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
+      },
+      "ports": [
+        {
+          "portId": "port_dxl_in",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.004, 0.0, -0.0259],
+          "exitDirection": [0.0, 0.0, -1.0]
+        },
+        {
+          "portId": "port_dxl_out",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.004, 0.0, -0.0259],
+          "exitDirection": [0.0, 0.0, -1.0]
+        }
+      ]
+    },
+    "poppy_1_6_2_1": {
+      "specifications": {
+        "motorName": "r_knee_y",
+        "motorId": 24,
+        "motorModel": "MX-28AT",
+        "controller": "lower_body_controller",
+        "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
+      },
+      "ports": [
+        {
+          "portId": "port_dxl_in",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.004, 0.0, -0.01315],
+          "exitDirection": [0.0, 0.0, -1.0]
+        },
+        {
+          "portId": "port_dxl_out",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.004, 0.0, -0.01315],
+          "exitDirection": [0.0, 0.0, -1.0]
+        }
+      ]
+    },
+    "poppy_1_8_2_1": {
+      "specifications": {
+        "motorName": "r_ankle_y",
+        "motorId": 25,
+        "motorModel": "MX-28AT",
+        "controller": "lower_body_controller",
+        "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
+      },
+      "ports": [
+        {
+          "portId": "port_dxl_in",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [-0.004, 0.0, -0.01315],
+          "exitDirection": [0.0, 0.0, -1.0]
+        },
+        {
+          "portId": "port_dxl_out",
+          "label": "Dynamixel 3P TTL socket",
+          "connectorType": "Molex 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.004, 0.0, -0.01315],
+          "exitDirection": [0.0, 0.0, -1.0]
+        }
+      ]
+    },
+    "poppy_1_28_8_2": {
+      "specifications": {
+        "cameraModule": "Videw JDEPC-OV04",
+        "connectorModel": "SM05B-SRSS-TB"
+      },
+      "ports": [
+        {
+          "portId": "port_camera",
+          "label": "Camera interface",
+          "connectorType": "JST-SH 5-pin",
+          "busKind": "usb_data",
+          "localPositionMeters": [-0.000375, 0.0029621, 0.0005],
+          "exitDirection": [0.0, 1.0, 0.0],
+          "wireColorsHex": ["#222428", "#cc2929", "#ececec", "#2bb673"]
+        }
+      ]
+    },
+    "poppy_1_28_14": {
+      "specifications": {
+        "imuModel": "9DOF Razor v23"
+      },
+      "ports": [
+        {
+          "portId": "port_serial",
+          "label": "Razor IMU serial",
+          "connectorType": "UART header",
+          "busKind": "i2c_spi_uart",
+          "localPositionMeters": [0.0165, 0.0065169, 0.003032],
+          "exitDirection": [0.0, 1.0, 0.0],
+          "wireColorsHex": ["#222428", "#cc2929", "#3b82f6"]
+        }
+      ]
+    }
+  },
+  "subsystems": [
+    {
+      "id": "sub_poppy_electronics",
+      "name": "Poppy Electronics & Bus Hubs"
+    },
+    {
+      "id": "sub_poppy_wiring",
+      "name": "Dynamixel Daisy-Chain Harnesses"
+    }
+  ],
+  "boards": [
+    {
+      "id": "comp_poppy_usb2ax_upper",
+      "cotsId": "kicad_poppy_usb2ax",
+      "name": "Upper USB2AX TTL interface",
+      "mountComponentId": "poppy_1_28_1",
+      "mountDescription": "Rear head / neck inspection placement.",
+      "restPositionMeters": [-0.02125, 0.29125, -0.065],
+      "specifications": {
+        "controller": "upper_body_controller"
+      },
+      "portOverrides": {
+        "port_dxl_ttl": {
+          "wireColorsHex": ["#222428", "#e5c158"]
+        }
+      }
+    },
+    {
+      "id": "comp_poppy_usb2ax_lower",
+      "cotsId": "kicad_poppy_usb2ax",
+      "name": "Lower USB2AX TTL interface",
+      "mountComponentId": "poppy_1_28_1",
+      "mountDescription": "Rear head / neck inspection placement.",
+      "restPositionMeters": [0.01625, 0.29625, -0.0725],
+      "specifications": {
+        "controller": "lower_body_controller"
+      },
+      "portOverrides": {
+        "port_dxl_ttl": {
+          "wireColorsHex": ["#222428", "#e5c158"]
+        }
+      }
+    },
+    {
+      "id": "comp_poppy_upper_3p_hub",
+      "cotsId": "kicad_poppy_upper_3p_hub",
+      "name": "Upper Bioloid 3P hub",
+      "mountComponentId": "poppy_1_17_1",
+      "mountDescription": "Behind the chest near the upper power injector.",
+      "restPositionMeters": [0.0, 0.255, -0.0625],
+      "specifications": {
+        "controller": "upper_body_controller"
+      },
+      "portOverrides": {
+        "port_hub_2": {
+          "busKind": "dc_power",
+          "nominalVoltageV": 12
+        }
+      }
+    }
+  ],
+  "cables": [
+    {
+      "id": "comp_poppy_cable_usb_upper",
+      "name": "Usb upper cable",
+      "specifications": {
+        "controller": "upper_body_controller",
+        "circuit": "upper",
+        "busKind": "usb_data",
+        "fromConnectorClearanceMm": 0.55,
+        "toConnectorClearanceMm": 0.35
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_usb_upper",
+        "fromComponentId": "poppy_1_28_3",
+        "fromPortId": "port_usb_upper",
+        "toComponentId": "comp_poppy_usb2ax_upper",
+        "toPortId": "port_usb",
+        "connectionType": "electrical_bus",
+        "howConnected": "A USB data lead connects the listed ports.",
+        "whyConnected": "Carries the upper circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [-0.038, 0.33, -0.069632],
+          [-0.025, 0.31625, -0.07],
+          [-0.02125, 0.311225, -0.06535]
+        ],
+        "wireBundleDiameterMm": 3.0
+      }
+    },
+    {
+      "id": "comp_poppy_cable_ttl_upper",
+      "name": "Ttl upper cable",
+      "specifications": {
+        "controller": "upper_body_controller",
+        "circuit": "upper",
+        "busKind": "ttl_serial"
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_ttl_upper",
+        "fromComponentId": "comp_poppy_usb2ax_upper",
+        "fromPortId": "port_dxl_ttl",
+        "toComponentId": "comp_poppy_upper_3p_hub",
+        "toPortId": "port_hub_1",
+        "connectionType": "electrical_bus",
+        "howConnected": "A two-conductor lead carries TTL data and ground. The 12 V pin is isolated at the USB2AX.",
+        "whyConnected": "Carries the upper circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [-0.02125, 0.28025, -0.0772],
+          [-0.029, 0.251, -0.081],
+          [-0.015, 0.251, -0.0747]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_power_upper",
+      "name": "Power upper cable",
+      "specifications": {
+        "controller": "upper_body_controller",
+        "circuit": "upper",
+        "busKind": "dc_power"
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_power_upper",
+        "fromComponentId": "poppy_1_18",
+        "fromPortId": "port_dxl_power",
+        "toComponentId": "comp_poppy_upper_3p_hub",
+        "toPortId": "port_hub_2",
+        "connectionType": "power_bus",
+        "howConnected": "A red and black lead feeds 12 V and ground to the hub.",
+        "whyConnected": "Carries the upper circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [-0.00715, 0.2508269, -0.04295],
+          [-0.00125, 0.24375, -0.0575],
+          [-0.00125, 0.24375, -0.065],
+          [0.0, 0.24625, -0.07125],
+          [0.002, 0.251, -0.0747]
+        ],
+        "wireBundleDiameterMm": 1.7
+      }
+    },
+    {
+      "id": "comp_poppy_cable_head_z",
+      "name": "Head z cable",
+      "specifications": {
+        "controller": "upper_body_controller",
+        "circuit": "head",
+        "busKind": "ttl_serial"
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_head_z",
+        "fromComponentId": "comp_poppy_upper_3p_hub",
+        "fromPortId": "port_hub_3",
+        "toComponentId": "poppy_1_17_2_1",
+        "toPortId": "port_dxl_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A three-conductor Dynamixel lead carries ground, 12 V, and TTL data.",
+        "whyConnected": "Carries the head circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [-0.015, 0.259, -0.0747],
+          [-0.0225, 0.25125, -0.07125],
+          [-0.02125, 0.20125, -0.0225],
+          [-0.01875, 0.18125, -0.01],
+          [-0.01625, 0.1775, -0.00625],
+          [-0.01625, 0.17625, -0.00375],
+          [-0.01125, 0.17625, 0.00125],
+          [-0.0075, 0.18, 0.00375],
+          [-0.00625, 0.18375, 0.00375],
+          [-0.00625, 0.1975, 0.00375],
+          [0.00375, 0.205, 0.00375],
+          [0.00375, 0.2275, 0.00375],
+          [0.0, 0.2313375, 0.0098]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_head_y",
+      "name": "Head y cable",
+      "specifications": {
+        "controller": "upper_body_controller",
+        "circuit": "head",
+        "busKind": "ttl_serial",
+        "fromConnectorClearanceMm": 3.0,
+        "toConnectorClearanceMm": 1.3
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_head_y",
+        "fromComponentId": "poppy_1_17_2_1",
+        "fromPortId": "port_dxl_out",
+        "toComponentId": "poppy_1_28_2_1",
+        "toPortId": "port_dxl_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A three-conductor Dynamixel lead carries ground, 12 V, and TTL data.",
+        "whyConnected": "Carries the head circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [0.0209717, 0.242487, 0.0098],
+          [0.02625, 0.235, 0.0025],
+          [0.02625, 0.22875, -0.00375],
+          [0.0225, 0.2275, -0.0075],
+          [0.02, 0.2275, -0.01],
+          [0.00125, 0.23125, -0.02375],
+          [0.00125, 0.235, -0.025],
+          [0.0, 0.27375, -0.0275],
+          [-0.00375, 0.27875, -0.03125],
+          [-0.00375, 0.28625, -0.03125],
+          [-0.00625, 0.28875, -0.0275],
+          [-0.02375, 0.28875, -0.0175],
+          [-0.02745, 0.288487, -0.0027]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_bust_y",
+      "name": "Bust y cable",
+      "specifications": {
+        "controller": "upper_body_controller",
+        "circuit": "torso",
+        "busKind": "ttl_serial"
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_bust_y",
+        "fromComponentId": "comp_poppy_upper_3p_hub",
+        "fromPortId": "port_hub_4",
+        "toComponentId": "poppy_1_16_2_1",
+        "toPortId": "port_dxl_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A three-conductor Dynamixel lead carries ground, 12 V, and TTL data.",
+        "whyConnected": "Carries the torso circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [0.002, 0.259, -0.0747],
+          [-0.00375, 0.25, -0.07125],
+          [-0.0175, 0.19625, -0.045],
+          [-0.0175, 0.18875, -0.045],
+          [-0.0175, 0.17875, -0.035],
+          [-0.014, 0.1755625, -0.029375]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_bust_x",
+      "name": "Bust x cable",
+      "specifications": {
+        "controller": "upper_body_controller",
+        "circuit": "torso",
+        "busKind": "ttl_serial",
+        "fromConnectorClearanceMm": 2.0,
+        "toConnectorClearanceMm": 3.0
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_bust_x",
+        "fromComponentId": "poppy_1_16_2_1",
+        "fromPortId": "port_dxl_out",
+        "toComponentId": "poppy_1_16_1_1",
+        "toPortId": "port_dxl_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A three-conductor Dynamixel lead carries ground, 12 V, and TTL data.",
+        "whyConnected": "Carries the torso circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [0.014, 0.1755625, -0.029375],
+          [-0.01, 0.17375, 0.005],
+          [-0.012325, 0.1755625, 0.0068]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_abs_z",
+      "name": "Abs z cable",
+      "specifications": {
+        "controller": "upper_body_controller",
+        "circuit": "torso",
+        "busKind": "ttl_serial",
+        "fromConnectorClearanceMm": 2.5
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_abs_z",
+        "fromComponentId": "poppy_1_16_1_1",
+        "fromPortId": "port_dxl_out",
+        "toComponentId": "poppy_1_15_1_1",
+        "toPortId": "port_dxl_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A three-conductor Dynamixel lead carries ground, 12 V, and TTL data.",
+        "whyConnected": "Carries the torso circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [0.010675, 0.1755625, 0.0068],
+          [0.005, 0.16625, -0.01375],
+          [0.0025, 0.1575, -0.025],
+          [-0.004, 0.136812, -0.02445]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_abs_y",
+      "name": "Abs y cable",
+      "specifications": {
+        "controller": "upper_body_controller",
+        "circuit": "torso",
+        "busKind": "ttl_serial"
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_abs_y",
+        "fromComponentId": "poppy_1_15_1_1",
+        "fromPortId": "port_dxl_out",
+        "toComponentId": "poppy_1_13_5_1",
+        "toPortId": "port_dxl_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A three-conductor Dynamixel lead carries ground, 12 V, and TTL data.",
+        "whyConnected": "Carries the torso circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [0.004, 0.136812, -0.02445],
+          [-0.00125, 0.1325, -0.025],
+          [-0.03625, 0.11625, -0.025],
+          [-0.03625, 0.10625, -0.025],
+          [-0.02295, 0.07855, -0.03395]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_abs_x",
+      "name": "Abs x cable",
+      "specifications": {
+        "controller": "upper_body_controller",
+        "circuit": "torso",
+        "busKind": "ttl_serial"
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_abs_x",
+        "fromComponentId": "poppy_1_13_5_1",
+        "fromPortId": "port_dxl_out",
+        "toComponentId": "poppy_1_13_1_1",
+        "toPortId": "port_dxl_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A three-conductor Dynamixel lead carries ground, 12 V, and TTL data.",
+        "whyConnected": "Carries the torso circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [0.02795, 0.07855, -0.03395],
+          [0.0175, 0.045, -0.0225],
+          [0.015, 0.04375, -0.02125],
+          [0.01125, 0.04375, -0.01875],
+          [0.01125, 0.04375, -0.005],
+          [0.0075, 0.0475, -0.00125],
+          [0.0075, 0.06625, -0.00125],
+          [0.00375, 0.06875, -0.00125],
+          [-0.00295, 0.0693, -0.001]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_l_shoulder_y",
+      "name": "L shoulder y cable",
+      "specifications": {
+        "controller": "upper_body_controller",
+        "circuit": "left_arm",
+        "busKind": "ttl_serial"
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_l_shoulder_y",
+        "fromComponentId": "comp_poppy_upper_3p_hub",
+        "fromPortId": "port_hub_5",
+        "toComponentId": "poppy_1_17_4_1",
+        "toPortId": "port_dxl_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A three-conductor Dynamixel lead carries ground, 12 V, and TTL data.",
+        "whyConnected": "Carries the left arm circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [0.019, 0.251, -0.0747],
+          [0.02625, 0.245, -0.06875],
+          [0.055675, 0.242487, -0.01765]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_l_shoulder_x",
+      "name": "L shoulder x cable",
+      "specifications": {
+        "controller": "upper_body_controller",
+        "circuit": "left_arm",
+        "busKind": "ttl_serial"
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_l_shoulder_x",
+        "fromComponentId": "poppy_1_17_4_1",
+        "fromPortId": "port_dxl_out",
+        "toComponentId": "poppy_1_21_1_1",
+        "toPortId": "port_dxl_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A three-conductor Dynamixel lead carries ground, 12 V, and TTL data.",
+        "whyConnected": "Carries the left arm circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [0.063675, 0.242487, -0.01765],
+          [0.0725, 0.2425, -0.02],
+          [0.08, 0.2425, -0.02],
+          [0.1148, 0.235662, 0.00315]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_l_arm_z",
+      "name": "L arm z cable",
+      "specifications": {
+        "controller": "upper_body_controller",
+        "circuit": "left_arm",
+        "busKind": "ttl_serial"
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_l_arm_z",
+        "fromComponentId": "poppy_1_21_1_1",
+        "fromPortId": "port_dxl_out",
+        "toComponentId": "poppy_1_22_2_1",
+        "toPortId": "port_dxl_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A three-conductor Dynamixel lead carries ground, 12 V, and TTL data.",
+        "whyConnected": "Carries the left arm circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [0.1228, 0.238162, 0.00375],
+          [0.13125, 0.23875, 0.00125],
+          [0.15375, 0.23875, -0.00125],
+          [0.16125, 0.23875, -0.00125],
+          [0.162925, 0.237287, 0.00315]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_l_elbow_y",
+      "name": "L elbow y cable",
+      "specifications": {
+        "controller": "upper_body_controller",
+        "circuit": "left_arm",
+        "busKind": "ttl_serial"
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_l_elbow_y",
+        "fromComponentId": "poppy_1_22_2_1",
+        "fromPortId": "port_dxl_out",
+        "toComponentId": "poppy_1_22_3_1",
+        "toPortId": "port_dxl_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A three-conductor Dynamixel lead carries ground, 12 V, and TTL data.",
+        "whyConnected": "Carries the left arm circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [0.170925, 0.234787, 0.00315],
+          [0.18625, 0.235, -0.00125],
+          [0.2372, 0.233987, -0.0024]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_r_shoulder_y",
+      "name": "R shoulder y cable",
+      "specifications": {
+        "controller": "upper_body_controller",
+        "circuit": "right_arm",
+        "busKind": "ttl_serial"
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_r_shoulder_y",
+        "fromComponentId": "comp_poppy_upper_3p_hub",
+        "fromPortId": "port_hub_6",
+        "toComponentId": "poppy_1_17_3_1",
+        "toPortId": "port_dxl_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A three-conductor Dynamixel lead carries ground, 12 V, and TTL data.",
+        "whyConnected": "Carries the right arm circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [0.019, 0.259, -0.0747],
+          [0.00875, 0.24625, -0.07],
+          [0.00125, 0.24, -0.0625],
+          [-0.04, 0.24, -0.0425],
+          [-0.063675, 0.242487, -0.01765]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_r_shoulder_x",
+      "name": "R shoulder x cable",
+      "specifications": {
+        "controller": "upper_body_controller",
+        "circuit": "right_arm",
+        "busKind": "ttl_serial"
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_r_shoulder_x",
+        "fromComponentId": "poppy_1_17_3_1",
+        "fromPortId": "port_dxl_out",
+        "toComponentId": "poppy_1_25_1_1",
+        "toPortId": "port_dxl_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A three-conductor Dynamixel lead carries ground, 12 V, and TTL data.",
+        "whyConnected": "Carries the right arm circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [-0.055675, 0.239987, -0.01765],
+          [-0.0625, 0.23875, -0.01875],
+          [-0.07875, 0.24, -0.02],
+          [-0.1228, 0.238162, 0.00375]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_r_arm_z",
+      "name": "R arm z cable",
+      "specifications": {
+        "controller": "upper_body_controller",
+        "circuit": "right_arm",
+        "busKind": "ttl_serial"
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_r_arm_z",
+        "fromComponentId": "poppy_1_25_1_1",
+        "fromPortId": "port_dxl_out",
+        "toComponentId": "poppy_1_26_2_1",
+        "toPortId": "port_dxl_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A three-conductor Dynamixel lead carries ground, 12 V, and TTL data.",
+        "whyConnected": "Carries the right arm circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [-0.1148, 0.233162, 0.00315],
+          [-0.15375, 0.23375, -0.00125],
+          [-0.16, 0.23375, -0.00125],
+          [-0.170925, 0.234787, 0.00315]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_r_elbow_y",
+      "name": "R elbow y cable",
+      "specifications": {
+        "controller": "upper_body_controller",
+        "circuit": "right_arm",
+        "busKind": "ttl_serial"
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_r_elbow_y",
+        "fromComponentId": "poppy_1_26_2_1",
+        "fromPortId": "port_dxl_out",
+        "toComponentId": "poppy_1_26_3_1",
+        "toPortId": "port_dxl_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A three-conductor Dynamixel lead carries ground, 12 V, and TTL data.",
+        "whyConnected": "Carries the right arm circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [-0.162925, 0.237287, 0.00315],
+          [-0.1675, 0.23875, 0.00375],
+          [-0.185, 0.23875, -0.00125],
+          [-0.2402, 0.233987, -0.0024]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_usb_lower",
+      "name": "Usb lower cable",
+      "specifications": {
+        "controller": "lower_body_controller",
+        "circuit": "lower",
+        "busKind": "usb_data",
+        "toConnectorClearanceMm": 0.35
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_usb_lower",
+        "fromComponentId": "poppy_1_28_3",
+        "fromPortId": "port_usb_lower",
+        "toComponentId": "comp_poppy_usb2ax_lower",
+        "toPortId": "port_usb",
+        "connectionType": "electrical_bus",
+        "howConnected": "A USB data lead connects the listed ports.",
+        "whyConnected": "Carries the lower circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [0.022, 0.3153667, -0.0538343],
+          [0.00375, 0.3125, -0.04375],
+          [-0.0125, 0.3125, -0.04375],
+          [-0.01375, 0.31, -0.045],
+          [-0.01375, 0.3075, -0.05125],
+          [-0.005, 0.305, -0.06],
+          [-0.00375, 0.305, -0.065],
+          [0.005, 0.315, -0.07125],
+          [0.01625, 0.321225, -0.07285]
+        ],
+        "wireBundleDiameterMm": 3.0
+      }
+    },
+    {
+      "id": "comp_poppy_cable_ttl_lower",
+      "name": "Ttl lower cable",
+      "specifications": {
+        "controller": "lower_body_controller",
+        "circuit": "lower",
+        "busKind": "ttl_serial"
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_ttl_lower",
+        "fromComponentId": "comp_poppy_usb2ax_lower",
+        "fromPortId": "port_dxl_ttl",
+        "toComponentId": "poppy_1_12",
+        "toPortId": "port_hub_1",
+        "connectionType": "electrical_bus",
+        "howConnected": "A two-conductor lead carries TTL data and ground. The 12 V pin is isolated at the USB2AX.",
+        "whyConnected": "Carries the lower circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [0.01625, 0.28525, -0.0847],
+          [0.0075, 0.06, -0.06375],
+          [0.0075, 0.0425, -0.05625],
+          [-0.0045, 0.0028, -0.0353636]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_power_lower",
+      "name": "Power lower cable",
+      "specifications": {
+        "controller": "lower_body_controller",
+        "circuit": "lower",
+        "busKind": "dc_power"
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_power_lower",
+        "fromComponentId": "poppy_1_19",
+        "fromPortId": "port_dxl_power",
+        "toComponentId": "poppy_1_12",
+        "toPortId": "port_hub_2",
+        "connectionType": "power_bus",
+        "howConnected": "A red and black lead feeds 12 V and ground to the hub.",
+        "whyConnected": "Carries the lower circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [-0.00715, 0.0661, -0.0686],
+          [-0.0075, 0.0425, -0.05625],
+          [0.0025, 0.025, -0.04125],
+          [0.0055, 0.0028, -0.0353636]
+        ],
+        "wireBundleDiameterMm": 1.7
+      }
+    },
+    {
+      "id": "comp_poppy_cable_r_hip_x",
+      "name": "R hip x cable",
+      "specifications": {
+        "controller": "lower_body_controller",
+        "circuit": "pelvis",
+        "busKind": "ttl_serial",
+        "toConnectorClearanceMm": 2.0
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_r_hip_x",
+        "fromComponentId": "poppy_1_12",
+        "fromPortId": "port_hub_3",
+        "toComponentId": "poppy_1_1_2_1",
+        "toPortId": "port_dxl_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A three-conductor Dynamixel lead carries ground, 12 V, and TTL data.",
+        "whyConnected": "Carries the pelvis circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [0.003, -0.0022, -0.0352794],
+          [-0.00125, 0.00375, -0.03125],
+          [-0.00375, 0.0125, -0.03125],
+          [-0.008695, 0.020738, -0.0262]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_l_hip_x",
+      "name": "L hip x cable",
+      "specifications": {
+        "controller": "lower_body_controller",
+        "circuit": "pelvis",
+        "busKind": "ttl_serial",
+        "fromConnectorClearanceMm": 1.4,
+        "toConnectorClearanceMm": 1.3
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_l_hip_x",
+        "fromComponentId": "poppy_1_1_2_1",
+        "fromPortId": "port_dxl_out",
+        "toComponentId": "poppy_1_1_3_1",
+        "toPortId": "port_dxl_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A three-conductor Dynamixel lead carries ground, 12 V, and TTL data.",
+        "whyConnected": "Carries the pelvis circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [-0.000695, 0.015738, -0.0262],
+          [0.00625, 0.00875, -0.03125],
+          [0.00875, 0.005, -0.03125],
+          [0.00875, -0.0125, -0.03],
+          [0.010695, -0.020738, -0.0262]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_l_hip_z",
+      "name": "L hip z cable",
+      "specifications": {
+        "controller": "lower_body_controller",
+        "circuit": "left_leg",
+        "busKind": "ttl_serial"
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_l_hip_z",
+        "fromComponentId": "poppy_1_12",
+        "fromPortId": "port_hub_4",
+        "toComponentId": "poppy_1_3_2_1",
+        "toPortId": "port_dxl_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A three-conductor Dynamixel lead carries ground, 12 V, and TTL data.",
+        "whyConnected": "Carries the left leg circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [-0.0045, -0.0072, -0.0351952],
+          [0.00625, -0.00625, -0.035],
+          [0.06254, 0.018825, -0.03645]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_l_hip_y",
+      "name": "L hip y cable",
+      "specifications": {
+        "controller": "lower_body_controller",
+        "circuit": "left_leg",
+        "busKind": "ttl_serial"
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_l_hip_y",
+        "fromComponentId": "poppy_1_3_2_1",
+        "fromPortId": "port_dxl_out",
+        "toComponentId": "poppy_1_5_2_1",
+        "toPortId": "port_dxl_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A three-conductor Dynamixel lead carries ground, 12 V, and TTL data.",
+        "whyConnected": "Carries the left leg circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [0.07054, 0.018825, -0.03645],
+          [0.06359, -0.024, -0.04595]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_l_knee_y",
+      "name": "L knee y cable",
+      "specifications": {
+        "controller": "lower_body_controller",
+        "circuit": "left_leg",
+        "busKind": "ttl_serial"
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_l_knee_y",
+        "fromComponentId": "poppy_1_5_2_1",
+        "fromPortId": "port_dxl_out",
+        "toComponentId": "poppy_1_7_2_1",
+        "toPortId": "port_dxl_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A three-conductor Dynamixel lead carries ground, 12 V, and TTL data.",
+        "whyConnected": "Carries the left leg circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [0.07159, -0.024, -0.04595],
+          [0.041362, -0.1927, -0.01565]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_l_ankle_y",
+      "name": "L ankle y cable",
+      "specifications": {
+        "controller": "lower_body_controller",
+        "circuit": "left_leg",
+        "busKind": "ttl_serial"
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_l_ankle_y",
+        "fromComponentId": "poppy_1_7_2_1",
+        "fromPortId": "port_dxl_out",
+        "toComponentId": "poppy_1_9_2_1",
+        "toPortId": "port_dxl_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A three-conductor Dynamixel lead carries ground, 12 V, and TTL data.",
+        "whyConnected": "Carries the left leg circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [0.049362, -0.1927, -0.01565],
+          [0.04875, -0.29375, -0.01375],
+          [0.0475, -0.3375, -0.01875],
+          [0.03875, -0.37, -0.0175],
+          [0.038012, -0.3727, -0.01565]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_r_hip_z",
+      "name": "R hip z cable",
+      "specifications": {
+        "controller": "lower_body_controller",
+        "circuit": "right_leg",
+        "busKind": "ttl_serial"
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_r_hip_z",
+        "fromComponentId": "poppy_1_12",
+        "fromPortId": "port_hub_5",
+        "toComponentId": "poppy_1_2_2_1",
+        "toPortId": "port_dxl_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A three-conductor Dynamixel lead carries ground, 12 V, and TTL data.",
+        "whyConnected": "Carries the right leg circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [0.0055, -0.0122, -0.0292184],
+          [-0.00875, -0.01125, -0.03],
+          [-0.0525, 0.01375, -0.0325],
+          [-0.07054, 0.018825, -0.03645]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_r_hip_y",
+      "name": "R hip y cable",
+      "specifications": {
+        "controller": "lower_body_controller",
+        "circuit": "right_leg",
+        "busKind": "ttl_serial"
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_r_hip_y",
+        "fromComponentId": "poppy_1_2_2_1",
+        "fromPortId": "port_dxl_out",
+        "toComponentId": "poppy_1_4_2_1",
+        "toPortId": "port_dxl_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A three-conductor Dynamixel lead carries ground, 12 V, and TTL data.",
+        "whyConnected": "Carries the right leg circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [-0.06254, 0.021325, -0.03645],
+          [-0.0625, 0.01875, -0.03875],
+          [-0.07159, -0.024, -0.04595]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_r_knee_y",
+      "name": "R knee y cable",
+      "specifications": {
+        "controller": "lower_body_controller",
+        "circuit": "right_leg",
+        "busKind": "ttl_serial"
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_r_knee_y",
+        "fromComponentId": "poppy_1_4_2_1",
+        "fromPortId": "port_dxl_out",
+        "toComponentId": "poppy_1_6_2_1",
+        "toPortId": "port_dxl_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A three-conductor Dynamixel lead carries ground, 12 V, and TTL data.",
+        "whyConnected": "Carries the right leg circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [-0.06359, -0.024, -0.04595],
+          [-0.049362, -0.1927, -0.01565]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_r_ankle_y",
+      "name": "R ankle y cable",
+      "specifications": {
+        "controller": "lower_body_controller",
+        "circuit": "right_leg",
+        "busKind": "ttl_serial"
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_r_ankle_y",
+        "fromComponentId": "poppy_1_6_2_1",
+        "fromPortId": "port_dxl_out",
+        "toComponentId": "poppy_1_8_2_1",
+        "toPortId": "port_dxl_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A three-conductor Dynamixel lead carries ground, 12 V, and TTL data.",
+        "whyConnected": "Carries the right leg circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [-0.041362, -0.1927, -0.01565],
+          [-0.04125, -0.29375, -0.01375],
+          [-0.04125, -0.33875, -0.01875],
+          [-0.045, -0.37, -0.0175],
+          [-0.046012, -0.3727, -0.01565]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_camera",
+      "name": "Camera cable",
+      "specifications": {
+        "controller": "head_peripherals",
+        "circuit": "camera",
+        "busKind": "usb_data",
+        "toConnectorClearanceMm": 1.15
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_camera",
+        "fromComponentId": "poppy_1_28_3",
+        "fromPortId": "port_usb_camera",
+        "toComponentId": "poppy_1_28_8_2",
+        "toPortId": "port_camera",
+        "connectionType": "electrical_bus",
+        "howConnected": "A USB data lead connects the listed ports.",
+        "whyConnected": "Carries the camera circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [0.002, 0.325, -0.061643],
+          [0.0, 0.3275, -0.06625],
+          [-0.00125, 0.3325, -0.06625],
+          [-0.02585, 0.3908721, 0.008517]
+        ],
+        "wireBundleDiameterMm": 3.0
+      }
+    },
+    {
+      "id": "comp_poppy_cable_imu",
+      "name": "Imu cable",
+      "specifications": {
+        "controller": "head_peripherals",
+        "circuit": "imu",
+        "busKind": "i2c_spi_uart",
+        "toConnectorClearanceMm": 0.5
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_imu",
+        "fromComponentId": "poppy_1_28_3",
+        "fromPortId": "port_imu",
+        "toComponentId": "poppy_1_28_14",
+        "toPortId": "port_serial",
+        "connectionType": "electrical_bus",
+        "howConnected": "A serial reference lead connects the IMU to the head computer.",
+        "whyConnected": "Carries the imu circuit in the Poppy inspection layout.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [0.027, 0.3375, -0.0020159],
+          [0.0165, 0.3345549, 0.0175]
+        ],
+        "wireBundleDiameterMm": 2.25
+      }
+    }
+  ]
+}

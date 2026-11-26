@@ -1,22 +1,10 @@
 {
   "status": "partial",
   "method": "source placement AABB then OCCT common",
-  "solidCount": 199,
+  "solidCount": 235,
   "excludedComponents": [
-    {
-      "componentId": "poppy_1_6_1",
-      "reason": {
-        "kind": "available",
-        "role": "surface"
-      }
-    },
-    {
-      "componentId": "poppy_1_7_1",
-      "reason": {
-        "kind": "available",
-        "role": "surface"
-      }
-    },
+    { "componentId": "poppy_1_6_1", "reason": { "kind": "available", "role": "surface" } },
+    { "componentId": "poppy_1_7_1", "reason": { "kind": "available", "role": "surface" } },
     {
       "componentId": "poppy_1_28_5",
       "reason": {
@@ -1219,10 +1207,226 @@
       "fixture": "poppy_1_29.step",
       "sha256": "1f5bf19bb6fc2cdc844cb1e77b0dfc839280c82a498f89f0d7880569216a15e4",
       "restPositionMeters": [0.0, 0.292237, 0.0248]
+    },
+    {
+      "componentId": "comp_poppy_usb2ax_upper",
+      "fixture": "kicad_poppy_usb2ax.step",
+      "sha256": "49ff1a64ccb7bad6bd397133395a40f6d0da4f41901402833cfb2da13dee2f3f",
+      "restPositionMeters": [-0.02125, 0.29125, -0.065]
+    },
+    {
+      "componentId": "comp_poppy_usb2ax_lower",
+      "fixture": "kicad_poppy_usb2ax.step",
+      "sha256": "49ff1a64ccb7bad6bd397133395a40f6d0da4f41901402833cfb2da13dee2f3f",
+      "restPositionMeters": [0.01625, 0.29625, -0.0725]
+    },
+    {
+      "componentId": "comp_poppy_upper_3p_hub",
+      "fixture": "kicad_poppy_upper_3p_hub.step",
+      "sha256": "5710c2fbffa5c35f170a64687eefea5fd5de17e65f84458906b3707b30981599",
+      "restPositionMeters": [0.0, 0.255, -0.0625]
+    },
+    {
+      "componentId": "comp_poppy_cable_usb_upper",
+      "fixture": "comp_poppy_cable_usb_upper.step",
+      "sha256": "179cceedbd2bda6ed7b89eb33c20f0de6b81721a32ea2ae0640387733097cac0",
+      "restPositionMeters": [-0.029995850124506795, 0.3185125000500001, -0.06753140854370486]
+    },
+    {
+      "componentId": "comp_poppy_cable_ttl_upper",
+      "fixture": "comp_poppy_cable_ttl_upper.step",
+      "sha256": "b4e080a3f561aab8e0ed3ac082ea870b435c51da0fc25784fdb84f9e26cb9348",
+      "restPositionMeters": [-0.02137405473059133, 0.26533272509599237, -0.07415066262219547]
+    },
+    {
+      "componentId": "comp_poppy_cable_power_upper",
+      "fixture": "comp_poppy_cable_power_upper.step",
+      "sha256": "869a9acda6ecc396e5191becff04d1dd65079a0e52100f494984844e3ab0675b",
+      "restPositionMeters": [-0.002478763006513634, 0.24738946333779516, -0.05813085101899543]
+    },
+    {
+      "componentId": "comp_poppy_cable_head_z",
+      "fixture": "comp_poppy_cable_head_z.step",
+      "sha256": "87536da8fc80356ab5078f77da3a3efc3e4f49dc504829bebc308a0920baebea",
+      "restPositionMeters": [-0.009030958215853797, 0.21722316991083995, -0.03226686812801547]
+    },
+    {
+      "componentId": "comp_poppy_cable_head_y",
+      "fixture": "comp_poppy_cable_head_y.step",
+      "sha256": "0986925fa6ebcd024168ab3c84e0b81bc76ac6dbdecca41af6de1a772a638e47",
+      "restPositionMeters": [-0.00037278561230198547, 0.25788021771724995, -0.010688924633020729]
+    },
+    {
+      "componentId": "comp_poppy_cable_bust_y",
+      "fixture": "comp_poppy_cable_bust_y.step",
+      "sha256": "8e4a06fe12bc197bc8d385ff12c82ad000dc44fe88292895b9a8d0c665e59aa6",
+      "restPositionMeters": [-0.007611517593423795, 0.2177267951946348, -0.05175415103954129]
+    },
+    {
+      "componentId": "comp_poppy_cable_bust_x",
+      "fixture": "comp_poppy_cable_bust_x.step",
+      "sha256": "04a20c36340bceafd408700fdb889294296495fa6a089e814242fbfa8aab855f",
+      "restPositionMeters": [0.0003169003356483158, 0.17678424440487642, -0.011744669406040444]
+    },
+    {
+      "componentId": "comp_poppy_cable_abs_z",
+      "fixture": "comp_poppy_cable_abs_z.step",
+      "sha256": "8495add5adcc07bf1b17b7028669f54520dcfe52f905d3b45120ff2041a3c3b5",
+      "restPositionMeters": [0.0031209140097302242, 0.15798400784727495, -0.00906571786828464]
+    },
+    {
+      "componentId": "comp_poppy_cable_abs_y",
+      "fixture": "comp_poppy_cable_abs_y.step",
+      "sha256": "4c5e31a4bf88dc5479ab4db77bacea8c086bd030fb01af728cbeb260bd995083",
+      "restPositionMeters": [-0.015929028335335577, 0.10726289256773439, -0.02599250780594349]
+    },
+    {
+      "componentId": "comp_poppy_cable_abs_x",
+      "fixture": "comp_poppy_cable_abs_x.step",
+      "sha256": "6f4fc2219acd96e2744f11d3e8c49b801d32a8304a8a8e237b6b1609336ea882",
+      "restPositionMeters": [0.011442038519458282, 0.062120740879377793, -0.01776771460400912]
+    },
+    {
+      "componentId": "comp_poppy_cable_l_shoulder_y",
+      "fixture": "comp_poppy_cable_l_shoulder_y.step",
+      "sha256": "05fe18561d5f27f6803f1e906359e24142b581f2924491e36908ce665a008a3b",
+      "restPositionMeters": [0.03698656072731613, 0.24624819417204497, -0.042245994165907505]
+    },
+    {
+      "componentId": "comp_poppy_cable_l_shoulder_x",
+      "fixture": "comp_poppy_cable_l_shoulder_x.step",
+      "sha256": "7339412c10f76d4920ce597b7c5ccdb887e949570d5a15d23ee8e353da9207b2",
+      "restPositionMeters": [0.08923273331157774, 0.23901108674378516, -0.005424999619710073]
+    },
+    {
+      "componentId": "comp_poppy_cable_l_arm_z",
+      "fixture": "comp_poppy_cable_l_arm_z.step",
+      "sha256": "5dc7e924b4cf5be4f8c9b944a54f42d3644a903906945b337575f16dbcddedbe",
+      "restPositionMeters": [0.14285111524082486, 0.23793898349552958, 0.00425081392560498]
+    },
+    {
+      "componentId": "comp_poppy_cable_l_elbow_y",
+      "fixture": "comp_poppy_cable_l_elbow_y.step",
+      "sha256": "cf64315c48635d0bba58ef2f727b202502373138e116fc08d0a60effd5d2d909",
+      "restPositionMeters": [0.20406246761339328, 0.23449070070006256, 0.003415181916157267]
+    },
+    {
+      "componentId": "comp_poppy_cable_r_shoulder_y",
+      "fixture": "comp_poppy_cable_r_shoulder_y.step",
+      "sha256": "dc2c92da94b0608fdc79060be4655269bec83c7ed9d64cb9fa360f96e63dc020",
+      "restPositionMeters": [-0.021942285584463466, 0.24898628882751825, -0.042534617784666745]
+    },
+    {
+      "componentId": "comp_poppy_cable_r_shoulder_x",
+      "fixture": "comp_poppy_cable_r_shoulder_x.step",
+      "sha256": "f31bca81cfbf732f639f923162660c37ff156f1a268761064efd0925bd37d484",
+      "restPositionMeters": [-0.08923034164011821, 0.2390489702230288, -0.005069320690867658]
+    },
+    {
+      "componentId": "comp_poppy_cable_r_arm_z",
+      "fixture": "comp_poppy_cable_r_arm_z.step",
+      "sha256": "88c191021220c47f8a3437067255fd391dfc1be9a0f5409ab0fdf09df153f6b6",
+      "restPositionMeters": [-0.14286034662140942, 0.2340220016892407, 0.003950053217851981]
+    },
+    {
+      "componentId": "comp_poppy_cable_r_elbow_y",
+      "fixture": "comp_poppy_cable_r_elbow_y.step",
+      "sha256": "dcf1d8fb87a86f1133e57b6859c11362b2c06ca1bab3c2af744db2d5211a455b",
+      "restPositionMeters": [-0.2015534450323536, 0.23641902491464595, 0.0034312846107214644]
+    },
+    {
+      "componentId": "comp_poppy_cable_usb_lower",
+      "fixture": "comp_poppy_cable_usb_lower.step",
+      "sha256": "7126a8bf1269cd474f09dcff06544cfac072f867b33c1f0b63d3afbffb8b483c",
+      "restPositionMeters": [0.003424933095655578, 0.3144773843240227, -0.0583654124977972]
+    },
+    {
+      "componentId": "comp_poppy_cable_ttl_lower",
+      "fixture": "comp_poppy_cable_ttl_lower.step",
+      "sha256": "e6f33a8e6d46f78fdf7916bfa50ca5fa517a46464836242abea492985f5d3dce",
+      "restPositionMeters": [0.0058836678160851825, 0.143945558134885, -0.05646745084060382]
+    },
+    {
+      "componentId": "comp_poppy_cable_power_lower",
+      "fixture": "comp_poppy_cable_power_lower.step",
+      "sha256": "6dbf0669723a12f0a36095be47cded9e4196aa85c37290b6b8525673f179641e",
+      "restPositionMeters": [-0.0009921976587335265, 0.0344496395545961, -0.04777573766965493]
+    },
+    {
+      "componentId": "comp_poppy_cable_r_hip_x",
+      "fixture": "comp_poppy_cable_r_hip_x.step",
+      "sha256": "07f0e08edbb638ce8fa70e384dbc6183e4ef5dc094739b0b3456a4f4365abba0",
+      "restPositionMeters": [-0.00252026602819577, 0.009755326637242575, -0.027783142553285047]
+    },
+    {
+      "componentId": "comp_poppy_cable_l_hip_x",
+      "fixture": "comp_poppy_cable_l_hip_x.step",
+      "sha256": "3a41606780039180c7b49a4424ad0e08cdb83f696ebfaccdb5eddc4d9c2b4ee4",
+      "restPositionMeters": [0.0047884429098635625, -0.0029211633201695814, -0.02620216509451224]
+    },
+    {
+      "componentId": "comp_poppy_cable_l_hip_z",
+      "fixture": "comp_poppy_cable_l_hip_z.step",
+      "sha256": "5f0f24600a04babb4e9b104a7df40172c4c1b1fd8625c8253d284c30f7eb98dc",
+      "restPositionMeters": [0.028953670687118852, 0.006067933358780563, -0.032778663253683483]
+    },
+    {
+      "componentId": "comp_poppy_cable_l_hip_y",
+      "fixture": "comp_poppy_cable_l_hip_y.step",
+      "sha256": "7f8cfa0069e95bb800274486e3fa61ffdac79c8318f24df715974cbf1be8d46d",
+      "restPositionMeters": [0.0670919447376574, -0.0027535299841980354, -0.03740760547170481]
+    },
+    {
+      "componentId": "comp_poppy_cable_l_knee_y",
+      "fixture": "comp_poppy_cable_l_knee_y.step",
+      "sha256": "f197dc0b2ac6c951a56c2518195623db2eb3b73a733ea86091cc322e1c6206ab",
+      "restPositionMeters": [0.05650866281278779, -0.10853228849137553, -0.027077282057539735]
+    },
+    {
+      "componentId": "comp_poppy_cable_l_ankle_y",
+      "fixture": "comp_poppy_cable_l_ankle_y.step",
+      "sha256": "8bcf5aaf8fb7dc9302946c372948b903ef4001526ad500bcc93935cd7628d2b1",
+      "restPositionMeters": [0.04370770441301704, -0.28284598274195777, -0.013674215906307734]
+    },
+    {
+      "componentId": "comp_poppy_cable_r_hip_z",
+      "fixture": "comp_poppy_cable_r_hip_z.step",
+      "sha256": "26bba3382405663eb521bd5972fe92ce39ba9c895cf581d22df29dd4d2748369",
+      "restPositionMeters": [-0.03249114041802673, 0.0034841673690608264, -0.02949344256143643]
+    },
+    {
+      "componentId": "comp_poppy_cable_r_hip_y",
+      "fixture": "comp_poppy_cable_r_hip_y.step",
+      "sha256": "6bd26c6515a247c3ede70562f780db77173bc7e0f43e821d18348745d53a0c25",
+      "restPositionMeters": [-0.06703077092751633, -0.0014903594601102074, -0.03744778980585501]
+    },
+    {
+      "componentId": "comp_poppy_cable_r_knee_y",
+      "fixture": "comp_poppy_cable_r_knee_y.step",
+      "sha256": "d3067844d67123a4be1ce09124da5060447ca6904dbd2fe15945eed2113ff15f",
+      "restPositionMeters": [-0.05648341598105172, -0.10843793055970123, -0.027025570435397026]
+    },
+    {
+      "componentId": "comp_poppy_cable_r_ankle_y",
+      "fixture": "comp_poppy_cable_r_ankle_y.step",
+      "sha256": "2537b640b3442dff1ac11c7215cb003d504e3d13e7e6da7a211d06e5048d6467",
+      "restPositionMeters": [-0.04360952100744195, -0.28284863341015104, -0.013669968885204272]
+    },
+    {
+      "componentId": "comp_poppy_cable_camera",
+      "fixture": "comp_poppy_cable_camera.step",
+      "sha256": "d71cf4feb2d6e36d0bf1be782fb77fdb0f6a9f03363c3aade418f1e4fa0d03fe",
+      "restPositionMeters": [-0.011423880728270532, 0.35719056886403827, -0.028473687230277937]
+    },
+    {
+      "componentId": "comp_poppy_cable_imu",
+      "fixture": "comp_poppy_cable_imu.step",
+      "sha256": "f6d1f72580b181382595e969957760d8a83d8a284255bb4c0773352c36adc877",
+      "restPositionMeters": [0.02180463536396109, 0.33275245005, 0.004450249769476624]
     }
   ],
-  "possiblePairCount": 19701,
-  "candidatePairCount": 595,
+  "possiblePairCount": 27495,
+  "candidatePairCount": 801,
   "volumeThresholdMm3": 0.001,
   "aabbToleranceMm": 1e-7,
   "timeoutSecondsPerPair": 30,
@@ -1402,6 +1606,18 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_1_1", "comp_poppy_cable_abs_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_1", "comp_poppy_cable_l_hip_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_1_2_1", "poppy_1_1_2_2"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -1552,6 +1768,12 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_1_2_7", "comp_poppy_cable_r_hip_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_1_2_8", "poppy_1_2_1"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -1609,6 +1831,12 @@
       "componentIds": ["poppy_1_1_3_1", "poppy_1_12"],
       "status": "intersection",
       "volumeMm3": 0.14348404553770444,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_1_3_1", "comp_poppy_cable_l_knee_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
       "error": null
     },
     {
@@ -1708,6 +1936,12 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_1_3_8", "comp_poppy_cable_l_hip_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_2_1", "poppy_1_2_2_1"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -1750,6 +1984,12 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_2_1", "comp_poppy_cable_r_hip_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_2_2_1", "poppy_1_2_2_2"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -1769,6 +2009,18 @@
     },
     {
       "componentIds": ["poppy_1_2_2_1", "poppy_1_4_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_2_2_1", "comp_poppy_cable_r_hip_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_2_2_1", "comp_poppy_cable_r_hip_y"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -1852,6 +2104,18 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_3_1", "comp_poppy_cable_l_hip_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_3_1", "comp_poppy_cable_l_hip_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_3_2_1", "poppy_1_3_2_2"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -1871,6 +2135,18 @@
     },
     {
       "componentIds": ["poppy_1_3_2_1", "poppy_1_5_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_3_2_1", "comp_poppy_cable_l_hip_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_3_2_1", "comp_poppy_cable_l_hip_y"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -1936,6 +2212,24 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_4_2_1", "comp_poppy_cable_r_hip_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_4_2_1", "comp_poppy_cable_r_hip_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_4_2_1", "comp_poppy_cable_r_knee_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_4_2_2", "poppy_1_4_2_3"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -1978,6 +2272,24 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_5_2_1", "comp_poppy_cable_l_hip_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_5_2_1", "comp_poppy_cable_l_hip_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_5_2_1", "comp_poppy_cable_l_knee_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_5_2_2", "poppy_1_5_2_3"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -1991,6 +2303,12 @@
     },
     {
       "componentIds": ["poppy_1_5_2_3", "poppy_1_5_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_5_2_4", "comp_poppy_cable_l_knee_y"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -2033,6 +2351,18 @@
     },
     {
       "componentIds": ["poppy_1_6_2_1", "poppy_1_8_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_6_2_1", "comp_poppy_cable_r_knee_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_6_2_1", "comp_poppy_cable_r_ankle_y"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -2177,6 +2507,18 @@
     },
     {
       "componentIds": ["poppy_1_7_2_1", "poppy_1_9_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_7_2_1", "comp_poppy_cable_l_knee_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_7_2_1", "comp_poppy_cable_l_ankle_y"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -2338,6 +2680,18 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_8_1", "comp_poppy_cable_r_knee_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_1", "comp_poppy_cable_r_ankle_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_8_2_1", "poppy_1_8_2_2"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -2375,6 +2729,12 @@
     },
     {
       "componentIds": ["poppy_1_8_2_1", "poppy_1_10"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_8_2_1", "comp_poppy_cable_r_ankle_y"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -2530,6 +2890,18 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_9_1", "comp_poppy_cable_l_knee_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_1", "comp_poppy_cable_l_ankle_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_9_2_1", "poppy_1_9_2_2"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -2567,6 +2939,12 @@
     },
     {
       "componentIds": ["poppy_1_9_2_1", "poppy_1_11"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_9_2_1", "comp_poppy_cable_l_ankle_y"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -2668,6 +3046,24 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_12", "comp_poppy_cable_r_hip_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_12", "comp_poppy_cable_l_hip_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_12", "comp_poppy_cable_r_hip_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_13_1_1", "poppy_1_13_1_2"],
       "status": "intersection",
       "volumeMm3": 0.5654866776461759,
@@ -2711,6 +3107,12 @@
     },
     {
       "componentIds": ["poppy_1_13_1_1", "poppy_1_14"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_1_1", "comp_poppy_cable_abs_x"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -2765,6 +3167,12 @@
     },
     {
       "componentIds": ["poppy_1_13_2", "poppy_1_14"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_2", "comp_poppy_cable_abs_x"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -2848,6 +3256,30 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_13_5_1", "comp_poppy_cable_abs_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_5_1", "comp_poppy_cable_abs_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_5_1", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_5_1", "comp_poppy_cable_power_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_13_5_2", "poppy_1_13_5_3"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -2860,7 +3292,31 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_13_5_2", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_5_2", "comp_poppy_cable_power_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_13_5_3", "poppy_1_14"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_5_3", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_13_5_3", "comp_poppy_cable_power_lower"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -2902,6 +3358,30 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_14", "comp_poppy_cable_abs_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_14", "comp_poppy_cable_abs_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_14", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_14", "comp_poppy_cable_power_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_15_1_1", "poppy_1_15_1_2"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -2923,6 +3403,18 @@
       "componentIds": ["poppy_1_15_1_1", "poppy_1_15_2"],
       "status": "intersection",
       "volumeMm3": 1.9805421854689274,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_15_1_1", "comp_poppy_cable_abs_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_15_1_1", "comp_poppy_cable_abs_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
       "error": null
     },
     {
@@ -3028,6 +3520,24 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_15_2", "comp_poppy_cable_head_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_15_2", "comp_poppy_cable_bust_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_15_2", "comp_poppy_cable_abs_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_16_1_1", "poppy_1_16_1_2"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -3089,6 +3599,30 @@
     },
     {
       "componentIds": ["poppy_1_16_1_1", "poppy_1_17_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_1", "comp_poppy_cable_head_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_1", "comp_poppy_cable_head_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_1", "comp_poppy_cable_bust_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_1_1", "comp_poppy_cable_abs_z"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -3190,6 +3724,12 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_16_1_8", "comp_poppy_cable_head_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_16_2_1", "poppy_1_16_2_2"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -3232,6 +3772,42 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_16_2_1", "comp_poppy_cable_head_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_1", "comp_poppy_cable_head_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_1", "comp_poppy_cable_bust_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_1", "comp_poppy_cable_bust_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_1", "comp_poppy_cable_abs_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_1", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_16_2_2", "poppy_1_16_2_3"],
       "status": "intersection",
       "volumeMm3": 30.348825759541278,
@@ -3245,6 +3821,24 @@
     },
     {
       "componentIds": ["poppy_1_16_2_2", "poppy_1_17_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_2", "comp_poppy_cable_head_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_2", "comp_poppy_cable_bust_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_2", "comp_poppy_cable_ttl_lower"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -3268,6 +3862,24 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_16_2_3", "comp_poppy_cable_head_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_3", "comp_poppy_cable_bust_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_3", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_16_2_4", "poppy_1_17_1"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -3277,6 +3889,24 @@
       "componentIds": ["poppy_1_16_2_4", "poppy_1_18"],
       "status": "intersection",
       "volumeMm3": 28.118657696011116,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_4", "comp_poppy_cable_head_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_4", "comp_poppy_cable_bust_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_2_4", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
       "error": null
     },
     {
@@ -3347,6 +3977,12 @@
     },
     {
       "componentIds": ["poppy_1_16_6", "poppy_1_17_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_16_6", "comp_poppy_cable_head_z"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -3436,6 +4072,66 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_17_1", "comp_poppy_cable_power_upper"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_1", "comp_poppy_cable_head_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_1", "comp_poppy_cable_head_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_1", "comp_poppy_cable_bust_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_1", "comp_poppy_cable_bust_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_1", "comp_poppy_cable_l_shoulder_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_1", "comp_poppy_cable_l_shoulder_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_1", "comp_poppy_cable_r_shoulder_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_1", "comp_poppy_cable_r_shoulder_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_1", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_17_2_1", "poppy_1_17_2_2"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -3445,6 +4141,24 @@
       "componentIds": ["poppy_1_17_2_1", "poppy_1_17_2_3"],
       "status": "intersection",
       "volumeMm3": 14.564767153580956,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_2_1", "comp_poppy_cable_head_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_2_1", "comp_poppy_cable_head_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_2_1", "comp_poppy_cable_r_shoulder_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
       "error": null
     },
     {
@@ -3479,6 +4193,18 @@
     },
     {
       "componentIds": ["poppy_1_17_3_1", "poppy_1_24"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_3_1", "comp_poppy_cable_r_shoulder_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_3_1", "comp_poppy_cable_r_shoulder_x"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -3538,6 +4264,18 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_17_4_1", "comp_poppy_cable_l_shoulder_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_4_1", "comp_poppy_cable_l_shoulder_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_17_4_2", "poppy_1_17_4_3"],
       "status": "intersection",
       "volumeMm3": 30.34882575954408,
@@ -3563,6 +4301,42 @@
     },
     {
       "componentIds": ["poppy_1_17_4_4", "poppy_1_20"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_18", "comp_poppy_cable_head_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_18", "comp_poppy_cable_bust_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_18", "comp_poppy_cable_r_shoulder_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_18", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_19", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_19", "comp_poppy_cable_power_lower"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -3616,6 +4390,12 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_20", "comp_poppy_cable_l_shoulder_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_21_1_1", "poppy_1_21_1_2"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -3659,6 +4439,18 @@
     },
     {
       "componentIds": ["poppy_1_21_1_1", "poppy_1_22_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_21_1_1", "comp_poppy_cable_l_shoulder_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_21_1_1", "comp_poppy_cable_l_arm_z"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -3742,6 +4534,12 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_21_2", "comp_poppy_cable_l_arm_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_22_1", "poppy_1_22_2_1"],
       "status": "intersection",
       "volumeMm3": 2.467273809882251,
@@ -3820,6 +4618,18 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_22_1", "comp_poppy_cable_l_arm_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_1", "comp_poppy_cable_l_elbow_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_22_2_1", "poppy_1_22_2_2"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -3835,6 +4645,18 @@
       "componentIds": ["poppy_1_22_2_1", "poppy_1_22_2_4"],
       "status": "intersection",
       "volumeMm3": 35.353056364479876,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_2_1", "comp_poppy_cable_l_arm_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_2_1", "comp_poppy_cable_l_elbow_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
       "error": null
     },
     {
@@ -3893,6 +4715,12 @@
     },
     {
       "componentIds": ["poppy_1_22_3_1", "poppy_1_23_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_22_3_1", "comp_poppy_cable_l_elbow_y"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -4000,6 +4828,12 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_23_1", "comp_poppy_cable_l_elbow_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_24", "poppy_1_25_1_1"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -4048,6 +4882,18 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_24", "comp_poppy_cable_r_shoulder_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_24", "comp_poppy_cable_r_arm_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_25_1_1", "poppy_1_25_1_2"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -4091,6 +4937,18 @@
     },
     {
       "componentIds": ["poppy_1_25_1_1", "poppy_1_26_2_4"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_25_1_1", "comp_poppy_cable_r_shoulder_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_25_1_1", "comp_poppy_cable_r_arm_z"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -4174,6 +5032,12 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_25_2", "comp_poppy_cable_r_arm_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_26_1", "poppy_1_26_2_1"],
       "status": "intersection",
       "volumeMm3": 2.4672738098919926,
@@ -4252,6 +5116,18 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_26_1", "comp_poppy_cable_r_arm_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_1", "comp_poppy_cable_r_elbow_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_26_2_1", "poppy_1_26_2_2"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -4267,6 +5143,18 @@
       "componentIds": ["poppy_1_26_2_1", "poppy_1_26_2_4"],
       "status": "intersection",
       "volumeMm3": 35.35305636447956,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_2_1", "comp_poppy_cable_r_arm_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_2_1", "comp_poppy_cable_r_elbow_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
       "error": null
     },
     {
@@ -4325,6 +5213,12 @@
     },
     {
       "componentIds": ["poppy_1_26_3_1", "poppy_1_27_1"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_26_3_1", "comp_poppy_cable_r_elbow_y"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -4427,6 +5321,12 @@
     },
     {
       "componentIds": ["poppy_1_27_1", "poppy_1_27_2"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_27_1", "comp_poppy_cable_r_elbow_y"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -4540,6 +5440,60 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_28_1", "comp_poppy_usb2ax_upper"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "comp_poppy_usb2ax_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "comp_poppy_cable_usb_upper"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "comp_poppy_cable_ttl_upper"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "comp_poppy_cable_head_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "comp_poppy_cable_usb_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "comp_poppy_cable_camera"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "comp_poppy_cable_imu"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_28_2_1", "poppy_1_28_2_2"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -4564,6 +5518,12 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_28_2_1", "comp_poppy_cable_head_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_28_2_2", "poppy_1_28_2_3"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -4577,6 +5537,30 @@
     },
     {
       "componentIds": ["poppy_1_28_2_3", "poppy_1_29"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_3", "comp_poppy_cable_usb_upper"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_3", "comp_poppy_cable_usb_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_3", "comp_poppy_cable_camera"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_3", "comp_poppy_cable_imu"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -4642,6 +5626,12 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_28_4", "comp_poppy_cable_imu"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_28_6", "poppy_1_28_7"],
       "status": "intersection",
       "volumeMm3": 0.03605196653761611,
@@ -4702,6 +5692,18 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_28_6", "comp_poppy_cable_camera"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_6", "comp_poppy_cable_imu"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_28_7", "poppy_1_28_8_3"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -4738,6 +5740,12 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_28_7", "comp_poppy_cable_imu"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_28_8_1", "poppy_1_28_8_2"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -4762,7 +5770,19 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_28_8_1", "comp_poppy_cable_camera"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_28_8_2", "poppy_1_28_9"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_8_2", "comp_poppy_cable_camera"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -4780,7 +5800,25 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_28_8_3", "comp_poppy_cable_camera"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_28_8_4", "poppy_1_28_9"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_8_4", "comp_poppy_cable_camera"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_9", "comp_poppy_cable_camera"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -4796,6 +5834,408 @@
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.000725946100366014,
       "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_14", "comp_poppy_cable_camera"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_14", "comp_poppy_cable_imu"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_usb2ax_upper", "comp_poppy_cable_ttl_upper"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_usb2ax_upper", "comp_poppy_cable_usb_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_usb2ax_lower", "comp_poppy_cable_usb_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_usb2ax_lower", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_upper_3p_hub", "comp_poppy_cable_ttl_upper"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_upper_3p_hub", "comp_poppy_cable_power_upper"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_upper_3p_hub", "comp_poppy_cable_head_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_upper_3p_hub", "comp_poppy_cable_bust_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_upper_3p_hub", "comp_poppy_cable_l_shoulder_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_upper_3p_hub", "comp_poppy_cable_r_shoulder_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_upper_3p_hub", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_usb_upper", "comp_poppy_cable_camera"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_ttl_upper", "comp_poppy_cable_head_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_ttl_upper", "comp_poppy_cable_bust_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_ttl_upper", "comp_poppy_cable_r_shoulder_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_power_upper", "comp_poppy_cable_head_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_power_upper", "comp_poppy_cable_bust_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_power_upper", "comp_poppy_cable_r_shoulder_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_power_upper", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_head_z", "comp_poppy_cable_head_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_head_z", "comp_poppy_cable_bust_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_head_z", "comp_poppy_cable_bust_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_head_z", "comp_poppy_cable_abs_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_head_z", "comp_poppy_cable_r_shoulder_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_head_z", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_head_y", "comp_poppy_cable_bust_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_head_y", "comp_poppy_cable_l_shoulder_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_head_y", "comp_poppy_cable_r_shoulder_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_head_y", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_bust_y", "comp_poppy_cable_bust_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_bust_y", "comp_poppy_cable_r_shoulder_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_bust_y", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_bust_x", "comp_poppy_cable_abs_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_bust_x", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_abs_z", "comp_poppy_cable_abs_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_abs_y", "comp_poppy_cable_abs_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_abs_y", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_abs_x", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_abs_x", "comp_poppy_cable_power_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_l_shoulder_y", "comp_poppy_cable_r_shoulder_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_l_shoulder_y", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_r_shoulder_y", "comp_poppy_cable_r_shoulder_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_r_shoulder_y", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_r_arm_z", "comp_poppy_cable_r_elbow_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_usb_lower", "comp_poppy_cable_camera"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_ttl_lower", "comp_poppy_cable_power_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_ttl_lower", "comp_poppy_cable_r_hip_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_ttl_lower", "comp_poppy_cable_l_hip_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_ttl_lower", "comp_poppy_cable_l_hip_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_ttl_lower", "comp_poppy_cable_r_hip_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_power_lower", "comp_poppy_cable_r_hip_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_power_lower", "comp_poppy_cable_l_hip_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_power_lower", "comp_poppy_cable_l_hip_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_power_lower", "comp_poppy_cable_r_hip_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_r_hip_x", "comp_poppy_cable_l_hip_x"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_r_hip_x", "comp_poppy_cable_l_hip_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_r_hip_x", "comp_poppy_cable_r_hip_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_l_hip_x", "comp_poppy_cable_l_hip_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_l_hip_x", "comp_poppy_cable_r_hip_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_l_hip_z", "comp_poppy_cable_l_hip_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_l_hip_z", "comp_poppy_cable_r_hip_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_l_hip_y", "comp_poppy_cable_l_knee_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_l_knee_y", "comp_poppy_cable_l_ankle_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_r_hip_z", "comp_poppy_cable_r_hip_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_r_hip_y", "comp_poppy_cable_r_knee_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
     }
   ],
   "intersectionCount": 102,
@@ -4805,7 +6245,6 @@
     "Contacts below threshold do not establish intended fits",
     "Materials, manufacturing tolerances, loads and assembly constraints are not verified"
   ],
-  "catalogSha256": "caaab5b37e681bc1dd8b611d4ed0c2f3cbadac801de54c63696a8e1f410d0776",
   "retryHistory": [
     {
       "original": {
@@ -4823,5 +6262,6 @@
       "timeoutSeconds": 180,
       "algorithm": "OCCT BRepAlgoAPI_Common default settings; no fuzzy tolerance or geometry modification"
     }
-  ]
+  ],
+  "catalogSha256": "1105a8554d8ac684313f52ed744d8db4c8d1a96048c896452c8d5bc541ba91ee"
 }

@@ -31,7 +31,7 @@ EXPECTED_NODE_COUNTS = {
     "robotic_arm_3dof_v1": 31,
     "open_source_rover_v1": 21,
     "reachy_mini_v1": 98,
-    "poppy_humanoid_v1": 251,
+    "poppy_humanoid_v1": 289,
 }
 COTS_REGISTRY = (
     Path(__file__).resolve().parents[3] / "src/shared/domain/catalog/cots/index.json"
@@ -100,6 +100,8 @@ def test_cots_registry_resolves_valid_centered_steps_with_ports(cots_parts: dict
         "kicad_quad_flight_controller",
         "kicad_quad_elrs_receiver",
         "kicad_nova2_jetson_carrier",
+        "kicad_poppy_usb2ax",
+        "kicad_poppy_upper_3p_hub",
     }
     for cid, part in cots_parts.items():
         resolved = resolve_component_step({**part, "id": cid}, tmp_path)
@@ -566,7 +568,11 @@ def test_routed_harness_exports_valid_colored_solids(harness_spec, bus, colors, 
         solids.Next()
     assert solid_count == len(colors)
     assert {color for _, color in read_xcaf_face_colors(step_path)} == set(colors)
-    assert {color for _, color in read_xcaf_face_colors(out / "model.step") if color} == set(colors)
+    board_colors = {
+        color for component in spec["nodes"] if component["origin"] == "kicad_pcb_step"
+        for _, color in read_xcaf_face_colors(cache / component["stepFixtureName"]) if color
+    }
+    assert {color for _, color in read_xcaf_face_colors(out / "model.step") if color} == set(colors) | board_colors
 
     gltf = GLTF2.load_binary(str(out / "model.glb"))
     glb_cable, = (item for item in gltf.nodes if item.extras["componentId"] == "comp_cable")

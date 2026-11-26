@@ -56,6 +56,12 @@ def import_poppy(source_path: Path, cache_dir: Path) -> dict:
         return catalog
 
 
+def compose_poppy_catalog(source_path: Path, cache_dir: Path) -> dict:
+    from poppy_electronics import apply_poppy_electronics
+
+    return apply_poppy_electronics(import_poppy(source_path, cache_dir), cache_dir)
+
+
 def _import_poppy(source_path: Path, cache_dir: Path) -> dict:
     document = TDocStd_Document(TCollection_ExtendedString("Poppy Humanoid"))
     reader = STEPCAFControl_Reader()

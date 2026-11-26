@@ -15,8 +15,9 @@ from OCP.BRepCheck import BRepCheck_Analyzer
 from OCP.GProp import GProp_GProps
 from OCP.TopAbs import TopAbs_SOLID
 from OCP.TopExp import TopExp_Explorer
+from OCP.collections import List_TopoDS_Shape
 
-from catalog_ingestor import resolve_component_step
+from catalog_ingestor import REPO_COTS_LIBRARY_DIR, REPO_STEP_CACHE_DIR, resolve_component_step
 from geometry_pipeline import shape_bounds_mm, translate_shape_mm, world_rest_to_cad_mm
 
 
@@ -30,7 +31,14 @@ class PairResult(TypedDict):
 def exact_pair(shape_a, shape_b, ids: list[str], threshold: float) -> PairResult:
     result: PairResult = dict(componentIds=ids, status='failed', volumeMm3=None, error=None)
     try:
-        operation = BRepAlgoAPI_Common(shape_a, shape_b)
+        arguments, tools = List_TopoDS_Shape(), List_TopoDS_Shape()
+        arguments.Append(shape_a)
+        tools.Append(shape_b)
+        operation = BRepAlgoAPI_Common()
+        operation.SetArguments(arguments)
+        operation.SetTools(tools)
+        operation.SetUseOBB(True)
+        operation.Build()
         if not operation.IsDone():
             raise RuntimeError('OCCT common did not complete')
         common = operation.Shape()
@@ -58,7 +66,14 @@ def _worker(queue, nodes, cache: Path, threshold: float):
     queue.put(exact_pair(*shapes, [node['id'] for node in nodes], threshold))
 
 
-def analyze(spec: dict, cache: Path, timeout_seconds: float = 30, threshold_mm3: float = 0.001) -> dict:
+def analyze(
+    spec: dict,
+    cache: Path,
+    timeout_seconds: float = 30,
+    threshold_mm3: float = 0.001,
+    *,
+    previous_report: dict | None = None,
+) -> dict:
     if timeout_seconds <= 0 or threshold_mm3 < 0:
         raise ValueError('Timeout must be positive and volume threshold nonnegative')
     nodes = []
@@ -82,6 +97,21 @@ def analyze(spec: dict, cache: Path, timeout_seconds: float = 30, threshold_mm3:
         placed_shapes[node['id']] = placed
         bounds[node['id']] = shape_bounds_mm(placed)
         nodes.append(node)
+    previous_report = previous_report or {}
+    reusable_pairs = {}
+    unchanged_source_ids = set()
+    if previous_report.get('volumeThresholdMm3') == threshold_mm3 and previous_report.get('aabbToleranceMm') == 1e-7:
+        original_placements = {source['componentId']: source for source in previous_report['sourceComponents']}
+        sourced_ids = {node['id'] for node in nodes if node['origin'] == 'open_step_catalog'}
+        unchanged_source_ids = {
+            source['componentId'] for source in provenance
+            if source['componentId'] in sourced_ids and source == original_placements.get(source['componentId'])
+        }
+        reusable_pairs = {
+            tuple(pair['componentIds']): pair for pair in previous_report['pairs']
+            if unchanged_source_ids.issuperset(pair['componentIds'])
+            and pair['status'] in ('intersection', 'contact_or_below_threshold')
+        }
     candidates = []
     for index, first in enumerate(nodes):
         low_a, high_a = bounds[first['id']]
@@ -92,6 +122,10 @@ def analyze(spec: dict, cache: Path, timeout_seconds: float = 30, threshold_mm3:
     context = multiprocessing.get_context('fork' if 'fork' in multiprocessing.get_all_start_methods() else 'spawn')
     results = []
     for first, second in candidates:
+        ids = (first['id'], second['id'])
+        if ids in reusable_pairs:
+            results.append(reusable_pairs[ids])
+            continue
         queue = context.Queue()
         if context.get_start_method() == 'fork':
             process = context.Process(target=_shape_worker, args=(queue, placed_shapes[first['id']], placed_shapes[second['id']], [first['id'], second['id']], threshold_mm3))
@@ -108,6 +142,10 @@ def analyze(spec: dict, cache: Path, timeout_seconds: float = 30, threshold_mm3:
             process.join()
             queue.close()
         results.append(result)
+    retry_history = [
+        entry for entry in previous_report.get('retryHistory', [])
+        if tuple(entry['result']['componentIds']) in reusable_pairs
+    ]
     return dict(status='partial', method='source placement AABB then OCCT common',
                 solidCount=len(nodes), excludedComponents=exclusions, sourceComponents=provenance,
                 possiblePairCount=len(nodes)*(len(nodes)-1)//2,
@@ -115,28 +153,38 @@ def analyze(spec: dict, cache: Path, timeout_seconds: float = 30, threshold_mm3:
                 aabbToleranceMm=1e-7, timeoutSecondsPerPair=timeout_seconds,
                 pairs=results, intersectionCount=sum(p['status']=='intersection' for p in results),
                 unresolvedPairCount=sum(p['status'] in ('failed', 'timeout') for p in results),
-                limitations=['Excluded CAD is not clear of interference', 'Contacts below threshold do not establish intended fits', 'Materials, manufacturing tolerances, loads and assembly constraints are not verified'])
+                limitations=['Excluded CAD is not clear of interference', 'Contacts below threshold do not establish intended fits', 'Materials, manufacturing tolerances, loads and assembly constraints are not verified'],
+                **({'retryHistory': retry_history} if retry_history else {}))
 
 
 def load_cached_report(spec: dict, cache: Path) -> dict | None:
     from poppy_catalog import POPPY_SPEC_PATH
 
     path = Path(__file__).parent / "tests" / "evidence" / "poppy-interference.json"
+    if not path.is_file() or not POPPY_SPEC_PATH.is_file():
+        return None
     report = json.loads(path.read_text())
-    if not POPPY_SPEC_PATH.exists() or json.loads(POPPY_SPEC_PATH.read_text()) != spec:
+    payload = POPPY_SPEC_PATH.read_bytes()
+    if json.loads(payload) != spec or hashlib.sha256(payload).hexdigest() != report.get("catalogSha256"):
         return None
-    if (
-        report.get("catalogSha256") is not None
-        and hashlib.sha256(POPPY_SPEC_PATH.read_bytes()).hexdigest() != report.get("catalogSha256")
-    ):
-        return None
-    expected = {node["id"] for node in spec["nodes"]
-                if node["geometry"]["kind"] == "available" and node["geometry"].get("role") != "surface"}
-    if expected != {node["componentId"] for node in report["sourceComponents"]}:
+    expected = {
+        node["id"]: (node["stepFixtureName"], node["expectedStepSha256"], node["restPositionMeters"])
+        for node in spec["nodes"]
+        if node["geometry"] == {"kind": "available", "role": "solid"}
+    }
+    reported = {
+        node["componentId"]: (node["fixture"], node["sha256"], node["restPositionMeters"])
+        for node in report["sourceComponents"]
+    }
+    if expected != reported:
         return None
     for source in report["sourceComponents"]:
-        fixture = cache / source["fixture"]
-        if not fixture.exists() or hashlib.sha256(fixture.read_bytes()).hexdigest() != source["sha256"]:
+        fixture = next(
+            (directory / source["fixture"] for directory in (cache, REPO_STEP_CACHE_DIR, REPO_COTS_LIBRARY_DIR)
+             if (directory / source["fixture"]).is_file()),
+            None,
+        )
+        if fixture is None or hashlib.sha256(fixture.read_bytes()).hexdigest() != source["sha256"]:
             return None
     return report
 
