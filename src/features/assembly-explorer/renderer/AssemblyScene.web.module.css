@@ -302,12 +302,14 @@
 }
 
 .inspectionStatus {
+  --inspection-top: max(20px, env(safe-area-inset-top));
   position: absolute;
-  top: max(20px, env(safe-area-inset-top));
+  top: var(--inspection-top);
   left: max(20px, env(safe-area-inset-left));
   z-index: 20;
-  max-width: min(360px, calc(100% - 40px));
-  max-height: calc(100% - 140px);
+  box-sizing: border-box;
+  max-width: min(390px, calc(100% - 40px));
+  max-height: calc(100% - var(--inspection-top) - 112px);
   overflow-y: auto;
   padding: 12px 14px;
   border: 1px solid rgba(245, 196, 81, 0.34);
@@ -388,6 +390,20 @@
 .inspectionNodeButton[aria-pressed='true'] {
   background: rgba(245, 196, 81, 0.16);
   color: #fffbeb;
+}
+
+@media (max-width: 1024px) {
+  .inspectionStatus {
+    --inspection-top: calc(max(20px, env(safe-area-inset-top)) + 52px);
+  }
+
+  .explorerRoot:has(.inspectionStatus) .backButton {
+    top: calc(max(20px, env(safe-area-inset-top)) + 52px);
+  }
+
+  .explorerRoot:has(.backButton) .inspectionStatus {
+    --inspection-top: calc(max(20px, env(safe-area-inset-top)) + 96px);
+  }
 }
 
 @media (max-width: 800px) {

@@ -294,6 +294,8 @@ describe('canvas prompt routing', () => {
 
   it('installs each cable in a step that documents its typed electrical connection', () => {
     for (const assembly of CATALOG_ARCHETYPES) {
+      const isSourceInspection = assembly.semantics === 'source_inspection';
+      if (isSourceInspection) assert.equal(assembly.assemblySteps.length, 0);
       const nodes = new Map(assembly.nodes.map((node) => [node.id, node]));
       const relationships = new Map(
         assembly.relationships.map((relationship) => [relationship.id, relationship]),
@@ -314,13 +316,15 @@ describe('canvas prompt routing', () => {
           electrical.connectionType,
           firstPort.busKind === 'dc_power' ? 'power_bus' : 'electrical_bus',
         );
-        assert.ok(
-          assembly.assemblySteps.some(
-            ({ componentIds, relationshipIds }) =>
-              componentIds.includes(cable.id) && relationshipIds.includes(electrical.id),
-          ),
-          cable.id,
-        );
+        if (!isSourceInspection) {
+          assert.ok(
+            assembly.assemblySteps.some(
+              ({ componentIds, relationshipIds }) =>
+                componentIds.includes(cable.id) && relationshipIds.includes(electrical.id),
+            ),
+            cable.id,
+          );
+        }
       }
     }
   });

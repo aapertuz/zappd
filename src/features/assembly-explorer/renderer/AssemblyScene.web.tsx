@@ -902,6 +902,8 @@ export function AssemblyScene({
   const learningCalloutsRef = useRef<LearningCalloutsHandle>(null);
   const mountRef = useRef<HTMLDivElement>(null);
   const hudBarRef = useRef<HTMLDivElement>(null);
+  const inspectionStatusRef = useRef<HTMLDivElement>(null);
+  const backButtonRef = useRef<HTMLButtonElement>(null);
   const calloutRef = useRef<HTMLDivElement>(null);
   const labelRef = useRef<HTMLDivElement>(null);
   const leaderRef = useRef<SVGPathElement>(null);
@@ -1289,16 +1291,22 @@ export function AssemblyScene({
         }
       }
       const viewport = mount.getBoundingClientRect();
-      const hudBounds = hudBarRef.current?.getBoundingClientRect();
-      const hudRect =
-        hudBounds === undefined
-          ? null
-          : {
-              x: hudBounds.left - viewport.left,
-              y: hudBounds.top - viewport.top,
-              width: hudBounds.width,
-              height: hudBounds.height,
-            };
+      const overlayObstacles = [
+        hudBarRef.current,
+        inspectionStatusRef.current,
+        backButtonRef.current,
+      ].flatMap((element) => {
+        if (element === null) return [];
+        const bounds = element.getBoundingClientRect();
+        return [
+          {
+            x: bounds.left - viewport.left,
+            y: bounds.top - viewport.top,
+            width: bounds.width,
+            height: bounds.height,
+          },
+        ];
+      });
       const composerTop = composerForm?.getBoundingClientRect().top ?? viewport.bottom;
       const composerInsetY = Math.min(composerTop - viewport.top, viewport.height - 112);
       const composerInset = {
@@ -1307,7 +1315,7 @@ export function AssemblyScene({
         width: viewport.width,
         height: viewport.height - composerInsetY,
       };
-      const obstacles = hudRect === null ? [composerInset] : [hudRect, composerInset];
+      const obstacles = [...overlayObstacles, composerInset];
       const nodeScreenPositions: Record<string, ScreenPoint> = {};
       if (renderer !== null && model !== null && snapshot !== undefined) {
         for (const id of leafPartIds) {
@@ -1382,7 +1390,7 @@ export function AssemblyScene({
         partLabelRect,
         anchors: explanationAnchors,
         answerAnchors,
-        obstacles: hudRect === null ? [] : [hudRect],
+        obstacles: overlayObstacles,
       });
 
       if (learningRects?.explanationRect != null) obstacles.push(learningRects.explanationRect);
@@ -1449,6 +1457,7 @@ export function AssemblyScene({
     });
     resizeObserver.observe(mount);
     if (hudBarRef.current !== null) resizeObserver.observe(hudBarRef.current);
+    if (inspectionStatusRef.current !== null) resizeObserver.observe(inspectionStatusRef.current);
     if (composerForm !== null) resizeObserver.observe(composerForm);
     requestRender();
 
@@ -1658,7 +1667,7 @@ export function AssemblyScene({
       {assembly.nodes.some(
         (node) => node.geometry?.kind === 'unavailable' || node.geometry?.kind === 'visual_only',
       ) ? (
-        <div role="status" className={classes.inspectionStatus}>
+        <div ref={inspectionStatusRef} role="status" className={classes.inspectionStatus}>
           <p className={classes.inspectionHeadline}>
             Partial CAD inspection · engineering unverified. Head shell is visual only; two thighs
             are surfaces.
@@ -1763,7 +1772,7 @@ export function AssemblyScene({
                       ? onFocusComponent(node.id)
                       : onSelectComponent(node.id)
                   }
-                  style={{ marginLeft: node.depth * 8 }}>
+                  style={{ paddingInlineStart: 6 + node.depth * 8 }}>
                   {node.name} ·{' '}
                   {node.geometry?.kind === 'unavailable'
                     ? 'geometry unavailable: source validation failed'
@@ -1828,7 +1837,11 @@ export function AssemblyScene({
       />
 
       {state.viewMode.kind === 'part_focus' ? (
-        <button type="button" className={classes.backButton} onClick={exitPartFocus}>
+        <button
+          ref={backButtonRef}
+          type="button"
+          className={classes.backButton}
+          onClick={exitPartFocus}>
           <HudIcon kind="back" />
           Back
         </button>

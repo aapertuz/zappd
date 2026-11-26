@@ -14,6 +14,8 @@ it('matches Poppy and preserves hierarchy without invented instructions', () => 
     matchProjectArchetypeFromPrompt('inspect Poppy humanoid').archetypeId,
     catalog.archetypeId,
   );
+  assert.equal(catalog.semantics, 'source_inspection');
+  assert.equal(catalog.nodes.length, 289);
   assert.equal(catalog.nodes.length, new Set(catalog.nodes.map((node) => node.id)).size);
   assert.equal(catalog.nodes.filter((node) => node.parentId === null).length, 1);
   const ids = new Set(catalog.nodes.map((node) => node.id));
@@ -24,13 +26,57 @@ it('matches Poppy and preserves hierarchy without invented instructions', () => 
       .every((node) => node.explodeDistanceMeters > 0),
   );
   assert.deepEqual(catalog.assemblySteps, []);
-  assert.deepEqual(catalog.relationships, []);
   const rejected = catalog.nodes.filter(
     (node) => node.specifications.geometryStatus === 'unavailable',
   );
   assert.equal(rejected.length, 1);
   assert.equal(rejected[0].name, 'head_face');
   assert.equal(rejected[0].stepFixtureName, null);
+  assert.equal(rejected[0].geometry.kind, 'unavailable');
+});
+
+it('catalogs Poppy boards, routed cables, and separate Dynamixel buses', () => {
+  const { nodes, relationships } = getCatalogArchetypeById('poppy_humanoid_v1');
+  const boards = nodes.filter(({ origin }) => origin === 'kicad_pcb_step');
+  const cables = nodes.filter(({ origin }) => origin === 'procedural_harness');
+  const portNodes = nodes.filter(({ ports }) => ports?.length > 0);
+  assert.deepEqual(
+    new Set(boards.map(({ id }) => id)),
+    new Set(['comp_poppy_usb2ax_upper', 'comp_poppy_usb2ax_lower', 'comp_poppy_upper_3p_hub']),
+  );
+  assert.equal(cables.length, 33);
+  assert.equal(portNodes.length, 34);
+  assert.equal(portNodes.filter(({ origin }) => origin === 'open_step_catalog').length, 31);
+  assert.ok(boards.every((board) => portNodes.includes(board)));
+
+  const electrical = relationships.filter(
+    ({ connectionType }) => connectionType === 'electrical_bus' || connectionType === 'power_bus',
+  );
+  assert.equal(relationships.length, 69);
+  assert.equal(electrical.length, 33);
+  assert.equal(
+    relationships.filter(({ connectionType }) => connectionType === 'assembly_mount').length,
+    36,
+  );
+
+  const nodesById = new Map(portNodes.map((node) => [node.id, node]));
+  const dynamixelLinks = electrical.filter(({ fromComponentId, fromPortId }) =>
+    nodesById
+      .get(fromComponentId)
+      ?.ports.some(
+        ({ portId, busKind }) =>
+          portId === fromPortId && (busKind === 'ttl_serial' || busKind === 'dc_power'),
+      ),
+  );
+  assert.equal(dynamixelLinks.length, 29);
+  const controllers = new Set();
+  for (const { fromComponentId, toComponentId } of dynamixelLinks) {
+    const from = nodesById.get(fromComponentId).specifications.controller;
+    const to = nodesById.get(toComponentId).specifications.controller;
+    assert.equal(from, to);
+    controllers.add(from);
+  }
+  assert.deepEqual(controllers, new Set(['upper_body_controller', 'lower_body_controller']));
 });
 
 it('maps available components while retaining rejected component identities', () => {
@@ -68,35 +114,22 @@ it('maps available components while retaining rejected component identities', ()
   );
 });
 
-it('limits the unverified source inspection exception to source_inspection archetypes with reports', () => {
+it('limits unverified inspection to source inspection archetypes with complete provenance and reports', () => {
   const checksum = 'a'.repeat(64);
-  const sampleNode = {
-    id: 'poppy_1_1_1',
-    parentId: null,
-    name: 'pelvis',
-    level: 'component',
-    depth: 1,
-    category: 'cad_part',
-    colorHex: '#cbd5e1',
-    dimensionsMm: [10, 10, 10],
-    restPositionMeters: [0, 0, 0],
-    explodeDirection: [0, 1, 0],
-    explodeDistanceMeters: 0.05,
-    materialHint: 'unspecified',
-    geometry: { kind: 'available', role: 'solid' },
-    specifications: { sourceSha256: checksum },
+  const catalog = getCatalogArchetypeById('poppy_humanoid_v1');
+  const nodes = catalog.nodes.map((node) => ({
+    ...node,
     provenance: {
-      origin: 'open_step_catalog',
+      origin: node.origin,
       verificationStatus: 'unverified',
-      spdxLicense: 'CC-BY-SA-4.0',
-      sourceUrl:
-        'https://github.com/poppy-project/poppy-humanoid/releases/download/1.0.2/Poppy_Humanoid.STEP',
-      sourceName: 'Poppy',
-      stepSha256: checksum,
+      spdxLicense: node.spdxLicense,
+      sourceUrl: node.sourceUrl,
+      sourceName: node.sourceName,
+      stepSha256: node.expectedStepSha256 ?? checksum,
     },
-    glbNodeName: 'poppy_1_1_1',
-    usdzPrimPath: '/poppy_1_1_1',
-  };
+    glbNodeName: node.id,
+    usdzPrimPath: `/World/${node.id}`,
+  }));
   const completeValidation = {
     valid: false,
     brepValid: true,
@@ -136,28 +169,53 @@ it('limits the unverified source inspection exception to source_inspection arche
     },
   };
   const poppyAssembly = {
-    archetypeId: 'poppy_humanoid_v1',
+    archetypeId: catalog.archetypeId,
     verificationStatus: 'unverified',
-    nodes: [sampleNode],
+    nodes,
     validation: completeValidation,
   };
+  assert.equal(canInspectSourceAssembly(poppyAssembly), true);
   assert.equal(isAllowedProjectAssembly(poppyAssembly), true);
   assert.equal(
     isAllowedProjectAssembly({ ...poppyAssembly, archetypeId: 'quadcopter_drone_v1' }),
     false,
   );
-  assert.equal(
-    isAllowedProjectAssembly({
+  for (const report of ['sourceInterferenceReport', 'engineeringReport']) {
+    const withoutReport = {
       ...poppyAssembly,
-      validation: { ...completeValidation, sourceInterferenceReport: undefined },
-    }),
-    false,
-  );
-  assert.equal(
-    isAllowedProjectAssembly({
+      validation: { ...completeValidation, [report]: undefined },
+    };
+    assert.equal(canInspectSourceAssembly(withoutReport), false, report);
+    assert.equal(isAllowedProjectAssembly(withoutReport), false, report);
+  }
+
+  const cases = [
+    ['open_step_catalog', 'wrong STEP URI scheme', { sourceUrl: 'kicad://poppy/source' }],
+    ['kicad_pcb_step', 'wrong board URI scheme', { sourceUrl: 'harness://poppy/board' }],
+    ['procedural_harness', 'insecure harness URI', { sourceUrl: 'http://example.test/poppy' }],
+    ['kicad_pcb_step', 'unknown origin', { origin: 'unknown' }],
+    ['kicad_pcb_step', 'verified node status', { verificationStatus: 'composed_validated' }],
+    ['kicad_pcb_step', 'blank license', { spdxLicense: ' ' }],
+    ['procedural_harness', 'invalid STEP digest', { stepSha256: 'invalid' }],
+  ];
+  for (const [origin, label, overrides] of cases) {
+    const index = nodes.findIndex((node) => node.origin === origin);
+    const node = nodes[index];
+    const altered = {
       ...poppyAssembly,
-      validation: { ...completeValidation, engineeringReport: undefined },
-    }),
-    false,
-  );
+      nodes: nodes.with(index, { ...node, provenance: { ...node.provenance, ...overrides } }),
+    };
+    assert.equal(canInspectSourceAssembly(altered), false, label);
+    assert.equal(isAllowedProjectAssembly(altered), false, label);
+  }
+
+  const index = nodes.findIndex((node) => node.origin === 'open_step_catalog');
+  const { sourceSha256, ...specifications } = nodes[index].specifications;
+  assert.ok(sourceSha256);
+  const withoutSourceDigest = {
+    ...poppyAssembly,
+    nodes: nodes.with(index, { ...nodes[index], specifications }),
+  };
+  assert.equal(canInspectSourceAssembly(withoutSourceDigest), false);
+  assert.equal(isAllowedProjectAssembly(withoutSourceDigest), false);
 });
