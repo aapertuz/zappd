@@ -886,5 +886,214 @@
         }
       }
     ]
+  },
+  {
+    "cotsId": "kicad_poppy_usb2ax",
+    "name": "USB2AX v3.2a TTL interface reference",
+    "widthMm": 15,
+    "lengthMm": 30,
+    "rotationXDegrees": -90,
+    "includeSoldermask": false,
+    "category": "bus_interface",
+    "tags": ["poppy", "usb2ax", "dynamixel", "ttl"],
+    "mountingInterfaces": [
+      {
+        "interfaceId": "mount_board",
+        "label": "Edge clamp mount",
+        "kind": "clamp",
+        "holeDiameterMm": 3.2,
+        "localPositionMeters": [0, 0, 0],
+        "normalDirection": [0, 0, -1]
+      }
+    ],
+    "footprints": [
+      {
+        "reference": "J1",
+        "xMm": 0,
+        "yMm": 11.3,
+        "model": "usb_c",
+        "port": {
+          "portId": "port_usb",
+          "label": "USB data",
+          "connectorType": "USB-C",
+          "busKind": "usb_data",
+          "modelAnchorMm": [0, -3.675, 1.65],
+          "modelExitDirection": [0, -1, 0],
+          "role": "bidirectional",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 0.5
+        }
+      },
+      {
+        "reference": "U1",
+        "xMm": 0,
+        "yMm": -1,
+        "model": "soic"
+      },
+      {
+        "reference": "J2",
+        "xMm": -2,
+        "yMm": -11,
+        "model": "jst_ph",
+        "port": {
+          "portId": "port_dxl_ttl",
+          "label": "Dynamixel TTL",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "ttl_serial",
+          "modelAnchorMm": [2, 0, 6],
+          "modelExitDirection": [0, 0, 1],
+          "role": "bidirectional",
+          "minVoltageV": 9,
+          "nominalVoltageV": 12,
+          "maxVoltageV": 14.8,
+          "maxCurrentA": 5,
+          "wireColorsHex": ["#cc2929", "#222428", "#e5c158"]
+        }
+      }
+    ]
+  },
+  {
+    "cotsId": "kicad_poppy_upper_3p_hub",
+    "name": "Poppy upper Bioloid 3P hub reference",
+    "widthMm": 48,
+    "lengthMm": 16,
+    "rotationXDegrees": -90,
+    "includeSoldermask": false,
+    "category": "servo_hub",
+    "tags": ["poppy", "bioloid", "dynamixel", "ttl"],
+    "mountingInterfaces": [
+      {
+        "interfaceId": "mount_board",
+        "label": "Edge clamp mount",
+        "kind": "clamp",
+        "holeDiameterMm": 3.2,
+        "localPositionMeters": [0, 0, 0],
+        "normalDirection": [0, 0, -1]
+      }
+    ],
+    "footprints": [
+      {
+        "reference": "J1",
+        "xMm": -17,
+        "yMm": -4,
+        "model": "jst_ph",
+        "port": {
+          "portId": "port_hub_1",
+          "label": "Dynamixel hub port 1",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "ttl_serial",
+          "modelAnchorMm": [2, 0, 6],
+          "modelExitDirection": [0, 0, 1],
+          "role": "bidirectional",
+          "minVoltageV": 9,
+          "nominalVoltageV": 12,
+          "maxVoltageV": 14.8,
+          "maxCurrentA": 5,
+          "wireColorsHex": ["#cc2929", "#222428", "#e5c158"]
+        }
+      },
+      {
+        "reference": "J2",
+        "xMm": 0,
+        "yMm": -4,
+        "model": "jst_ph",
+        "port": {
+          "portId": "port_hub_2",
+          "label": "Dynamixel hub port 2",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "ttl_serial",
+          "modelAnchorMm": [2, 0, 6],
+          "modelExitDirection": [0, 0, 1],
+          "role": "bidirectional",
+          "minVoltageV": 9,
+          "nominalVoltageV": 12,
+          "maxVoltageV": 14.8,
+          "maxCurrentA": 5,
+          "wireColorsHex": ["#cc2929", "#222428", "#e5c158"]
+        }
+      },
+      {
+        "reference": "J3",
+        "xMm": -17,
+        "yMm": 4,
+        "model": "jst_ph",
+        "port": {
+          "portId": "port_hub_3",
+          "label": "Dynamixel hub port 3",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "ttl_serial",
+          "modelAnchorMm": [2, 0, 6],
+          "modelExitDirection": [0, 0, 1],
+          "role": "bidirectional",
+          "minVoltageV": 9,
+          "nominalVoltageV": 12,
+          "maxVoltageV": 14.8,
+          "maxCurrentA": 5,
+          "wireColorsHex": ["#cc2929", "#222428", "#e5c158"]
+        }
+      },
+      {
+        "reference": "J4",
+        "xMm": 0,
+        "yMm": 4,
+        "model": "jst_ph",
+        "port": {
+          "portId": "port_hub_4",
+          "label": "Dynamixel hub port 4",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "ttl_serial",
+          "modelAnchorMm": [2, 0, 6],
+          "modelExitDirection": [0, 0, 1],
+          "role": "bidirectional",
+          "minVoltageV": 9,
+          "nominalVoltageV": 12,
+          "maxVoltageV": 14.8,
+          "maxCurrentA": 5,
+          "wireColorsHex": ["#cc2929", "#222428", "#e5c158"]
+        }
+      },
+      {
+        "reference": "J5",
+        "xMm": 17,
+        "yMm": -4,
+        "model": "jst_ph",
+        "port": {
+          "portId": "port_hub_5",
+          "label": "Dynamixel hub port 5",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "ttl_serial",
+          "modelAnchorMm": [2, 0, 6],
+          "modelExitDirection": [0, 0, 1],
+          "role": "bidirectional",
+          "minVoltageV": 9,
+          "nominalVoltageV": 12,
+          "maxVoltageV": 14.8,
+          "maxCurrentA": 5,
+          "wireColorsHex": ["#cc2929", "#222428", "#e5c158"]
+        }
+      },
+      {
+        "reference": "J6",
+        "xMm": 17,
+        "yMm": 4,
+        "model": "jst_ph",
+        "port": {
+          "portId": "port_hub_6",
+          "label": "Dynamixel hub port 6",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "ttl_serial",
+          "modelAnchorMm": [2, 0, 6],
+          "modelExitDirection": [0, 0, 1],
+          "role": "bidirectional",
+          "minVoltageV": 9,
+          "nominalVoltageV": 12,
+          "maxVoltageV": 14.8,
+          "maxCurrentA": 5,
+          "wireColorsHex": ["#cc2929", "#222428", "#e5c158"]
+        }
+      }
+    ]
   }
 ]

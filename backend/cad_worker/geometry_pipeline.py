@@ -53,7 +53,7 @@ from pygltflib import (
 )
 
 from cable_router import CableRoutingBlockedError, route_harness_for_node, write_colored_step
-from cad_pose import local_pose, place_shape, world_rest_to_cad_mm
+from cad_pose import local_pose, node_transform, place_shape, world_rest_to_cad_mm
 from catalog_ingestor import GEOMETRY_ORIGIN_POLICY, InvalidBRepError, resolve_component_step
 from validation_checks import (
     INTERFERENCE_TOLERANCE_MM3,
@@ -805,6 +805,7 @@ def run_cad_pipeline(
     resolved_by_id: dict[str, dict[str, Any]] = {}
     placed_shapes: dict[str, Any] = {}
     placed_solids: dict[str, Any] = {}
+    styled_steps: dict[str, tuple[Path, Any]] = {}
     geometry_by_id: dict[str, MeshGeometry] = {
         cid: _mesh_geometry_from_visual(geometry)
         for cid, geometry in (visual_geometry_by_id or {}).items()
@@ -929,6 +930,8 @@ def run_cad_pipeline(
                 failures.append(
                     f"Component {cid} declared solid contains open surface geometry outside CAD solids"
                 )
+        if node_spec["origin"] == "kicad_pcb_step" and cid in placed_solids:
+            styled_steps[cid] = resolved["stepPath"], node_transform(node_spec)
 
         geometry = resolved["meshGeometry"]
         verts = geometry.vertices
@@ -1001,10 +1004,14 @@ def run_cad_pipeline(
     usdz_out = output_dir / "model.usdz"
 
     step_component_ids = [node["id"] for node in nodes_spec if node["id"] in placed_shapes]
-    write_colored_step(step_out, [
-        (cid, placed_shapes[cid], resolved_by_id[cid].get("conductorColors", ()))
-        for cid in step_component_ids
-    ])
+    write_colored_step(
+        step_out,
+        [
+            (cid, placed_shapes[cid], resolved_by_id[cid].get("conductorColors", ()))
+            for cid in step_component_ids
+        ],
+        styled_steps=styled_steps,
+    )
 
     all_checks_ok = brep_valid and interference_count == 0 and max_dim_err_mm <= 0.1 and len(failures) == 0
     target_status = (

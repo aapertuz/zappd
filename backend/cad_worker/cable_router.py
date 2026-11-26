@@ -33,9 +33,9 @@ from OCP.TDataStd import TDataStd_Name
 from OCP.TDocStd import TDocStd_Document
 from OCP.TopLoc import TopLoc_Location
 from OCP.TopoDS import TopoDS_Compound, TopoDS_Iterator, TopoDS_Shape, TopoDS_Wire
-from OCP.XCAFDoc import XCAFDoc_ColorGen, XCAFDoc_DocumentTool
-from OCP.collections import Array1_gp_Pnt, HArray1_double, HArray1_gp_Pnt
-from OCP.gp import gp_Ax2, gp_Circ, gp_Dir, gp_Pnt, gp_Vec
+from OCP.XCAFDoc import XCAFDoc_ColorGen, XCAFDoc_DocumentTool, XCAFDoc_Editor
+from OCP.collections import Array1_gp_Pnt, HArray1_double, HArray1_gp_Pnt, Sequence_TDF_Label
+from OCP.gp import gp_Ax2, gp_Circ, gp_Dir, gp_Pnt, gp_Trsf, gp_Vec
 
 from cad_pose import rotate_vector, world_rest_to_cad_mm, world_rotation
 from routing_paths import RoutingSpace, channel_paths, escape_port, routing_boxes, voxel_path
@@ -46,7 +46,9 @@ from catalog_ingestor import (
     MIN_CAD_BREP_FACES,
     count_brep_faces,
     node_provenance_failure,
+    read_and_validate_step,
     read_step_digest,
+    read_xcaf_document,
     stabilize_step_presentation,
 )
 
@@ -203,14 +205,33 @@ def _validate_conductor_clearance(
 
 
 def write_colored_step(
-    step_path: Path, components: list[tuple[str, TopoDS_Shape, tuple[str, ...]]]
+    step_path: Path,
+    components: list[tuple[str, TopoDS_Shape, tuple[str, ...]]],
+    styled_steps: dict[str, tuple[Path, gp_Trsf | tuple[float, float, float]]] | None = None,
 ) -> None:
     document = TDocStd_Document(TCollection_ExtendedString("MDTV-XCAF"))
     shape_tool = XCAFDoc_DocumentTool.ShapeTool_s(document.Main())
     color_tool = XCAFDoc_DocumentTool.ColorTool_s(document.Main())
     assembly = shape_tool.NewShape()
     TDataStd_Name.Set_s(assembly, TCollection_ExtendedString("Zappd Assembly"))
+    styled_steps = styled_steps or {}
     for cid, shape, colors in components:
+        if cid in styled_steps:
+            fixture, placement = styled_steps[cid]
+            source = read_xcaf_document(fixture)
+            roots = Sequence_TDF_Label()
+            XCAFDoc_DocumentTool.ShapeTool_s(source.Main()).GetFreeShapes(roots)
+            label = shape_tool.NewShape()
+            if not XCAFDoc_Editor.Extract_s(roots, label):
+                raise RuntimeError(f"Could not transfer STEP styles for {cid}")
+            TDataStd_Name.Set_s(label, TCollection_ExtendedString(cid))
+            if isinstance(placement, gp_Trsf):
+                transform = placement
+            else:
+                transform = gp_Trsf()
+                transform.SetTranslation(gp_Vec(*placement))
+            shape_tool.AddComponent(assembly, label, TopLoc_Location(transform))
+            continue
         if not colors:
             label = shape_tool.AddShape(shape, False)
             TDataStd_Name.Set_s(label, TCollection_ExtendedString(cid))
@@ -246,7 +267,7 @@ def write_colored_step(
             entity.SetId(TCollection_HAsciiString(str(occurrence_id)))
     if writer.Write(str(step_path)) != IFSelect_RetDone:
         raise RuntimeError(f"Could not write colored STEP file {step_path}")
-    if any(colors for _, _, colors in components):
+    if styled_steps or any(colors for _, _, colors in components):
         stabilize_step_presentation(step_path)
 
 
@@ -448,6 +469,16 @@ def route_harness_for_node(
 
     if relationship.get("routingStyle") == "filleted_polyline" and not auto_route:
         points = [start, *waypoints, end]
+        for endpoint, adjacent, field in (
+            (0, 1, "fromConnectorClearanceMm"),
+            (-1, -2, "toConnectorClearanceMm"),
+        ):
+            clearance = node_spec["specifications"].get(field, 0)
+            if clearance:
+                lead = points[adjacent] - points[endpoint]
+                if not 0 < clearance < np.linalg.norm(lead) - _MIN_SPAN_MM:
+                    raise RuntimeError(f"Harness {node_spec['id']} has invalid {field}")
+                points[endpoint] = points[endpoint] + clearance * _unit(lead)
         compound = _rounded_bundle(points, _unit(points[1] - points[0]), len(colors), diameter_mm)
     elif waypoints and not auto_route:
         points = _route_points(start, end, start_exit, end_exit, waypoints)

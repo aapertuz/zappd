@@ -5,7 +5,7 @@ import json
 import math
 import re
 import subprocess
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from urllib.error import HTTPError
@@ -105,6 +105,7 @@ class Board:
     tags: list[str]
     mounting_interfaces: list[dict]
     footprints: tuple[Footprint, ...]
+    include_soldermask: bool = True
 
     @property
     def drill_patterns(self) -> list[dict]:
@@ -156,6 +157,7 @@ def load_cots_specs(directory: Path = SPEC_DIR) -> tuple[dict[str, Model], tuple
             tags=spec["tags"],
             mounting_interfaces=spec["mountingInterfaces"],
             footprints=tuple(footprint(placement) for placement in spec["footprints"]),
+            include_soldermask=spec.get("includeSoldermask", True),
         )
         for spec in read("kicad_boards")
     )
@@ -422,9 +424,10 @@ def build_board(board: Board, libraries: dict[Model, str], work: Path) -> dict:
     print(f"{board.id}: KiCad DRC exit 0, 0 errors", flush=True)
 
     raw = work / f"{board.id}.step"
+    soldermask = ("--include-soldermask",) if board.include_soldermask else ()
     subprocess.run(
         (*KICAD, "pcb", "export", "step", "--subst-models", "--include-pads", "--include-tracks",
-         "--include-soldermask", "--user-origin", f"{BOARD_ORIGIN_MM}x{BOARD_ORIGIN_MM}mm",
+         *soldermask, "--user-origin", f"{BOARD_ORIGIN_MM}x{BOARD_ORIGIN_MM}mm",
          "--define-var", f"ZAPPD_KICAD_MODELS={REPO_COTS_LIBRARY_DIR / 'kicad_3d'}",
          "--output", str(raw), str(path)),
         check=True,

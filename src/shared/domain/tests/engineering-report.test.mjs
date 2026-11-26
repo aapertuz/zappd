@@ -15,7 +15,9 @@ const report = JSON.parse(
 
 it('retains measured pair status, excluded CAD and unresolved pair identities', () => {
   const parsed = sourceInterferenceSchema.parse(report);
-  assert.equal(parsed.solidCount, 199);
+  assert.equal(parsed.solidCount, 235);
+  assert.equal(parsed.intersectionCount, 102);
+  assert.equal(parsed.unresolvedPairCount, 0);
   assert.throws(() => sourceInterferenceSchema.parse({ ...report, unresolvedPairCount: 999 }));
   assert.throws(() =>
     sourceInterferenceSchema.parse({
@@ -30,9 +32,13 @@ it('retains measured pair status, excluded CAD and unresolved pair identities', 
     parsed.pairs.filter((pair) => ['failed', 'timeout'].includes(pair.status)).length,
     parsed.unresolvedPairCount,
   );
-  assert.equal(
-    parsed.pairs.filter((pair) => pair.status === 'intersection').length,
-    parsed.intersectionCount,
+  const intersections = parsed.pairs.filter(({ status }) => status === 'intersection');
+  assert.equal(intersections.length, parsed.intersectionCount);
+  assert.deepEqual(
+    intersections.filter(({ componentIds }) =>
+      componentIds.some((id) => id.startsWith('comp_poppy_')),
+    ),
+    [],
   );
   assert.throws(() =>
     sourceInterferenceSchema.parse({

@@ -29,12 +29,16 @@ def rotate_vector(quaternion: gp_Quaternion, vector) -> np.ndarray:
     return np.asarray((rotated.X(), rotated.Y(), rotated.Z()))
 
 
-def place_shape(shape: TopoDS_Shape, node: dict) -> TopoDS_Shape:
+def node_transform(node: dict) -> gp_Trsf:
     rotation = world_rotation(node.get("restRotationDeg", _IDENTITY_ROTATION))
     transform = gp_Trsf()
     transform.SetRotation(_WORLD_TO_CAD.Multiplied(rotation).Multiplied(_WORLD_TO_CAD.Inverted()))
     transform.SetTranslationPart(gp_Vec(*world_rest_to_cad_mm(node["restPositionMeters"])))
-    return BRepBuilderAPI_Transform(shape, transform, True).Shape()
+    return transform
+
+
+def place_shape(shape: TopoDS_Shape, node: dict) -> TopoDS_Shape:
+    return BRepBuilderAPI_Transform(shape, node_transform(node), True).Shape()
 
 
 def local_pose(node: dict, parent: dict | None) -> tuple[list[float], gp_Quaternion, list[float] | None]:

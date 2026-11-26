@@ -379,7 +379,8 @@ def main() -> int:
     parser.add_argument("--archetype", choices=ingestors)
     args = parser.parse_args()
     if args.poppy:
-        from poppy_catalog import POPPY_SOURCE_URL, POPPY_SPEC_PATH, import_poppy, verify_poppy_source
+        from poppy_catalog import POPPY_SOURCE_URL, POPPY_SPEC_PATH, compose_poppy_catalog, verify_poppy_source
+        from poppy_electronics import write_catalog_json
 
         source = CACHE_DIR / "Poppy_Humanoid.STEP"
         if not source.exists():
@@ -387,8 +388,7 @@ def main() -> int:
             verify_poppy_source(payload)
             source.parent.mkdir(parents=True, exist_ok=True)
             source.write_bytes(payload)
-        spec = import_poppy(source, CACHE_DIR)
-        POPPY_SPEC_PATH.write_text(json.dumps(spec, indent=2) + "\n")
+        write_catalog_json(compose_poppy_catalog(source, CACHE_DIR), POPPY_SPEC_PATH)
         return 0
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     if args.archetype is None:

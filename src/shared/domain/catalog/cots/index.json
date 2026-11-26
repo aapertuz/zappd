@@ -672,6 +672,187 @@
     ]
   },
   {
+    "cotsId": "kicad_poppy_usb2ax",
+    "name": "USB2AX v3.2a TTL interface reference",
+    "origin": "kicad_pcb_step",
+    "spdxLicense": "CC-BY-SA-4.0",
+    "sourceUrl": "kicad://zappd/kicad_poppy_usb2ax",
+    "sourceName": "Zappd kicad_poppy_usb2ax.kicad_pcb with KiCad kicad-packages3D models",
+    "stepFixtureName": "kicad_poppy_usb2ax.step",
+    "expectedStepSha256": "49ff1a64ccb7bad6bd397133395a40f6d0da4f41901402833cfb2da13dee2f3f",
+    "dimensionsMm": [15.0, 9.4, 30.0],
+    "materialHint": "fr4_pcb",
+    "colorHex": "#247052",
+    "category": "bus_interface",
+    "tags": ["poppy", "usb2ax", "dynamixel", "ttl"],
+    "mountingInterfaces": [
+      {
+        "interfaceId": "mount_board",
+        "label": "Edge clamp mount",
+        "kind": "clamp",
+        "holeDiameterMm": 3.2,
+        "localPositionMeters": [0, 0, 0],
+        "normalDirection": [0, 0, -1]
+      }
+    ],
+    "specifications": {
+      "pcbWidthMm": 15,
+      "pcbLengthMm": 30,
+      "pcbThicknessMm": 1.6,
+      "brepFaces": 1587,
+      "xcafColors": 9,
+      "referenceLayout": true
+    },
+    "ports": [
+      {
+        "portId": "port_usb",
+        "label": "USB data",
+        "connectorType": "USB-C",
+        "busKind": "usb_data",
+        "role": "bidirectional",
+        "minVoltageV": 4.75,
+        "nominalVoltageV": 5,
+        "maxVoltageV": 5.25,
+        "maxCurrentA": 0.5,
+        "localPositionMeters": [0.0, 0.014975, -0.00035],
+        "exitDirection": [0.0, 1.0, 0.0]
+      },
+      {
+        "portId": "port_dxl_ttl",
+        "label": "Dynamixel TTL",
+        "connectorType": "JST-PH 3-pin",
+        "busKind": "ttl_serial",
+        "role": "bidirectional",
+        "minVoltageV": 9,
+        "nominalVoltageV": 12,
+        "maxVoltageV": 14.8,
+        "maxCurrentA": 5,
+        "wireColorsHex": ["#cc2929", "#222428", "#e5c158"],
+        "localPositionMeters": [0.0, -0.011, -0.0047],
+        "exitDirection": [0.0, 0.0, -1.0]
+      }
+    ]
+  },
+  {
+    "cotsId": "kicad_poppy_upper_3p_hub",
+    "name": "Poppy upper Bioloid 3P hub reference",
+    "origin": "kicad_pcb_step",
+    "spdxLicense": "CC-BY-SA-4.0",
+    "sourceUrl": "kicad://zappd/kicad_poppy_upper_3p_hub",
+    "sourceName": "Zappd kicad_poppy_upper_3p_hub.kicad_pcb with KiCad kicad-packages3D models",
+    "stepFixtureName": "kicad_poppy_upper_3p_hub.step",
+    "expectedStepSha256": "5710c2fbffa5c35f170a64687eefea5fd5de17e65f84458906b3707b30981599",
+    "dimensionsMm": [48.0, 9.4, 16.0],
+    "materialHint": "fr4_pcb",
+    "colorHex": "#247052",
+    "category": "servo_hub",
+    "tags": ["poppy", "bioloid", "dynamixel", "ttl"],
+    "mountingInterfaces": [
+      {
+        "interfaceId": "mount_board",
+        "label": "Edge clamp mount",
+        "kind": "clamp",
+        "holeDiameterMm": 3.2,
+        "localPositionMeters": [0, 0, 0],
+        "normalDirection": [0, 0, -1]
+      }
+    ],
+    "specifications": {
+      "pcbWidthMm": 48,
+      "pcbLengthMm": 16,
+      "pcbThicknessMm": 1.6,
+      "brepFaces": 1122,
+      "xcafColors": 4,
+      "referenceLayout": true
+    },
+    "ports": [
+      {
+        "portId": "port_hub_1",
+        "label": "Dynamixel hub port 1",
+        "connectorType": "JST-PH 3-pin",
+        "busKind": "ttl_serial",
+        "role": "bidirectional",
+        "minVoltageV": 9,
+        "nominalVoltageV": 12,
+        "maxVoltageV": 14.8,
+        "maxCurrentA": 5,
+        "wireColorsHex": ["#cc2929", "#222428", "#e5c158"],
+        "localPositionMeters": [-0.015, -0.004, -0.0047],
+        "exitDirection": [0.0, 0.0, -1.0]
+      },
+      {
+        "portId": "port_hub_2",
+        "label": "Dynamixel hub port 2",
+        "connectorType": "JST-PH 3-pin",
+        "busKind": "ttl_serial",
+        "role": "bidirectional",
+        "minVoltageV": 9,
+        "nominalVoltageV": 12,
+        "maxVoltageV": 14.8,
+        "maxCurrentA": 5,
+        "wireColorsHex": ["#cc2929", "#222428", "#e5c158"],
+        "localPositionMeters": [0.002, -0.004, -0.0047],
+        "exitDirection": [0.0, 0.0, -1.0]
+      },
+      {
+        "portId": "port_hub_3",
+        "label": "Dynamixel hub port 3",
+        "connectorType": "JST-PH 3-pin",
+        "busKind": "ttl_serial",
+        "role": "bidirectional",
+        "minVoltageV": 9,
+        "nominalVoltageV": 12,
+        "maxVoltageV": 14.8,
+        "maxCurrentA": 5,
+        "wireColorsHex": ["#cc2929", "#222428", "#e5c158"],
+        "localPositionMeters": [-0.015, 0.004, -0.0047],
+        "exitDirection": [0.0, 0.0, -1.0]
+      },
+      {
+        "portId": "port_hub_4",
+        "label": "Dynamixel hub port 4",
+        "connectorType": "JST-PH 3-pin",
+        "busKind": "ttl_serial",
+        "role": "bidirectional",
+        "minVoltageV": 9,
+        "nominalVoltageV": 12,
+        "maxVoltageV": 14.8,
+        "maxCurrentA": 5,
+        "wireColorsHex": ["#cc2929", "#222428", "#e5c158"],
+        "localPositionMeters": [0.002, 0.004, -0.0047],
+        "exitDirection": [0.0, 0.0, -1.0]
+      },
+      {
+        "portId": "port_hub_5",
+        "label": "Dynamixel hub port 5",
+        "connectorType": "JST-PH 3-pin",
+        "busKind": "ttl_serial",
+        "role": "bidirectional",
+        "minVoltageV": 9,
+        "nominalVoltageV": 12,
+        "maxVoltageV": 14.8,
+        "maxCurrentA": 5,
+        "wireColorsHex": ["#cc2929", "#222428", "#e5c158"],
+        "localPositionMeters": [0.019, -0.004, -0.0047],
+        "exitDirection": [0.0, 0.0, -1.0]
+      },
+      {
+        "portId": "port_hub_6",
+        "label": "Dynamixel hub port 6",
+        "connectorType": "JST-PH 3-pin",
+        "busKind": "ttl_serial",
+        "role": "bidirectional",
+        "minVoltageV": 9,
+        "nominalVoltageV": 12,
+        "maxVoltageV": 14.8,
+        "maxCurrentA": 5,
+        "wireColorsHex": ["#cc2929", "#222428", "#e5c158"],
+        "localPositionMeters": [0.019, 0.004, -0.0047],
+        "exitDirection": [0.0, 0.0, -1.0]
+      }
+    ]
+  },
+  {
     "cotsId": "cots_battery_3s_18650",
     "name": "3S 18650 battery holder with cells",
     "spdxLicense": "NOASSERTION",

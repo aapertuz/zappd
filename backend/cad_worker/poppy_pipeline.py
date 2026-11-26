@@ -19,15 +19,16 @@ def run_poppy_pipeline(
     render_views_dir: Path | None = None,
 ) -> dict:
     del parameter_overrides
-    cached_interference = None if inject_collision_test else load_cached_report(spec, cache_dir)
+    catalog_spec = spec
     spec = deepcopy(spec)
-    if inject_collision_test and spec["nodes"]:
-        first_geom_node = next(
-            (node for node in spec["nodes"] if node.get("stepFixtureName") is not None),
-            None,
-        )
-        if first_geom_node is not None and spec["nodes"][-1].get("stepFixtureName") is not None:
-            spec["nodes"][-1]["restPositionMeters"] = list(first_geom_node["restPositionMeters"])
+    if inject_collision_test:
+        fixtures = [
+            node for node in spec["nodes"]
+            if node.get("stepFixtureName") and node["origin"] != "procedural_harness"
+            and node["geometry"] == {"kind": "available", "role": "solid"} and not node.get("ports")
+        ]
+        if len(fixtures) >= 2:
+            fixtures[-1]["restPositionMeters"] = list(fixtures[0]["restPositionMeters"])
     head = next((node for node in spec["nodes"] if node["id"] == HEAD_ID), None)
     visual_geometry = {}
     if head is not None:
@@ -38,7 +39,6 @@ def run_poppy_pipeline(
         spec,
         output_dir,
         cache_dir,
-        inject_collision_test,
         check_interference=False,
         visual_geometry_by_id=visual_geometry,
         allow_partial_geometry=True,
@@ -64,6 +64,7 @@ def run_poppy_pipeline(
     if set(result["glbNodeIds"]) != expected_geometry:
         raise RuntimeError("Poppy geometry coverage differs from source validation states")
     validation = result["validation"]
+    cached_interference = None if inject_collision_test else load_cached_report(catalog_spec, cache_dir)
     interference = cached_interference or analyze(spec, cache_dir)
     validation["interferenceCheck"] = "partial"
     validation["interferenceCount"] = interference["intersectionCount"]
