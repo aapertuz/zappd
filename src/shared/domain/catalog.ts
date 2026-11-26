@@ -28,6 +28,7 @@ import openQuadrupedCatalog from './catalog/assemblies/open_quadruped_v1.json' w
 import roverCatalog from './catalog/assemblies/open_source_rover_v1.json' with { type: 'json' };
 import parametricMultirotorCatalog from './catalog/assemblies/parametric_multirotor_v1.json' with { type: 'json' };
 import poppyCatalog from './catalog/assemblies/poppy_humanoid_v1.json' with { type: 'json' };
+import dualScorpionSourceCatalog from './data/dual_scorpion_v1.json' with { type: 'json' };
 import quadcopterCatalog from './catalog/assemblies/quadcopter_drone_v1.json' with { type: 'json' };
 import reachyMiniCatalog from './catalog/assemblies/reachy_mini_v1.json' with { type: 'json' };
 import roboticArmCatalog from './catalog/assemblies/robotic_arm_3dof_v1.json' with { type: 'json' };
@@ -99,6 +100,25 @@ export const PARAMETRIC_MULTIROTOR_ARCHETYPE = parseCatalogArchetype(parametricM
 export const REACHY_MINI_ARCHETYPE = parseCatalogArchetype(reachyMiniCatalog);
 export const POPPY_ARCHETYPE = parseCatalogArchetype(poppyCatalog);
 
+const dualScorpionSource = z
+  .object({
+    semantics: z.literal('source_inspection'),
+    archetypeId: z.custom<CatalogArchetypeId>(isCatalogArchetypeId),
+    title: nonEmptyString,
+    summary: nonEmptyString,
+    keywords: z.array(nonEmptyString),
+    rootNodeId: z.custom<ComponentId>(isComponentId),
+    nodes: z.array(catalogComponentSchema),
+    relationships: z.array(componentRelationshipSchema.strict()),
+    assemblySteps: z.array(assemblyInstructionStepSchema.strict()),
+  })
+  .parse(dualScorpionSourceCatalog);
+
+export const DUAL_SCORPION_ARCHETYPE = parseCatalogArchetype({
+  ...dualScorpionSource,
+  commercialName: 'Dual Scorpion',
+});
+
 export const CATALOG_ARCHETYPES: readonly CatalogArchetypeDefinition[] = [
   QUADCOPTER_ARCHETYPE,
   ROBOTIC_ARM_ARCHETYPE,
@@ -107,6 +127,7 @@ export const CATALOG_ARCHETYPES: readonly CatalogArchetypeDefinition[] = [
   PARAMETRIC_MULTIROTOR_ARCHETYPE,
   REACHY_MINI_ARCHETYPE,
   POPPY_ARCHETYPE,
+  DUAL_SCORPION_ARCHETYPE,
 ];
 
 export function listCatalogArchetypes(): readonly CatalogArchetypeDefinition[] {

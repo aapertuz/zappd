@@ -1754,8 +1754,9 @@ export function AssemblyScene({
               className={classes.inspectionStatus}>
               <div className={classes.warningHeader}>
                 <p className={classes.inspectionHeadline}>
-                  Partial CAD inspection · engineering unverified. Head shell is visual only; two
-                  thighs are surfaces.
+                  {assembly.archetypeId === 'dual_scorpion_v1'
+                    ? `Source CAD inspection · ${assembly.nodes.filter((node) => node.geometry?.kind === 'unavailable').length} motor-case STEP files are unavailable after source topology validation. Engineering remains unverified.`
+                    : 'Partial CAD inspection · engineering unverified. Head shell is visual only; two thighs are surfaces.'}
                 </p>
                 <button
                   type="button"
@@ -1772,7 +1773,9 @@ export function AssemblyScene({
                     assembly.nodes.find((node) => node.id === assembly.rootNodeId)?.provenance
                       .sourceUrl
                   }>
-                  Poppy project and authors · CC-BY-SA-4.0 · Official source STEP
+                  {assembly.archetypeId === 'dual_scorpion_v1'
+                    ? 'Dual Scorpion source · Apache-2.0 · Official URDF and pinned STEP files'
+                    : 'Poppy project and authors · CC-BY-SA-4.0 · Official source STEP'}
                 </a>
                 {assembly.nodes.map((node) =>
                   node.geometry?.kind === 'visual_only' ? (
