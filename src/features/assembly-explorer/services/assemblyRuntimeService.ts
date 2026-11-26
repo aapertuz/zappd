@@ -7,6 +7,7 @@ import {
 import {
   type FirebaseEmulatorRepository,
   defaultFirebaseEmulatorRepository,
+  resolveAssemblyAssetUrls,
 } from '@/shared/firebase';
 
 import { hydrateComponentLearningContext } from '@/features/learning';
@@ -84,6 +85,30 @@ type BundleOptions = {
   readonly signal?: AbortSignal;
 };
 
+async function fetchGlb(
+  { archetypeId, manifest }: VerifiedProjectAssembly,
+  { onProgress, signal }: BundleOptions,
+): Promise<ArrayBuffer> {
+  const file = manifest.files.glb;
+  const urls = resolveAssemblyAssetUrls(file);
+  let failure: string | undefined;
+  for (const url of urls) {
+    signal?.throwIfAborted();
+    let response: Response;
+    try {
+      response = await fetch(url, { signal });
+      if (response.ok) return await readGlbWithProgress(response, file.sizeBytes, onProgress);
+    } catch (error) {
+      signal?.throwIfAborted();
+      failure = error instanceof Error ? error.message : 'Network error';
+      continue;
+    }
+    failure = `HTTP ${response.status}`;
+    if (response.status !== 404) break;
+  }
+  throw new Error(`Failed to load GLB geometry for ${archetypeId}: ${failure ?? 'No asset URL'}`);
+}
+
 async function requestAssemblyBundle(
   endpoint: string,
   body: object,
@@ -106,15 +131,8 @@ async function requestAssemblyBundle(
     throw new Error(`Assembly ${assembly.archetypeId} failed OpenCascade validation checks`);
   }
 
-  const glbFile = assembly.manifest.files.glb;
   onProgress?.({ phase: 'downloading', progress: 0.55 });
-  const glbResponse = await fetch(glbFile.publicUrl, { signal });
-  if (!glbResponse.ok) {
-    throw new Error(
-      `Failed to load GLB geometry for ${assembly.archetypeId}: HTTP ${glbResponse.status}`,
-    );
-  }
-  const glbArrayBuffer = await readGlbWithProgress(glbResponse, glbFile.sizeBytes, onProgress);
+  const glbArrayBuffer = await fetchGlb(assembly, { onProgress, signal });
 
   await hydrateComponentLearningContext({
     assembly,

@@ -1,15 +1,4 @@
-import {
-  type DocumentData,
-  type DocumentReference,
-  type Firestore,
-  type SetOptions,
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  runTransaction,
-  writeBatch,
-} from 'firebase/firestore';
+import { type Firestore, collection, doc, getDoc, getDocs, writeBatch } from 'firebase/firestore';
 import { ref, uploadBytes } from 'firebase/storage';
 
 import {
@@ -31,11 +20,12 @@ import {
   getFirebaseEmulatorClients,
   usesFirebaseEmulators,
 } from './firebaseClient';
-
-type ProjectDocumentWriter = {
-  set(reference: DocumentReference, data: DocumentData): unknown;
-  set(reference: DocumentReference, data: DocumentData, options: SetOptions): unknown;
-};
+import {
+  LEARNING_DOCUMENT_VERSION,
+  createProjectRecord,
+  decodeFirestoreRelationship,
+  writeProjectDocumentBatches,
+} from './projectDocuments';
 
 export type StoredBinaryFormat = 'step' | 'glb' | 'usdz' | 'manifest';
 
@@ -60,8 +50,8 @@ const CONTENT_TYPES: Readonly<Record<StoredBinaryFormat, string>> = {
 };
 
 const FIRESTORE_URL = `http://${FIREBASE_EMULATOR_CONFIG.firestoreHost}:${FIREBASE_EMULATOR_CONFIG.firestorePort}/`;
-const LEARNING_FIRESTORE_TIMEOUT_MS = 1200;
-const LEARNING_DOCUMENT_VERSION = 1;
+const EMULATOR_LEARNING_FIRESTORE_TIMEOUT_MS = 1200;
+const CLOUD_LEARNING_FIRESTORE_TIMEOUT_MS = 5000;
 
 async function withLearningFirestore<T>(
   operation: (firestore: Firestore) => Promise<T>,
@@ -69,12 +59,16 @@ async function withLearningFirestore<T>(
   if (globalThis.navigator?.onLine === false) return null;
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
-    if (usesFirebaseEmulators() && !(await isPortReachable(FIRESTORE_URL, 150))) return null;
+    const isEmulator = usesFirebaseEmulators();
+    if (isEmulator && !(await isPortReachable(FIRESTORE_URL, 150))) return null;
     const { firestore } = getFirebaseEmulatorClients();
+    const timeoutMs = isEmulator
+      ? EMULATOR_LEARNING_FIRESTORE_TIMEOUT_MS
+      : CLOUD_LEARNING_FIRESTORE_TIMEOUT_MS;
     return await Promise.race([
       operation(firestore),
       new Promise<null>((resolve) => {
-        timer = setTimeout(() => resolve(null), LEARNING_FIRESTORE_TIMEOUT_MS);
+        timer = setTimeout(() => resolve(null), timeoutMs);
       }),
     ]);
   } catch {
@@ -95,20 +89,6 @@ async function isPortReachable(url: string, timeoutMs: number): Promise<boolean>
   } finally {
     clearTimeout(timer);
   }
-}
-
-function createProjectRecord(assembly: VerifiedProjectAssembly) {
-  return {
-    projectId: assembly.projectId,
-    archetypeId: assembly.archetypeId,
-    title: assembly.title,
-    userPrompt: assembly.userPrompt,
-    verificationStatus: assembly.verificationStatus,
-    rootNodeId: assembly.rootNodeId,
-    manifest: assembly.manifest,
-    validation: assembly.validation,
-    orchestration: assembly.orchestration,
-  };
 }
 
 export class FirebaseEmulatorRepository {
@@ -192,7 +172,7 @@ export class FirebaseEmulatorRepository {
     if (options?.componentExplanations !== undefined) {
       await this.saveComponentExplanations(assembly.projectId, options.componentExplanations);
     }
-    if (options?.syncLiveEmulator === true) {
+    if (options?.syncLiveEmulator === true && usesFirebaseEmulators()) {
       const probe = await this.probeLiveEmulators();
       if (probe.firestoreReachable || probe.storageReachable) {
         await this.flushToLiveEmulator(assembly, binaries, probe);
@@ -218,7 +198,7 @@ export class FirebaseEmulatorRepository {
     }
     this.explanations.set(projectId, explanations);
 
-    if (options?.syncLiveEmulator === true && records.length > 0) {
+    if (options?.syncLiveEmulator === true && usesFirebaseEmulators() && records.length > 0) {
       await withLearningFirestore((firestore) => {
         const batch = writeBatch(firestore);
         for (const record of records) {
@@ -273,7 +253,9 @@ export class FirebaseEmulatorRepository {
 
       return parseProjectLearningDocuments({
         nodes: nodes.docs.map((snapshot) => snapshot.data()),
-        relationships: relationships.docs.map((snapshot) => snapshot.data()),
+        relationships: relationships.docs.map((snapshot) =>
+          decodeFirestoreRelationship(snapshot.data()),
+        ),
         assemblySteps: steps.docs.map((snapshot) => snapshot.data()),
         explanations: [explanation.data()],
       });
@@ -285,38 +267,17 @@ export class FirebaseEmulatorRepository {
     assembly: VerifiedProjectAssembly,
     explanations: readonly ComponentExplanationRecord[],
   ): Promise<void> {
-    const project = doc(firestore, 'projects', assembly.projectId);
-    await runTransaction(firestore, async (transaction) => {
-      const snapshot = await transaction.get(project);
-      if (snapshot.get('learningDocumentVersion') === LEARNING_DOCUMENT_VERSION) return;
-      this.writeProjectDocuments(transaction, project, assembly, explanations);
-      transaction.set(
-        project,
-        { learningDocumentVersion: LEARNING_DOCUMENT_VERSION },
-        { merge: true },
-      );
-    });
-  }
+    const snapshot = await getDoc(doc(firestore, 'projects', assembly.projectId));
+    if (snapshot.get('learningDocumentVersion') === LEARNING_DOCUMENT_VERSION) return;
+    if (!usesFirebaseEmulators()) return;
 
-  private writeProjectDocuments(
-    writer: ProjectDocumentWriter,
-    project: DocumentReference,
-    assembly: VerifiedProjectAssembly,
-    explanations: readonly ComponentExplanationRecord[],
-  ): void {
-    writer.set(project, { payload: createProjectRecord(assembly) }, { merge: true });
-    for (const node of assembly.nodes) {
-      writer.set(doc(project, 'nodes', node.id), node);
-    }
-    for (const relationship of assembly.relationships) {
-      writer.set(doc(project, 'relationships', relationship.id), relationship);
-    }
-    for (const step of assembly.assemblySteps) {
-      writer.set(doc(project, 'steps', step.id), step);
-    }
-    for (const record of explanations) {
-      writer.set(doc(project, 'explanations', record.componentId), record);
-    }
+    await writeProjectDocumentBatches(assembly, explanations, (documents) => {
+      const batch = writeBatch(firestore);
+      for (const { path, data } of documents) {
+        batch.set(doc(firestore, path), data, { merge: path === snapshot.ref.path });
+      }
+      return batch.commit();
+    });
   }
 
   private async flushToLiveEmulator(
@@ -327,10 +288,7 @@ export class FirebaseEmulatorRepository {
     const { firestore, storage } = getFirebaseEmulatorClients();
     if (probe.firestoreReachable) {
       const explanations = this.explanations.get(assembly.projectId)?.values() ?? [];
-      const batch = writeBatch(firestore);
-      const project = doc(firestore, 'projects', assembly.projectId);
-      this.writeProjectDocuments(batch, project, assembly, [...explanations]);
-      await batch.commit();
+      await this.seedProjectLearningDocuments(firestore, assembly, [...explanations]);
     }
     if (probe.storageReachable && binaries !== undefined) {
       const formats: readonly StoredBinaryFormat[] = ['step', 'glb', 'usdz', 'manifest'];

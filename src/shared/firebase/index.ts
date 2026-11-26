@@ -1,6 +1,8 @@
 export {
   FIREBASE_EMULATOR_CONFIG,
+  buildFirebaseStorageMediaUrl,
   getFirebaseEmulatorClients,
+  resolveAssemblyAssetUrls,
   type FirebaseEmulatorClients,
 } from './firebaseClient';
 export {

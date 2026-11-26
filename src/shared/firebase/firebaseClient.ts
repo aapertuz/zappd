@@ -9,6 +9,10 @@ import {
 } from 'firebase/firestore';
 import { type FirebaseStorage, connectStorageEmulator, getStorage } from 'firebase/storage';
 
+import { DEFAULT_FIREBASE_PROJECT, buildFirebaseStorageMediaUrl } from './firebaseProject';
+
+export { buildFirebaseStorageMediaUrl } from './firebaseProject';
+
 export const FIREBASE_EMULATOR_CONFIG = {
   projectId: 'zappd-local-emulator',
   storageBucket: 'zappd-local-emulator.appspot.com',
@@ -26,26 +30,37 @@ export type FirebaseEmulatorClients = {
 
 let cachedClients: FirebaseEmulatorClients | null = null;
 
+function readNonEmptyOption(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed === '' ? undefined : trimmed;
+}
+
 function getFirebaseOptions(): FirebaseOptions {
-  const projectId = process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID?.trim();
-  const apiKey = process.env.EXPO_PUBLIC_FIREBASE_API_KEY?.trim();
-  if (projectId && apiKey) {
+  if (process.env.EXPO_PUBLIC_FIREBASE_USE_EMULATORS === '1') {
     return {
-      projectId,
-      apiKey,
-      appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
-      authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
-      storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET ?? `${projectId}.appspot.com`,
-      messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-      measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
+      projectId: FIREBASE_EMULATOR_CONFIG.projectId,
+      storageBucket: FIREBASE_EMULATOR_CONFIG.storageBucket,
+      apiKey: 'local-emulator-api-key',
+      appId: 'zappd-local-emulator',
     };
   }
 
+  const projectId =
+    readNonEmptyOption(process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID) ??
+    DEFAULT_FIREBASE_PROJECT.projectId;
+  const defaultBucket =
+    projectId === DEFAULT_FIREBASE_PROJECT.projectId
+      ? DEFAULT_FIREBASE_PROJECT.storageBucket
+      : `${projectId}.appspot.com`;
   return {
-    projectId: FIREBASE_EMULATOR_CONFIG.projectId,
-    storageBucket: FIREBASE_EMULATOR_CONFIG.storageBucket,
-    apiKey: 'local-emulator-api-key',
-    appId: 'zappd-local-emulator',
+    projectId,
+    apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY?.trim(),
+    appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+    authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    storageBucket:
+      readNonEmptyOption(process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET) ?? defaultBucket,
+    messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
   };
 }
 
@@ -57,17 +72,29 @@ export function usesFirebaseEmulators(): boolean {
   return getFirebaseApp().options.projectId === FIREBASE_EMULATOR_CONFIG.projectId;
 }
 
+export function resolveAssemblyAssetUrls(file: {
+  readonly storagePath: string;
+  readonly publicUrl: string;
+}): readonly string[] {
+  if (/^https?:\/\//.test(file.publicUrl) || usesFirebaseEmulators()) return [file.publicUrl];
+
+  const storageBucket = getFirebaseApp().options.storageBucket?.trim();
+  return storageBucket
+    ? [buildFirebaseStorageMediaUrl(storageBucket, file.storagePath), file.publicUrl]
+    : [file.publicUrl];
+}
+
 function initializeProjectFirestore(app: FirebaseApp): Firestore {
-  if (typeof window !== 'undefined') {
-    try {
-      return initializeFirestore(app, {
-        localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
-      });
-    } catch {
-      return getFirestore(app);
-    }
+  try {
+    return initializeFirestore(app, {
+      ignoreUndefinedProperties: true,
+      ...(typeof window === 'undefined'
+        ? {}
+        : { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) }),
+    });
+  } catch {
+    return getFirestore(app);
   }
-  return getFirestore(app);
 }
 
 export function getFirebaseEmulatorClients(): FirebaseEmulatorClients {
