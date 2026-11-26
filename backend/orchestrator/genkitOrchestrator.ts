@@ -358,6 +358,7 @@ async function executeProjectOrchestration(
       getCatalogArchetypeById(retrieval.archetypeId) ??
       matchProjectArchetypeFromPrompt(args.prompt);
 
+    const catalogNodesById = new Map(archetype.nodes.map((node) => [node.id, node]));
     const assembly: VerifiedProjectAssembly = {
       projectId: toProjectId(
         `proj_${archetype.archetypeId}_${cadResult.manifest.manifestHash.slice(0, 8)}`,
@@ -367,7 +368,19 @@ async function executeProjectOrchestration(
       userPrompt: args.prompt,
       verificationStatus: cadResult.verificationStatus,
       rootNodeId: archetype.rootNodeId,
-      nodes: cadResult.nodes,
+      nodes: cadResult.nodes.map((node) => {
+        const catalogNode = catalogNodesById.get(node.id);
+        if (catalogNode === undefined) return node;
+
+        const { enclosureRole: _cachedRole, ...geometryNode } = node;
+        const { enclosureRole, explodeDirection, explodeDistanceMeters } = catalogNode;
+        return {
+          ...geometryNode,
+          explodeDirection,
+          explodeDistanceMeters,
+          ...(enclosureRole === undefined ? {} : { enclosureRole }),
+        };
+      }),
       relationships: archetype.relationships,
       assemblySteps: archetype.assemblySteps,
       manifest: cadResult.manifest,

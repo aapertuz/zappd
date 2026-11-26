@@ -342,6 +342,18 @@ GROUPS = {
 }
 
 GROUP_BY_NODE = {node: group for group, (_, parts) in GROUPS.items() for node in parts.split()}
+SHELL_EXPLODE_OVERRIDES = {
+    "top_shell": (0.165, [0.921954, 0.140297, -0.360765]),
+    "bowl": (0.15, [0.871249, -0.100144, 0.480689]),
+    "head_mic": (0.1, None),
+    "head_front": (0.11, None),
+    "head_back": (0.11, None),
+    "glasses_holder": (0.11, None),
+    "lens_cap_l": (0.11, None),
+    "lens_cap_r": (0.11, None),
+    "lens_l": (0.11, None),
+    "lens_r": (0.11, None),
+}
 ROOT_ID = "proj_reachy_mini"
 CONNECTION_TYPES = {"fixed": "rigid_fastener", "revolute": "revolute_joint", "ball": "axial_mount"}
 SERVO_MANUALS = {
@@ -463,6 +475,11 @@ def physical_nodes(assembly: HeyPcbAssembly, parts: dict[str, Part], staging: Pa
             explodeDirection=[round(float(value), 6) for value in direction], explodeDistanceMeters=0.08,
             specifications=specifications,
         )
+        if node_id in SHELL_EXPLODE_OVERRIDES:
+            distance, direction_override = SHELL_EXPLODE_OVERRIDES[node_id]
+            node.update(enclosureRole="shell", explodeDistanceMeters=distance)
+            if direction_override is not None:
+                node["explodeDirection"] = direction_override
         nodes[node_id] = node
         print(f"Wrote {target.name} ({metadata['faceCount']} faces)", flush=True)
     return nodes, solids

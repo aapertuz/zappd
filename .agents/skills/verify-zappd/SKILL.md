@@ -108,7 +108,7 @@ Proof standards apply to every verification pass.
 
 - Drive only real user interactions (`browser-act`, keyboard events, real clicks and hovers). Never bypass controls via internal state hooks or state-mutating JS evaluation.
 - Capture both the action or pre-submit state and the resulting settled state, including console and page error counts (`errors: []`).
-- Verify 3D WebGL scene and interaction states through `diagnostics.assembly` (`webglActive`, `archetypeId`, `verificationStatus`, `glbNodeCount`, `assemblyStatus`, `camera`, `explodeFactor`, `wiringVisibility`, `hoveredComponentId`, `hoveredPartCallout`, `selectedComponentId`, `isolatedComponentId`, `viewMode`, `focusedPartCallout`, `circuitHighlightIds`), `diagnostics.learning`, and visual inspection of PNG screenshots. Pair live runs with `pnpm run test:unit` for reducer and domain contracts.
+- Verify 3D WebGL scene and interaction states through `diagnostics.assembly` (`webglActive`, `archetypeId`, `verificationStatus`, `glbNodeCount`, `assemblyStatus`, `camera`, `explodeFactor`, `wiringVisibility`, `hasShell`, `shellVisibility`, `hoveredComponentId`, `hoveredPartCallout`, `selectedComponentId`, `isolatedComponentId`, `viewMode`, `focusedPartCallout`, `circuitHighlightIds`), `diagnostics.learning`, and visual inspection of PNG screenshots. Pair live runs with `pnpm run test:unit` for reducer and domain contracts.
 - If a precondition is unmet (such as no built native app for `native-canvas.md` or no configured AI API key for live orchestration), report the feature or sub-feature as `verified-unreachable` with the unmet precondition and never weaken the journey.
 
 ## Cleanup

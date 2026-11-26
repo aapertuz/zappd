@@ -60,6 +60,12 @@ export type HierarchyLevel = z.infer<typeof hierarchyLevelSchema>;
 
 export type ExplodeStageFilter = 'all' | 1 | 2 | 3;
 
+export const ASSEMBLY_ENCLOSURE_ROLES = ['shell', 'internal'] as const;
+export type AssemblyEnclosureRole = (typeof ASSEMBLY_ENCLOSURE_ROLES)[number];
+export const assemblyEnclosureRoleSchema = z.enum(ASSEMBLY_ENCLOSURE_ROLES);
+
+export const SHELL_PEEL_END_EXPLODE_FACTOR = 0.4;
+
 const relationshipConnectionTypeSchema = z.enum([
   'assembly_mount',
   'rigid_fastener',
@@ -147,6 +153,7 @@ export type AssemblyNode = {
   readonly materialHint: string;
   readonly specifications: Readonly<Record<string, string | number | boolean>>;
   readonly ports?: readonly ConnectorPort[];
+  readonly enclosureRole?: AssemblyEnclosureRole;
   readonly provenance: CadProvenance;
   readonly glbNodeName: string;
   readonly usdzPrimPath: string;
@@ -490,6 +497,42 @@ export function computeExplodeStageWeight(
   return Math.max(0, Math.min(1, (clamped - 0.4) / 0.6));
 }
 
+export function isShellNode(node: Pick<AssemblyNode, 'enclosureRole'>): boolean {
+  return node.enclosureRole === 'shell';
+}
+
+export function assemblyHasShellNodes(
+  nodes: readonly Pick<AssemblyNode, 'enclosureRole'>[],
+): boolean {
+  return nodes.some(isShellNode);
+}
+
+export function computeNodeExplodeWeight(
+  node: Pick<AssemblyNode, 'depth' | 'enclosureRole'>,
+  explodeFactor: number,
+  activeExplodeStage: ExplodeStageFilter,
+  hasShellNodes: boolean,
+): number {
+  const { depth } = node;
+  if (!hasShellNodes) {
+    return computeExplodeStageWeight(depth, explodeFactor, activeExplodeStage);
+  }
+
+  const clamped = clampExplodeFactor(explodeFactor);
+  if (clamped === 0 || depth <= 0) return 0;
+  if (activeExplodeStage === 1 && depth > 1) return 0;
+  if (activeExplodeStage === 2 && depth > 2) return 0;
+  if (isShellNode(node)) {
+    return Math.min(1, clamped / SHELL_PEEL_END_EXPLODE_FACTOR);
+  }
+  if (clamped <= SHELL_PEEL_END_EXPLODE_FACTOR) return 0;
+
+  const internalFactor = clamped - SHELL_PEEL_END_EXPLODE_FACTOR;
+  if (depth === 1) return Math.min(1, internalFactor / 0.35);
+  if (depth === 2) return Math.min(1, internalFactor / 0.5);
+  return Math.max(0, Math.min(1, (clamped - 0.55) / 0.45));
+}
+
 export function computeNodeWorldPositionMeters(
   node: AssemblyNode,
   nodesById: Readonly<Record<string, AssemblyNode>>,
@@ -497,6 +540,7 @@ export function computeNodeWorldPositionMeters(
   separatedOffsets: Readonly<Record<string, Vector3Tuple>>,
   activeExplodeStage: ExplodeStageFilter = 'all',
 ): Vector3Tuple {
+  const hasShellNodes = assemblyHasShellNodes(Object.values(nodesById));
   let x = node.restPositionMeters[0];
   let y = node.restPositionMeters[1];
   let z = node.restPositionMeters[2];
@@ -515,7 +559,12 @@ export function computeNodeWorldPositionMeters(
     if (ancestor === undefined) {
       continue;
     }
-    const weight = computeExplodeStageWeight(ancestor.depth, explodeFactor, activeExplodeStage);
+    const weight = computeNodeExplodeWeight(
+      ancestor,
+      explodeFactor,
+      activeExplodeStage,
+      hasShellNodes,
+    );
     if (weight > 0 && ancestor.explodeDistanceMeters !== 0) {
       const distance = ancestor.explodeDistanceMeters * weight;
       x += ancestor.explodeDirection[0] * distance;
@@ -726,6 +775,7 @@ export const assemblyNodeFieldsSchema = z.object({
   materialHint: nonEmptyString,
   specifications: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])),
   ports: z.array(connectorPortSchema).optional(),
+  enclosureRole: assemblyEnclosureRoleSchema.optional(),
   geometry: componentGeometrySchema.optional(),
 });
 

@@ -279,6 +279,8 @@ async function readPageDiagnostics(cdp) {
             assemblyProgress: rawAssembly.assemblyProgress ?? null,
             activeExplodeStage: rawAssembly.activeExplodeStage ?? null,
             wiringVisibility: rawAssembly.wiringVisibility ?? null,
+            hasShell: Boolean(rawAssembly.hasShell),
+            shellVisibility: rawAssembly.shellVisibility ?? null,
             circuitHighlightIds: Array.isArray(rawAssembly.circuitHighlightIds)
               ? rawAssembly.circuitHighlightIds
               : [],

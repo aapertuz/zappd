@@ -1,12 +1,15 @@
-import type {
-  AssemblyNode,
-  ComponentId,
-  ExplodeStageFilter,
-  Vector3Tuple,
-  VerifiedProjectAssembly,
+import {
+  SHELL_PEEL_END_EXPLODE_FACTOR,
+  type AssemblyNode,
+  type ComponentId,
+  type ExplodeStageFilter,
+  type Vector3Tuple,
+  type VerifiedProjectAssembly,
+  assemblyHasShellNodes,
+  isShellNode,
 } from '@/shared/domain';
 
-import type { ExplorerCameraState, WiringVisibilityMode } from '../types';
+import type { ExplorerCameraState, ShellVisibilityMode, WiringVisibilityMode } from '../types';
 
 export type SpringConfig = {
   readonly stiffness: number;
@@ -46,6 +49,7 @@ export type AssemblyAnimationTargets = {
   readonly isolatedComponentId: ComponentId | null;
   readonly focusedComponentId?: ComponentId | null;
   readonly wiringVisibility?: WiringVisibilityMode;
+  readonly shellVisibility?: ShellVisibilityMode;
   readonly circuitHighlightIds?: ReadonlySet<ComponentId>;
   readonly separatedOffsets: Readonly<Record<string, Vector3Tuple>>;
 };
@@ -57,6 +61,7 @@ export type AnimatedNodePose = {
   readonly scale: number;
   readonly visible: boolean;
   readonly isAnimatingOpacity: boolean;
+  readonly isShellXRay: boolean;
 };
 
 export type AssemblyFrameSnapshot = {
@@ -85,7 +90,10 @@ type AnimationNode = Pick<
   | 'restPositionMeters'
   | 'explodeDirection'
   | 'explodeDistanceMeters'
-> & { readonly category?: AssemblyNode['category'] };
+> & {
+  readonly category?: AssemblyNode['category'];
+  readonly enclosureRole?: AssemblyNode['enclosureRole'];
+};
 
 type AnimationAssembly = {
   readonly nodes: readonly AnimationNode[];
@@ -104,6 +112,7 @@ const ANGLE_EPSILON_DEG = 0.01;
 const DAMPING_RATE = 14;
 export const FOCUS_IN_DURATION_SEC = 1.1;
 export const FOCUS_OUT_DURATION_SEC = 0.65;
+export const SHELL_XRAY_OPACITY = 0.14;
 const VISIBILITY_FADE_OUT_RATE = 4.2;
 const VISIBILITY_FADE_IN_RATE = 6.5;
 const VISIBILITY_OPACITY_EPSILON = 0.02;
@@ -117,17 +126,29 @@ function smoothstep(value: number): number {
   return u * u * (3 - 2 * u);
 }
 
-function autoWiringOpacity(explodeFactor: number): number {
+function autoWiringOpacity(explodeFactor: number, hasShell: boolean): number {
+  if (hasShell) return 1 - smoothstep((explodeFactor - 0.48) / 0.24);
   return 1 - smoothstep((explodeFactor - 0.25) / 0.3);
 }
 
 function nodeVisibilityTarget(
   node: AnimationNode,
-  { isolatedComponentId, circuitHighlightIds, wiringVisibility }: AssemblyAnimationTargets,
+  {
+    isolatedComponentId,
+    circuitHighlightIds,
+    wiringVisibility,
+    shellVisibility,
+  }: AssemblyAnimationTargets,
   autoOpacity: number,
 ): number {
   if (node.id === isolatedComponentId) return 1;
   const inCircuit = circuitHighlightIds?.has(node.id) === true;
+  if (isShellNode(node)) {
+    if (isolatedComponentId !== null) return inCircuit ? 0.38 : 0;
+    if (shellVisibility === 'hidden') return 0;
+    if (shellVisibility === 'xray') return SHELL_XRAY_OPACITY;
+    return 1;
+  }
   if (node.category !== 'wiring') {
     return isolatedComponentId === null ? 1 : inCircuit ? 0.38 : 0;
   }
@@ -322,6 +343,19 @@ function explodeWeights(factor: number, multipliers: Vector3Tuple): Vector3Tuple
   ];
 }
 
+function internalExplodeWeights(
+  factor: number,
+  multipliers: Vector3Tuple,
+  overshoot: number,
+): Vector3Tuple {
+  const internalFactor = factor - SHELL_PEEL_END_EXPLODE_FACTOR;
+  return [
+    (smoothstep(internalFactor / 0.35) + overshoot) * multipliers[0],
+    (smoothstep(internalFactor / 0.5) + overshoot) * multipliers[1],
+    (smoothstep((factor - 0.55) / 0.45) + overshoot) * multipliers[2],
+  ];
+}
+
 function getAncestorChain(node: AnimationNode, nodesById: ReadonlyMap<ComponentId, AnimationNode>) {
   const chain: AnimationNode[] = [];
   const visited = new Set<ComponentId>();
@@ -338,19 +372,21 @@ function computeWorldPosition(
   node: AnimationNode,
   chain: readonly AnimationNode[],
   weights: Vector3Tuple,
+  shellWeights: Vector3Tuple,
   offsets: ReadonlyMap<ComponentId, Vector3Tuple>,
   approach: Vector3Tuple,
 ): Vector3Tuple {
   let [x, y, z] = node.restPositionMeters;
   for (const ancestor of chain) {
+    const ancestorWeights = isShellNode(ancestor) ? shellWeights : weights;
     const weight =
       ancestor.depth <= 0
         ? 0
         : ancestor.depth === 1
-          ? weights[0]
+          ? ancestorWeights[0]
           : ancestor.depth === 2
-            ? weights[1]
-            : weights[2];
+            ? ancestorWeights[1]
+            : ancestorWeights[2];
     const distance = weight * ancestor.explodeDistanceMeters;
     const [dx, dy, dz] = ancestor.explodeDirection;
     const [sx, sy, sz] = offsets.get(ancestor.id) ?? ZERO;
@@ -387,7 +423,8 @@ export function createAssemblyAnimationController({
   const schedule = buildAssemblySchedule(assembly);
   const windowsById = new Map(schedule.map((window) => [window.nodeId, window]));
   const nodesById = new Map(assembly.nodes.map((node) => [node.id, node]));
-  let previousAutoOpacity = autoWiringOpacity(initialTargets.explodeFactor);
+  const hasShell = assemblyHasShellNodes(assembly.nodes);
+  let previousAutoOpacity = autoWiringOpacity(initialTargets.explodeFactor, hasShell);
   const nodes = assembly.nodes.map((node) => ({
     node,
     chain: getAncestorChain(node, nodesById),
@@ -402,6 +439,7 @@ export function createAssemblyAnimationController({
   let spring: SpringScalarState = { value: initialTargets.explodeFactor, velocity: 0 };
   let multipliers = stageMultipliers(initialTargets.activeExplodeStage);
   let previousWeights: Vector3Tuple = ZERO;
+  let previousShellWeights: Vector3Tuple = ZERO;
   let previousTargets = initialTargets;
   let visibilityFading = false;
   const liveOffsets = new Map<ComponentId, Vector3Tuple>();
@@ -431,8 +469,15 @@ export function createAssemblyAnimationController({
         : stepSpringScalar(spring, targets.explodeFactor, elapsedDelta);
       const targetMultipliers = stageMultipliers(targets.activeExplodeStage);
       multipliers = dampVector(multipliers, targetMultipliers, alpha);
-      const weights = explodeWeights(spring.value, multipliers);
-      const autoOpacity = autoWiringOpacity(spring.value);
+      const factor = spring.value;
+      const overshoot = hasShell ? 0.02 * smoothstep((factor - 1) / 0.03) : 0;
+      const weights = hasShell
+        ? internalExplodeWeights(factor, multipliers, overshoot)
+        : explodeWeights(factor, multipliers);
+      const shellWeights = hasShell
+        ? scaleVector(multipliers, smoothstep(factor / SHELL_PEEL_END_EXPLODE_FACTOR) + overshoot)
+        : ZERO;
+      const autoOpacity = autoWiringOpacity(factor, hasShell);
       let offsetsChanged = false;
       let offsetsMoving = false;
       for (const { node } of nodes) {
@@ -450,10 +495,12 @@ export function createAssemblyAnimationController({
       if (
         phase !== previousPhase ||
         !vectorsEqual(weights, previousWeights) ||
+        !vectorsEqual(shellWeights, previousShellWeights) ||
         offsetsChanged ||
         visibilityFading ||
         targets.isolatedComponentId !== previousTargets.isolatedComponentId ||
         targets.wiringVisibility !== previousTargets.wiringVisibility ||
+        targets.shellVisibility !== previousTargets.shellVisibility ||
         targets.circuitHighlightIds !== previousTargets.circuitHighlightIds ||
         autoOpacity !== previousAutoOpacity
       ) {
@@ -486,11 +533,23 @@ export function createAssemblyAnimationController({
           } = partArrival(windowsById.get(node.id), phase);
           const opacity = arrivalOpacity * part.visibility;
           worldPoses[node.id] = {
-            worldPositionMeters: computeWorldPosition(node, chain, weights, liveOffsets, approach),
+            worldPositionMeters: computeWorldPosition(
+              node,
+              chain,
+              weights,
+              shellWeights,
+              liveOffsets,
+              approach,
+            ),
             opacity,
             scale,
             visible: opacity > 0,
             isAnimatingOpacity: opacity < 0.999,
+            isShellXRay:
+              isShellNode(node) &&
+              targets.shellVisibility === 'xray' &&
+              targets.isolatedComponentId === null &&
+              opacity > 0,
           };
         }
         const nextPoses: Record<string, AnimatedNodePose> = {};
@@ -505,6 +564,7 @@ export function createAssemblyAnimationController({
           const previous = nodePoses[node.id];
           geometryChanged ||=
             previous?.visible !== pose.visible ||
+            previous.isShellXRay !== pose.isShellXRay ||
             (pose.visible &&
               (previous.opacity !== pose.opacity ||
                 previous.scale !== pose.scale ||
@@ -514,6 +574,7 @@ export function createAssemblyAnimationController({
         nodePoses = nextPoses;
         previousPhase = phase;
         previousWeights = weights;
+        previousShellWeights = shellWeights;
         previousTargets = targets;
         previousAutoOpacity = autoOpacity;
       }

@@ -12,10 +12,12 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 import {
+  SHELL_PEEL_END_EXPLODE_FACTOR,
   type ComponentId,
   type ExplodeStageFilter,
   type Vector3Tuple,
   isComponentId,
+  isShellNode,
 } from '@/shared/domain';
 
 import {
@@ -47,7 +49,12 @@ import {
   reconcileCameraTarget,
   zoomExplorerCamera,
 } from '../model/explorerState';
-import type { AssemblySceneProps, ExplorerCameraState, WiringVisibilityMode } from '../types';
+import type {
+  AssemblySceneProps,
+  ExplorerCameraState,
+  ShellVisibilityMode,
+  WiringVisibilityMode,
+} from '../types';
 
 type ScreenPoint = CalloutAnchor;
 
@@ -81,6 +88,8 @@ declare global {
       readonly explodeFactor: number;
       readonly activeExplodeStage: ExplodeStageFilter;
       readonly wiringVisibility: WiringVisibilityMode;
+      readonly hasShell: boolean;
+      readonly shellVisibility: ShellVisibilityMode;
       readonly circuitHighlightIds: readonly ComponentId[];
       readonly camera: AssemblySceneProps['state']['camera'];
       readonly separatedOffsets: Readonly<Record<string, Vector3Tuple>>;
@@ -449,6 +458,7 @@ const HUD_ICON_PATHS = {
   back: 'm13 4-6 6 6 6M7 10h10',
   explode: 'M7.5 3.5h-4v4m9-4h4v4m0 5v4h-4m-5 0h-4v-4m0-9 4 4m9-4-4 4m4 9-4-4m-9 4 4-4',
   wiring: 'M6 14h3l2-8h3M6 14a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM18 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z',
+  shell: 'M3 10a7 7 0 0 1 14 0H3Zm0 3h14l-2 4H5l-2-4Z',
   zoomIn: 'M14.5 14.5 18 18M6.5 9.5h6m-3-3v6M15.5 9.5a6 6 0 1 1-12 0 6 6 0 0 1 12 0Z',
   zoomOut: 'M14.5 14.5 18 18M6.5 9.5h6m3 0a6 6 0 1 1-12 0 6 6 0 0 1 12 0Z',
 };
@@ -458,6 +468,12 @@ const WIRING_HUD_LABELS = {
   show: { text: 'Wiring on', label: 'Wiring visibility: Shown' },
   hide: { text: 'Wiring off', label: 'Wiring visibility: Hidden' },
 } satisfies Record<WiringVisibilityMode, { readonly text: string; readonly label: string }>;
+
+const SHELL_HUD_LABELS = {
+  solid: { text: 'Shell', label: 'Shell visibility: Solid' },
+  xray: { text: 'Shell x-ray', label: 'Shell visibility: X-ray' },
+  hidden: { text: 'Shell off', label: 'Shell visibility: Hidden' },
+} satisfies Record<ShellVisibilityMode, { readonly text: string; readonly label: string }>;
 
 function HudIcon({ kind }: { readonly kind: keyof typeof HUD_ICON_PATHS }) {
   return (
@@ -657,6 +673,7 @@ type PointerDrag = {
 function pickComponent(
   runtime: SceneRuntime | null,
   { clientX, clientY, currentTarget }: PointerEvent<HTMLDivElement>,
+  skipComponentIds?: ReadonlySet<ComponentId>,
 ): ComponentId | null {
   if (runtime?.model == null || !runtime.webglActive) return null;
   const { camera, rootGroup, raycaster, pointerNdc, pointerHits } = runtime;
@@ -668,8 +685,10 @@ function pickComponent(
   let pickedId: ComponentId | null = null;
   for (const { object } of pointerHits) {
     if (!object.visible || !isThreeMesh(object)) continue;
-    pickedId = findAncestorComponentId(object);
-    if (pickedId !== null) break;
+    const componentId = findAncestorComponentId(object);
+    if (componentId === null || skipComponentIds?.has(componentId)) continue;
+    pickedId = componentId;
+    break;
   }
   pointerHits.length = 0;
   return pickedId;
@@ -762,6 +781,7 @@ const EDGE_HIGHLIGHTS = {
   dimmed: { color: CAD_EDGE_COLOR, opacity: CAD_EDGE_OPACITY * 0.55 },
   normal: { color: CAD_EDGE_COLOR, opacity: CAD_EDGE_OPACITY },
 };
+const SHELL_XRAY_EDGE = { color: '#e6dfd1', opacity: 0.28 };
 
 function getMeshHighlight(
   ownerId: ComponentId,
@@ -788,12 +808,13 @@ function buildQueuedEdges(model: WebAssemblyModel): void {
       model.hoveredComponentId,
       model.circuitHighlightIds,
     );
-    const { color, opacity } = EDGE_HIGHLIGHTS[highlight];
+    const pose = model.lastPoses?.[binding.ownerId];
+    const { color, opacity } = pose?.isShellXRay ? SHELL_XRAY_EDGE : EDGE_HIGHLIGHTS[highlight];
     const material = new THREE.LineBasicMaterial({
       color,
       transparent: true,
       depthWrite: false,
-      opacity: opacity * (model.lastPoses?.[binding.ownerId]?.opacity ?? 1),
+      opacity: pose?.isShellXRay ? opacity : opacity * (pose?.opacity ?? 1),
     });
     const lines = new THREE.LineSegments(geometry, material);
     lines.raycast = () => {};
@@ -816,16 +837,17 @@ function applyMeshPose(
     hoveredComponentId,
     circuitHighlightIds,
   );
+  const transparent = pose.isShellXRay || pose.isAnimatingOpacity;
   mesh.visible = pose.visible;
-  mesh.castShadow = pose.visible && !pose.isAnimatingOpacity;
+  mesh.castShadow = pose.visible && !transparent;
   mesh.scale.copy(restScale).multiplyScalar(pose.scale);
   for (const { material, color, envMapIntensity, emissive, emissiveIntensity } of materials) {
-    if (material.transparent !== pose.isAnimatingOpacity) {
-      material.transparent = pose.isAnimatingOpacity;
+    if (material.transparent !== transparent) {
+      material.transparent = transparent;
       material.needsUpdate = true;
     }
-    material.depthWrite = !pose.isAnimatingOpacity;
-    const opacity = pose.isAnimatingOpacity ? pose.opacity : 1;
+    material.depthWrite = !transparent;
+    const opacity = transparent ? pose.opacity : 1;
     if (material.opacity !== opacity) material.opacity = opacity;
     if (highlight === 'dimmed') {
       const { h, s, l } = color.getHSL(HSL_SCRATCH);
@@ -847,9 +869,9 @@ function applyMeshPose(
     }
   }
   if (edgeMaterial !== undefined) {
-    const { color, opacity } = EDGE_HIGHLIGHTS[highlight];
+    const { color, opacity } = pose.isShellXRay ? SHELL_XRAY_EDGE : EDGE_HIGHLIGHTS[highlight];
     edgeMaterial.color.set(color);
-    edgeMaterial.opacity = opacity * pose.opacity;
+    edgeMaterial.opacity = pose.isShellXRay ? opacity : opacity * pose.opacity;
   }
 }
 
@@ -893,6 +915,7 @@ export function AssemblyScene({
   onSetExplodeFactor,
   onToggleExplodePreset,
   onCycleWiringVisibility,
+  onCycleShellVisibility,
   onFocusComponent,
   onSelectComponent,
   onExitPartFocus,
@@ -933,6 +956,15 @@ export function AssemblyScene({
     () => assembly.nodes.some(({ category }) => category === 'wiring'),
     [assembly.nodes],
   );
+  const shellNodeIds = useMemo(
+    () => new Set(assembly.nodes.filter(isShellNode).map(({ id }) => id)),
+    [assembly.nodes],
+  );
+  const hasShell = shellNodeIds.size > 0;
+  const skipComponentIds =
+    state.shellVisibility === 'xray' && state.isolatedComponentId === null
+      ? shellNodeIds
+      : undefined;
   const focusedId = state.viewMode.kind === 'part_focus' ? state.viewMode.componentId : null;
   const activeCircuitId = focusedId ?? hoveredComponentId;
   const circuitHighlightIds = useMemo(() => {
@@ -950,6 +982,7 @@ export function AssemblyScene({
     assembly,
     glbArrayBuffer,
     state,
+    hasShell,
     leafPartIds,
     focusedNode,
     calloutNode,
@@ -1005,6 +1038,7 @@ export function AssemblyScene({
       assembly,
       glbArrayBuffer,
       state,
+      hasShell,
       leafPartIds,
       focusedNode,
       calloutNode,
@@ -1029,7 +1063,13 @@ export function AssemblyScene({
       }
       dragRef.current = null;
     }
-    if (modelChanged || focusedId !== null || state.selectedComponentId !== null) {
+    const shellVisibilityChanged = previous.state.shellVisibility !== state.shellVisibility;
+    if (
+      modelChanged ||
+      shellVisibilityChanged ||
+      focusedId !== null ||
+      state.selectedComponentId !== null
+    ) {
       updateHoveredComponent(null);
     }
     const circuitChanged = targetsRef.current.circuitHighlightIds !== circuitHighlightIds;
@@ -1041,6 +1081,7 @@ export function AssemblyScene({
       focusedComponentId: focusedId,
       separatedOffsets: state.separatedOffsets,
       wiringVisibility: state.wiringVisibility,
+      shellVisibility: state.shellVisibility,
       circuitHighlightIds,
     };
 
@@ -1051,6 +1092,7 @@ export function AssemblyScene({
       previous.state.explodeFactor !== state.explodeFactor ||
       previous.state.activeExplodeStage !== state.activeExplodeStage ||
       previous.state.wiringVisibility !== state.wiringVisibility ||
+      shellVisibilityChanged ||
       previous.state.selectedComponentId !== state.selectedComponentId ||
       previous.state.viewMode !== state.viewMode ||
       previous.state.isolatedComponentId !== state.isolatedComponentId ||
@@ -1245,7 +1287,7 @@ export function AssemblyScene({
       frameId = null;
       const dtSec = lastFrameTime === null ? 0 : (now - lastFrameTime) / 1000;
       lastFrameTime = now;
-      const { assembly, state, leafPartIds, focusedNode, calloutNode, learningState } =
+      const { assembly, state, hasShell, leafPartIds, focusedNode, calloutNode, learningState } =
         propsRef.current;
       const targets = targetsRef.current;
       const circuitHighlightIds = targets.circuitHighlightIds ?? EMPTY_CIRCUIT_IDS;
@@ -1420,6 +1462,8 @@ export function AssemblyScene({
         explodeFactor: targets.explodeFactor,
         activeExplodeStage: targets.activeExplodeStage,
         wiringVisibility: state.wiringVisibility,
+        hasShell,
+        shellVisibility: state.shellVisibility,
         circuitHighlightIds: [...circuitHighlightIds],
         camera: targets.camera,
         separatedOffsets: targets.separatedOffsets,
@@ -1603,7 +1647,7 @@ export function AssemblyScene({
         state.viewMode.kind === 'overview' &&
         state.selectedComponentId === null
       ) {
-        updateHoveredComponent(pickComponent(runtimeRef.current, event));
+        updateHoveredComponent(pickComponent(runtimeRef.current, event, skipComponentIds));
       }
       return;
     }
@@ -1634,7 +1678,7 @@ export function AssemblyScene({
   function handlePointerUp(event: PointerEvent<HTMLDivElement>) {
     const drag = finishPointerDrag(event);
     if (drag === null || drag.moved) return;
-    const componentId = pickComponent(runtimeRef.current, event);
+    const componentId = pickComponent(runtimeRef.current, event, skipComponentIds);
     if (componentId === null) return;
 
     if (wheelCommitRef.current !== null) {
@@ -1649,8 +1693,13 @@ export function AssemblyScene({
   const supportsExplode = assembly.nodes.some((node) => node.explodeDistanceMeters > 0);
   const explodePercent = Math.round(state.explodeFactor * 100);
   const wiringLabels = WIRING_HUD_LABELS[state.wiringVisibility];
-  const sliderStyle: CSSProperties & { readonly '--explode-progress': string } = {
+  const shellLabels = SHELL_HUD_LABELS[state.shellVisibility];
+  const sliderStyle: CSSProperties & {
+    readonly '--explode-progress': string;
+    readonly '--peel-stage': string;
+  } = {
     '--explode-progress': `${state.explodeFactor * 100}%`,
+    '--peel-stage': `${SHELL_PEEL_END_EXPLODE_FACTOR * 100}%`,
   };
 
   return (
@@ -1857,6 +1906,7 @@ export function AssemblyScene({
           disabled={!supportsExplode}
           aria-valuetext={`${explodePercent}%`}
           className={classes.explodeSlider}
+          data-peel-staged={hasShell ? 'true' : undefined}
           style={sliderStyle}
           value={state.explodeFactor}
           onChange={(event) => changeExplodeFactor(event.currentTarget.valueAsNumber)}
@@ -1872,6 +1922,18 @@ export function AssemblyScene({
             onClick={onCycleWiringVisibility}>
             <HudIcon kind="wiring" />
             {wiringLabels.text}
+          </button>
+        ) : null}
+        {hasShell ? (
+          <button
+            type="button"
+            className={classes.shellButton}
+            aria-label={shellLabels.label}
+            aria-pressed={state.shellVisibility === 'xray'}
+            data-shell-mode={state.shellVisibility}
+            onClick={onCycleShellVisibility}>
+            <HudIcon kind="shell" />
+            {shellLabels.text}
           </button>
         ) : null}
         <button

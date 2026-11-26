@@ -406,6 +406,58 @@ describe('wiring visibility', () => {
   });
 });
 
+describe('shell visibility', () => {
+  const assembly = getCatalogArchetypeById('reachy_mini_v1');
+  const loadAssembly = {
+    type: 'loadAssemblySuccess',
+    promptId: 1,
+    assembly,
+    glbArrayBuffer: new ArrayBuffer(0),
+  };
+
+  it('cycles through solid, x-ray, and hidden', () => {
+    let state = INITIAL_ASSEMBLY_EXPLORER_STATE;
+    assert.equal(state.shellVisibility, 'solid');
+    for (const mode of ['xray', 'hidden', 'solid']) {
+      state = reduceAssemblyExplorerState(state, { type: 'cycleShellVisibility' });
+      assert.equal(state.shellVisibility, mode);
+    }
+  });
+
+  it('sets a mode directly and resets to solid when an assembly loads', () => {
+    const state = reduceAssemblyExplorerState(INITIAL_ASSEMBLY_EXPLORER_STATE, {
+      type: 'setShellVisibility',
+      mode: 'hidden',
+    });
+    assert.equal(state.shellVisibility, 'hidden');
+    assert.equal(reduceAssemblyExplorerState(state, loadAssembly).shellVisibility, 'solid');
+  });
+
+  it('focuses a connected internal part in place with x-ray or hidden shells', () => {
+    const overview = reduceAssemblyExplorerState(INITIAL_ASSEMBLY_EXPLORER_STATE, loadAssembly);
+    const part = assembly.nodes.find(({ id }) => id === 'comp_reachy_main_plate');
+    for (const [mode, expectedFactor] of [
+      ['solid', 0.65],
+      ['xray', 0],
+      ['hidden', 0],
+    ]) {
+      const state = reduceAssemblyExplorerState(overview, { type: 'setShellVisibility', mode });
+      const focused = reduceAssemblyExplorerState(state, {
+        type: 'focusComponent',
+        componentId: part.id,
+      });
+      assert.equal(focused.explodeFactor, expectedFactor);
+      assert.equal(focused.isolatedComponentId, part.id);
+      assert.equal(focused.viewMode.componentId, part.id);
+      if (expectedFactor === 0) {
+        assert.deepEqual(focused.camera.targetMeters, part.restPositionMeters);
+      } else {
+        assert.notDeepEqual(focused.camera.targetMeters, part.restPositionMeters);
+      }
+    }
+  });
+});
+
 describe('electrical circuits', () => {
   const cases = [
     [

@@ -244,6 +244,7 @@ export function AssemblyExplorerView({
         }
         onToggleExplodePreset={() => dispatch({ type: 'toggleExplodePreset' })}
         onCycleWiringVisibility={() => dispatch({ type: 'cycleWiringVisibility' })}
+        onCycleShellVisibility={() => dispatch({ type: 'cycleShellVisibility' })}
         onFocusComponent={(componentId) => dispatch({ type: 'focusComponent', componentId })}
         onExitPartFocus={exitPartFocus}
         onSetExplodeStage={(stage: ExplodeStageFilter) =>

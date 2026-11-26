@@ -989,6 +989,7 @@ def run_cad_pipeline(
                 "materialHint": node_spec["materialHint"],
                 "specifications": node_spec["specifications"],
                 **({"ports": node_spec["ports"]} if "ports" in node_spec else {}),
+                **({"enclosureRole": node_spec["enclosureRole"]} if "enclosureRole" in node_spec else {}),
                 **({"geometry": node_spec["geometry"]} if "geometry" in node_spec else {}),
                 "provenance": {
                     "origin": node_spec["origin"],
