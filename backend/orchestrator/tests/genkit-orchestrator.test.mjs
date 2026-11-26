@@ -127,6 +127,9 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
     assert.equal(assembly.validation.interferenceCount, 0);
     assert.equal(assembly.nodes.length, 21);
     assert.equal(assembly.assemblySteps.length, 4);
+    const computeBay = assembly.nodes.find(({ id }) => id === 'comp_rover_compute_bay');
+    assert.equal(computeBay.enclosureRole, 'shell');
+    assert.equal(computeBay.explodeDistanceMeters, 0.075);
     assertReusesAvailableExports(assembly);
   });
 
@@ -144,6 +147,12 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
     assert.equal(assembly.validation.interferenceCount, 0);
     assert.equal(assembly.nodes.length, 98);
     assert.equal(assembly.assemblySteps.length, 51);
+    const topShell = assembly.nodes.find(({ id }) => id === 'comp_reachy_top_shell');
+    assert.equal(topShell.enclosureRole, 'shell');
+    assert.deepEqual(topShell.explodeDirection, [0.921954, 0.140297, -0.360765]);
+    assert.equal(topShell.explodeDistanceMeters, 0.165);
+    const mainPlate = assembly.nodes.find(({ id }) => id === 'comp_reachy_main_plate');
+    assert.equal(Object.hasOwn(mainPlate, 'enclosureRole'), false);
     assertReusesAvailableExports(assembly);
   });
 
