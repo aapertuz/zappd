@@ -227,12 +227,18 @@ def test_cli_rejects_inject_collision_test_into_canonical_exports(monkeypatch: p
     repo_root = Path(__file__).resolve().parents[3]
     canonical_export = repo_root / "backend" / "data" / "exports" / "poppy_humanoid_v1"
     canonical_public = repo_root / "public" / "assemblies" / "poppy_humanoid_v1"
+    upper_export = repo_root / "backend" / "data" / "EXPORTS" / "poppy_humanoid_v1"
+    upper_public = repo_root / "public" / "ASSEMBLIES" / "poppy_humanoid_v1"
     for argv in (
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test"],
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(canonical_export)],
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(canonical_public)],
+        ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(upper_export)],
+        ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(upper_public)],
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(tmp_path), "--json-out", str(canonical_export / "pipeline_result.json")],
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(tmp_path), "--json-out", str(canonical_public / "pipeline_result.json")],
+        ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(tmp_path), "--json-out", str(upper_export / "pipeline_result.json")],
+        ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(tmp_path), "--json-out", str(upper_public / "pipeline_result.json")],
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(tmp_path), "--public-dir", str(tmp_path / "pub")],
         ["cli.py", "--all-archetypes", "--inject-collision-test", "--output-dir", str(tmp_path)],
     ):

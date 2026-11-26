@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import sys
 from pathlib import Path
@@ -10,6 +11,17 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from catalog_specs import CATALOG_SPECS, resolve_catalog_spec
 from geometry_pipeline import run_cad_pipeline
+
+
+def _is_within_forbidden_root(path_arg: Path, forbidden_roots: tuple[Path, ...]) -> bool:
+    for candidate in (path_arg.resolve(), path_arg.absolute()):
+        for ancestor in (candidate, *candidate.parents):
+            for root in forbidden_roots:
+                if ancestor == root or str(ancestor).casefold() == str(root).casefold():
+                    return True
+                if ancestor.exists() and root.exists() and os.path.samefile(ancestor, root):
+                    return True
+    return False
 
 
 def main() -> int:
@@ -44,11 +56,7 @@ def main() -> int:
         if args.json_out:
             checked_paths.append(Path(args.json_out))
         for path_arg in checked_paths:
-            if any(
-                candidate == root or root in candidate.parents
-                for candidate in (path_arg.resolve(), path_arg.absolute())
-                for root in forbidden_roots
-            ):
+            if _is_within_forbidden_root(path_arg, forbidden_roots):
                 parser.error(
                     "--inject-collision-test paths must be outside canonical exports and public assemblies"
                 )
