@@ -8,7 +8,8 @@ Install the backend dependencies once:
 
 ```bash
 python3.11 -m venv backend/.venv
-uv pip install --python backend/.venv/bin/python -r backend/requirements.txt
+uv pip install --python backend/.venv/bin/python \
+  cadquery-ocp==7.8.1.1.post1 numpy==2.4.6 pygltflib==1.16.5 pytest==9.0.2
 ```
 
 Import the supplied source archive and produce the app assets:
