@@ -27,11 +27,11 @@ remain inspection approximations; they do not establish manufacturing tolerances
 or dimensionally certified production geometry. Successful topology and
 mesh mapping checks establish inspection availability, not manufacturing validity.
 Source-placement volumetric interference analysis is reported separately in
-`interference.json` (199 solids, 595 candidate pairs, 102 measured intersections,
-0 unresolved pairs) with explicit exclusions for open surfaces and rejected CAD.
-It cannot establish engineering verification.
-Open surface bodies are never treated as solids for volumetric checks.
-No assembly instructions or connection claims are inferred. Deterministic
+`interference.json`. The current report has 235 solids, 801 candidate pairs,
+102 intersections between original source parts, and zero unresolved pairs.
+All 206 candidate pairs involving an added PCB or cable have zero measured overlap.
+Open surface bodies are excluded from volumetric checks.
+The catalog has no mechanical assembly instructions. Deterministic
 inspection explode offsets are computed from source component centers for
 visualization; selection, camera controls, hierarchy navigation, part focus,
 and inspection explode/reset work through the existing renderer.
@@ -39,6 +39,7 @@ and inspection explode/reset work through the existing renderer.
 Reproduce source extraction and generate the real normalized assets:
 
 ```sh
+backend/.venv/bin/python backend/cad_worker/build_cots_library.py
 backend/.venv/bin/python backend/cad_worker/ingest_upstream_catalog.py --poppy
 backend/.venv/bin/python backend/cad_worker/cli.py --archetype poppy_humanoid_v1 --public-dir public/assemblies
 ```
@@ -46,6 +47,46 @@ backend/.venv/bin/python backend/cad_worker/cli.py --archetype poppy_humanoid_v1
 The importer writes source metadata directly into `src/shared/domain/catalog/assemblies/poppy_humanoid_v1.json`, which both the TypeScript app and Python CAD worker load. Generated
 binary files follow the repository's existing ignored cache/export conventions.
 The source URL, SHA-256, occurrence path, attribution, and license are preserved.
+
+## Electronics and reference wiring
+
+The inspection overlay adds connector datums to the pinned Odroid XU4, two
+SMPS2Dynamixel injectors, lower Bioloid 3P hub, camera connector, Razor IMU,
+and 25 Dynamixel motors. Motor names, IDs, and controller membership follow
+the upstream configuration. [Poppy motor configuration](https://github.com/poppy-project/poppy-humanoid/blob/master/software/poppy_humanoid/configuration/poppy_humanoid.json)
+
+Poppy has two isolated TTL buses. Each has a USB2AX, a 3P hub, and a 12 V injector.
+The head computer and peripherals reflect the pinned 1.0.2 STEP.
+[Bill of materials](https://github.com/poppy-project/poppy-docs/blob/master/en/assembly-guides/poppy-humanoid/bom.md),
+[wiring guide](https://github.com/poppy-project/poppy-docs/blob/master/en/assembly-guides/poppy-humanoid/wiring_arrangement.md),
+[archived XU4 head guide](https://github.com/poppy-project/Poppy-minimal-head-design/blob/odroid-xu4-integration/doc/head_back_xu4.md)
+
+Two USB2AX reference boards and one upper 3P hub add the missing PCB geometry.
+The USB2AX reference uses the repository's USB-C and JST-PH KiCad models.
+KiCad checks the layouts and exports their colored STEP fixtures. The modeled
+ports, branch order, and paths are inspection datums. Connector mating, pinouts,
+cable lengths, and production PCB routing remain unverified.
+
+The upper bus has 18 cable segments for the head, torso, and arms. The lower
+bus has 13 for the pelvis and legs. Two additional cables link the head
+computer to the camera and IMU. The USB2AX-to-hub leads carry data and ground.
+Each injector supplies only its own bus. Cable endpoints come from the typed
+ports in `poppy_humanoid_electronics.json`. The worker sweeps colored solid
+conductors and preserves cable and board identities in STEP, GLB, and USDZ.
+
+To regenerate the overlay and refresh the exact OpenCascade check:
+
+```sh
+backend/.venv/bin/python backend/cad_worker/poppy_electronics.py --verify-clear
+```
+
+The check rebuilds the candidate set from placed STEP fixtures and measures
+every candidate involving an added PCB or cable. It can reuse prior
+source-to-source results when both fixture digests and placements match.
+The USB2AX boards clear the head shell and Odroid XU4 by at least 2.5 mm.
+The upper hub clears the chest and its SMPS2Dynamixel by at least 2.5 mm.
+The front shell remains visual only. Manufacturing readiness, materials,
+tolerances, loads, and assembly constraints remain unverified.
 
 ## Import
 

@@ -33,6 +33,12 @@ registerHooks({
     }
     return nextResolve(specifier, context);
   },
+  load(url, context, nextLoad) {
+    if (url.startsWith(pathToFileURL(repoRoot + path.sep).href) && url.endsWith('.ts')) {
+      return nextLoad(url, { ...context, format: 'module-typescript' });
+    }
+    return nextLoad(url, context);
+  },
 });
 
 const { getCatalogArchetypeById } = await import('../../../src/shared/domain/index.ts');
@@ -291,6 +297,13 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
   it('rejects shifted or collision-injected Poppy outputs through the orchestrator before saving or publishing', async () => {
     const poppy = getCatalogArchetypeById('poppy_humanoid_v1');
     assert.ok(poppy);
+    const evidenceDir = path.join(repoRoot, 'backend', 'cad_worker', 'tests', 'evidence');
+    const sourceInterferenceReport = JSON.parse(
+      fs.readFileSync(path.join(evidenceDir, 'poppy-interference.json'), 'utf8'),
+    );
+    const headExport = JSON.parse(
+      fs.readFileSync(path.join(evidenceDir, 'poppy-head-visual-export.json'), 'utf8'),
+    );
     const originalCwd = process.cwd();
     const isolatedCwd = fs.mkdtempSync(path.join(os.tmpdir(), 'zappd-poppy-orch-'));
 
@@ -327,7 +340,8 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
         explodeDistanceMeters: node.explodeDistanceMeters,
         materialHint: node.materialHint,
         specifications: node.specifications,
-        geometry: node.geometry,
+        ports: node.ports,
+        geometry: node.name === 'head_face' ? headExport.geometry : node.geometry,
         provenance: {
           origin: node.origin,
           verificationStatus: 'unverified',
@@ -381,25 +395,13 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
         validation: {
           valid: false,
           brepValid: true,
-          interferenceCount: 0,
+          interferenceCount: sourceInterferenceReport.intersectionCount,
           maxDimensionalErrorMm: 0.05,
           nodeMappingComplete: true,
           unitSystem: 'meters_y_up',
           checkedAtIso: '2026-11-25T00:00:00.000Z',
           failures: ['Partial source inspection'],
-          sourceInterferenceReport: {
-            status: 'partial',
-            solidCount: 199,
-            possiblePairCount: 19701,
-            candidatePairCount: 0,
-            intersectionCount: 0,
-            unresolvedPairCount: 0,
-            volumeThresholdMm3: 0.001,
-            aabbToleranceMm: 1e-7,
-            excludedComponents: [],
-            pairs: [],
-            limitations: [],
-          },
+          sourceInterferenceReport,
           engineeringReport: {
             status: 'unverified',
             manufacturingReadiness: 'not_established',
@@ -412,8 +414,8 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
               meaning: 'CAD to render bounds comparison',
             },
             nodeMappingComplete: true,
-            rejectedCadComponentIds: [],
-            surfaceComponentIds: [],
+            rejectedCadComponentIds: headExport.validation.rejectedCadComponentIds,
+            surfaceComponentIds: headExport.validation.surfaceComponentIds,
           },
         },
       };
@@ -505,6 +507,15 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
         repository: canonicalRepo,
       });
       assert.equal(persisted.archetypeId, 'poppy_humanoid_v1');
+      assert.equal(persisted.verificationStatus, 'unverified');
+      assert.deepEqual(persisted.assemblySteps, []);
+      assert.equal(persisted.validation.sourceInterferenceReport.solidCount, 235);
+      assert.equal(
+        persisted.nodes.find(({ name }) => name === 'head_face').geometry.kind,
+        'visual_only',
+      );
+      assert.equal(persisted.nodes.filter(({ ports }) => ports?.length > 0).length, 34);
+      assert.deepEqual(persisted.relationships, poppy.relationships);
       assert.equal(canonicalRepo.listCollection('projects').length, 1);
       assert.equal(fs.existsSync(path.join(publicDir, 'pipeline_result.json')), true);
     } finally {

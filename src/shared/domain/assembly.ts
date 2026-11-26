@@ -749,13 +749,16 @@ export function canInspectSourceAssembly(assembly: {
     assembly.validation.engineeringReport !== undefined &&
     assembly.nodes.some((node) => node.geometry?.kind === 'available') &&
     assembly.nodes.every(
-      (node) =>
-        node.geometry !== undefined &&
-        node.provenance.verificationStatus === 'unverified' &&
-        node.provenance.origin === 'open_step_catalog' &&
-        node.provenance.sourceUrl.startsWith('https://') &&
-        isAssetChecksum(node.specifications.sourceSha256) &&
-        isAssetChecksum(node.provenance.stepSha256),
+      ({ geometry, provenance, specifications }) =>
+        geometry !== undefined &&
+        provenance.verificationStatus === 'unverified' &&
+        isGeometryOrigin(provenance.origin) &&
+        GEOMETRY_ORIGIN_POLICY[provenance.origin].allowedUriPrefixes.some((prefix) =>
+          provenance.sourceUrl.startsWith(prefix),
+        ) &&
+        provenance.spdxLicense.trim().length > 0 &&
+        isAssetChecksum(provenance.stepSha256) &&
+        (provenance.origin !== 'open_step_catalog' || isAssetChecksum(specifications.sourceSha256)),
     )
   );
 }

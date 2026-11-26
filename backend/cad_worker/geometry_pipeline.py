@@ -791,6 +791,7 @@ def run_cad_pipeline(
 
     resolved_by_id: dict[str, dict[str, Any]] = {}
     placed_solids: dict[str, Any] = {}
+    styled_steps: dict[str, tuple[Path, tuple[float, float, float]]] = {}
     geometry_by_id: dict[str, MeshGeometry] = {
         cid: _mesh_geometry_from_visual(geometry)
         for cid, geometry in (visual_geometry_by_id or {}).items()
@@ -874,6 +875,8 @@ def run_cad_pipeline(
                 failures.append(
                     f"Component {cid} declared solid contains open surface geometry outside CAD solids"
                 )
+        if node_spec["origin"] == "kicad_pcb_step" and cid in placed_solids:
+            styled_steps[cid] = resolved["stepPath"], cad_offset_mm
         builder.Add(compound, placed_shape)
 
         geometry = tessellate_step_geometry(shape, resolved["stepPath"], node_spec["origin"])
@@ -921,7 +924,7 @@ def run_cad_pipeline(
         write_colored_step(step_out, [
             (cid, shape, resolved_by_id[cid].get("conductorColors", ()))
             for cid, shape in placed_solids.items()
-        ])
+        ], styled_steps=styled_steps)
     else:
         step_writer = STEPControl_Writer()
         step_writer.Transfer(compound, STEPControl_AsIs)

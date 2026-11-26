@@ -5,7 +5,7 @@ import json
 import math
 import re
 import subprocess
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from urllib.error import HTTPError
@@ -171,6 +171,7 @@ class Board:
     mounting_pitch: tuple[float, float] | None = None
     mounting_diameter: float = 2.5
     rotation_x_degrees: float = 0
+    include_soldermask: bool = True
 
 
 def usb_port(label: str) -> Port:
@@ -243,6 +244,30 @@ BOARDS = (
             Footprint("J5", 4, -19, JST_PH, servo_port(2)),
             Footprint("C1", -23, 13, CAPACITOR),
         ),
+    ),
+    Board(
+        "kicad_poppy_usb2ax", "USB2AX v3.2a TTL interface reference", 15, 30,
+        (
+            Footprint("J1", 0, 11.3, USB_C, usb_port("USB data")),
+            Footprint("U1", 0, -1, SOIC),
+            Footprint("J2", -2, -11, JST_PH, replace(servo_port(1), id="dxl_ttl", label="Dynamixel TTL")),
+        ),
+        rotation_x_degrees=-90,
+        include_soldermask=False,
+    ),
+    Board(
+        "kicad_poppy_upper_3p_hub", "Poppy upper Bioloid 3P hub reference", 48, 16,
+        tuple(
+            Footprint(
+                f"J{index}", x, y, JST_PH,
+                replace(servo_port(index), id=f"hub_{index}", label=f"Dynamixel hub port {index}"),
+            )
+            for index, (x, y) in enumerate(
+                ((-17, -4), (0, -4), (-17, 4), (0, 4), (17, -4), (17, 4)), 1
+            )
+        ),
+        rotation_x_degrees=-90,
+        include_soldermask=False,
     ),
 )
 
@@ -508,9 +533,10 @@ def build_board(board: Board, libraries: dict[Model, str], work: Path) -> dict:
     print(f"{board.id}: KiCad DRC exit 0, 0 errors", flush=True)
 
     raw = work / f"{board.id}.step"
+    soldermask = ("--include-soldermask",) if board.include_soldermask else ()
     subprocess.run(
         (*KICAD, "pcb", "export", "step", "--subst-models", "--include-pads", "--include-tracks",
-         "--include-soldermask", "--user-origin", f"{BOARD_ORIGIN_MM}x{BOARD_ORIGIN_MM}mm",
+         *soldermask, "--user-origin", f"{BOARD_ORIGIN_MM}x{BOARD_ORIGIN_MM}mm",
          "--define-var", f"ZAPPD_KICAD_MODELS={REPO_COTS_LIBRARY_DIR / 'kicad_3d'}",
          "--output", str(raw), str(path)),
         check=True,

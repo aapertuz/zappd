@@ -21,17 +21,27 @@ def test_exact_overlap_contact_and_separation(offset, status, volume):
 
 def test_failed_boolean_is_never_clear(monkeypatch):
     class FailedCommon:
-        def __init__(self, *args):
+        def SetArguments(self, arguments):
+            pass
+
+        def SetTools(self, tools):
+            pass
+
+        def SetUseOBB(self, enabled):
+            pass
+
+        def Build(self):
             pass
 
         def IsDone(self):
             return False
 
     monkeypatch.setattr(poppy_interference, 'BRepAlgoAPI_Common', FailedCommon)
-    result = poppy_interference.exact_pair(None, None, ['a', 'b'], 0.001)
+    shape = BRepPrimAPI_MakeBox(1, 1, 1).Shape()
+    result = poppy_interference.exact_pair(shape, shape, ['a', 'b'], 0.001)
     assert result['status'] == 'failed'
     assert result['volumeMm3'] is None
-    assert result['error']
+    assert result['error'] == 'OCCT common did not complete'
 
 
 def test_broad_phase_keeps_surface_and_rejected_cad_exclusions_explicit(monkeypatch, tmp_path):
