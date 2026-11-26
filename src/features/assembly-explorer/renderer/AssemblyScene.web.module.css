@@ -60,6 +60,7 @@
 
 .explodeButton,
 .wiringButton,
+.shellButton,
 .zoomButton,
 .backButton {
   display: inline-flex;
@@ -79,6 +80,7 @@
 
 .explodeButton,
 .wiringButton,
+.shellButton,
 .zoomButton {
   border: 1px solid transparent;
   border-radius: 999px;
@@ -93,17 +95,20 @@
   font-variant-numeric: tabular-nums;
 }
 
-.wiringButton {
+.wiringButton,
+.shellButton {
   min-width: 96px;
   padding: 0 8px;
 }
 
-.wiringButton[data-wiring-mode='hide'] {
+.wiringButton[data-wiring-mode='hide'],
+.shellButton[data-shell-mode='hidden'] {
   color: var(--hud-muted);
 }
 
 .explodeButton[aria-pressed='true'],
-.wiringButton[aria-pressed='true'] {
+.wiringButton[aria-pressed='true'],
+.shellButton[aria-pressed='true'] {
   color: #fde68a;
   background: rgba(245, 196, 81, 0.12);
   border-color: rgba(245, 196, 81, 0.3);
@@ -125,6 +130,7 @@
 
 .explodeButton:hover,
 .wiringButton:hover,
+.shellButton:hover,
 .zoomButton:hover,
 .backButton:hover {
   background-color: rgba(245, 196, 81, 0.15);
@@ -134,6 +140,7 @@
 
 .explodeButton:focus-visible,
 .wiringButton:focus-visible,
+.shellButton:focus-visible,
 .zoomButton:focus-visible,
 .backButton:focus-visible,
 .explodeSlider:focus-visible {
@@ -162,6 +169,12 @@
 }
 
 .explodeSlider {
+  --explode-track-fill: linear-gradient(
+    to right,
+    var(--hud-accent) 0 var(--explode-progress),
+    #342e24 var(--explode-progress) 100%
+  );
+  --peel-stage-tick: none;
   width: 104px;
   min-width: 28px;
   height: 28px;
@@ -175,25 +188,22 @@
   cursor: pointer;
 }
 
+.explodeSlider[data-peel-staged='true'] {
+  --peel-stage-tick: linear-gradient(#e6dfd1, #e6dfd1) calc(var(--peel-stage) + 1.4px) center / 1px
+    100% no-repeat;
+}
+
 .explodeSlider::-webkit-slider-runnable-track {
   height: 3px;
   border-radius: 999px;
-  background: linear-gradient(
-    to right,
-    var(--hud-accent) 0 var(--explode-progress),
-    #342e24 var(--explode-progress) 100%
-  );
+  background: var(--peel-stage-tick), var(--explode-track-fill);
   box-shadow: 0 0 7px rgba(245, 196, 81, 0.22);
 }
 
 .explodeSlider::-moz-range-track {
   height: 3px;
   border-radius: 999px;
-  background: linear-gradient(
-    to right,
-    var(--hud-accent) 0 var(--explode-progress),
-    #342e24 var(--explode-progress) 100%
-  );
+  background: var(--peel-stage-tick), var(--explode-track-fill);
   box-shadow: 0 0 7px rgba(245, 196, 81, 0.22);
 }
 
@@ -325,6 +335,28 @@
     gap: 4px;
     padding: 0 5px;
   }
+
+  .hudBar:has(.shellButton) {
+    gap: 2px;
+  }
+
+  .hudBar:has(.shellButton) .explodeButton,
+  .hudBar:has(.shellButton) .wiringButton,
+  .shellButton {
+    min-width: 0;
+    gap: 4px;
+    padding: 0 5px;
+    font-size: 11px;
+  }
+
+  .hudBar:has(.shellButton) .hudDivider {
+    margin: 0;
+  }
+
+  .hudBar:has(.shellButton) .zoomButton {
+    flex-basis: 30px;
+    width: 30px;
+  }
 }
 
 @media (max-width: 360px) {
@@ -334,7 +366,9 @@
   }
 
   .hudBar:has(.wiringButton) .explodeButton .hudIcon,
-  .wiringButton .hudIcon {
+  .hudBar:has(.shellButton) .explodeButton .hudIcon,
+  .wiringButton .hudIcon,
+  .shellButton .hudIcon {
     display: none;
   }
 }
@@ -342,6 +376,7 @@
 @media (prefers-reduced-motion: reduce) {
   .explodeButton,
   .wiringButton,
+  .shellButton,
   .zoomButton,
   .backButton {
     transition: none;
