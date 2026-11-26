@@ -231,6 +231,11 @@ def test_cli_rejects_inject_collision_test_into_canonical_exports(monkeypatch: p
     upper_public = repo_root / "public" / "ASSEMBLIES" / "poppy_humanoid_v1"
     link_to_export = tmp_path / "export_alias"
     link_to_export.symlink_to(canonical_export.parent)
+    scratch_with_linked_file = tmp_path / "scratch_with_linked_report"
+    scratch_with_linked_file.mkdir()
+    (scratch_with_linked_file / "pipeline_result.json").symlink_to(
+        canonical_export / "pipeline_result.json"
+    )
     cases = [
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test"],
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(canonical_export)],
@@ -238,6 +243,7 @@ def test_cli_rejects_inject_collision_test_into_canonical_exports(monkeypatch: p
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(upper_export)],
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(upper_public)],
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(link_to_export / "poppy_humanoid_v1")],
+        ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(scratch_with_linked_file)],
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(tmp_path), "--json-out", str(canonical_export / "pipeline_result.json")],
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(tmp_path), "--json-out", str(canonical_public / "pipeline_result.json")],
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(tmp_path), "--json-out", str(upper_export / "pipeline_result.json")],

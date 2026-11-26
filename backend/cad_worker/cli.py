@@ -59,7 +59,22 @@ def main() -> int:
         if not args.output_dir:
             parser.error("--inject-collision-test requires an explicit --output-dir outside canonical exports")
         forbidden_roots = _collect_forbidden_roots(repo_root)
-        checked_paths = [Path(args.output_dir)]
+        out_path = Path(args.output_dir)
+        checked_paths = [
+            out_path,
+            *(
+                out_path / filename
+                for filename in (
+                    "model.glb",
+                    "model.step",
+                    "model.usdz",
+                    "manifest.json",
+                    "pipeline_result.json",
+                    "interference.json",
+                    "engineering.json",
+                )
+            ),
+        ]
         if args.json_out:
             checked_paths.append(Path(args.json_out))
         for path_arg in checked_paths:
