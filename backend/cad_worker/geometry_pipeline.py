@@ -23,7 +23,7 @@ from OCP.BRepTools import BRepTools
 from OCP.GProp import GProp_GProps
 from OCP.IMeshTools import IMeshTools_Parameters
 from OCP.STEPControl import STEPControl_AsIs, STEPControl_Writer
-from OCP.TopAbs import TopAbs_FACE
+from OCP.TopAbs import TopAbs_FACE, TopAbs_SHELL, TopAbs_SOLID
 from OCP.TopExp import TopExp_Explorer
 from OCP.TopLoc import TopLoc_Location
 from OCP.TopoDS import TopoDS, TopoDS_Compound, TopoDS_Shape
@@ -61,6 +61,7 @@ from material_skins import (
     resolve_material_skin,
     srgb_hex_to_linear_rgba,
 )
+from trimmed_bounds import trimmed_shape_bounds_mm
 
 
 @dataclass(frozen=True)
@@ -242,6 +243,12 @@ def mesh_dimensional_error_mm(shape: TopoDS_Shape, vertices: np.ndarray) -> floa
     err_mm = float(max(np.max(min_err), np.max(max_err)))
     if err_mm <= 0.1:
         return err_mm
+    trimmed_lower, trimmed_upper = np.asarray(trimmed_shape_bounds_mm(shape))
+    min_err = np.abs(mesh_min - trimmed_lower)
+    max_err = np.abs(mesh_max - trimmed_upper)
+    err_mm = float(max(np.max(min_err), np.max(max_err)))
+    if err_mm <= 0.1:
+        return err_mm
     for axis in range(3):
         if min_err[axis] > 0.1:
             exact_min = _exact_axis_extent_mm(shape, axis, False, lower, upper)
@@ -250,6 +257,25 @@ def mesh_dimensional_error_mm(shape: TopoDS_Shape, vertices: np.ndarray) -> floa
             exact_max = _exact_axis_extent_mm(shape, axis, True, lower, upper)
             max_err[axis] = abs(float(mesh_max[axis]) - exact_max)
     return float(max(np.max(min_err), np.max(max_err)))
+
+
+def _mesh_geometry_from_visual(geometry: MeshGeometry | dict[str, Any]) -> MeshGeometry:
+    if isinstance(geometry, MeshGeometry):
+        return geometry
+    vertices = np.asarray(geometry["vertices"], dtype=np.float32)
+    normals = np.asarray(geometry["normals"], dtype=np.float32)
+    indices = np.asarray(geometry["indices"], dtype=np.uint32)
+    metric_uvs = geometry.get("metric_uvs")
+    if metric_uvs is None:
+        if len(vertices) == 0:
+            metric_uvs = np.empty((0, 2), dtype=np.float32)
+        else:
+            chart_axes = np.argmax(np.abs(normals), axis=1)
+            uv_columns = np.asarray(_UV_AXES)[chart_axes]
+            metric_uvs = np.take_along_axis(vertices, uv_columns, axis=1).astype(
+                np.float32, copy=False
+            )
+    return MeshGeometry(vertices, normals, indices, np.asarray(metric_uvs, dtype=np.float32))
 
 
 def tessellate_step_geometry(shape: Any, step_path: Path, origin: str) -> MeshGeometry:
@@ -755,6 +781,9 @@ def run_cad_pipeline(
     output_dir: Path,
     cache_dir: Path,
     inject_collision_test: bool = False,
+    check_interference: bool = True,
+    visual_geometry_by_id: dict[str, MeshGeometry | dict[str, Any]] | None = None,
+    allow_partial_geometry: bool = False,
 ) -> dict[str, Any]:
     archetype_id = archetype_spec["archetypeId"]
     nodes_spec = list(archetype_spec["nodes"])
@@ -762,7 +791,10 @@ def run_cad_pipeline(
 
     resolved_by_id: dict[str, dict[str, Any]] = {}
     placed_solids: dict[str, Any] = {}
-    geometry_by_id: dict[str, MeshGeometry] = {}
+    geometry_by_id: dict[str, MeshGeometry] = {
+        cid: _mesh_geometry_from_visual(geometry)
+        for cid, geometry in (visual_geometry_by_id or {}).items()
+    }
     max_dim_err_mm = 0.0
     brep_valid = True
 
@@ -791,6 +823,15 @@ def run_cad_pipeline(
         if provenance_failure is not None:
             failures.append(provenance_failure)
 
+        geometry_state = node_spec.get("geometry") or {}
+        geometry_kind = geometry_state.get("kind")
+        if geometry_kind in ("unavailable", "visual_only"):
+            failures.append(
+                f"Component {cid} has {geometry_kind} CAD geometry and cannot be verified"
+            )
+        elif node_spec["level"] in ("component", "subcomponent") and not resolved["hasGeometry"]:
+            failures.append(f"Component {cid} is missing CAD geometry")
+
         if not resolved["hasGeometry"]:
             continue
 
@@ -811,7 +852,28 @@ def run_cad_pipeline(
 
         cad_offset_mm = world_rest_to_cad_mm(rest_m)
         placed_shape = translate_shape_mm(shape, cad_offset_mm)
-        placed_solids[cid] = placed_shape
+        has_solid = TopExp_Explorer(shape, TopAbs_SOLID).More()
+        has_free_surface = (
+            TopExp_Explorer(shape, TopAbs_SHELL, TopAbs_SOLID).More()
+            or TopExp_Explorer(shape, TopAbs_FACE, TopAbs_SOLID).More()
+        )
+        declared_role = geometry_state.get("role")
+        if declared_role == "surface":
+            if has_solid:
+                failures.append(f"Component {cid} declared surface contains CAD solids")
+                placed_solids[cid] = placed_shape
+            else:
+                failures.append(
+                    f"Open surface component {cid} excluded from solid volumetric interference check"
+                )
+        elif not has_solid:
+            failures.append(f"Component {cid} has no CAD solid for volumetric interference check")
+        else:
+            placed_solids[cid] = placed_shape
+            if declared_role == "solid" and has_free_surface:
+                failures.append(
+                    f"Component {cid} declared solid contains open surface geometry outside CAD solids"
+                )
         builder.Add(compound, placed_shape)
 
         geometry = tessellate_step_geometry(shape, resolved["stepPath"], node_spec["origin"])
@@ -826,8 +888,10 @@ def run_cad_pipeline(
 
             geometry_by_id[cid] = geometry
     interference_count = 0
-    solid_ids = list(placed_solids.keys())
-    bounds_by_id = {cid: shape_bounds_mm(shape) for cid, shape in placed_solids.items()}
+    solid_ids = list(placed_solids.keys()) if check_interference else []
+    if not check_interference:
+        failures.append("Volumetric interference analysis not performed for source inspection")
+    bounds_by_id = {cid: shape_bounds_mm(placed_solids[cid]) for cid in solid_ids}
     for i in range(len(solid_ids)):
         for j in range(i + 1, len(solid_ids)):
             id_a = solid_ids[i]
@@ -877,7 +941,12 @@ def run_cad_pipeline(
     parsed_glb_ids, _ = parse_glb_diagnostics(glb_out)
     usda_text = parse_usdz_prim_paths(usdz_out)
 
-    expected_leaf_ids = [n["id"] for n in nodes_spec if n["level"] in ("component", "subcomponent")]
+    expected_leaf_ids = [
+        n["id"]
+        for n in nodes_spec
+        if n["level"] in ("component", "subcomponent")
+        and (not allow_partial_geometry or n.get("geometry", {}).get("kind") != "unavailable")
+    ]
     glb_mapping_ok = set(expected_leaf_ids) == set(parsed_glb_ids) == set(exported_glb_ids)
     usdz_mapping_ok = all(f'custom string componentId = "{cid}"' in usda_text for cid in expected_leaf_ids)
     node_mapping_complete = glb_mapping_ok and usdz_mapping_ok
@@ -921,6 +990,7 @@ def run_cad_pipeline(
                 "specifications": node_spec["specifications"],
                 **({"ports": node_spec["ports"]} if "ports" in node_spec else {}),
                 **({"enclosureRole": node_spec["enclosureRole"]} if "enclosureRole" in node_spec else {}),
+                **({"geometry": node_spec["geometry"]} if "geometry" in node_spec else {}),
                 "provenance": {
                     "origin": node_spec["origin"],
                     "verificationStatus": node_status,

@@ -8,15 +8,22 @@ import {
   type ComponentId,
   type ComponentRelationship,
   type GeometryOrigin,
+  type ValidationReport,
+  type VerificationStatus,
   assemblyInstructionStepSchema,
   assemblyNodeFieldsSchema,
+  canClassifyAsVerified,
+  canInspectSourceAssembly,
   componentRelationshipSchema,
+  hasVerifiedUpstreamProvenance,
   isAssetChecksum,
   isCatalogArchetypeId,
   isComponentId,
   isGeometryOrigin,
+  isVerifiedStatus,
 } from './assembly';
 import roverCatalog from './catalog/assemblies/open_source_rover_v1.json' with { type: 'json' };
+import poppyCatalog from './catalog/assemblies/poppy_humanoid_v1.json' with { type: 'json' };
 import quadcopterCatalog from './catalog/assemblies/quadcopter_drone_v1.json' with { type: 'json' };
 import reachyMiniCatalog from './catalog/assemblies/reachy_mini_v1.json' with { type: 'json' };
 import roboticArmCatalog from './catalog/assemblies/robotic_arm_3dof_v1.json' with { type: 'json' };
@@ -34,6 +41,7 @@ export type CatalogComponentBlueprint = Omit<
 };
 
 export type CatalogArchetypeDefinition = {
+  readonly semantics?: 'documented_assembly' | 'source_inspection';
   readonly archetypeId: CatalogArchetypeId;
   readonly title: string;
   readonly summary: string;
@@ -58,6 +66,7 @@ const catalogComponentSchema = z.strictObject({
 });
 
 const catalogArchetypeSchema = z.strictObject({
+  semantics: z.enum(['documented_assembly', 'source_inspection']).optional(),
   archetypeId: z.custom<CatalogArchetypeId>(isCatalogArchetypeId),
   title: nonEmptyString,
   summary: nonEmptyString,
@@ -78,12 +87,14 @@ export const QUADCOPTER_ARCHETYPE = parseCatalogArchetype(quadcopterCatalog);
 export const ROBOTIC_ARM_ARCHETYPE = parseCatalogArchetype(roboticArmCatalog);
 export const ROVER_ARCHETYPE = parseCatalogArchetype(roverCatalog);
 export const REACHY_MINI_ARCHETYPE = parseCatalogArchetype(reachyMiniCatalog);
+export const POPPY_ARCHETYPE = parseCatalogArchetype(poppyCatalog);
 
 export const CATALOG_ARCHETYPES: readonly CatalogArchetypeDefinition[] = [
   QUADCOPTER_ARCHETYPE,
   ROBOTIC_ARM_ARCHETYPE,
   ROVER_ARCHETYPE,
   REACHY_MINI_ARCHETYPE,
+  POPPY_ARCHETYPE,
 ];
 
 export function listCatalogArchetypes(): readonly CatalogArchetypeDefinition[] {
@@ -94,6 +105,25 @@ export function getCatalogArchetypeById(
   archetypeId: string,
 ): CatalogArchetypeDefinition | undefined {
   return CATALOG_ARCHETYPES.find((entry) => entry.archetypeId === archetypeId);
+}
+
+export function isAllowedProjectAssembly(assembly: {
+  readonly archetypeId: string;
+  readonly nodes: readonly AssemblyNode[];
+  readonly validation: ValidationReport;
+  readonly verificationStatus: VerificationStatus;
+}): boolean {
+  if (
+    isVerifiedStatus(assembly.verificationStatus) &&
+    canClassifyAsVerified(assembly.validation, assembly.verificationStatus) &&
+    hasVerifiedUpstreamProvenance(assembly.nodes, assembly.verificationStatus)
+  ) {
+    return true;
+  }
+  return (
+    getCatalogArchetypeById(assembly.archetypeId)?.semantics === 'source_inspection' &&
+    canInspectSourceAssembly(assembly)
+  );
 }
 
 export function matchProjectArchetypeFromPrompt(prompt: string): CatalogArchetypeDefinition {

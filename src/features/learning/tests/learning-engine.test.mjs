@@ -333,7 +333,9 @@ describe('component learning context', () => {
       /vehicle designed to explore terrain/i,
       /desktop companion robot/i,
     ];
-    for (const [index, archetype] of CATALOG_ARCHETYPES.entries()) {
+    for (const [index, archetype] of CATALOG_ARCHETYPES.filter(
+      (entry) => entry.semantics !== 'source_inspection',
+    ).entries()) {
       const project = verifiedAssembly(archetype, `proj_learning_overview_${index}`);
       const context = await createLearningContext(project);
       const explanation = formatOfflineLearningFallback(context, request);

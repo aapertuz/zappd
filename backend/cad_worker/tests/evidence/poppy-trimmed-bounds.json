@@ -1,0 +1,39 @@
+{
+  "toleranceMm": 0.1,
+  "beforeReference": "poppy-dimensions.json at 0.002 mm deflection, double precision",
+  "afterReference": "trimmed_bounds.py versus production 0.2 mm mesh with float32 coordinates",
+  "parts": [
+    {
+      "id": "poppy_1_10",
+      "beforeMm": 19.56086755,
+      "afterMm": 0.030717778460221723
+    },
+    {
+      "id": "poppy_1_11",
+      "beforeMm": 19.56086755,
+      "afterMm": 0.030698704977147884
+    },
+    {
+      "id": "poppy_1_21_2",
+      "beforeMm": 0.34999897,
+      "afterMm": 1.1824370638180426e-6
+    },
+    {
+      "id": "poppy_1_25_2",
+      "beforeMm": 0.34999897,
+      "afterMm": 1.1824370638180426e-6
+    },
+    {
+      "id": "poppy_1_28_7",
+      "beforeMm": 0.15180649,
+      "afterMm": 0.001301689795049299
+    }
+  ],
+  "completeCatalog": {
+    "availableGeometryCount": 201,
+    "maxDimensionalErrorMm": 0.0563,
+    "dimensionalFailures": [],
+    "engineeringVerification": "unverified",
+    "interferenceCheck": "not_performed"
+  }
+}
