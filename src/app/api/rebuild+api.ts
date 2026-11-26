@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { parseOrchestrationMetadata } from '@/shared/domain';
 
+import { formatApiError } from '@/backend/orchestrator/errorFormatting';
 import { rebuildAssemblyWithParameters } from '@/backend/orchestrator/genkitOrchestrator';
 
 const rebuildRequestSchema = z.object({
@@ -18,8 +19,9 @@ export async function POST(request: Request): Promise<Response> {
     const assembly = await rebuildAssemblyWithParameters({ ...input, allowUnverified: true });
     return Response.json(assembly);
   } catch (error: unknown) {
+    console.error('Parameter rebuild request failed', error);
     return Response.json(
-      { error: error instanceof Error ? error.message : 'Parameter rebuild failed' },
+      { error: formatApiError(error, 'Parameter rebuild failed') },
       { status: 400 },
     );
   }

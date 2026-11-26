@@ -1,0 +1,20 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /catalogAssemblies/{archetypeId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /projects/{projectId} {
+      allow read: if true;
+      allow write: if false;
+      match /{subcollection}/{docId} {
+        allow read: if subcollection in ['nodes', 'relationships', 'steps', 'explanations'];
+        allow write: if false;
+      }
+    }
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -17,7 +17,7 @@ export {
   type LearningCalloutsLayout,
   type PartAnchors,
 } from './model/calloutLayout';
-export { buildGroundedComponentExplanation } from './model/catalogExplanations';
+export { buildGroundedComponentExplanation } from './catalog';
 export {
   buildLearningPrompt,
   evaluateLocalInferenceSufficiency,
