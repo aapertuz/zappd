@@ -17,15 +17,18 @@ import {
 } from '../aiProvider.ts';
 import {
   GEOMETRY_ORIGINS,
+  assemblyHasShellNodes,
   canClassifyAsVerified,
   clampAssemblyParameterValues,
   computeExplodeStageWeight,
+  computeNodeExplodeWeight,
   computeNodeWorldPositionMeters,
   hasVerifiedUpstreamProvenance,
   isGeometryOrigin,
   isMountingInterfaceId,
   isParameterName,
   isPortId,
+  isShellNode,
   isVerificationStatus,
   isVerifiedStatus,
   parseAssemblyNode,
@@ -44,6 +47,7 @@ import {
 import {
   CATALOG_ARCHETYPES,
   getCatalogArchetypeById,
+  isAllowedProjectAssembly,
   matchProjectArchetypeFromPrompt,
   parseCatalogArchetype,
 } from '../catalog.ts';
@@ -138,6 +142,11 @@ describe('shared domain contracts', () => {
       assert.equal(family.archetypeId, 'parametric_multirotor_v1');
       assert.equal(family.generationMode, 'parametric_family');
     }
+
+    const reachy = matchProjectArchetypeFromPrompt('Build Reachy Mini desktop companion robot');
+    assert.equal(reachy.archetypeId, 'reachy_mini_v1');
+    assert.equal(getCatalogArchetypeById('reachy_mini_v1')?.nodes.length, 98);
+    assert.equal(getCatalogArchetypeById('reachy_mini_v1')?.assemblySteps.length, 51);
   });
 
   it('prevents classifying unvalidated, colliding, or ungrounded models as verified', () => {
@@ -667,6 +676,89 @@ describe('shared domain contracts', () => {
     }
   });
 
+  it('parses optional enclosure roles and identifies shell nodes', () => {
+    const { nodes } = getCatalogArchetypeById('reachy_mini_v1');
+    const blueprint = nodes.find(({ id }) => id === 'comp_reachy_top_shell');
+    const node = {
+      ...blueprint,
+      provenance: {
+        origin: blueprint.origin,
+        verificationStatus: 'composed_validated',
+        spdxLicense: blueprint.spdxLicense,
+        sourceUrl: blueprint.sourceUrl,
+        sourceName: blueprint.sourceName,
+        stepSha256: blueprint.expectedStepSha256,
+      },
+      glbNodeName: blueprint.id,
+      usdzPrimPath: `/World/${blueprint.id}`,
+    };
+    const { enclosureRole, ...legacyNode } = node;
+    const shell = parseAssemblyNode(node);
+    const internal = parseAssemblyNode({ ...node, enclosureRole: 'internal' });
+    const legacy = parseAssemblyNode(legacyNode);
+
+    assert.equal(enclosureRole, 'shell');
+    assert.equal(shell.enclosureRole, 'shell');
+    assert.equal(internal.enclosureRole, 'internal');
+    assert.equal(Object.hasOwn(legacy, 'enclosureRole'), false);
+    assert.throws(() => parseAssemblyNode({ ...node, enclosureRole: 'exterior' }));
+    assert.equal(isShellNode(shell), true);
+    assert.equal(isShellNode(internal), false);
+    assert.equal(isShellNode(legacy), false);
+    assert.equal(assemblyHasShellNodes([internal, legacy]), false);
+    assert.equal(assemblyHasShellNodes([internal, shell, legacy]), true);
+  });
+
+  it('peels Reachy Mini and Rover shells before moving their internal components', () => {
+    for (const [archetypeId, shellId, internalId, shellDistance] of [
+      ['reachy_mini_v1', 'comp_reachy_top_shell', 'comp_reachy_main_plate', 0.165],
+      ['open_source_rover_v1', 'comp_rover_compute_bay', 'comp_nova2_jetson_carrier', 0.075],
+    ]) {
+      const { nodes } = getCatalogArchetypeById(archetypeId);
+      const nodesById = Object.fromEntries(nodes.map((node) => [node.id, node]));
+      const shell = nodesById[shellId];
+      const internal = nodesById[internalId];
+      const position = (node, factor, stage = 'all') =>
+        computeNodeWorldPositionMeters(node, nodesById, factor, {}, stage);
+      const expectedPosition = (node, distance) =>
+        node.restPositionMeters.map(
+          (value, axis) => value + node.explodeDirection[axis] * distance,
+        );
+
+      assert.equal(assemblyHasShellNodes(nodes), true);
+      assert.deepEqual(position(shell, -1), position(shell, 0));
+      assert.deepEqual(position(shell, 0.2), expectedPosition(shell, shellDistance / 2));
+      assert.deepEqual(position(shell, 0.4), expectedPosition(shell, shellDistance));
+      assert.deepEqual(position(shell, 0.8), position(shell, 0.4));
+      assert.deepEqual(position(shell, 0.4, 1), position(shell, 0));
+      assert.deepEqual(position(shell, 0.4, 2), position(shell, 0.4));
+      assert.deepEqual(position(internal, 0.4), internal.restPositionMeters);
+      assert.deepEqual(
+        position(internal, 0.9),
+        expectedPosition(internal, internal.explodeDistanceMeters),
+      );
+      assert.deepEqual(position(internal, 2), position(internal, 1));
+    }
+  });
+
+  it('applies each enclosure-aware ramp and retains the original ramps for open assemblies', () => {
+    assert.equal(computeNodeExplodeWeight({ depth: 0, enclosureRole: 'shell' }, 1, 'all', true), 0);
+    assert.equal(computeNodeExplodeWeight({ depth: 1 }, 0.75, 'all', true), 1);
+    assert.equal(computeNodeExplodeWeight({ depth: 2 }, 0.65, 'all', true), 0.5);
+    assert.equal(computeNodeExplodeWeight({ depth: 3 }, 0.55, 'all', true), 0);
+    assert.equal(computeNodeExplodeWeight({ depth: 3 }, 1, 2, true), 0);
+    assert.ok(Math.abs(computeNodeExplodeWeight({ depth: 3 }, 1, 3, true) - 1) < 1e-9);
+
+    const { nodes } = getCatalogArchetypeById('quadcopter_drone_v1');
+    assert.equal(assemblyHasShellNodes(nodes), false);
+    const nodesById = Object.fromEntries(nodes.map((node) => [node.id, node]));
+    const motor = nodesById.comp_motor_fl;
+    const [x, y, z] = computeNodeWorldPositionMeters(motor, nodesById, 0.4, {});
+    assert.equal(x, motor.restPositionMeters[0]);
+    assert.equal(z, motor.restPositionMeters[2]);
+    assert.ok(Math.abs(y - 0.07256565656565657) < 1e-9);
+  });
+
   it('computes hierarchical constraint-axis explosion by assembly depth without axial drift', () => {
     const drone = matchProjectArchetypeFromPrompt('quadcopter');
     const nodesById = {};
@@ -720,5 +812,135 @@ describe('shared domain contracts', () => {
       verifyOneToOneNodeMapping(Object.values(nodesById), glbIds.slice(1), usdzPrims),
       false,
     );
+  });
+
+  it('omits absent inspection report fields on parsed validation reports for Firestore compatibility', () => {
+    const checksum = 'a'.repeat(64);
+    const parsed = parseVerifiedProjectAssembly({
+      projectId: 'proj_firestore_clean',
+      archetypeId: 'quadcopter_drone_v1',
+      title: 'Quadcopter',
+      userPrompt: 'Build a quadcopter',
+      verificationStatus: 'sourced_verified',
+      rootNodeId: 'proj_quadcopter',
+      nodes: [],
+      relationships: [],
+      assemblySteps: [],
+      manifest: {
+        manifestHash: checksum,
+        archetypeId: 'quadcopter_drone_v1',
+        generatedAtIso: '2026-11-25T00:00:00.000Z',
+        files: {
+          step: {
+            format: 'step',
+            storagePath: 'assemblies/test/model.step',
+            publicUrl: '/assemblies/quadcopter_drone_v1/model.step',
+            sha256: checksum,
+            sizeBytes: 1,
+          },
+          glb: {
+            format: 'glb',
+            storagePath: 'assemblies/test/model.glb',
+            publicUrl: '/assemblies/quadcopter_drone_v1/model.glb',
+            sha256: checksum,
+            sizeBytes: 1,
+          },
+          usdz: {
+            format: 'usdz',
+            storagePath: 'assemblies/test/model.usdz',
+            publicUrl: '/assemblies/quadcopter_drone_v1/model.usdz',
+            sha256: checksum,
+            sizeBytes: 1,
+          },
+        },
+      },
+      validation: {
+        valid: true,
+        brepValid: true,
+        interferenceCount: 0,
+        maxDimensionalErrorMm: 0.01,
+        nodeMappingComplete: true,
+        unitSystem: 'meters_y_up',
+        checkedAtIso: '2026-11-25T00:00:00.000Z',
+        failures: [],
+      },
+      orchestration: {
+        provider: 'deepseek',
+        modelId: 'deepseek-chat',
+        apiFormat: 'openai_compatible',
+        baseUrl: 'https://api.deepseek.com',
+        executionMode: 'local_catalog_planner',
+        plannedSubsystems: [],
+      },
+    });
+    assert.equal(Object.hasOwn(parsed.validation, 'sourceInterferenceReport'), false);
+    assert.equal(Object.hasOwn(parsed.validation, 'engineeringReport'), false);
+  });
+
+  it('rejects verified assemblies containing unavailable, visual-only, surface, or non-solid leaf geometry', () => {
+    const checksum = 'a'.repeat(64);
+    const blueprint = getCatalogArchetypeById('quadcopter_drone_v1').nodes.find(
+      (node) => node.id === 'comp_base_plate_lower',
+    );
+    const baseNode = {
+      ...blueprint,
+      provenance: {
+        origin: 'open_step_catalog',
+        verificationStatus: 'sourced_verified',
+        spdxLicense: blueprint.spdxLicense,
+        sourceUrl: blueprint.sourceUrl,
+        sourceName: blueprint.sourceName,
+        stepSha256: checksum,
+      },
+      glbNodeName: blueprint.id,
+      usdzPrimPath: `/World/${blueprint.id}`,
+    };
+    const validReport = {
+      valid: true,
+      brepValid: true,
+      interferenceCount: 0,
+      maxDimensionalErrorMm: 0.01,
+      nodeMappingComplete: true,
+      unitSystem: 'meters_y_up',
+      checkedAtIso: '2026-11-25T00:00:00.000Z',
+      failures: [],
+    };
+    const makeAssembly = (geometry) => ({
+      archetypeId: 'quadcopter_drone_v1',
+      verificationStatus: 'sourced_verified',
+      validation: validReport,
+      nodes: [geometry === undefined ? baseNode : { ...baseNode, geometry }],
+    });
+
+    assert.equal(isAllowedProjectAssembly(makeAssembly(undefined)), true);
+    assert.equal(
+      isAllowedProjectAssembly(makeAssembly({ kind: 'available', role: 'solid' })),
+      true,
+    );
+
+    for (const disallowedGeometry of [
+      { kind: 'unavailable', reason: 'Missing source CAD' },
+      {
+        kind: 'visual_only',
+        cadRejectionReason: 'Invalid source topology',
+        sourceName: 'Visual mesh',
+        sourceUrl: 'https://example.com/mesh.zip',
+        spdxLicense: 'CC-BY-SA-4.0',
+        archiveMember: 'mesh.stl',
+        archiveSha256: checksum,
+        sha256: checksum,
+        sourceOccurrencePath: '1_1',
+        sourceCoordinateFrame: 'assembly_y_up_millimeters',
+      },
+      { kind: 'available', role: 'surface' },
+      { kind: 'assembly' },
+    ]) {
+      const assembly = makeAssembly(disallowedGeometry);
+      assert.equal(hasVerifiedUpstreamProvenance(assembly.nodes, 'sourced_verified'), false);
+      assert.equal(isAllowedProjectAssembly(assembly), false);
+    }
+
+    const unavailableAssembly = makeAssembly({ kind: 'unavailable', reason: 'Missing source CAD' });
+    assert.equal(verifyOneToOneNodeMapping(unavailableAssembly.nodes, [], []), false);
   });
 });

@@ -275,8 +275,10 @@ describe('canvas prompt routing', () => {
     });
   });
 
-  it('has a documented connection for every selectable CAD part', () => {
-    for (const assembly of CATALOG_ARCHETYPES) {
+  it('has a documented connection for every selectable part in documented assemblies', () => {
+    for (const assembly of CATALOG_ARCHETYPES.filter(
+      (entry) => entry.semantics !== 'source_inspection',
+    )) {
       const connected = new Set(
         assembly.relationships.flatMap(({ fromComponentId, toComponentId }) => [
           fromComponentId,

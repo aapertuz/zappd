@@ -22,6 +22,7 @@ import {
   type ProjectLearningDocuments,
   type VerifiedProjectAssembly,
   canRenderAssembly,
+  isAllowedProjectAssembly,
   parseProjectLearningDocuments,
 } from '@/shared/domain';
 
@@ -138,10 +139,10 @@ export class FirebaseEmulatorRepository {
       readonly syncLearningDocuments?: boolean;
     },
   ): Promise<void> {
-    if (
-      !canRenderAssembly(assembly) ||
-      (assembly.verificationStatus === 'unverified' && options?.allowUnverified !== true)
-    ) {
+    const allowed =
+      isAllowedProjectAssembly(assembly) ||
+      (options?.allowUnverified === true && canRenderAssembly(assembly));
+    if (!allowed) {
       throw new Error(
         `Refusing to persist unverified or invalid assembly "${assembly.projectId}": ${assembly.validation.failures.join('; ')}`,
       );

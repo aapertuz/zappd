@@ -276,8 +276,6 @@ def _sweep_bundle(
         builder.Add(compound, solid)
 
     return compound
-
-
 def _rounded_bundle(
     points: list[np.ndarray], start_exit: np.ndarray, wire_count: int, diameter_mm: float,
 ) -> TopoDS_Compound:
@@ -340,8 +338,6 @@ def _rounded_bundle(
             children.Next()
         builder.Add(bundle, solid)
     return bundle
-
-
 def _auto_route_bundle(
     relationship_id: str, start: np.ndarray, end: np.ndarray, start_exit: np.ndarray, end_exit: np.ndarray,
     start_id: str, end_id: str, wire_count: int, diameter_mm: float,
@@ -450,7 +446,10 @@ def route_harness_for_node(
         else min(2.2, max(0.9, bundle_mm / (len(colors) * 0.85)))
     )
 
-    if waypoints and not auto_route:
+    if relationship.get("routingStyle") == "filleted_polyline" and not auto_route:
+        points = [start, *waypoints, end]
+        compound = _rounded_bundle(points, _unit(points[1] - points[0]), len(colors), diameter_mm)
+    elif waypoints and not auto_route:
         points = _route_points(start, end, start_exit, end_exit, waypoints)
         compound = _sweep_bundle(points, start_exit, end_exit, len(colors), diameter_mm)
     else:

@@ -272,6 +272,105 @@ describe('wiring visibility transitions', () => {
   });
 });
 
+describe('shell visibility and peel-back', () => {
+  const assembly = getCatalogAssembly('reachy_mini_v1');
+  const shellId = 'comp_reachy_top_shell';
+  const otherShellId = 'comp_reachy_bowl';
+  const internalId = 'comp_reachy_main_plate';
+  const solid = { ...TARGETS, wiringVisibility: 'auto', shellVisibility: 'solid' };
+
+  function settledController() {
+    const controller = createAssemblyAnimationController({ assembly, targets: solid });
+    settleAssemblyPlayback(controller);
+    return controller;
+  }
+
+  it('fades shells to x-ray or hidden and restores solid opacity when a shell is focused', () => {
+    const controller = settledController();
+    const initial = controller.step(0, solid);
+    assert.equal(initial.nodePoses[shellId].opacity, 1);
+    assert.equal(initial.nodePoses[shellId].isShellXRay, false);
+
+    const xray = { ...solid, shellVisibility: 'xray' };
+    const first = controller.step(0, xray);
+    assert.equal(first.geometryChanged, true);
+    assert.equal(first.nodePoses[shellId].isShellXRay, true);
+    const translucent = finishAnimation(controller, xray);
+    assert.equal(translucent.nodePoses[shellId].opacity, 0.14);
+    assert.equal(translucent.nodePoses[shellId].isShellXRay, true);
+    assert.equal(translucent.nodePoses[internalId].opacity, 1);
+    assert.equal(translucent.nodePoses[internalId].isShellXRay, false);
+
+    const hidden = { ...solid, shellVisibility: 'hidden' };
+    const invisible = finishAnimation(controller, hidden);
+    assert.equal(invisible.nodePoses[shellId].opacity, 0);
+    assert.equal(invisible.nodePoses[shellId].visible, false);
+    assert.equal(invisible.nodePoses[shellId].isShellXRay, false);
+    assert.equal(invisible.nodePoses[internalId].opacity, 1);
+
+    for (const shellTargets of [hidden, xray]) {
+      const focused = finishAnimation(controller, {
+        ...shellTargets,
+        isolatedComponentId: shellId,
+        focusedComponentId: shellId,
+        circuitHighlightIds: new Set([otherShellId]),
+      });
+      assert.equal(focused.nodePoses[shellId].opacity, 1);
+      assert.equal(focused.nodePoses[shellId].isShellXRay, false);
+      assert.equal(focused.nodePoses[otherShellId].opacity, 0.38);
+      assert.equal(focused.nodePoses[otherShellId].isShellXRay, false);
+      assert.equal(focused.nodePoses[internalId].opacity, 0);
+    }
+  });
+
+  it('moves only the shells through 40% and separates internals while fading wiring after it', () => {
+    const controller = settledController();
+    const initial = controller.step(0, solid);
+    const midPeel = finishAnimation(controller, { ...solid, explodeFactor: 0.2 });
+    const peeled = finishAnimation(controller, { ...solid, explodeFactor: 0.4 });
+    const wires = assembly.nodes.filter(({ category }) => category === 'wiring');
+    const shells = assembly.nodes.filter(({ enclosureRole }) => enclosureRole === 'shell');
+    assert.equal(shells.length, 10);
+    assert.ok(wires.length > 0);
+    for (const node of assembly.nodes) {
+      const restPosition = initial.nodePoses[node.id].worldPositionMeters;
+      const peelDistance = node.enclosureRole === 'shell' ? node.explodeDistanceMeters : 0;
+      const positionAt = (weight) =>
+        restPosition.map(
+          (value, axis) => value + node.explodeDirection[axis] * peelDistance * weight,
+        );
+      assert.ok(
+        distance(midPeel.nodePoses[node.id].worldPositionMeters, positionAt(0.5)) < 1e-9,
+        node.id,
+      );
+      assert.ok(
+        distance(peeled.nodePoses[node.id].worldPositionMeters, positionAt(1)) < 1e-9,
+        node.id,
+      );
+      assert.equal(peeled.nodePoses[node.id].opacity, 1, node.id);
+    }
+
+    const separating = finishAnimation(controller, { ...solid, explodeFactor: 0.6 });
+    const exploded = finishAnimation(controller, { ...solid, explodeFactor: 0.8 });
+    for (const shell of shells) {
+      assert.deepEqual(
+        exploded.nodePoses[shell.id].worldPositionMeters,
+        peeled.nodePoses[shell.id].worldPositionMeters,
+      );
+    }
+    assert.ok(
+      distance(
+        exploded.nodePoses[internalId].worldPositionMeters,
+        initial.nodePoses[internalId].worldPositionMeters,
+      ) > 0.05,
+    );
+    for (const wire of wires) {
+      assert.ok(Math.abs(separating.nodePoses[wire.id].opacity - 0.5) < 1e-9, wire.id);
+      assert.equal(exploded.nodePoses[wire.id].opacity, 0, wire.id);
+    }
+  });
+});
+
 describe('assembly pose transitions', () => {
   const assembly = getCatalogAssembly('quadcopter_drone_v1');
 
@@ -638,4 +737,33 @@ describe('assembly pose transitions', () => {
     assert.equal(restored.nodePoses.comp_arm_fr.opacity, 1);
     assert.equal(restored.isActive, false);
   });
+});
+
+it('explodes Poppy inspection with stable identities and restores source placements', () => {
+  const assembly = getCatalogAssembly('poppy_humanoid_v1');
+  const controller = createAssemblyAnimationController({
+    assembly,
+    targets: TARGETS,
+    prefersReducedMotion: true,
+  });
+  const rest = controller.step(0, TARGETS);
+  const middle = controller.step(0, { ...TARGETS, explodeFactor: 0.5 });
+  const full = controller.step(0, { ...TARGETS, explodeFactor: 1 });
+  assert.deepEqual(Object.keys(full.nodePoses), Object.keys(rest.nodePoses));
+  for (const node of assembly.nodes.filter((node) => node.stepFixtureName !== null)) {
+    assert.equal(distance(rest.nodePoses[node.id].worldPositionMeters, node.restPositionMeters), 0);
+    assert.ok(
+      distance(full.nodePoses[node.id].worldPositionMeters, node.restPositionMeters) > 0.001,
+    );
+  }
+  assert.ok(
+    assembly.nodes.some(
+      (node) =>
+        distance(
+          middle.nodePoses[node.id].worldPositionMeters,
+          full.nodePoses[node.id].worldPositionMeters,
+        ) > 0.001,
+    ),
+  );
+  assert.deepEqual(controller.step(0, TARGETS).nodePoses, rest.nodePoses);
 });

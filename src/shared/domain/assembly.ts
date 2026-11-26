@@ -62,6 +62,12 @@ export type HierarchyLevel = z.infer<typeof hierarchyLevelSchema>;
 
 export type ExplodeStageFilter = 'all' | 1 | 2 | 3;
 
+export const ASSEMBLY_ENCLOSURE_ROLES = ['shell', 'internal'] as const;
+export type AssemblyEnclosureRole = (typeof ASSEMBLY_ENCLOSURE_ROLES)[number];
+export const assemblyEnclosureRoleSchema = z.enum(ASSEMBLY_ENCLOSURE_ROLES);
+
+export const SHELL_PEEL_END_EXPLODE_FACTOR = 0.4;
+
 const relationshipConnectionTypeSchema = z.enum([
   'assembly_mount',
   'rigid_fastener',
@@ -80,8 +86,14 @@ const electricalBusKindSchema = z.enum([
   'pwm_signal',
   'i2c_spi_uart',
   'can_bus',
+  'analog_audio',
+  'pdm_audio',
+  'mipi_csi2',
 ]);
 export type ElectricalBusKind = z.infer<typeof electricalBusKindSchema>;
+
+const connectorPortRoleSchema = z.enum(['source', 'sink', 'bidirectional']);
+export type ConnectorPortRole = z.infer<typeof connectorPortRoleSchema>;
 
 export type ConnectorPort = {
   readonly portId: PortId;
@@ -93,7 +105,7 @@ export type ConnectorPort = {
   readonly wireGaugeAwg?: number;
   readonly wireColorsHex?: readonly string[];
   readonly nominalVoltageV?: number;
-  readonly role?: 'source' | 'sink' | 'bidirectional';
+  readonly role?: ConnectorPortRole;
   readonly minVoltageV?: number;
   readonly maxVoltageV?: number;
   readonly maxCurrentA?: number;
@@ -135,7 +147,24 @@ export type CadProvenance = {
   readonly stepSha256: AssetChecksum;
 };
 
+export type ComponentGeometry =
+  | { readonly kind: 'assembly' }
+  | { readonly kind: 'available'; readonly role: 'solid' | 'surface' }
+  | { readonly kind: 'unavailable'; readonly reason: string }
+  | {
+      readonly kind: 'visual_only';
+      readonly cadRejectionReason: string;
+      readonly sourceUrl: string;
+      readonly archiveSha256: AssetChecksum;
+      readonly memberPath: string;
+      readonly sha256: AssetChecksum;
+      readonly spdxLicense: string;
+      readonly sourceOccurrencePath: string;
+      readonly sourceCoordinateFrame: 'assembly_y_up_millimeters';
+    };
+
 export type AssemblyNode = {
+  readonly geometry?: ComponentGeometry;
   readonly id: ComponentId;
   readonly parentId: ComponentId | null;
   readonly name: string;
@@ -152,6 +181,7 @@ export type AssemblyNode = {
   readonly specifications: Readonly<Record<string, string | number | boolean>>;
   readonly ports?: readonly ConnectorPort[];
   readonly mountingInterfaces?: readonly MountingInterface[];
+  readonly enclosureRole?: AssemblyEnclosureRole;
   readonly provenance: CadProvenance;
   readonly glbNodeName: string;
   readonly usdzPrimPath: string;
@@ -166,6 +196,7 @@ export type ComponentRelationship = {
   readonly whyConnected: string;
   readonly fromPortId?: PortId;
   readonly toPortId?: PortId;
+  readonly routingStyle?: 'filleted_polyline';
   readonly routingWaypointsMeters?: readonly Vector3Tuple[];
   readonly wireBundleDiameterMm?: number;
 };
@@ -179,7 +210,72 @@ export type AssemblyInstructionStep = {
   readonly relationshipIds: readonly RelationshipId[];
 };
 
+export const sourceInterferenceSchema = z
+  .object({
+    status: z.literal('partial'),
+    solidCount: z.number().int().nonnegative(),
+    possiblePairCount: z.number().int().nonnegative(),
+    candidatePairCount: z.number().int().nonnegative(),
+    intersectionCount: z.number().int().nonnegative(),
+    unresolvedPairCount: z.number().int().nonnegative(),
+    volumeThresholdMm3: z.number().nonnegative(),
+    aabbToleranceMm: z.number().nonnegative(),
+    excludedComponents: z.array(z.object({ componentId: z.string() })),
+    pairs: z.array(
+      z.discriminatedUnion('status', [
+        z.object({
+          componentIds: z.tuple([z.string(), z.string()]),
+          status: z.literal('intersection'),
+          volumeMm3: z.number().finite().nonnegative(),
+          error: z.null(),
+        }),
+        z.object({
+          componentIds: z.tuple([z.string(), z.string()]),
+          status: z.literal('contact_or_below_threshold'),
+          volumeMm3: z.number().finite().nonnegative(),
+          error: z.null(),
+        }),
+        z.object({
+          componentIds: z.tuple([z.string(), z.string()]),
+          status: z.enum(['failed', 'timeout']),
+          volumeMm3: z.null(),
+          error: z.string().nullable(),
+        }),
+      ]),
+    ),
+    limitations: z.array(z.string()),
+  })
+  .refine(
+    (report) =>
+      report.pairs.length === report.candidatePairCount &&
+      report.pairs.filter((pair) => pair.status === 'intersection').length ===
+        report.intersectionCount &&
+      report.pairs.filter((pair) => pair.status === 'failed' || pair.status === 'timeout')
+        .length === report.unresolvedPairCount &&
+      new Set(report.pairs.map((pair) => [...pair.componentIds].sort().join(':'))).size ===
+        report.pairs.length,
+    'Inconsistent source interference coverage',
+  );
+
+export const engineeringReportSchema = z.object({
+  status: z.literal('unverified'),
+  manufacturingReadiness: z.literal('not_established'),
+  materials: z.literal('unknown'),
+  manufacturingTolerances: z.literal('unknown'),
+  loadsAndConstraints: z.literal('not_verified'),
+  renderDimensionComparison: z.object({
+    maximumErrorMm: z.number().finite().nonnegative(),
+    thresholdMm: z.number().finite().nonnegative(),
+    meaning: z.string(),
+  }),
+  nodeMappingComplete: z.boolean(),
+  rejectedCadComponentIds: z.array(z.string()),
+  surfaceComponentIds: z.array(z.string()),
+});
+
 export type ValidationReport = {
+  readonly sourceInterferenceReport?: z.infer<typeof sourceInterferenceSchema>;
+  readonly engineeringReport?: z.infer<typeof engineeringReportSchema>;
   readonly valid: boolean;
   readonly brepValid: boolean;
   readonly interferenceCount: number;
@@ -394,7 +490,20 @@ export function hasVerifiedUpstreamProvenance(
     return false;
   }
   let hasComposedNode = false;
-  for (const { provenance } of nodes) {
+  for (const node of nodes) {
+    const { provenance, geometry } = node;
+    if (geometry !== undefined) {
+      const hasUnverifiableGeometry =
+        geometry.kind === 'unavailable' ||
+        geometry.kind === 'visual_only' ||
+        (geometry.kind === 'available' && geometry.role === 'surface');
+      const hasNonSolidLeafGeometry =
+        (node.level === 'component' || node.level === 'subcomponent') &&
+        (geometry.kind !== 'available' || geometry.role !== 'solid');
+      if (hasUnverifiableGeometry || hasNonSolidLeafGeometry) {
+        return false;
+      }
+    }
     if (!isGeometryOrigin(provenance.origin)) {
       return false;
     }
@@ -473,6 +582,42 @@ export function computeExplodeStageWeight(
   return Math.max(0, Math.min(1, (clamped - 0.4) / 0.6));
 }
 
+export function isShellNode(node: Pick<AssemblyNode, 'enclosureRole'>): boolean {
+  return node.enclosureRole === 'shell';
+}
+
+export function assemblyHasShellNodes(
+  nodes: readonly Pick<AssemblyNode, 'enclosureRole'>[],
+): boolean {
+  return nodes.some(isShellNode);
+}
+
+export function computeNodeExplodeWeight(
+  node: Pick<AssemblyNode, 'depth' | 'enclosureRole'>,
+  explodeFactor: number,
+  activeExplodeStage: ExplodeStageFilter,
+  hasShellNodes: boolean,
+): number {
+  const { depth } = node;
+  if (!hasShellNodes) {
+    return computeExplodeStageWeight(depth, explodeFactor, activeExplodeStage);
+  }
+
+  const clamped = clampExplodeFactor(explodeFactor);
+  if (clamped === 0 || depth <= 0) return 0;
+  if (activeExplodeStage === 1 && depth > 1) return 0;
+  if (activeExplodeStage === 2 && depth > 2) return 0;
+  if (isShellNode(node)) {
+    return Math.min(1, clamped / SHELL_PEEL_END_EXPLODE_FACTOR);
+  }
+  if (clamped <= SHELL_PEEL_END_EXPLODE_FACTOR) return 0;
+
+  const internalFactor = clamped - SHELL_PEEL_END_EXPLODE_FACTOR;
+  if (depth === 1) return Math.min(1, internalFactor / 0.35);
+  if (depth === 2) return Math.min(1, internalFactor / 0.5);
+  return Math.max(0, Math.min(1, (clamped - 0.55) / 0.45));
+}
+
 export function computeNodeWorldPositionMeters(
   node: AssemblyNode,
   nodesById: Readonly<Record<string, AssemblyNode>>,
@@ -480,6 +625,7 @@ export function computeNodeWorldPositionMeters(
   separatedOffsets: Readonly<Record<string, Vector3Tuple>>,
   activeExplodeStage: ExplodeStageFilter = 'all',
 ): Vector3Tuple {
+  const hasShellNodes = assemblyHasShellNodes(Object.values(nodesById));
   let x = node.restPositionMeters[0];
   let y = node.restPositionMeters[1];
   let z = node.restPositionMeters[2];
@@ -498,7 +644,12 @@ export function computeNodeWorldPositionMeters(
     if (ancestor === undefined) {
       continue;
     }
-    const weight = computeExplodeStageWeight(ancestor.depth, explodeFactor, activeExplodeStage);
+    const weight = computeNodeExplodeWeight(
+      ancestor,
+      explodeFactor,
+      activeExplodeStage,
+      hasShellNodes,
+    );
     if (weight > 0 && ancestor.explodeDistanceMeters !== 0) {
       const distance = ancestor.explodeDistanceMeters * weight;
       x += ancestor.explodeDirection[0] * distance;
@@ -520,15 +671,20 @@ export function verifyOneToOneNodeMapping(
   nodes: readonly AssemblyNode[],
   glbNodeIds: readonly string[],
   usdzPrimPaths: readonly string[],
+  options?: { readonly allowUnavailableNodes?: boolean },
 ): boolean {
+  const allowUnavailableNodes = options?.allowUnavailableNodes === true;
   const leafNodes = nodes.filter(
-    (node) => node.level === 'component' || node.level === 'subcomponent',
+    (node) =>
+      (node.level === 'component' || node.level === 'subcomponent') &&
+      (!allowUnavailableNodes || node.geometry?.kind !== 'unavailable'),
   );
   if (leafNodes.length === 0) {
     return false;
   }
   const glbSet = new Set(glbNodeIds);
   const usdzSet = new Set(usdzPrimPaths);
+  if (glbSet.size !== leafNodes.length || usdzSet.size !== leafNodes.length) return false;
   for (const node of leafNodes) {
     if (!glbSet.has(node.glbNodeName)) {
       return false;
@@ -624,7 +780,7 @@ export const connectorPortSchema = z
     wireGaugeAwg: z.number().optional(),
     wireColorsHex: z.array(z.string().regex(/^#[a-f0-9]{6}$/i)).optional(),
     nominalVoltageV: z.number().optional(),
-    role: z.enum(['source', 'sink', 'bidirectional']).optional(),
+    role: connectorPortRoleSchema.optional(),
     minVoltageV: z.number().nonnegative().optional(),
     maxVoltageV: z.number().nonnegative().optional(),
     maxCurrentA: positiveNumber.optional(),
@@ -688,6 +844,50 @@ export function parseAssemblyParameter(raw: unknown): AssemblyParameter {
   return assemblyParameterSchema.parse(raw);
 }
 
+const componentGeometrySchema: z.ZodType<ComponentGeometry> = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('assembly') }),
+  z.strictObject({ kind: z.literal('available'), role: z.enum(['solid', 'surface']) }),
+  z.strictObject({ kind: z.literal('unavailable'), reason: nonEmptyString }),
+  z.strictObject({
+    kind: z.literal('visual_only'),
+    cadRejectionReason: nonEmptyString,
+    sourceUrl: nonEmptyString.refine(
+      (value) => value.startsWith('https://'),
+      'Invalid visual source URL',
+    ),
+    archiveSha256: z.custom<AssetChecksum>(isAssetChecksum),
+    memberPath: nonEmptyString,
+    sha256: z.custom<AssetChecksum>(isAssetChecksum),
+    spdxLicense: nonEmptyString,
+    sourceOccurrencePath: nonEmptyString,
+    sourceCoordinateFrame: z.literal('assembly_y_up_millimeters'),
+  }),
+]);
+
+export function canInspectSourceAssembly(assembly: {
+  readonly nodes: readonly AssemblyNode[];
+  readonly validation: ValidationReport;
+  readonly verificationStatus: string;
+}): boolean {
+  return (
+    assembly.verificationStatus === 'unverified' &&
+    assembly.validation.brepValid &&
+    assembly.validation.nodeMappingComplete &&
+    assembly.validation.sourceInterferenceReport !== undefined &&
+    assembly.validation.engineeringReport !== undefined &&
+    assembly.nodes.some((node) => node.geometry?.kind === 'available') &&
+    assembly.nodes.every(
+      (node) =>
+        node.geometry !== undefined &&
+        node.provenance.verificationStatus === 'unverified' &&
+        node.provenance.origin === 'open_step_catalog' &&
+        node.provenance.sourceUrl.startsWith('https://') &&
+        isAssetChecksum(node.specifications.sourceSha256) &&
+        isAssetChecksum(node.provenance.stepSha256),
+    )
+  );
+}
+
 export const assemblyNodeFieldsSchema = z.object({
   id: componentIdSchema,
   parentId: componentIdSchema.nullable(),
@@ -705,6 +905,8 @@ export const assemblyNodeFieldsSchema = z.object({
   specifications: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])),
   ports: z.array(connectorPortSchema).optional(),
   mountingInterfaces: z.array(mountingInterfaceSchema).optional(),
+  enclosureRole: assemblyEnclosureRoleSchema.optional(),
+  geometry: componentGeometrySchema.optional(),
 });
 
 const assemblyNodeSchema = assemblyNodeFieldsSchema.extend({
@@ -727,6 +929,7 @@ export const componentRelationshipSchema = z
     whyConnected: nonEmptyString,
     fromPortId: portIdSchema.optional(),
     toPortId: portIdSchema.optional(),
+    routingStyle: z.literal('filleted_polyline').optional(),
     routingWaypointsMeters: z.array(vector3TupleSchema).optional(),
     wireBundleDiameterMm: z.number().positive().optional(),
   })
@@ -753,6 +956,8 @@ export function parseInstructionStep(raw: unknown): AssemblyInstructionStep {
 }
 
 const validationReportSchema = z.object({
+  sourceInterferenceReport: sourceInterferenceSchema.optional(),
+  engineeringReport: engineeringReportSchema.optional(),
   valid: z.boolean(),
   brepValid: z.boolean(),
   interferenceCount: z.number(),

@@ -3,6 +3,7 @@ import { Socket } from 'node:net';
 import path from 'node:path';
 import { type Interface, createInterface } from 'node:readline';
 import type { Readable, Writable } from 'node:stream';
+import { setTimeout as delay } from 'node:timers/promises';
 
 import { z } from 'zod';
 
@@ -113,13 +114,16 @@ function exchange(
   const { child, lines, getStderr } = activeWorker;
   const id = ++state.nextRequestId;
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      cleanup();
-      reject(new CadWorkerTimedOut(`CAD worker timed out after ${timeoutMs} ms`));
-    }, timeoutMs);
-    timer.unref();
+    const timeoutController = new AbortController();
+    void delay(timeoutMs, undefined, { ref: false, signal: timeoutController.signal }).then(
+      () => {
+        cleanup();
+        reject(new CadWorkerTimedOut(`CAD worker timed out after ${timeoutMs} ms`));
+      },
+      () => undefined,
+    );
     const cleanup = () => {
-      clearTimeout(timer);
+      timeoutController.abort();
       lines.off('line', receive);
       lines.off('close', disconnected);
     };
@@ -154,19 +158,29 @@ function exchange(
   });
 }
 
+async function waitForWorkerClose(activeWorker: Worker, timeoutMs: number): Promise<boolean> {
+  if (activeWorker.child.exitCode !== null || activeWorker.child.signalCode !== null) {
+    return true;
+  }
+  const closeTimeout = new AbortController();
+  try {
+    return await Promise.race([
+      activeWorker.closed.then(() => true),
+      delay(timeoutMs, false, { ref: false, signal: closeTimeout.signal }).catch(() => false),
+    ]);
+  } finally {
+    closeTimeout.abort();
+  }
+}
+
 async function terminateWorker(activeWorker: Worker): Promise<void> {
   if (state.worker === activeWorker) {
     state.worker = undefined;
   }
+  activeWorker.child.stdin.destroy();
   activeWorker.child.kill('SIGKILL');
   activeWorker.lines.close();
-  await Promise.race([
-    activeWorker.closed,
-    new Promise<void>((resolve) => {
-      const timer = setTimeout(resolve, 2_000);
-      timer.unref();
-    }),
-  ]);
+  await waitForWorkerClose(activeWorker, 2_000);
 }
 
 async function requestWarmWorker(
@@ -204,7 +218,10 @@ export function requestWarmCadBuild(
   return enqueue(() => requestWarmWorker(request, true, timeoutMs));
 }
 
-export function shutdownWarmCadWorker(): Promise<void> {
+export function shutdownWarmCadWorker(options?: {
+  readonly closeTimeoutMs?: number;
+}): Promise<void> {
+  const closeTimeoutMs = options?.closeTimeoutMs ?? 2_000;
   return enqueue(async () => {
     const activeWorker = state.worker;
     if (activeWorker === undefined) {
@@ -214,7 +231,13 @@ export function shutdownWarmCadWorker(): Promise<void> {
     setWorkerReferenced(activeWorker, true);
     try {
       await exchange(activeWorker, { cmd: 'shutdown' }, CONTROL_COMMAND_TIMEOUT_MS);
-      await activeWorker.closed;
+      activeWorker.child.stdin.end();
+      const closedCleanly = await waitForWorkerClose(activeWorker, closeTimeoutMs);
+      if (closedCleanly) {
+        activeWorker.lines.close();
+      } else {
+        await terminateWorker(activeWorker);
+      }
     } catch (error) {
       await terminateWorker(activeWorker);
       if (!(error instanceof CadWorkerExited || error instanceof CadWorkerTimedOut)) {

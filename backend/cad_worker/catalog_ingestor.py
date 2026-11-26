@@ -48,10 +48,6 @@ class GeometryOriginPolicy(TypedDict):
 
 
 GEOMETRY_ORIGIN_POLICY: dict[str, GeometryOriginPolicy] = {
-    "parametric_cad": {
-        "allowedUriPrefixes": ("https://", "parametric://"),
-        "targetVerifiedStatus": "composed_validated",
-    },
     "open_step_catalog": {
         "allowedUriPrefixes": ("https://",),
         "targetVerifiedStatus": "sourced_verified",
@@ -66,6 +62,10 @@ GEOMETRY_ORIGIN_POLICY: dict[str, GeometryOriginPolicy] = {
     },
     "procedural_harness": {
         "allowedUriPrefixes": ("https://", "harness://"),
+        "targetVerifiedStatus": "composed_validated",
+    },
+    "parametric_cad": {
+        "allowedUriPrefixes": ("https://", "parametric://"),
         "targetVerifiedStatus": "composed_validated",
     },
 }

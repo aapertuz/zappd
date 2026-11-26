@@ -14,6 +14,7 @@ import type {
   AssemblyExplorerState,
   ExplorerCameraState,
   SeparationAxis,
+  ShellVisibilityMode,
   WiringVisibilityMode,
 } from '../types';
 import { extrinsicXyzRotationRows } from './restRotation';
@@ -44,6 +45,11 @@ const NEXT_WIRING_VISIBILITY: Readonly<Record<WiringVisibilityMode, WiringVisibi
   auto: 'show',
   show: 'hide',
   hide: 'auto',
+};
+const NEXT_SHELL_VISIBILITY: Readonly<Record<ShellVisibilityMode, ShellVisibilityMode>> = {
+  solid: 'xray',
+  xray: 'hidden',
+  hidden: 'solid',
 };
 
 function halfExtentMeters(dimensionMm: number): number {
@@ -174,6 +180,7 @@ export const INITIAL_ASSEMBLY_EXPLORER_STATE: AssemblyExplorerState = {
   explodeFactor: 0,
   activeExplodeStage: 'all',
   wiringVisibility: 'auto',
+  shellVisibility: 'solid',
   selectedComponentId: null,
   isolatedComponentId: null,
   separatedOffsets: {},
@@ -471,6 +478,7 @@ export function reduceAssemblyExplorerState(
         explodeFactor: 0,
         activeExplodeStage: 'all',
         wiringVisibility: 'auto',
+        shellVisibility: 'solid',
         selectedComponentId: null,
         isolatedComponentId: null,
         separatedOffsets: {},
@@ -552,9 +560,20 @@ export function reduceAssemblyExplorerState(
         ? state
         : { ...state, wiringVisibility: action.mode };
     }
+    case 'cycleShellVisibility': {
+      return { ...state, shellVisibility: NEXT_SHELL_VISIBILITY[state.shellVisibility] };
+    }
+    case 'setShellVisibility': {
+      return state.shellVisibility === action.mode
+        ? state
+        : { ...state, shellVisibility: action.mode };
+    }
     case 'focusComponent': {
       const { componentId } = action;
-      const explodeFactor = Math.max(state.explodeFactor, DEFAULT_EXPLODE_PRESET);
+      const explodeFactor =
+        state.shellVisibility === 'solid'
+          ? Math.max(state.explodeFactor, DEFAULT_EXPLODE_PRESET)
+          : state.explodeFactor;
       const restore =
         state.viewMode.kind === 'part_focus'
           ? state.viewMode

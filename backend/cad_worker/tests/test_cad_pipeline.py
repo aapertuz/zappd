@@ -40,6 +40,8 @@ EXPECTED_NODE_COUNTS = {
     "open_source_rover_v1": 21,
     "open_quadruped_v1": 40,
     "parametric_multirotor_v1": 38,
+    "reachy_mini_v1": 98,
+    "poppy_humanoid_v1": 251,
 }
 @pytest.fixture(scope="module")
 def cots_parts() -> dict[str, dict]:
@@ -197,7 +199,11 @@ def test_xcaf_materials_export_as_one_component_with_partitioned_faces(cots_part
     }
     out = tmp_path / "exports"
     cache = tmp_path / "steps"
-    result = run_cad_pipeline({**template, "nodes": [root, node]}, output_dir=out, cache_dir=cache)
+    result = run_cad_pipeline(
+        {**template, "nodes": [root, node], "relationships": [], "assemblySteps": []},
+        output_dir=out,
+        cache_dir=cache,
+    )
     assert result["verificationStatus"] == "composed_validated"
     assert result["validation"]["valid"]
     assert result["validation"]["maxDimensionalErrorMm"] <= 0.1
@@ -358,6 +364,8 @@ def test_all_robotics_categories_pass_opencascade_validation(tmp_path: Path) -> 
     assert set(CATALOG_SPECS.keys()) == set(EXPECTED_NODE_COUNTS.keys())
 
     for archetype_id, spec in CATALOG_SPECS.items():
+        if spec.get("semantics") == "source_inspection":
+            continue
         out_dir = tmp_path / "exports" / archetype_id
         result = run_cad_pipeline(spec, output_dir=out_dir, cache_dir=cache_dir)
 
@@ -392,11 +400,11 @@ def test_all_robotics_categories_pass_opencascade_validation(tmp_path: Path) -> 
             assert prov["origin"] == catalog_node["origin"]
             assert node.get("mountingInterfaces") == catalog_node.get("mountingInterfaces")
             expected_status, allowed_prefix = {
-                "open_step_catalog": ("sourced_verified", "https://"),
-                "cots_library_step": ("sourced_verified", "https://"),
-                "kicad_pcb_step": ("composed_validated", "kicad://"),
-                "procedural_harness": ("composed_validated", "harness://"),
-                "parametric_cad": ("composed_validated", "parametric://"),
+                "open_step_catalog": ("sourced_verified", ("https://",)),
+                "cots_library_step": ("sourced_verified", ("https://",)),
+                "kicad_pcb_step": ("composed_validated", ("https://", "kicad://")),
+                "procedural_harness": ("composed_validated", ("https://", "harness://")),
+                "parametric_cad": ("composed_validated", ("https://", "parametric://")),
             }[prov["origin"]]
             assert prov["verificationStatus"] == expected_status
             assert prov["spdxLicense"]
@@ -410,6 +418,15 @@ def test_all_robotics_categories_pass_opencascade_validation(tmp_path: Path) -> 
                 assert node["dimensionsMm"] == pytest.approx(catalog_node["dimensionsMm"], abs=1e-5)
                 lower, upper = np.asarray(glb_bounds[node["id"]]) * 1000
                 assert upper - lower == pytest.approx(catalog_node["dimensionsMm"], abs=0.2)
+
+        if archetype_id == "reachy_mini_v1":
+            boards = {node["id"] for node in spec["nodes"] if node["origin"] == "kicad_pcb_step"}
+            assert boards == {"comp_reachy_power_board", "comp_reachy_head_board", "comp_reachy_mic_strip"}
+            cables = {node["id"]: node for node in spec["nodes"] if node["origin"] == "procedural_harness"}
+            assert len(cables) == 17
+            assert len(spec["assemblySteps"]) == 51
+            assert set(cables) <= set(result["glbNodeIds"])
+            assert all((cache_dir / node["stepFixtureName"]).is_file() for node in cables.values())
 
         assert (out_dir / "model.step").stat().st_size > 0
         assert (out_dir / "model.glb").stat().st_size > 0
@@ -507,10 +524,13 @@ def test_disallowed_fallback_origin_is_rejected(tmp_path: Path, has_geometry: bo
         ("kicad_pcb_step", "https://example.test/board.step", "composed_validated"),
         ("procedural_harness", "harness://catalog/route", "composed_validated"),
         ("procedural_harness", "https://example.test/harness.step", "composed_validated"),
+        ("parametric_cad", "parametric://catalog/part", "composed_validated"),
+        ("parametric_cad", "https://example.test/part", "composed_validated"),
         ("open_step_catalog", "kicad://board/revision", None),
         ("cots_library_step", "http://example.test/connector.step", None),
         ("kicad_pcb_step", "harness://catalog/route", None),
         ("procedural_harness", "kicad://board/revision", None),
+        ("parametric_cad", "kicad://board/revision", None),
     ],
 )
 def test_step_ingestion_enforces_origin_uri_and_status(
@@ -731,7 +751,7 @@ def test_routed_harness_rejects_invalid_input(harness_spec, target, field, value
 
 def test_interference_volume_raises_when_boolean_op_fails(monkeypatch: pytest.MonkeyPatch) -> None:
     from OCP.BRepPrimAPI import BRepPrimAPI_MakeBox
-    from backend.cad_worker import geometry_pipeline
+    import geometry_pipeline
 
     class FailingCommon:
         def SetArguments(self, _args) -> None:
@@ -756,3 +776,147 @@ def test_interference_volume_raises_when_boolean_op_fails(monkeypatch: pytest.Mo
     box = BRepPrimAPI_MakeBox(10.0, 10.0, 10.0).Shape()
     with pytest.raises(RuntimeError, match="OpenCascade boolean interference check failed"):
         geometry_pipeline.interference_volume_mm3(box, box)
+
+
+def test_surface_role_cannot_bypass_solid_interference_certification(tmp_path: Path) -> None:
+    template = CATALOG_SPECS["quadcopter_drone_v1"]
+    root = copy.deepcopy(template["nodes"][0])
+    first = copy.deepcopy(next(n for n in template["nodes"] if n["id"] == "comp_base_plate_lower"))
+    second = copy.deepcopy(first)
+    first["parentId"] = root["id"]
+    first["depth"] = 1
+    first["restPositionMeters"] = [0.0, 0.0, 0.0]
+    second["id"] = "comp_overlapping_solid"
+    second["parentId"] = root["id"]
+    second["depth"] = 1
+    second["restPositionMeters"] = [0.0, 0.0, 0.0]
+    second["geometry"] = {"kind": "available", "role": "surface"}
+
+    result = run_cad_pipeline(
+        {**template, "nodes": [root, first, second], "relationships": [], "assemblySteps": []},
+        output_dir=tmp_path / "exports",
+        cache_dir=tmp_path / "cache",
+    )
+    assert result["verificationStatus"] == "unverified"
+    assert result["validation"]["valid"] is False
+    assert result["validation"]["interferenceCount"] == 1
+    assert any("declared surface contains CAD solids" in failure for failure in result["validation"]["failures"])
+
+
+def test_unavailable_or_visual_only_leaf_cannot_certify_as_verified(tmp_path: Path) -> None:
+    template = CATALOG_SPECS["quadcopter_drone_v1"]
+    root = copy.deepcopy(template["nodes"][0])
+    kept = copy.deepcopy(next(n for n in template["nodes"] if n["id"] == "comp_base_plate_lower"))
+    dropped = copy.deepcopy(next(n for n in template["nodes"] if n["id"] == "comp_base_plate_upper"))
+    kept["parentId"] = root["id"]
+    kept["depth"] = 1
+    dropped["parentId"] = root["id"]
+    dropped["depth"] = 1
+    dropped["stepFixtureName"] = None
+    dropped.pop("expectedStepSha256", None)
+    dropped["geometry"] = {"kind": "unavailable", "reason": "Missing upstream CAD"}
+
+    unavailable_result = run_cad_pipeline(
+        {**template, "nodes": [root, kept, dropped], "relationships": [], "assemblySteps": []},
+        output_dir=tmp_path / "exports_unavailable",
+        cache_dir=tmp_path / "cache",
+    )
+    assert unavailable_result["verificationStatus"] == "unverified"
+    assert unavailable_result["validation"]["valid"] is False
+    assert unavailable_result["validation"]["nodeMappingComplete"] is False
+    assert any("has unavailable CAD geometry" in f for f in unavailable_result["validation"]["failures"])
+
+    visual_only = copy.deepcopy(dropped)
+    visual_only["geometry"] = {
+        "kind": "visual_only",
+        "cadRejectionReason": "Invalid source topology",
+        "sourceName": "Visual mesh",
+        "sourceUrl": "https://example.com/mesh.zip",
+        "spdxLicense": "CC-BY-SA-4.0",
+        "archiveMember": "mesh.stl",
+        "archiveSha256": "a" * 64,
+        "sha256": "b" * 64,
+        "sourceOccurrencePath": "1_1",
+        "sourceCoordinateFrame": "assembly_y_up_millimeters",
+    }
+    visual_result = run_cad_pipeline(
+        {**template, "nodes": [root, kept, visual_only], "relationships": [], "assemblySteps": []},
+        output_dir=tmp_path / "exports_visual",
+        cache_dir=tmp_path / "cache",
+    )
+    assert visual_result["verificationStatus"] == "unverified"
+    assert visual_result["validation"]["valid"] is False
+    assert any("has visual_only CAD geometry" in f for f in visual_result["validation"]["failures"])
+
+
+def test_open_surface_declared_as_solid_cannot_certify_as_verified(tmp_path: Path) -> None:
+    import hashlib
+    from OCP.BRep import BRep_Builder
+    from OCP.BRepPrimAPI import BRepPrimAPI_MakeBox
+    from OCP.STEPControl import STEPControl_AsIs, STEPControl_Writer
+    from OCP.TopAbs import TopAbs_FACE
+    from OCP.TopExp import TopExp_Explorer
+    from OCP.TopoDS import TopoDS_Shell
+
+    box = BRepPrimAPI_MakeBox(20.0, 20.0, 20.0).Shape()
+    shell = TopoDS_Shell()
+    builder = BRep_Builder()
+    builder.MakeShell(shell)
+    explorer = TopExp_Explorer(box, TopAbs_FACE)
+    added = 0
+    while explorer.More():
+        if added < 5:
+            builder.Add(shell, explorer.Current())
+            added += 1
+        explorer.Next()
+
+    cache_dir = tmp_path / "cache"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    step_path = cache_dir / "open_shell_fixture.step"
+    writer = STEPControl_Writer()
+    writer.Transfer(shell, STEPControl_AsIs)
+    writer.Write(str(step_path))
+    digest = hashlib.sha256(step_path.read_bytes()).hexdigest()
+
+    template = CATALOG_SPECS["quadcopter_drone_v1"]
+    root = copy.deepcopy(template["nodes"][0])
+    leaf = copy.deepcopy(next(n for n in template["nodes"] if n["id"] == "comp_base_plate_lower"))
+    leaf["parentId"] = root["id"]
+    leaf["depth"] = 1
+    leaf["stepFixtureName"] = step_path.name
+    leaf["expectedStepSha256"] = digest
+    leaf["geometry"] = {"kind": "available", "role": "solid"}
+
+    result = run_cad_pipeline(
+        {**template, "nodes": [root, leaf], "relationships": [], "assemblySteps": []},
+        output_dir=tmp_path / "exports",
+        cache_dir=cache_dir,
+    )
+    assert result["verificationStatus"] == "unverified"
+    assert result["validation"]["valid"] is False
+    assert any("has no CAD solid" in failure for failure in result["validation"]["failures"])
+
+    from OCP.TopoDS import TopoDS_Compound
+
+    mixed = TopoDS_Compound()
+    builder.MakeCompound(mixed)
+    builder.Add(mixed, BRepPrimAPI_MakeBox(10.0, 10.0, 10.0).Shape())
+    builder.Add(mixed, shell)
+    mixed_step_path = cache_dir / "mixed_solid_and_shell.step"
+    mixed_writer = STEPControl_Writer()
+    mixed_writer.Transfer(mixed, STEPControl_AsIs)
+    mixed_writer.Write(str(mixed_step_path))
+    leaf["stepFixtureName"] = mixed_step_path.name
+    leaf["expectedStepSha256"] = hashlib.sha256(mixed_step_path.read_bytes()).hexdigest()
+
+    mixed_result = run_cad_pipeline(
+        {**template, "nodes": [root, leaf], "relationships": [], "assemblySteps": []},
+        output_dir=tmp_path / "exports_mixed",
+        cache_dir=cache_dir,
+    )
+    assert mixed_result["verificationStatus"] == "unverified"
+    assert mixed_result["validation"]["valid"] is False
+    assert any(
+        "contains open surface geometry outside CAD solids" in failure
+        for failure in mixed_result["validation"]["failures"]
+    )

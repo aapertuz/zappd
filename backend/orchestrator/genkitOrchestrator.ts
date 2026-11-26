@@ -7,12 +7,14 @@ import { z } from 'genkit';
 
 import {
   type AiProviderId,
+  type AssemblyNode,
   type CatalogArchetypeDefinition,
   type VerifiedProjectAssembly,
   canClassifyAsVerified,
   clampAssemblyParameterValues,
   getCatalogArchetypeById,
   hasVerifiedUpstreamProvenance,
+  isAllowedProjectAssembly,
   isVerifiedStatus,
   matchProjectArchetypeFromPrompt,
   parseVerifiedProjectAssembly,
@@ -52,6 +54,8 @@ const PUBLISHED_ASSEMBLY_FILE_NAMES = [
   'manifest.json',
   'pipeline_result.json',
 ] as const;
+
+const OPTIONAL_INSPECTION_REPORT_FILE_NAMES = ['interference.json', 'engineering.json'] as const;
 
 const RetrievalInputSchema = z.object({
   archetypeId: z.string().min(1),
@@ -98,6 +102,34 @@ type CadBuildOptions = {
 };
 
 type CadParameters = Readonly<Record<string, number>>;
+
+export function matchesCatalogPlacements(
+  catalogNodes: readonly Pick<AssemblyNode, 'id' | 'restPositionMeters'>[],
+  workerNodes: readonly Pick<AssemblyNode, 'id' | 'restPositionMeters'>[],
+): boolean {
+  if (catalogNodes.length !== workerNodes.length) {
+    return false;
+  }
+  const byId = new Map(workerNodes.map((node) => [node.id, node]));
+  for (const expected of catalogNodes) {
+    const actual = byId.get(expected.id);
+    if (actual === undefined) {
+      return false;
+    }
+    for (let axis = 0; axis < 3; axis += 1) {
+      const expectedValue = expected.restPositionMeters[axis];
+      const actualValue = actual.restPositionMeters[axis];
+      if (
+        expectedValue === undefined ||
+        actualValue === undefined ||
+        Math.abs(expectedValue - actualValue) > 1e-6
+      ) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
 
 type CadOperation =
   | { readonly cmd: 'build'; readonly parameterValues?: CadParameters }
@@ -214,69 +246,84 @@ async function tryReuseVerifiedExports(args: {
       await fs.readFile(path.join(precomputedDir, 'pipeline_result.json'), 'utf8'),
     );
     const workerResult = parseCadWorkerPayload(rawJson, args.archetype);
-    if (
-      !isVerifiedStatus(workerResult.verificationStatus) ||
-      !usesContentAddressedUrls(workerResult)
-    ) {
+    if (!usesContentAddressedUrls(workerResult) || !isAllowedProjectAssembly(workerResult)) {
       return null;
     }
-    if (
-      !canClassifyAsVerified(workerResult.validation, workerResult.verificationStatus) ||
-      workerResult.validation.connectivityValid !== true ||
-      workerResult.validation.electricalValid !== true
-    ) {
-      return null;
-    }
-    if (!hasVerifiedUpstreamProvenance(workerResult.nodes, workerResult.verificationStatus)) {
-      return null;
-    }
-    const expectedNodesById = new Map(args.archetype.nodes.map((node) => [node.id, node]));
-    const matchesCatalogContract =
-      workerResult.nodes.length === expectedNodesById.size &&
-      workerResult.nodes.every((actual) => {
-        const expected = expectedNodesById.get(actual.id);
-        if (expected === undefined) {
-          return false;
-        }
-        return (
-          actual.category === expected.category &&
-          actual.provenance.origin === expected.origin &&
-          actual.provenance.sourceUrl === expected.sourceUrl &&
-          actual.provenance.spdxLicense === expected.spdxLicense &&
-          (expected.expectedStepSha256 === undefined ||
-            actual.provenance.stepSha256 === expected.expectedStepSha256) &&
-          JSON.stringify(actual.restPositionMeters) ===
-            JSON.stringify(expected.restPositionMeters) &&
-          JSON.stringify(actual.restRotationDeg ?? null) ===
-            JSON.stringify(expected.restRotationDeg ?? null) &&
-          JSON.stringify(actual.ports ?? null) === JSON.stringify(expected.ports ?? null) &&
-          JSON.stringify(actual.mountingInterfaces ?? null) ===
-            JSON.stringify(expected.mountingInterfaces ?? null)
+    if (args.archetype.semantics === 'source_inspection') {
+      if (!matchesCatalogPlacements(args.archetype.nodes, workerResult.nodes)) {
+        return null;
+      }
+    } else {
+      if (
+        !isVerifiedStatus(workerResult.verificationStatus) ||
+        !canClassifyAsVerified(workerResult.validation, workerResult.verificationStatus) ||
+        workerResult.validation.connectivityValid !== true ||
+        workerResult.validation.electricalValid !== true
+      ) {
+        return null;
+      }
+      if (!hasVerifiedUpstreamProvenance(workerResult.nodes, workerResult.verificationStatus)) {
+        return null;
+      }
+      const expectedNodesById = new Map(args.archetype.nodes.map((node) => [node.id, node]));
+      const matchesCatalogContract =
+        workerResult.nodes.length === expectedNodesById.size &&
+        workerResult.nodes.every((actual) => {
+          const expected = expectedNodesById.get(actual.id);
+          if (expected === undefined) {
+            return false;
+          }
+          return (
+            actual.category === expected.category &&
+            actual.provenance.origin === expected.origin &&
+            actual.provenance.sourceUrl === expected.sourceUrl &&
+            actual.provenance.spdxLicense === expected.spdxLicense &&
+            (expected.expectedStepSha256 === undefined ||
+              actual.provenance.stepSha256 === expected.expectedStepSha256) &&
+            JSON.stringify(actual.restPositionMeters) ===
+              JSON.stringify(expected.restPositionMeters) &&
+            JSON.stringify(actual.restRotationDeg ?? null) ===
+              JSON.stringify(expected.restRotationDeg ?? null) &&
+            JSON.stringify(actual.ports ?? null) === JSON.stringify(expected.ports ?? null) &&
+            JSON.stringify(actual.mountingInterfaces ?? null) ===
+              JSON.stringify(expected.mountingInterfaces ?? null)
+          );
+        }) &&
+        JSON.stringify(workerResult.relationships) ===
+          JSON.stringify(args.archetype.relationships) &&
+        JSON.stringify(workerResult.assemblySteps) ===
+          JSON.stringify(args.archetype.assemblySteps) &&
+        !args.archetype.parameters?.some(
+          ({ name, defaultValue }) => workerResult.parameterValues?.[name] !== defaultValue,
         );
-      }) &&
-      JSON.stringify(workerResult.relationships) === JSON.stringify(args.archetype.relationships) &&
-      JSON.stringify(workerResult.assemblySteps) === JSON.stringify(args.archetype.assemblySteps) &&
-      !args.archetype.parameters?.some(
-        ({ name, defaultValue }) => workerResult.parameterValues?.[name] !== defaultValue,
-      );
-    if (!matchesCatalogContract) {
-      return null;
+      if (!matchesCatalogContract) {
+        return null;
+      }
     }
     const mappingOk = verifyOneToOneNodeMapping(
       workerResult.nodes,
       workerResult.glbNodeIds,
       workerResult.usdzPrimPaths,
+      { allowUnavailableNodes: args.archetype.semantics === 'source_inspection' },
     );
     if (!mappingOk) {
       return null;
     }
     await readExportedArtifacts(precomputedDir, workerResult);
     await fs.mkdir(args.outputDir, { recursive: true });
-    await Promise.all(
-      PUBLISHED_ASSEMBLY_FILE_NAMES.map((fileName) =>
+    await Promise.all([
+      ...PUBLISHED_ASSEMBLY_FILE_NAMES.map((fileName) =>
         fs.copyFile(path.join(precomputedDir, fileName), path.join(args.outputDir, fileName)),
       ),
-    );
+      ...OPTIONAL_INSPECTION_REPORT_FILE_NAMES.map(async (fileName) => {
+        try {
+          await fs.copyFile(
+            path.join(precomputedDir, fileName),
+            path.join(args.outputDir, fileName),
+          );
+        } catch {}
+      }),
+    ]);
     return workerResult;
   } catch {
     return null;
@@ -342,11 +389,25 @@ async function runCadAssemblyAndValidation(
   }
 
   const { verificationStatus, validation, nodes, glbNodeIds, usdzPrimPaths } = workerResult;
-  const accepted = isVerifiedStatus(verificationStatus)
-    ? canClassifyAsVerified(validation, verificationStatus) &&
-      hasVerifiedUpstreamProvenance(nodes, verificationStatus) &&
-      verifyOneToOneNodeMapping(nodes, glbNodeIds, usdzPrimPaths)
-    : allowUnverified === true;
+  const isSourceInspection = archetype.semantics === 'source_inspection';
+  const mappingOk = verifyOneToOneNodeMapping(nodes, glbNodeIds, usdzPrimPaths, {
+    allowUnavailableNodes: isSourceInspection,
+  });
+  const placementsMatch =
+    archetype.generationMode === 'parametric_family' ||
+    matchesCatalogPlacements(archetype.nodes, nodes);
+  const accepted =
+    injectCollisionTest === true
+      ? allowUnverified === true && verificationStatus === 'unverified'
+      : isVerifiedStatus(verificationStatus)
+        ? canClassifyAsVerified(validation, verificationStatus) &&
+          hasVerifiedUpstreamProvenance(nodes, verificationStatus) &&
+          mappingOk
+        : (isSourceInspection &&
+            isAllowedProjectAssembly(workerResult) &&
+            mappingOk &&
+            placementsMatch) ||
+          allowUnverified === true;
   if (!accepted) {
     throw new Error(
       `OpenCascade validation rejected assembly "${archetypeId}": ${validation.failures.join('; ')}`,
@@ -380,11 +441,16 @@ async function publishAssemblyArtifacts(
   await fs.mkdir(assembliesDir, { recursive: true });
   const stagingDir = await fs.mkdtemp(path.join(assembliesDir, '.publish-'));
   try {
-    await Promise.all(
-      PUBLISHED_ASSEMBLY_FILE_NAMES.map((fileName) =>
+    await Promise.all([
+      ...PUBLISHED_ASSEMBLY_FILE_NAMES.map((fileName) =>
         fs.copyFile(path.join(workDir, fileName), path.join(stagingDir, fileName)),
       ),
-    );
+      ...OPTIONAL_INSPECTION_REPORT_FILE_NAMES.map(async (fileName) => {
+        try {
+          await fs.copyFile(path.join(workDir, fileName), path.join(stagingDir, fileName));
+        } catch {}
+      }),
+    ]);
     try {
       await fs.rename(stagingDir, publicDir);
     } catch (error) {
@@ -431,6 +497,26 @@ async function buildProjectAssembly(
       parameters,
       parameterValues,
     } = cadResult;
+    const catalogNodesById =
+      archetype.generationMode === 'parametric_family'
+        ? null
+        : new Map(archetype.nodes.map((node) => [node.id, node]));
+    const resolvedNodes =
+      catalogNodesById === null
+        ? nodes
+        : nodes.map((node) => {
+            const catalogNode = catalogNodesById.get(node.id);
+            if (catalogNode === undefined) return node;
+
+            const { enclosureRole: _cachedRole, ...geometryNode } = node;
+            const { enclosureRole, explodeDirection, explodeDistanceMeters } = catalogNode;
+            return {
+              ...geometryNode,
+              explodeDirection,
+              explodeDistanceMeters,
+              ...(enclosureRole === undefined ? {} : { enclosureRole }),
+            };
+          });
     const assembly: VerifiedProjectAssembly = {
       projectId: toProjectId(`proj_${archetype.archetypeId}_${manifest.manifestHash.slice(0, 8)}`),
       archetypeId: archetype.archetypeId,
@@ -441,7 +527,7 @@ async function buildProjectAssembly(
       manifest,
       validation,
       verificationStatus,
-      nodes,
+      nodes: resolvedNodes,
       relationships,
       assemblySteps,
       parameters,

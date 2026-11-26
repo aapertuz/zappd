@@ -298,6 +298,15 @@ def ingest_nova2(cache_dir: Path) -> dict[str, dict[str, Any]]:
     return results
 
 
+DEFAULT_INGEST_STEP_PATTERNS = ("drone_cad_*.step", "so100_*.step", "nova2_*.step")
+
+
+def clean_default_step_fixtures(cache_dir: Path) -> None:
+    for pattern in DEFAULT_INGEST_STEP_PATTERNS:
+        for stale in cache_dir.glob(pattern):
+            stale.unlink()
+
+
 def read_step_product(payload: bytes, product_name: str) -> TopoDS_Shape:
     with tempfile.NamedTemporaryFile(suffix=".step") as source:
         source.write(payload)
@@ -366,8 +375,24 @@ def main() -> int:
         "open_quadruped_v1": ingest_open_quadruped,
     }
     parser = argparse.ArgumentParser(description="Ingest pinned upstream CAD fixtures")
+    parser.add_argument("--poppy", action="store_true", help="Import the pinned Poppy Humanoid release")
     parser.add_argument("--archetype", choices=ingestors)
     args = parser.parse_args()
+    if args.poppy:
+        from poppy_catalog import POPPY_SOURCE_URL, POPPY_SPEC_PATH, import_poppy, verify_poppy_source
+
+        source = CACHE_DIR / "Poppy_Humanoid.STEP"
+        if not source.exists():
+            payload = fetch_bytes(POPPY_SOURCE_URL)
+            verify_poppy_source(payload)
+            source.parent.mkdir(parents=True, exist_ok=True)
+            source.write_bytes(payload)
+        spec = import_poppy(source, CACHE_DIR)
+        POPPY_SPEC_PATH.write_text(json.dumps(spec, indent=2) + "\n")
+        return 0
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    if args.archetype is None:
+        clean_default_step_fixtures(CACHE_DIR)
     targets = (args.archetype,) if args.archetype else ingestors
     summary = {archetype_id: ingestors[archetype_id](CACHE_DIR) for archetype_id in targets}
     print(json.dumps(summary, indent=2))

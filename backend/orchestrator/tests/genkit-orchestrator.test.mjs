@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import http from 'node:http';
 import { registerHooks } from 'node:module';
@@ -34,9 +35,13 @@ registerHooks({
   },
 });
 
+const { getCatalogArchetypeById } = await import('../../../src/shared/domain/index.ts');
 const { FirebaseEmulatorRepository } = await import('../../../src/shared/firebase/index.ts');
-const { orchestrateProjectAssemblyCreation, rebuildAssemblyWithParameters } =
-  await import('../genkitOrchestrator.ts');
+const {
+  matchesCatalogPlacements,
+  orchestrateProjectAssemblyCreation,
+  rebuildAssemblyWithParameters,
+} = await import('../genkitOrchestrator.ts');
 const { planProjectWithProvider } = await import('../aiProviders.ts');
 const { requestWarmCadBuild, shutdownWarmCadWorker } = await import('../warmCadClient.ts');
 
@@ -139,6 +144,32 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
     assert.equal(assembly.validation.interferenceCount, 0);
     assert.equal(assembly.nodes.length, 21);
     assert.equal(assembly.assemblySteps.length, 4);
+    const computeBay = assembly.nodes.find(({ id }) => id === 'comp_rover_compute_bay');
+    assert.equal(computeBay.enclosureRole, 'shell');
+    assert.equal(computeBay.explodeDistanceMeters, 0.075);
+    assertReusesAvailableExports(assembly);
+  });
+
+  it('orchestrates a fourth robotics archetype (HeyPCB Reachy Mini desktop robot)', async () => {
+    const repository = new FirebaseEmulatorRepository();
+    const assembly = await orchestrateProjectAssemblyCreation({
+      prompt: 'Build Reachy Mini desktop companion robot',
+      provider: 'gemini',
+      repository,
+    });
+
+    assert.equal(assembly.archetypeId, 'reachy_mini_v1');
+    assert.equal(assembly.verificationStatus, 'composed_validated');
+    assert.equal(assembly.validation.valid, true);
+    assert.equal(assembly.validation.interferenceCount, 0);
+    assert.equal(assembly.nodes.length, 98);
+    assert.equal(assembly.assemblySteps.length, 51);
+    const topShell = assembly.nodes.find(({ id }) => id === 'comp_reachy_top_shell');
+    assert.equal(topShell.enclosureRole, 'shell');
+    assert.deepEqual(topShell.explodeDirection, [0.921954, 0.140297, -0.360765]);
+    assert.equal(topShell.explodeDistanceMeters, 0.165);
+    const mainPlate = assembly.nodes.find(({ id }) => id === 'comp_reachy_main_plate');
+    assert.equal(Object.hasOwn(mainPlate, 'enclosureRole'), false);
     assertReusesAvailableExports(assembly);
   });
 
@@ -454,6 +485,288 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
       if (originalOpenAiKey !== undefined) {
         process.env.OPENAI_API_KEY = originalOpenAiKey;
       }
+    }
+  });
+
+  it('rejects shifted or collision-injected Poppy outputs through the orchestrator before saving or publishing', async () => {
+    const poppy = getCatalogArchetypeById('poppy_humanoid_v1');
+    assert.ok(poppy);
+    const originalCwd = process.cwd();
+    const isolatedCwd = fs.mkdtempSync(path.join(os.tmpdir(), 'zappd-poppy-orch-'));
+
+    const stepBytes = Buffer.from('ISO-10303-21;POPPY-STUB;');
+    const glbBytes = Buffer.from('glTF\x02\x00\x00\x00');
+    const usdzBytes = Buffer.from('PK\x03\x04usdz');
+    const sha256Hex = (buf) => createHash('sha256').update(buf).digest('hex');
+    const stepSha = sha256Hex(stepBytes);
+    const glbSha = sha256Hex(glbBytes);
+    const usdzSha = sha256Hex(usdzBytes);
+    const manifestHash = sha256Hex(
+      Buffer.from(`poppy_humanoid_v1:${stepSha}:${glbSha}:${usdzSha}`),
+    );
+
+    const buildPoppyPayload = (shiftLastNode) => {
+      const nodes = poppy.nodes.map((node, index) => ({
+        id: node.id,
+        parentId: node.parentId,
+        name: node.name,
+        level: node.level,
+        depth: node.depth,
+        category: node.category,
+        colorHex: node.colorHex,
+        dimensionsMm: node.dimensionsMm,
+        restPositionMeters:
+          shiftLastNode && index === poppy.nodes.length - 1
+            ? [
+                node.restPositionMeters[0] + 0.01,
+                node.restPositionMeters[1],
+                node.restPositionMeters[2],
+              ]
+            : node.restPositionMeters,
+        explodeDirection: node.explodeDirection,
+        explodeDistanceMeters: node.explodeDistanceMeters,
+        materialHint: node.materialHint,
+        specifications: node.specifications,
+        geometry: node.geometry,
+        provenance: {
+          origin: node.origin,
+          verificationStatus: 'unverified',
+          spdxLicense: node.spdxLicense,
+          sourceUrl: node.sourceUrl,
+          sourceName: node.sourceName,
+          stepSha256: node.expectedStepSha256 ?? stepSha,
+        },
+        glbNodeName: node.id,
+        usdzPrimPath: `/World/${node.id}`,
+      }));
+      const mappedLeaves = nodes.filter(
+        (node) =>
+          (node.level === 'component' || node.level === 'subcomponent') &&
+          node.geometry?.kind !== 'unavailable',
+      );
+      return {
+        archetypeId: 'poppy_humanoid_v1',
+        verificationStatus: 'unverified',
+        nodes,
+        glbNodeIds: mappedLeaves.map((node) => node.glbNodeName),
+        usdzPrimPaths: mappedLeaves.map((node) => node.usdzPrimPath),
+        manifest: {
+          manifestHash,
+          archetypeId: 'poppy_humanoid_v1',
+          generatedAtIso: '2026-11-25T00:00:00.000Z',
+          files: {
+            step: {
+              format: 'step',
+              storagePath: `assemblies/${manifestHash}/model.step`,
+              publicUrl: `/assemblies/${manifestHash}/model.step`,
+              sha256: stepSha,
+              sizeBytes: stepBytes.length,
+            },
+            glb: {
+              format: 'glb',
+              storagePath: `assemblies/${manifestHash}/model.glb`,
+              publicUrl: `/assemblies/${manifestHash}/model.glb`,
+              sha256: glbSha,
+              sizeBytes: glbBytes.length,
+            },
+            usdz: {
+              format: 'usdz',
+              storagePath: `assemblies/${manifestHash}/model.usdz`,
+              publicUrl: `/assemblies/${manifestHash}/model.usdz`,
+              sha256: usdzSha,
+              sizeBytes: usdzBytes.length,
+            },
+          },
+        },
+        validation: {
+          valid: false,
+          brepValid: true,
+          interferenceCount: 0,
+          maxDimensionalErrorMm: 0.05,
+          nodeMappingComplete: true,
+          unitSystem: 'meters_y_up',
+          checkedAtIso: '2026-11-25T00:00:00.000Z',
+          failures: ['Partial source inspection'],
+          sourceInterferenceReport: {
+            status: 'partial',
+            solidCount: 199,
+            possiblePairCount: 19701,
+            candidatePairCount: 0,
+            intersectionCount: 0,
+            unresolvedPairCount: 0,
+            volumeThresholdMm3: 0.001,
+            aabbToleranceMm: 1e-7,
+            excludedComponents: [],
+            pairs: [],
+            limitations: [],
+          },
+          engineeringReport: {
+            status: 'unverified',
+            manufacturingReadiness: 'not_established',
+            materials: 'unknown',
+            manufacturingTolerances: 'unknown',
+            loadsAndConstraints: 'not_verified',
+            renderDimensionComparison: {
+              maximumErrorMm: 0.05,
+              thresholdMm: 0.1,
+              meaning: 'CAD to render bounds comparison',
+            },
+            nodeMappingComplete: true,
+            rejectedCadComponentIds: [],
+            surfaceComponentIds: [],
+          },
+        },
+      };
+    };
+
+    const writeExportFixture = (dir, payload) => {
+      fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(path.join(dir, 'model.step'), stepBytes);
+      fs.writeFileSync(path.join(dir, 'model.glb'), glbBytes);
+      fs.writeFileSync(path.join(dir, 'model.usdz'), usdzBytes);
+      fs.writeFileSync(path.join(dir, 'manifest.json'), JSON.stringify(payload.manifest));
+      fs.writeFileSync(path.join(dir, 'pipeline_result.json'), JSON.stringify(payload));
+    };
+
+    const canonicalPayload = buildPoppyPayload(false);
+    const shiftedPayload = buildPoppyPayload(true);
+    assert.equal(matchesCatalogPlacements(poppy.nodes, canonicalPayload.nodes), true);
+    assert.equal(matchesCatalogPlacements(poppy.nodes, shiftedPayload.nodes), false);
+
+    const pythonStubPath = path.join(isolatedCwd, 'backend', '.venv', 'bin', 'python');
+    const stubPayloadPath = path.join(isolatedCwd, 'stub-payload.json');
+    fs.mkdirSync(path.dirname(pythonStubPath), { recursive: true });
+    fs.writeFileSync(
+      pythonStubPath,
+      [
+        `#!${process.execPath}`,
+        "const fs = require('node:fs');",
+        "const path = require('node:path');",
+        "const readline = require('node:readline');",
+        'const rl = readline.createInterface({ input: process.stdin });',
+        "rl.on('line', (line) => {",
+        '  const req = JSON.parse(line);',
+        "  if (req.cmd === 'shutdown') {",
+        "    process.stdout.write(JSON.stringify({ id: req.id, ok: true }) + '\\n', () => process.exit(0));",
+        '    rl.close();',
+        '    return;',
+        '  }',
+        `  const payload = JSON.parse(fs.readFileSync(${JSON.stringify(stubPayloadPath)}, 'utf8'));`,
+        '  fs.mkdirSync(req.outputDir, { recursive: true });',
+        `  fs.writeFileSync(path.join(req.outputDir, 'model.step'), Buffer.from(${JSON.stringify(stepBytes.toString('base64'))}, 'base64'));`,
+        `  fs.writeFileSync(path.join(req.outputDir, 'model.glb'), Buffer.from(${JSON.stringify(glbBytes.toString('base64'))}, 'base64'));`,
+        `  fs.writeFileSync(path.join(req.outputDir, 'model.usdz'), Buffer.from(${JSON.stringify(usdzBytes.toString('base64'))}, 'base64'));`,
+        "  fs.writeFileSync(path.join(req.outputDir, 'manifest.json'), JSON.stringify(payload.manifest));",
+        "  fs.writeFileSync(path.join(req.outputDir, 'pipeline_result.json'), JSON.stringify(payload));",
+        "  process.stdout.write(JSON.stringify({ id: req.id, ok: true, result: payload }) + '\\n');",
+        '});',
+      ].join('\n'),
+      { mode: 0o755 },
+    );
+
+    const precomputedDir = path.join(
+      isolatedCwd,
+      'backend',
+      'data',
+      'exports',
+      'poppy_humanoid_v1',
+    );
+    const publicDir = path.join(isolatedCwd, 'public', 'assemblies', manifestHash);
+
+    await shutdownWarmCadWorker();
+    process.chdir(isolatedCwd);
+    try {
+      writeExportFixture(precomputedDir, shiftedPayload);
+      fs.writeFileSync(stubPayloadPath, JSON.stringify(shiftedPayload));
+      const shiftedRepo = new FirebaseEmulatorRepository();
+      await assert.rejects(
+        () =>
+          orchestrateProjectAssemblyCreation({
+            prompt: 'Inspect Poppy humanoid',
+            provider: 'gemini',
+            repository: shiftedRepo,
+          }),
+        /OpenCascade validation rejected assembly "poppy_humanoid_v1"/,
+      );
+      assert.equal(shiftedRepo.listCollection('projects').length, 0);
+      assert.equal(fs.existsSync(publicDir), false);
+
+      fs.writeFileSync(stubPayloadPath, JSON.stringify(canonicalPayload));
+      const injectedRepo = new FirebaseEmulatorRepository();
+      await assert.rejects(
+        () =>
+          orchestrateProjectAssemblyCreation({
+            prompt: 'Inspect Poppy humanoid',
+            provider: 'gemini',
+            injectCollisionTest: true,
+            repository: injectedRepo,
+          }),
+        /OpenCascade validation rejected assembly "poppy_humanoid_v1"/,
+      );
+      assert.equal(injectedRepo.listCollection('projects').length, 0);
+      assert.equal(fs.existsSync(publicDir), false);
+
+      writeExportFixture(precomputedDir, canonicalPayload);
+      const canonicalRepo = new FirebaseEmulatorRepository();
+      const persisted = await orchestrateProjectAssemblyCreation({
+        prompt: 'Inspect Poppy humanoid',
+        provider: 'gemini',
+        repository: canonicalRepo,
+      });
+      assert.equal(persisted.archetypeId, 'poppy_humanoid_v1');
+      assert.equal(canonicalRepo.listCollection('projects').length, 1);
+      assert.equal(fs.existsSync(path.join(publicDir, 'pipeline_result.json')), true);
+    } finally {
+      await shutdownWarmCadWorker();
+      process.chdir(originalCwd);
+      fs.rmSync(isolatedCwd, { recursive: true, force: true });
+    }
+  });
+
+  it('terminates a worker that acknowledges shutdown without exiting', async () => {
+    const originalCwd = process.cwd();
+    const isolatedCwd = fs.mkdtempSync(path.join(os.tmpdir(), 'zappd-lingering-worker-'));
+    const pythonStubPath = path.join(isolatedCwd, 'backend', '.venv', 'bin', 'python');
+    const pidFilePath = path.join(isolatedCwd, 'worker.pid');
+    fs.mkdirSync(path.dirname(pythonStubPath), { recursive: true });
+    fs.writeFileSync(
+      pythonStubPath,
+      [
+        `#!${process.execPath}`,
+        "const fs = require('node:fs');",
+        "const readline = require('node:readline');",
+        `fs.writeFileSync(${JSON.stringify(pidFilePath)}, String(process.pid));`,
+        'setInterval(() => {}, 1000);',
+        'const rl = readline.createInterface({ input: process.stdin });',
+        "rl.on('line', (line) => {",
+        '  const req = JSON.parse(line);',
+        "  process.stdout.write(JSON.stringify({ id: req.id, ok: true, result: { stub: true } }) + '\\n');",
+        '});',
+      ].join('\n'),
+      { mode: 0o755 },
+    );
+
+    await shutdownWarmCadWorker();
+    process.chdir(isolatedCwd);
+    try {
+      const response = await requestWarmCadBuild({
+        cmd: 'build',
+        archetypeId: 'open_source_rover_v1',
+        outputDir: isolatedCwd,
+        cacheDir: isolatedCwd,
+      });
+      assert.deepEqual(response, { stub: true });
+      const workerPid = Number(fs.readFileSync(pidFilePath, 'utf8'));
+      assert.ok(Number.isInteger(workerPid) && workerPid > 0);
+
+      const startedAt = Date.now();
+      await shutdownWarmCadWorker({ closeTimeoutMs: 150 });
+      assert.ok(Date.now() - startedAt < 2_000);
+      assert.throws(() => process.kill(workerPid, 0), { code: 'ESRCH' });
+    } finally {
+      await shutdownWarmCadWorker({ closeTimeoutMs: 150 });
+      process.chdir(originalCwd);
+      fs.rmSync(isolatedCwd, { recursive: true, force: true });
     }
   });
 });

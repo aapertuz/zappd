@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useEffectEvent, useLayoutEffect, useReducer, useRef } from 'react';
 
-import { type AiProviderId, type ComponentId, type VerifiedProjectAssembly } from '@/shared/domain';
+import {
+  type AiProviderId,
+  type ComponentId,
+  type VerifiedProjectAssembly,
+  isVerifiedStatus,
+} from '@/shared/domain';
 
 import {
   INITIAL_LEARNING_STATE,
@@ -86,7 +91,7 @@ export function useComponentLearning(inputs: LearningInputs) {
 
     const changedProject = previous.projectId !== projectId;
     if (changedProject) dispatch({ type: 'reset' });
-    if (assembly === null) return;
+    if (assembly === null || !isVerifiedStatus(assembly.verificationStatus)) return;
 
     if (changedProject || previous.targetComponentId !== targetComponentId) {
       const component = assembly.nodes.find(({ id }) => id === targetComponentId);

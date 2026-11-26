@@ -334,13 +334,16 @@ describe('component learning context', () => {
       open_source_rover_v1: /vehicle designed to explore terrain/i,
       open_quadruped_v1: /four-legged walking robot by Adham Elarabawy/i,
       parametric_multirotor_v1: /reconfigurable aircraft/i,
+      reachy_mini_v1: /desktop companion robot/i,
     };
-    for (const [index, archetype] of CATALOG_ARCHETYPES.entries()) {
+    for (const [index, archetype] of CATALOG_ARCHETYPES.filter(
+      (entry) => entry.semantics !== 'source_inspection',
+    ).entries()) {
       const project = verifiedAssembly(archetype, `proj_learning_overview_${index}`);
       const context = await createLearningContext(project);
       const explanation = formatOfflineLearningFallback(context, request);
       assert.match(explanation, plainDescriptions[archetype.archetypeId]);
-      assert.match(explanation, /Its main groups (are|include)/);
+      assert.match(explanation, /Its main groups (are|include)|You can explore/);
       assert.match(
         explanation,
         new RegExp(`build guide breaks it down into ${project.assemblySteps.length} steps`),

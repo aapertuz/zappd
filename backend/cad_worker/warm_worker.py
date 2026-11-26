@@ -24,8 +24,14 @@ def _build(request: dict, cache: CadAssetCache) -> dict:
     if not isinstance(inject_collision, bool):
         raise ValueError("injectCollisionTest must be a boolean")
     render_dir = request.get("renderViewsDir")
-    return run_cad_pipeline(
-        resolve_catalog_spec(request["archetypeId"]),
+    archetype_id = request["archetypeId"]
+    pipeline = run_cad_pipeline
+    if archetype_id == "poppy_humanoid_v1":
+        from poppy_pipeline import run_poppy_pipeline
+
+        pipeline = run_poppy_pipeline
+    return pipeline(
+        resolve_catalog_spec(archetype_id),
         Path(request["outputDir"]),
         Path(request["cacheDir"]),
         inject_collision_test=inject_collision,

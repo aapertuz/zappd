@@ -1,16 +1,25 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { assemblyHasShellNodes } from '@/shared/domain';
+
 import { LearningCallouts } from '@/features/learning';
 
 import { AssemblyParameters } from './AssemblyParameters';
 import { getAssemblyValidationFailures } from '../model/parameterControls';
-import { type AssemblySceneProps } from '../types';
+import { type AssemblySceneProps, type ShellVisibilityMode } from '../types';
+
+const SHELL_LABELS = {
+  solid: 'Shell',
+  xray: 'Shell x-ray',
+  hidden: 'Shell off',
+} satisfies Record<ShellVisibilityMode, string>;
 
 export function NativeAssemblyScene({
   assembly,
   state,
   onApplyParameters,
   onSetExplodeFactor,
+  onCycleShellVisibility,
   onFocusComponent,
   onExitPartFocus,
   learningState,
@@ -46,6 +55,14 @@ export function NativeAssemblyScene({
             {state.isolatedComponentId !== null ? 'Show All' : 'Isolate'}
           </Text>
         </Pressable>
+        {assemblyHasShellNodes(assembly.nodes) ? (
+          <Pressable
+            accessibilityRole="button"
+            style={styles.button}
+            onPress={onCycleShellVisibility}>
+            <Text style={styles.buttonText}>{SHELL_LABELS[state.shellVisibility]}</Text>
+          </Pressable>
+        ) : null}
       </View>
       {focusedPart !== undefined ? (
         <View style={styles.controls}>
@@ -126,6 +143,7 @@ const styles = StyleSheet.create({
   },
   controls: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
   },
   button: {

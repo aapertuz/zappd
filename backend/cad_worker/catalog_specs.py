@@ -12,6 +12,8 @@ CATALOG_ORDER = {
     "open_source_rover_v1": 2,
     "open_quadruped_v1": 3,
     "parametric_multirotor_v1": 4,
+    "reachy_mini_v1": 5,
+    "poppy_humanoid_v1": 6,
 }
 
 

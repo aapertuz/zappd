@@ -17,6 +17,12 @@
       "@/backend/*": ["./backend/*"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "backend/**/*.ts",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
+  ],
   "exclude": ["node_modules", "backend/.venv", "backend/data", ".audit", "public/assemblies"]
 }

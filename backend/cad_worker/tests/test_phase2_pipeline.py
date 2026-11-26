@@ -418,3 +418,33 @@ def test_parametric_generator_replaces_stale_cached_step(tmp_path) -> None:
     expected = next(node for node in catalog["nodes"] if node["id"] == "comp_multi_lower")["expectedStepSha256"]
     assert lower["expectedStepSha256"] == expected
     assert "STALE" not in stale.read_text(encoding="ascii")
+
+
+def test_interference_prefilter_preserves_nested_solids_and_skips_hollow_cavities() -> None:
+    from OCP.BRepAlgoAPI import BRepAlgoAPI_Cut
+    from validation_checks import extract_face_boxes, extract_solid_probes, solids_may_intersect
+
+    outer = BRepPrimAPI_MakeBox(gp_Pnt(0, 0, 0), 30, 30, 30).Shape()
+    inner_solid = BRepPrimAPI_MakeBox(gp_Pnt(10, 10, 10), 6, 6, 6).Shape()
+    hollow_shell = BRepAlgoAPI_Cut(outer, BRepPrimAPI_MakeBox(gp_Pnt(3, 3, 3), 24, 24, 24).Shape()).Shape()
+    overlapping = BRepPrimAPI_MakeBox(gp_Pnt(25, 10, 10), 10, 6, 6).Shape()
+
+    def check(id_a: str, shape_a, id_b: str, shape_b) -> bool:
+        return solids_may_intersect(
+            id_a,
+            id_b,
+            shape_a,
+            shape_b,
+            extract_face_boxes(shape_a),
+            extract_face_boxes(shape_b),
+            shape_bounds_mm(shape_a),
+            shape_bounds_mm(shape_b),
+            extract_solid_probes(shape_a),
+            extract_solid_probes(shape_b),
+            {},
+        )
+
+    assert check("outer", outer, "inner", inner_solid) is True
+    assert check("inner", inner_solid, "outer", outer) is True
+    assert check("hollow", hollow_shell, "inner", inner_solid) is False
+    assert check("hollow", hollow_shell, "overlapping", overlapping) is True
