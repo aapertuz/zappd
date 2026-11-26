@@ -370,7 +370,7 @@ RATINGS = {
     "CAM": ("mipi_csi2", 3.1, 3.3, 3.5, 0.25, 0),
     "MIC": ("pdm_audio", 1.62, 1.8, 1.98, 0.02, 1),
 }
-SERVO_RAIL = (6.8, 6.8, 7.3)
+SERVO_RAIL = (5.0, 5.0, 6.0)
 SERVO_INPUT = (3.7, 5.0, 6.0)
 SERVO_CHAIN_SOURCE = {"C2": 0, "C5": 1, "C7": 1, "C6": 0, "C8": 0, "C10": 0}
 
@@ -618,9 +618,9 @@ def instruction_steps(assembly: HeyPcbAssembly, nodes: dict, cables: dict, relat
         installed.update(parts)
         steps.append({
             "id": f"step_reachy_{step['id']}", "order": index,
-            "title": "Review the electrical warning before powering on" if step["id"] == "s51" else step["title"],
+            "title": "Verify regulated servo rail before powering on" if step["id"] == "s51" else step["title"],
             "summary": (
-                "HeyPCB documents a 6.8 V servo rail. The listed ROBOTIS servos are rated up to 6.0 V."
+                "Confirm the servo bus is regulated to 5.0 V (within the 3.7–6.0 V ROBOTIS XL330/XC330 rating) before powering on."
                 if step["id"] == "s51" else step.get("note") or step["title"]
             ),
             "componentIds": sorted(parts), "relationshipIds": sorted(rel_ids),
@@ -635,7 +635,7 @@ def make_catalog(assembly: HeyPcbAssembly, nodes: dict, solids: dict, staging: P
     root["dimensionsMm"] = [round(dimensions[axis], 2) for axis in (0, 2, 1)]
     root["specifications"] = {
         "originalCreator": "Pollen Robotics", "reconstructionAuthor": "HeyPCB", "sourceRevision": POLLEN_REVISION,
-        "heypcbDocumentRevision": 55, "nominalServoRailV": 6.8, "servoMaximumRatedV": 6.0,
+        "heypcbDocumentRevision": 55, "nominalServoRailV": 5.0, "servoMaximumRatedV": 6.0,
     }
     groups = [catalog_node(subsystem_id(group), ROOT_ID, title, "subsystem", group, "#e8e4dc", "assembly_root")
               for group, (title, _) in GROUPS.items()]

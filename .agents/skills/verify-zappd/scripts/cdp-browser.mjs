@@ -262,6 +262,11 @@ async function readPageDiagnostics(cdp) {
             provider: rawAssembly.provider ?? null,
             apiFormat: rawAssembly.apiFormat ?? null,
             verificationStatus: rawAssembly.verificationStatus ?? null,
+            manifestHash: rawAssembly.manifestHash ?? null,
+            parameterValues: rawAssembly.parameterValues ?? null,
+            isRebuildingParameters: Boolean(rawAssembly.isRebuildingParameters),
+            unverifiedFailures: rawAssembly.unverifiedFailures ?? [],
+            buildCacheMode: rawAssembly.buildCacheMode ?? null,
             validationPassed: Boolean(rawAssembly.validationPassed),
             interferenceCount: rawAssembly.interferenceCount ?? null,
             nodeCount: rawAssembly.nodeCount ?? 0,
@@ -297,8 +302,8 @@ async function readPageDiagnostics(cdp) {
         : null;
       const bodyText = document.body ? document.body.innerText : '';
       const isLoadingAssembly =
-        bodyText.includes('Loading verified CAD assembly') ||
-        document.querySelector('[role="progressbar"][aria-label="Loading verified CAD assembly"]') !==
+        bodyText.includes('Loading CAD assembly') ||
+        document.querySelector('[role="progressbar"][aria-label="Loading CAD assembly"]') !==
           null;
       const hasProviderToolbar = document.querySelector('[role="toolbar"]') !== null;
       return {

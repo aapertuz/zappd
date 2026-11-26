@@ -3,6 +3,7 @@ import { z } from 'zod';
 import {
   type AssemblyInstructionStep,
   type AssemblyNode,
+  type AssemblyParameter,
   type AssetChecksum,
   type CatalogArchetypeId,
   type ComponentId,
@@ -12,6 +13,7 @@ import {
   type VerificationStatus,
   assemblyInstructionStepSchema,
   assemblyNodeFieldsSchema,
+  assemblyParameterSchema,
   canClassifyAsVerified,
   canInspectSourceAssembly,
   componentRelationshipSchema,
@@ -22,7 +24,9 @@ import {
   isGeometryOrigin,
   isVerifiedStatus,
 } from './assembly';
+import openQuadrupedCatalog from './catalog/assemblies/open_quadruped_v1.json' with { type: 'json' };
 import roverCatalog from './catalog/assemblies/open_source_rover_v1.json' with { type: 'json' };
+import parametricMultirotorCatalog from './catalog/assemblies/parametric_multirotor_v1.json' with { type: 'json' };
 import poppyCatalog from './catalog/assemblies/poppy_humanoid_v1.json' with { type: 'json' };
 import quadcopterCatalog from './catalog/assemblies/quadcopter_drone_v1.json' with { type: 'json' };
 import reachyMiniCatalog from './catalog/assemblies/reachy_mini_v1.json' with { type: 'json' };
@@ -52,6 +56,7 @@ export type CatalogArchetypeDefinition = {
   readonly nodes: readonly CatalogComponentBlueprint[];
   readonly relationships: readonly ComponentRelationship[];
   readonly assemblySteps: readonly AssemblyInstructionStep[];
+  readonly parameters?: readonly AssemblyParameter[];
 };
 
 const nonEmptyString = z.string().min(1);
@@ -77,15 +82,18 @@ const catalogArchetypeSchema = z.strictObject({
   nodes: z.array(catalogComponentSchema),
   relationships: z.array(componentRelationshipSchema.strict()),
   assemblySteps: z.array(assemblyInstructionStepSchema.strict()),
+  parameters: z.array(assemblyParameterSchema).optional(),
 });
 
-function parseCatalogArchetype(raw: unknown): CatalogArchetypeDefinition {
+export function parseCatalogArchetype(raw: unknown): CatalogArchetypeDefinition {
   return catalogArchetypeSchema.parse(raw);
 }
 
 export const QUADCOPTER_ARCHETYPE = parseCatalogArchetype(quadcopterCatalog);
 export const ROBOTIC_ARM_ARCHETYPE = parseCatalogArchetype(roboticArmCatalog);
 export const ROVER_ARCHETYPE = parseCatalogArchetype(roverCatalog);
+export const OPEN_QUADRUPED_ARCHETYPE = parseCatalogArchetype(openQuadrupedCatalog);
+export const PARAMETRIC_MULTIROTOR_ARCHETYPE = parseCatalogArchetype(parametricMultirotorCatalog);
 export const REACHY_MINI_ARCHETYPE = parseCatalogArchetype(reachyMiniCatalog);
 export const POPPY_ARCHETYPE = parseCatalogArchetype(poppyCatalog);
 
@@ -93,6 +101,8 @@ export const CATALOG_ARCHETYPES: readonly CatalogArchetypeDefinition[] = [
   QUADCOPTER_ARCHETYPE,
   ROBOTIC_ARM_ARCHETYPE,
   ROVER_ARCHETYPE,
+  OPEN_QUADRUPED_ARCHETYPE,
+  PARAMETRIC_MULTIROTOR_ARCHETYPE,
   REACHY_MINI_ARCHETYPE,
   POPPY_ARCHETYPE,
 ];
@@ -128,6 +138,9 @@ export function isAllowedProjectAssembly(assembly: {
 
 export function matchProjectArchetypeFromPrompt(prompt: string): CatalogArchetypeDefinition {
   const normalized = prompt.trim().toLowerCase();
+  if (PARAMETRIC_MULTIROTOR_ARCHETYPE.keywords.some((keyword) => normalized.includes(keyword))) {
+    return PARAMETRIC_MULTIROTOR_ARCHETYPE;
+  }
   let bestArchetype = QUADCOPTER_ARCHETYPE;
   let bestScore = -1;
 

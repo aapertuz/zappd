@@ -7,6 +7,7 @@ import { describe, it } from 'node:test';
 import {
   CATALOG_ARCHETYPES,
   GEOMETRY_ORIGIN_POLICY,
+  PARAMETRIC_MULTIROTOR_ARCHETYPE,
   QUADCOPTER_ARCHETYPE,
   buildLearningPromptParts,
   parseLearningCloudRequest,
@@ -327,20 +328,22 @@ describe('component learning context', () => {
   });
 
   it('introduces each catalog machine and describes its groups and guide', async () => {
-    const plainDescriptions = [
-      /aircraft with several propellers/i,
-      /robot arm that follows another arm/i,
-      /vehicle designed to explore terrain/i,
-      /desktop companion robot/i,
-    ];
+    const plainDescriptions = {
+      quadcopter_drone_v1: /aircraft with several propellers/i,
+      robotic_arm_3dof_v1: /robot arm that follows another arm/i,
+      open_source_rover_v1: /vehicle designed to explore terrain/i,
+      open_quadruped_v1: /four-legged walking robot by Adham Elarabawy/i,
+      parametric_multirotor_v1: /reconfigurable aircraft/i,
+      reachy_mini_v1: /desktop companion robot/i,
+    };
     for (const [index, archetype] of CATALOG_ARCHETYPES.filter(
       (entry) => entry.semantics !== 'source_inspection',
     ).entries()) {
       const project = verifiedAssembly(archetype, `proj_learning_overview_${index}`);
       const context = await createLearningContext(project);
       const explanation = formatOfflineLearningFallback(context, request);
-      assert.match(explanation, plainDescriptions[index]);
-      assert.match(explanation, /Its main groups are|You can explore/);
+      assert.match(explanation, plainDescriptions[archetype.archetypeId]);
+      assert.match(explanation, /Its main groups (are|include)|You can explore/);
       assert.match(
         explanation,
         new RegExp(`build guide breaks it down into ${project.assemblySteps.length} steps`),
@@ -348,6 +351,18 @@ describe('component learning context', () => {
       assert.doesNotMatch(explanation, /assembly.root|listed in|cantilevered|outrunner|\bDOF\b/i);
       assert.equal(explanation.split(/(?<=\.)\s+/).length, 4);
     }
+  });
+
+  it('grounds rebuilt multirotor explanations in the current parameters', async () => {
+    const project = {
+      ...verifiedAssembly(PARAMETRIC_MULTIROTOR_ARCHETYPE, 'proj_rebuilt_multirotor'),
+      title: 'Original six-rotor hexacopter with 320 mm wheelbase',
+      parameterValues: { rotor_count: 4, wheelbase_mm: 300, deck_gap_mm: 26, arm_thickness_mm: 4 },
+    };
+    const context = await createLearningContext(project);
+    assert.equal(context.projectTitle, 'Parametric Multirotor');
+    assert.match(context.projectSummary, /Rotor Count 4, Wheelbase 300 mm/);
+    assert.match(context.storedExplanation.purpose, /Rotor Count 4, Wheelbase 300 mm/);
   });
 
   it('grounds a new assembly overview in its own names, parts, and steps', async () => {

@@ -12,6 +12,8 @@ import {
   type AiModelDescriptor,
   type AiProviderId,
   CATALOG_ARCHETYPES,
+  PARAMETRIC_MULTIROTOR_ARCHETYPE,
+  clampAssemblyParameterValues,
   getAiProviderDescriptor,
   getCatalogArchetypeById,
   matchProjectArchetypeFromPrompt,
@@ -22,6 +24,7 @@ export const ProjectPlanOutputSchema = z.object({
   projectTitle: z.string(),
   plannedSubsystems: z.array(z.string()),
   rationale: z.string(),
+  parameterValues: z.record(z.string(), z.number()).optional(),
 });
 
 export type ProjectPlanOutput = z.infer<typeof ProjectPlanOutputSchema>;
@@ -198,6 +201,68 @@ function extractGeminiTextContent(payload: unknown): string {
   return firstPart.text;
 }
 
+const multirotorDimensions = {
+  wheelbase_mm:
+    /\b(\d+(?:\.\d+)?)\s*mm\s+wheelbase\b|\bwheelbase(?:\s+of|\s*[:=])?\s*(\d+(?:\.\d+)?)\s*mm\b/i,
+  deck_gap_mm:
+    /\b(\d+(?:\.\d+)?)\s*mm\s+deck[ -]gap\b|\bdeck[ -]gap(?:\s+of|\s*[:=])?\s*(\d+(?:\.\d+)?)\s*mm\b/i,
+  arm_thickness_mm:
+    /\b(\d+(?:\.\d+)?)\s*mm\s+arm(?:s|\s+thickness)?\b|\barm\s+thickness(?:\s+of|\s*[:=])?\s*(\d+(?:\.\d+)?)\s*mm\b/i,
+};
+
+function extractMultirotorParameters(prompt: string): Record<string, number> {
+  const values: Record<string, number> = {};
+  const rotorCount = /\b(\d+)[\s\-–‑]+rotors?\b|\brotor count(?:\s+of|\s*[:=])?\s*(\d+)\b/i.exec(
+    prompt,
+  );
+  if (rotorCount !== null) {
+    values.rotor_count = Number(rotorCount[1] ?? rotorCount[2]);
+  } else if (/\bhexacopter\b/i.test(prompt)) {
+    values.rotor_count = 6;
+  } else if (/\bquadcopter\b/i.test(prompt)) {
+    values.rotor_count = 4;
+  }
+  for (const [name, pattern] of Object.entries(multirotorDimensions)) {
+    const match = pattern.exec(prompt);
+    if (match !== null) {
+      values[name] = Number(match[1] ?? match[2]);
+    }
+  }
+  return values;
+}
+
+function matchPlannerArchetype(prompt: string) {
+  const matched = matchProjectArchetypeFromPrompt(prompt);
+  const isDroneContext =
+    matched.archetypeId === 'quadcopter_drone_v1' ||
+    matched.archetypeId === PARAMETRIC_MULTIROTOR_ARCHETYPE.archetypeId;
+  const hasDimensions = Object.values(multirotorDimensions).some((pattern) => pattern.test(prompt));
+  const requestsCustomDrone =
+    /\b(?:custom|parametric)\b.*\b(?:drone|quadcopter|multirotor)\b/i.test(prompt);
+  if (
+    requestsCustomDrone ||
+    extractMultirotorParameters(prompt).rotor_count === 6 ||
+    (hasDimensions && isDroneContext)
+  ) {
+    return PARAMETRIC_MULTIROTOR_ARCHETYPE;
+  }
+  return matched;
+}
+
+function resolvePlannedParameters(
+  archetype: ReturnType<typeof matchPlannerArchetype>,
+  prompt: string,
+  values?: Record<string, number>,
+): Readonly<Record<string, number>> | undefined {
+  if (archetype.parameters === undefined) {
+    return undefined;
+  }
+  return clampAssemblyParameterValues(archetype.parameters, {
+    ...extractMultirotorParameters(prompt),
+    ...values,
+  });
+}
+
 function parseJsonPlan(rawText: string, fallbackPrompt: string): ProjectPlanOutput {
   const cleaned = rawText
     .replace(/^```json\s*/i, '')
@@ -208,7 +273,7 @@ function parseJsonPlan(rawText: string, fallbackPrompt: string): ProjectPlanOutp
   const parsed = ProjectPlanOutputSchema.parse(parsedJson);
   const catalogMatch =
     getCatalogArchetypeById(parsed.archetypeId) ??
-    matchProjectArchetypeFromPrompt(`${fallbackPrompt} ${parsed.archetypeId}`);
+    matchPlannerArchetype(`${fallbackPrompt} ${parsed.archetypeId}`);
   const subsystems =
     parsed.plannedSubsystems.length > 0
       ? parsed.plannedSubsystems
@@ -218,6 +283,7 @@ function parseJsonPlan(rawText: string, fallbackPrompt: string): ProjectPlanOutp
     projectTitle: parsed.projectTitle || catalogMatch.title,
     plannedSubsystems: subsystems,
     rationale: parsed.rationale,
+    parameterValues: resolvePlannedParameters(catalogMatch, fallbackPrompt, parsed.parameterValues),
   };
 }
 
@@ -225,7 +291,11 @@ function buildPlannerSystemInstruction(): string {
   const supportedIds = CATALOG_ARCHETYPES.map(
     (entry) => `"${entry.archetypeId}" (${entry.title})`,
   ).join(', ');
-  return `You are the Zappd Phase 1 CAD project planning agent. Return strict JSON with keys: archetypeId (one of ${supportedIds}), projectTitle (string), plannedSubsystems (string[]), rationale (string).`;
+  return [
+    `You are the Zappd CAD project planning agent. Return strict JSON with keys: archetypeId (one of ${supportedIds}), projectTitle (string), plannedSubsystems (string[]), rationale (string), and optional parameterValues (object with numeric values).`,
+    'Choose parametric_multirotor_v1 for a custom or parametric drone, a hexacopter or 6-rotor drone, or a drone with a specified wheelbase, deck gap, or arm thickness.',
+    'Extract the requested parameterValues: rotor_count (4 or 6), wheelbase_mm (220 to 360 in steps of 10), deck_gap_mm (20 to 36 in steps of 2), arm_thickness_mm (3 to 6 in steps of 0.5). Omit values the user did not specify.',
+  ].join(' ');
 }
 
 type ProviderTextRequest = {
@@ -322,7 +392,7 @@ export async function planProjectWithProvider(
     };
   }
 
-  const matched = matchProjectArchetypeFromPrompt(request.prompt);
+  const matched = matchPlannerArchetype(request.prompt);
   const plannedSubsystems = matched.nodes
     .filter((node) => node.level === 'subsystem')
     .map((node) => node.name);
@@ -331,7 +401,8 @@ export async function planProjectWithProvider(
     archetypeId: matched.archetypeId,
     projectTitle: matched.title,
     plannedSubsystems,
-    rationale: `Matched Phase 1 catalog archetype "${matched.archetypeId}" via ${descriptor.displayName} planning contract.`,
+    rationale: `Matched catalog archetype "${matched.archetypeId}" via ${descriptor.displayName} planning contract.`,
+    parameterValues: resolvePlannedParameters(matched, request.prompt),
     provider: descriptor.provider,
     modelId: descriptor.modelId,
     apiFormat: descriptor.apiFormat,

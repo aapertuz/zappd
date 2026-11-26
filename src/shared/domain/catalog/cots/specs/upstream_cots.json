@@ -1,0 +1,60 @@
+[
+  {
+    "cotsId": "cots_battery_3s_18650",
+    "name": "3S 18650 battery holder with cells",
+    "sourceUrl": "https://raw.githubusercontent.com/robotjaol/custom-components/1626f92986822050eb3a6232f536b564801d6426/BATTERY_HOLDER_18650_X3/3%20Battery%20Holder%20With%20Batteries.step",
+    "fallbackUrl": "https://cdn.jsdelivr.net/gh/robotjaol/custom-components@1626f92986822050eb3a6232f536b564801d6426/BATTERY_HOLDER_18650_X3/3%20Battery%20Holder%20With%20Batteries.step",
+    "sourceName": "robotjaol/custom-components 3 Battery Holder With Batteries.step",
+    "sourceFileName": "3_Battery_Holder_With_Batteries.step",
+    "expectedUpstreamSha256": "11a62d405fbe43da90d273607144e3eabe7909fb6395b4e93097501dc9f34d90",
+    "spdxLicense": "NOASSERTION",
+    "category": "battery",
+    "tags": ["18650", "3s", "li-ion", "dc-power"],
+    "materialHint": "li_ion_battery",
+    "colorHex": "#3f3f46",
+    "expectedDimensionsMm": [77.98, 59.63, 24.74],
+    "expectedFaceCount": 498,
+    "minXcafColors": 2,
+    "specifications": {
+      "seriesCells": 3,
+      "cellFormat": "18650"
+    },
+    "mountingInterfaces": [
+      {
+        "interfaceId": "mount_board",
+        "label": "Battery holder strap clamp",
+        "kind": "clamp",
+        "holeDiameterMm": 3.2,
+        "localPositionMeters": [0, 0, 0],
+        "normalDirection": [0, 1, 0]
+      }
+    ],
+    "terminalLayout": {
+      "kind": "bottom_tabs",
+      "count": 6,
+      "tabRating": {
+        "role": "bidirectional",
+        "minVoltageV": 3,
+        "nominalVoltageV": 3.7,
+        "maxVoltageV": 4.2,
+        "maxCurrentA": 15,
+        "wireColorsHex": ["#cc2929", "#222428"]
+      },
+      "ports": [
+        {
+          "portId": "port_pack_out",
+          "label": "3S pack output",
+          "connectorType": "Solder tabs",
+          "busKind": "dc_power",
+          "anchorTab": 1,
+          "role": "source",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 12.6,
+          "maxCurrentA": 15,
+          "wireColorsHex": ["#cc2929", "#222428"]
+        }
+      ]
+    }
+  }
+]

@@ -47,8 +47,11 @@ Run lint and typecheck before declaring any task done.
 - Treat Firestore's component hierarchy, stable IDs, relationships, and assembly steps as the domain model, never mesh names or a single 3D file.
 - Treat source CAD as engineering truth; GLB/USDZ are derived render assets. Do not mistake successful rendering for validated engineering.
 - Edit assembly specs in `src/shared/domain/catalog/assemblies/`. The TypeScript app and Python CAD worker use those JSON files as their shared catalog.
-- Use `open_step_catalog` or `cots_library_step` with HTTPS provenance for `sourced_verified` geometry. Use `kicad_pcb_step` with HTTPS or `kicad://` provenance, or `procedural_harness` with HTTPS or `harness://` provenance, for `composed_validated` geometry. Both statuses require an SPDX license, a STEP SHA-256 digest, and passing CAD validation.
-- Pin every sourced STEP fixture to its real upstream CAD file and SHA-256 digest. Do not introduce fabricated or unfetched source URLs, procedural primitive fallbacks, or custom CAD generation in Phase 1. Build123d authoring is Phase 2 only.
+- Use `open_step_catalog` or `cots_library_step` with HTTPS provenance for `sourced_verified` geometry. Use `composed_validated` for `kicad_pcb_step` with HTTPS or `kicad://`, `procedural_harness` with HTTPS or `harness://`, and Phase 2 `parametric_cad` with HTTPS or `parametric://`. Both statuses require an SPDX license, a STEP SHA-256 digest, and passing CAD validation.
+- Pin every sourced STEP fixture to its real upstream CAD file and SHA-256 digest. Forbid fabricated or unfetched source URLs and silent use of unverified geometry. Reserve build123d families and sandboxed CAD adapters for Phase 2. Keep procedural primitive fallbacks out of Phase 1.
+- Use the shared assembly contract for Option D open-source reference robots and parametric families. Publish Phase 2 artifacts under `/assemblies/<manifestHash>/...`. Rebuild parameter edits from the existing plan and cached OpenCascade `.xbf` geometry without calling the LLM again.
+- Gate Phase 2 verification on BRep topology, volumetric interference, dimensional tolerance, and one-to-one `componentId` mapping across STEP, GLB, and USDZ. Check physical connectivity with `BRepExtrema_DistShapeShape` and check electrical compatibility. Run KiCad DRC on applicable boards and capture offscreen VTK renders for headless visual validation.
+- When rendering an unverified assembly, show an explicit warning banner that lists the exact failed checks and distinguishes the assembly from verified builds.
 
 ## Enforce Rules, Don't Just Describe Them
 

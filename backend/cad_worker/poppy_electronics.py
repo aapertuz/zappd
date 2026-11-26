@@ -55,10 +55,16 @@ def subsystem_node(placement, root_id):
     )
 
 
+BOARD_PORT_FIELDS = ("portId", "label", "connectorType", "busKind", "localPositionMeters", "exitDirection")
+
+
 def board_node(placement, fixture):
     port_overrides = placement.get("portOverrides", {})
     ports = [
-        {**port, **port_overrides.get(port["portId"], {})}
+        {
+            **{key: port[key] for key in BOARD_PORT_FIELDS if key in port},
+            **port_overrides.get(port["portId"], {}),
+        }
         for port in fixture["ports"]
     ]
     x, y, z = fixture["dimensionsMm"]

@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import json
 import re
+import shutil
 import struct
 import sys
 import zipfile
@@ -14,15 +15,22 @@ import numpy as np
 import pytest
 from PIL import Image
 from OCP.BRepCheck import BRepCheck_Analyzer
+from OCP.BRepExtrema import BRepExtrema_DistShapeShape
 from OCP.TopAbs import TopAbs_SOLID
 from OCP.TopExp import TopExp_Explorer
 from pygltflib import FLOAT, GLTF2
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from build_cots_library import load_cots_specs
 from catalog_ingestor import count_brep_faces, read_and_validate_step, read_xcaf_face_colors, resolve_component_step
 from catalog_specs import CATALOG_SPECS, resolve_catalog_spec
-from geometry_pipeline import parse_glb_diagnostics, parse_usdz_prim_paths, run_cad_pipeline, shape_bounds_mm
+from cots_catalog import get_cots_part, load_cots_catalog, search_cots_parts
+from geometry_pipeline import (
+    parse_glb_diagnostics, parse_usdz_prim_paths, run_cad_pipeline, shape_bounds_mm,
+    translate_shape_mm, world_rest_to_cad_mm,
+)
+from ingest_upstream_catalog import OPEN_QUADRUPED_SOURCES
 from material_skins import build_skin_texture_set, resolve_material_skin, srgb_hex_to_linear_rgba
 
 
@@ -30,17 +38,53 @@ EXPECTED_NODE_COUNTS = {
     "quadcopter_drone_v1": 42,
     "robotic_arm_3dof_v1": 31,
     "open_source_rover_v1": 21,
+    "open_quadruped_v1": 40,
+    "parametric_multirotor_v1": 38,
     "reachy_mini_v1": 98,
     "poppy_humanoid_v1": 289,
 }
-COTS_REGISTRY = (
-    Path(__file__).resolve().parents[3] / "src/shared/domain/catalog/cots/index.json"
-)
-
-
 @pytest.fixture(scope="module")
 def cots_parts() -> dict[str, dict]:
-    return {part["cotsId"]: part for part in json.loads(COTS_REGISTRY.read_text(encoding="utf-8"))}
+    return {part["cotsId"]: part for part in load_cots_catalog()}
+
+
+def test_declarative_cots_specs_feed_the_shared_registry(cots_parts: dict) -> None:
+    models, boards, upstream_parts = load_cots_specs()
+    assert len(models) == 12
+    for model in models.values():
+        for digest in (model.step_sha256, model.footprint_sha256):
+            assert re.fullmatch(r"[a-f0-9]{64}", digest)
+        for revision in (model.model_revision, model.footprint_revision):
+            assert re.fullmatch(r"[a-f0-9]{40}", revision)
+        assert model.spdx_license
+    assert set(cots_parts) == {board.id for board in boards} | {part["cotsId"] for part in upstream_parts}
+
+    hub_id = "kicad_quadruped_servo_hub"
+    hub = get_cots_part(hub_id)
+    assert hub is not None
+    assert hub["mountingInterfaces"][0]["boltPitchMm"] == [64, 48]
+    assert hub["specifications"]["pcbWidthMm"] == 72
+    assert hub["specifications"]["pcbLengthMm"] == 56
+    assert len([port for port in hub["ports"] if port["busKind"] == "pwm_signal"]) == 12
+    assert search_cots_parts(
+        bus_kind="pwm_signal", mounting_kind="m3_standoff", origin="kicad_pcb_step",
+        max_dimension_mm=72, text=" open-QUADRUPED ",
+    ) == [hub]
+    assert search_cots_parts(text="open-quadruped", max_dimension_mm=71) == []
+    assert get_cots_part("missing_part") is None
+
+    battery = cots_parts["cots_battery_3s_18650"]
+    output = next(port for port in battery["ports"] if port["portId"] == "port_pack_out")
+    assert (output["role"], output["minVoltageV"], output["nominalVoltageV"], output["maxVoltageV"], output["maxCurrentA"]) == (
+        "source", 9.0, 11.1, 12.6, 15.0,
+    )
+
+    parts_by_fixture = {part["stepFixtureName"]: part for part in cots_parts.values()}
+    for spec in CATALOG_SPECS.values():
+        for node in spec["nodes"]:
+            if node["stepFixtureName"] in parts_by_fixture:
+                part = parts_by_fixture[node["stepFixtureName"]]
+                assert node["expectedStepSha256"] == part["expectedStepSha256"]
 
 
 def test_worker_loads_complete_shared_catalog_specs() -> None:
@@ -100,6 +144,7 @@ def test_cots_registry_resolves_valid_centered_steps_with_ports(cots_parts: dict
         "kicad_quad_flight_controller",
         "kicad_quad_elrs_receiver",
         "kicad_nova2_jetson_carrier",
+        "kicad_quadruped_servo_hub",
         "kicad_poppy_usb2ax",
         "kicad_poppy_upper_3p_hub",
     }
@@ -117,11 +162,15 @@ def test_cots_registry_resolves_valid_centered_steps_with_ports(cots_parts: dict
         colors = {color for _, color in face_colors if color is not None}
         assert len(colors) == part["specifications"]["xcafColors"]
         assert len(colors) >= (3 if part["origin"] == "kicad_pcb_step" else 2)
+        assert part["category"] and part["tags"] and part["mountingInterfaces"]
         assert part["ports"]
         assert len({port["portId"] for port in part["ports"]}) == len(part["ports"])
         for port in part["ports"]:
             assert re.fullmatch(r"port_[a-z0-9_]+", port["portId"])
             assert port["label"] and port["connectorType"]
+            assert port["role"] in {"source", "sink", "bidirectional"}
+            assert 0 <= port["minVoltageV"] <= port["nominalVoltageV"] <= port["maxVoltageV"]
+            assert port["maxCurrentA"] > 0
             assert port["busKind"] in {"dc_power", "usb_data", "ttl_serial", "i2c_spi_uart", "pwm_signal", "brushless_phase"}
             x, y, z = port["localPositionMeters"]
             position = np.array([x, -z, y]) * 1000
@@ -152,7 +201,11 @@ def test_xcaf_materials_export_as_one_component_with_partitioned_faces(cots_part
     }
     out = tmp_path / "exports"
     cache = tmp_path / "steps"
-    result = run_cad_pipeline({**template, "nodes": [root, node]}, output_dir=out, cache_dir=cache)
+    result = run_cad_pipeline(
+        {**template, "nodes": [root, node], "relationships": [], "assemblySteps": []},
+        output_dir=out,
+        cache_dir=cache,
+    )
     assert result["verificationStatus"] == "composed_validated"
     assert result["validation"]["valid"]
     assert result["validation"]["maxDimensionalErrorMm"] <= 0.1
@@ -347,6 +400,7 @@ def test_all_robotics_categories_pass_opencascade_validation(tmp_path: Path) -> 
             catalog_node = nodes_by_id[node["id"]]
             prov = node["provenance"]
             assert prov["origin"] == catalog_node["origin"]
+            assert node.get("mountingInterfaces") == catalog_node.get("mountingInterfaces")
             expected_status, allowed_prefix = {
                 "open_step_catalog": ("sourced_verified", ("https://",)),
                 "cots_library_step": ("sourced_verified", ("https://",)),
@@ -379,6 +433,59 @@ def test_all_robotics_categories_pass_opencascade_validation(tmp_path: Path) -> 
         assert (out_dir / "model.step").stat().st_size > 0
         assert (out_dir / "model.glb").stat().st_size > 0
         assert (out_dir / "model.usdz").stat().st_size > 0
+        shutil.rmtree(out_dir)
+
+
+def test_open_quadruped_documents_pinned_parts_and_rated_circuits(tmp_path: Path) -> None:
+    spec = resolve_catalog_spec("open_quadruped_v1")
+    assert spec["generationMode"] == "reference_catalog"
+    source = json.loads(OPEN_QUADRUPED_SOURCES.read_text(encoding="utf-8"))
+    assert "/b0ab4fa599f94460828bf3aa4514240ae917ed38/" in source["poseReferenceUrl"]
+    nodes_by_id = {node["id"]: node for node in spec["nodes"]}
+    relationships = {relation["id"]: relation for relation in spec["relationships"]}
+    connected = {
+        cid for relationship in relationships.values()
+        for cid in (relationship["fromComponentId"], relationship["toComponentId"])
+    }
+    assert connected == nodes_by_id.keys()
+
+    installed = {cid for step in spec["assemblySteps"] for cid in step["componentIds"]}
+    leaves = [node for node in spec["nodes"] if node["stepFixtureName"] is not None]
+    assert installed == {node["id"] for node in leaves}
+    cables = [node for node in leaves if node["origin"] == "procedural_harness"]
+    assert len(cables) == 3
+    for node in leaves:
+        if node["origin"] == "open_step_catalog":
+            fixture = source["fixtures"][node["stepFixtureName"]]
+            assert node["sourceUrl"] == fixture["sourceUrl"]
+            assert node["specifications"]["upstreamStepSha256"] == fixture["upstreamStepSha256"]
+            assert node["spdxLicense"] == fixture["spdxLicense"]
+
+    mount = relationships["rel_oq_battery_mount"]
+    mounted_shapes = []
+    for side in ("from", "to"):
+        mounted_node = nodes_by_id[mount[f"{side}ComponentId"]]
+        resolved = resolve_component_step(mounted_node, tmp_path)
+        mounted_shapes.append(
+            translate_shape_mm(resolved["shape"], world_rest_to_cad_mm(mounted_node["restPositionMeters"]))
+        )
+    mount_distance = BRepExtrema_DistShapeShape(*mounted_shapes)
+    assert mount_distance.IsDone() and mount_distance.Value() <= 0.1
+
+    for cable in cables:
+        relation_id = cable["specifications"]["relationshipId"]
+        electrical = relationships[relation_id]
+        start, end = (
+            next(port for port in nodes_by_id[electrical[f"{side}ComponentId"]]["ports"]
+                 if port["portId"] == electrical[f"{side}PortId"])
+            for side in ("from", "to")
+        )
+        assert start["busKind"] == end["busKind"]
+        assert start["role"] == "source" and end["role"] == "sink"
+        assert end["minVoltageV"] <= start["nominalVoltageV"] <= end["maxVoltageV"]
+        assert start["maxCurrentA"] >= end["maxCurrentA"]
+        assert any(cable["id"] in step["componentIds"] and relation_id in step["relationshipIds"]
+                   for step in spec["assemblySteps"])
 
 
 def test_collision_injection_rejects_and_marks_unverified(tmp_path: Path) -> None:
@@ -445,7 +552,11 @@ def test_step_ingestion_enforces_origin_uri_and_status(
 
 def test_mixed_geometry_uses_per_node_status_and_preserves_ports(tmp_path: Path) -> None:
     spec = copy.deepcopy(CATALOG_SPECS["open_source_rover_v1"])
-    spec["nodes"] = [node for node in spec["nodes"] if node["origin"] == "open_step_catalog"]
+    retained = {"comp_rover_base_plate", "comp_zed2i_stereo_camera"}
+    spec["nodes"] = [
+        node for node in spec["nodes"] if not node["stepFixtureName"] or node["id"] in retained
+    ]
+    spec["relationships"] = []
     by_id = {node["id"]: node for node in spec["nodes"]}
     ports = [
         {
@@ -458,7 +569,8 @@ def test_mixed_geometry_uses_per_node_status_and_preserves_ports(tmp_path: Path)
         }
     ]
     by_id["comp_zed2i_stereo_camera"].update(
-        origin="kicad_pcb_step", sourceUrl="kicad://test/board", ports=ports
+        origin="kicad_pcb_step", sourceUrl="kicad://test/board", ports=ports,
+        restPositionMeters=[0, 0.0204, 0],
     )
     by_id["sub_perception_avionics"].update(
         origin="procedural_harness", sourceUrl="harness://test/route"
@@ -498,12 +610,21 @@ def harness_spec(cots_parts: dict):
         elif bus == "dc_power":
             start = board("kicad_quad_4in1_esc", "comp_from", [-0.045, 0, 0])
             end = board("cots_battery_3s_18650", "comp_to", [0.090, 0.060, -0.008255])
-            from_port, to_port = "port_dc_in", "port_tab_1"
+            from_port, to_port = "port_dc_in", "port_pack_out"
+            start["ports"] = [
+                {**port, "maxCurrentA": 15} if port["portId"] == from_port else port
+                for port in start["ports"]
+            ]
             waypoint = [0.005, 0.030, 0.011]
         else:
             start = board("kicad_nova2_jetson_carrier", "comp_from", [-0.060, 0, 0])
-            end = board("kicad_nova2_jetson_carrier", "comp_to", [0.060, 0, 0])
-            from_port = to_port = "port_servo_1"
+            servo = next(node for node in template["nodes"] if node["id"] == "comp_steering_servo_right")
+            end = {
+                **copy.deepcopy(servo), "id": "comp_to", "parentId": root["id"],
+                "level": "component", "depth": 1, "restPositionMeters": [0.060, 0.03245, -0.0258375],
+            }
+            end["ports"][0]["role"] = "sink"
+            from_port, to_port = "port_servo_1", "port_ttl_in"
             waypoint = [0, 0.038, -0.0190875]
         relationship = {
             "id": "rel_cable", "fromComponentId": start["id"], "toComponentId": end["id"],

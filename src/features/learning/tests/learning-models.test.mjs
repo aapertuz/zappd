@@ -270,6 +270,9 @@ describe('canvas prompt routing', () => {
     assert.deepEqual(classifyCanvasPrompt('Inspect a planetary rover', arm), {
       kind: 'load_assembly',
     });
+    assert.deepEqual(classifyCanvasPrompt('Inspect a four-legged quadruped', arm), {
+      kind: 'load_assembly',
+    });
   });
 
   it('has a documented connection for every selectable part in documented assemblies', () => {

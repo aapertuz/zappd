@@ -4,6 +4,8 @@ import { assemblyHasShellNodes } from '@/shared/domain';
 
 import { LearningCallouts } from '@/features/learning';
 
+import { AssemblyParameters } from './AssemblyParameters';
+import { getAssemblyValidationFailures } from '../model/parameterControls';
 import { type AssemblySceneProps, type ShellVisibilityMode } from '../types';
 
 const SHELL_LABELS = {
@@ -15,6 +17,7 @@ const SHELL_LABELS = {
 export function NativeAssemblyScene({
   assembly,
   state,
+  onApplyParameters,
   onSetExplodeFactor,
   onCycleShellVisibility,
   onFocusComponent,
@@ -75,6 +78,31 @@ export function NativeAssemblyScene({
           </Text>
         </View>
       ) : null}
+      {assembly.verificationStatus === 'unverified' ? (
+        <View
+          accessibilityRole="alert"
+          accessibilityLabel="Unverified assembly warning"
+          style={styles.warning}>
+          <Text style={styles.warningText}>
+            Unverified assembly. This assembly failed validation checks.
+          </Text>
+          <ScrollView style={styles.warningDetails}>
+            {getAssemblyValidationFailures(assembly.validation).map((failure) => (
+              <Text key={failure} style={styles.warningText}>
+                {failure}
+              </Text>
+            ))}
+          </ScrollView>
+        </View>
+      ) : null}
+      {assembly.parameters !== undefined && assembly.parameters.length > 0 ? (
+        <AssemblyParameters
+          key={assembly.manifest.manifestHash}
+          parameters={assembly.parameters}
+          state={state}
+          onApplyParameters={onApplyParameters}
+        />
+      ) : null}
       <LearningCallouts
         learningState={
           canShowAnswer ? learningState : { ...learningState, answer: { kind: 'idle' } }
@@ -127,6 +155,19 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#18181b',
     fontWeight: '600',
+    fontSize: 12,
+  },
+  warning: {
+    gap: 6,
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: '#2e2113',
+  },
+  warningDetails: {
+    maxHeight: 88,
+  },
+  warningText: {
+    color: '#f9c774',
     fontSize: 12,
   },
   list: {

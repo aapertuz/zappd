@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 
 import { Box3, PerspectiveCamera, Vector3 } from 'three';
 
-import { toComponentId } from '../../../shared/domain/assembly.ts';
+import { canRenderAssembly, toComponentId } from '../../../shared/domain/assembly.ts';
 import { CATALOG_ARCHETYPES, getCatalogArchetypeById } from '../../../shared/domain/catalog.ts';
 import { computePartCalloutRect } from '../model/calloutPlacement.ts';
 import {
@@ -114,6 +114,7 @@ describe('geometry-driven camera framing', () => {
   });
 
   const catalogDistanceBounds = {
+    open_quadruped_v1: [1.4, 1.7],
     reachy_mini_v1: [1.25, 1.4],
     poppy_humanoid_v1: [2.8, 3.4],
   };
@@ -155,6 +156,16 @@ describe('geometry-driven camera framing', () => {
       });
     });
   }
+
+  it('frames rotated parts using their world-space extents', () => {
+    const assembly = syntheticAssembly([200, 20, 40], [0.2, 0, -0.1]);
+    assembly.nodes[0].restRotationDeg = [0, 90, 0];
+    const { size, center } = computeAssemblyBoundingBoxMeters(assembly);
+    for (const [index, expected] of [0.04, 0.02, 0.2].entries()) {
+      assert.ok(Math.abs(size[index] - expected) < 1e-9);
+    }
+    assert.deepEqual(center, [0.2, 0, -0.1]);
+  });
 
   it('frames focused parts using their own size across tiny, catalog, and large assemblies', () => {
     function focus(assembly, componentId, camera) {
@@ -505,6 +516,11 @@ describe('electrical circuits', () => {
     ],
     ['open_source_rover_v1', 'comp_rover_base_plate', []],
     [
+      'parametric_multirotor_v1',
+      'comp_multi_wire_esc_power',
+      ['comp_multi_wire_esc_power', 'comp_multi_battery', 'comp_multi_esc'],
+    ],
+    [
       'poppy_humanoid_v1',
       'comp_poppy_upper_3p_hub',
       [
@@ -848,5 +864,128 @@ describe('assembly explorer focus mode', () => {
     assert.equal(afterExit.externalCameraChanged, true);
     assert.equal(afterExit.nextCamera, overviewCamera);
     assert.equal(afterExit.nextLastCommittedCamera, null);
+  });
+});
+
+describe('assembly parameter rebuild state', () => {
+  const assembly = getCatalogArchetypeById('parametric_multirotor_v1');
+  const initialGlb = new ArrayBuffer(8);
+  const loaded = reduceAssemblyExplorerState(INITIAL_ASSEMBLY_EXPLORER_STATE, {
+    type: 'loadAssemblySuccess',
+    promptId: 1,
+    assembly,
+    glbArrayBuffer: initialGlb,
+  });
+
+  it('keeps the current model while rebuilding and drops responses superseded by a rebuild or prompt', () => {
+    const rebuilding = reduceAssemblyExplorerState(loaded, {
+      type: 'startParameterRebuild',
+      requestId: 1,
+    });
+    assert.equal(rebuilding.isRebuildingParameters, true);
+    assert.equal(rebuilding.parameterErrorMessage, null);
+    assert.equal(rebuilding.assembly, assembly);
+    assert.equal(rebuilding.glbArrayBuffer, initialGlb);
+    const superseded = reduceAssemblyExplorerState(rebuilding, {
+      type: 'startParameterRebuild',
+      requestId: 2,
+    });
+    const success = {
+      type: 'rebuildParametersSuccess',
+      requestId: 1,
+      assembly: syntheticAssembly([400, 40, 400]),
+      glbArrayBuffer: new ArrayBuffer(16),
+    };
+    assert.equal(reduceAssemblyExplorerState(superseded, success), superseded);
+    assert.equal(
+      reduceAssemblyExplorerState(superseded, {
+        type: 'rebuildParametersError',
+        requestId: 1,
+        message: 'Superseded error',
+      }),
+      superseded,
+    );
+    const switched = reduceAssemblyExplorerState(superseded, { type: 'startLoading', promptId: 2 });
+    assert.equal(switched.isRebuildingParameters, false);
+    assert.equal(reduceAssemblyExplorerState(switched, { ...success, requestId: 2 }), switched);
+  });
+
+  it('frames rebuilt geometry and clears removed focus, isolation, and separation', () => {
+    const componentId = 'comp_multi_arm_1';
+    const focused = reduceAssemblyExplorerState(loaded, { type: 'focusComponent', componentId });
+    const inFlight = reduceAssemblyExplorerState(
+      reduceAssemblyExplorerState(focused, {
+        type: 'separateComponentAlongAxis',
+        axis: 'x',
+        deltaMeters: 0.1,
+      }),
+      { type: 'startParameterRebuild', requestId: 1 },
+    );
+    const rebuilt = syntheticAssembly([450, 35, 450]);
+    const glb = new ArrayBuffer(16);
+    const ready = reduceAssemblyExplorerState(inFlight, {
+      type: 'rebuildParametersSuccess',
+      requestId: 1,
+      assembly: rebuilt,
+      glbArrayBuffer: glb,
+    });
+    assert.equal(ready.isRebuildingParameters, false);
+    assert.equal(ready.parameterErrorMessage, null);
+    assert.equal(ready.assembly, rebuilt);
+    assert.equal(ready.glbArrayBuffer, glb);
+    assert.equal(ready.selectedComponentId, null);
+    assert.equal(ready.isolatedComponentId, null);
+    assert.deepEqual(ready.separatedOffsets, {});
+    assert.equal(ready.viewMode.kind, 'overview');
+    assert.equal(ready.camera.azimuthDeg, loaded.camera.azimuthDeg);
+    assert.equal(ready.camera.elevationDeg, loaded.camera.elevationDeg);
+    assert.ok(ready.camera.distanceMeters > loaded.camera.distanceMeters);
+  });
+
+  it('keeps the original bundle after an error and clears the error on retry', () => {
+    const rebuilding = reduceAssemblyExplorerState(loaded, {
+      type: 'startParameterRebuild',
+      requestId: 1,
+    });
+    const failed = reduceAssemblyExplorerState(rebuilding, {
+      type: 'rebuildParametersError',
+      requestId: 1,
+      message: 'CAD worker exited',
+    });
+    assert.equal(failed.isRebuildingParameters, false);
+    assert.equal(failed.parameterErrorMessage, 'CAD worker exited');
+    assert.equal(failed.assembly, assembly);
+    assert.equal(failed.glbArrayBuffer, initialGlb);
+    const retry = reduceAssemblyExplorerState(failed, {
+      type: 'startParameterRebuild',
+      requestId: 2,
+    });
+    assert.equal(retry.parameterErrorMessage, null);
+    assert.equal(retry.isRebuildingParameters, true);
+  });
+});
+
+describe('assembly bundle verification status', () => {
+  it('accepts honest unverified assemblies and rejects false verified claims', () => {
+    const failedBuild = {
+      ...syntheticAssembly([220, 36, 220]),
+      verificationStatus: 'unverified',
+      validation: {
+        valid: false,
+        brepValid: true,
+        interferenceCount: 1,
+        maxDimensionalErrorMm: 0,
+        nodeMappingComplete: true,
+        unitSystem: 'meters_y_up',
+        failures: ['Interference between arms'],
+        electricalFailures: ['Voltage mismatch'],
+        floatingComponentIds: ['comp_multirotor_arm'],
+      },
+    };
+    assert.equal(canRenderAssembly(failedBuild), true);
+    assert.equal(
+      canRenderAssembly({ ...failedBuild, verificationStatus: 'composed_validated' }),
+      false,
+    );
   });
 });

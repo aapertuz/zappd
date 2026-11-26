@@ -10,6 +10,7 @@ import {
 } from '@/shared/domain';
 
 import type { ExplorerCameraState, ShellVisibilityMode, WiringVisibilityMode } from '../types';
+import { extrinsicXyzRotationRows, inverseRotate } from './restRotation';
 
 export type SpringConfig = {
   readonly stiffness: number;
@@ -88,6 +89,7 @@ type AnimationNode = Pick<
   | 'depth'
   | 'level'
   | 'restPositionMeters'
+  | 'restRotationDeg'
   | 'explodeDirection'
   | 'explodeDistanceMeters'
 > & {
@@ -425,11 +427,17 @@ export function createAssemblyAnimationController({
   const nodesById = new Map(assembly.nodes.map((node) => [node.id, node]));
   const hasShell = assemblyHasShellNodes(assembly.nodes);
   let previousAutoOpacity = autoWiringOpacity(initialTargets.explodeFactor, hasShell);
-  const nodes = assembly.nodes.map((node) => ({
-    node,
-    chain: getAncestorChain(node, nodesById),
-    visibility: nodeVisibilityTarget(node, initialTargets, previousAutoOpacity),
-  }));
+  const nodes = assembly.nodes.map((node) => {
+    const parentRotation =
+      node.parentId === null ? undefined : nodesById.get(node.parentId)?.restRotationDeg;
+    return {
+      node,
+      chain: getAncestorChain(node, nodesById),
+      parentRotationRows:
+        parentRotation === undefined ? undefined : extrinsicXyzRotationRows(parentRotation),
+      visibility: nodeVisibilityTarget(node, initialTargets, previousAutoOpacity),
+    };
+  });
   const totalDurationSec = schedule.at(-1)?.endSec ?? 0;
   let phase: AssemblyPlaybackPhase =
     prefersReducedMotion || totalDurationSec === 0
@@ -553,7 +561,7 @@ export function createAssemblyAnimationController({
           };
         }
         const nextPoses: Record<string, AnimatedNodePose> = {};
-        for (const { node } of nodes) {
+        for (const { node, parentRotationRows } of nodes) {
           const pose = worldPoses[node.id];
           if (pose === undefined) continue;
           const [x, y, z] = pose.worldPositionMeters;
@@ -569,7 +577,12 @@ export function createAssemblyAnimationController({
               (previous.opacity !== pose.opacity ||
                 previous.scale !== pose.scale ||
                 !vectorsEqual(previous.worldPositionMeters, pose.worldPositionMeters)));
-          nextPoses[node.id] = { ...pose, localPositionMeters: [x - px, y - py, z - pz] };
+          const delta: Vector3Tuple = [x - px, y - py, z - pz];
+          nextPoses[node.id] = {
+            ...pose,
+            localPositionMeters:
+              parentRotationRows === undefined ? delta : inverseRotate(parentRotationRows, delta),
+          };
         }
         nodePoses = nextPoses;
         previousPhase = phase;

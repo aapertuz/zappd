@@ -374,6 +374,26 @@ describe('shell visibility and peel-back', () => {
 describe('assembly pose transitions', () => {
   const assembly = getCatalogAssembly('quadcopter_drone_v1');
 
+  it('moves children of rotated parents along the requested world axes', () => {
+    const [parent, child] = getCatalogAssembly('parametric_multirotor_v1').nodes;
+    const assembly = {
+      nodes: [
+        { ...parent, restRotationDeg: [0, 90, 0] },
+        { ...child, restPositionMeters: [0.1, 0, 0], restRotationDeg: [0, 0, 0] },
+      ],
+      assemblySteps: [],
+    };
+    const controller = createAssemblyAnimationController({
+      assembly,
+      targets: TARGETS,
+      prefersReducedMotion: true,
+    });
+    const targets = { ...TARGETS, separatedOffsets: { [child.id]: [0.02, 0, 0] } };
+    const { nodePoses } = controller.step(0, targets);
+    assert.ok(distance(nodePoses[child.id].worldPositionMeters, [0.12, 0, 0]) < 1e-10);
+    assert.ok(distance(nodePoses[child.id].localPositionMeters, [0, 0, 0.12]) < 1e-10);
+  });
+
   it('eases to the explode target with a small overshoot and exact rest', () => {
     const controller = createAssemblyAnimationController({ assembly, targets: TARGETS });
     settleAssemblyPlayback(controller);

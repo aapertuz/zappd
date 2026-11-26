@@ -23,13 +23,31 @@ function purposeSpecification({ specifications }: AssemblyNode): string | undefi
   );
 }
 
+export function describeLearningProject(assembly: VerifiedProjectAssembly) {
+  const catalog = getCatalogArchetypeById(assembly.archetypeId);
+  const parameters = assembly.parameters?.map(({ name, label, unit, value }) => {
+    const current = assembly.parameterValues?.[name] ?? value;
+    return `${label} ${current}${unit === 'mm' ? ' mm' : unit === 'deg' ? '°' : ''}`;
+  });
+  const currentDimensions =
+    parameters === undefined || parameters.length === 0
+      ? undefined
+      : `Current parameters are ${parameters.join(', ')}.`;
+  return {
+    title: currentDimensions === undefined ? assembly.title : (catalog?.title ?? assembly.title),
+    catalogSummary: catalog?.summary,
+    currentDimensions,
+  };
+}
+
 function buildOverview(
   assembly: VerifiedProjectAssembly,
   node: AssemblyNode,
   steps: readonly AssemblyInstructionStep[],
 ): Omit<ComponentExplanationRecord, 'componentId' | 'verificationStatus'> {
   const children = assembly.nodes.filter(({ parentId }) => parentId === node.id);
-  const catalogIntro = getCatalogArchetypeById(assembly.archetypeId)?.summary.split(' with ')[0];
+  const { title, catalogSummary, currentDimensions } = describeLearningProject(assembly);
+  const catalogIntro = catalogSummary?.split(' with ')[0];
   const detail =
     catalogIntro === undefined
       ? undefined
@@ -43,18 +61,19 @@ function buildOverview(
   const purpose = purposeSpecification(node);
 
   return {
-    summary: `This is the ${humanizeName(assembly.title)}${detail === undefined ? '' : `, ${article} ${detail}`}.`,
+    summary: `This is the ${humanizeName(title)}${detail === undefined ? '' : `, ${article} ${detail}`}.`,
     purpose:
       purpose !== undefined
         ? describePurpose(purpose)
-        : detail !== undefined || children.length === 0
-          ? `The whole model measures ${formatDimensions(node.dimensionsMm)}.`
-          : `The model shows ${assembly.nodes.length - 1} ${assembly.nodes.length === 2 ? 'piece' : 'pieces'} in the build.`,
+        : (currentDimensions ??
+          (detail !== undefined || children.length === 0
+            ? `The whole model measures ${formatDimensions(node.dimensionsMm)}.`
+            : `The model shows ${assembly.nodes.length - 1} ${assembly.nodes.length === 2 ? 'piece' : 'pieces'} in the build.`)),
     operatingPrinciple:
       children.length === 0
         ? 'The saved details don’t break it down into smaller groups.'
-        : describesGroups && children.length <= 4
-          ? `Its main groups are ${listedNames}.`
+        : describesGroups
+          ? `Its main groups ${children.length === names.length ? 'are' : 'include'} ${listedNames}.`
           : `You can explore ${listedNames} in this model.`,
     systemRole:
       steps.length === 0

@@ -12,7 +12,13 @@ def run_poppy_pipeline(
     output_dir: Path,
     cache_dir: Path,
     inject_collision_test: bool = False,
+    *,
+    asset_cache=None,
+    xbf_cache_dir: Path | None = None,
+    parameter_overrides: dict | None = None,
+    render_views_dir: Path | None = None,
 ) -> dict:
+    del parameter_overrides
     catalog_spec = spec
     spec = deepcopy(spec)
     if inject_collision_test:
@@ -30,9 +36,15 @@ def run_poppy_pipeline(
         visual_geometry[HEAD_ID] = load_head_visual(cache_dir, head["restPositionMeters"])
         head["geometry"] = visual_state(cad_reason)
     result = run_cad_pipeline(
-        spec, output_dir, cache_dir, check_interference=False,
+        spec,
+        output_dir,
+        cache_dir,
+        check_interference=False,
         visual_geometry_by_id=visual_geometry,
         allow_partial_geometry=True,
+        asset_cache=asset_cache,
+        xbf_cache_dir=xbf_cache_dir,
+        render_views_dir=render_views_dir,
     )
     by_id = {node["id"]: node for node in result["nodes"]}
     for source in spec["nodes"]:

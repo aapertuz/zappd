@@ -27,6 +27,7 @@ import {
   type PartAnchors,
 } from '@/features/learning';
 
+import { AssemblyParameters } from './AssemblyParameters';
 import classes from './AssemblyScene.web.module.css';
 import {
   type AnimatedNodePose,
@@ -49,6 +50,7 @@ import {
   reconcileCameraTarget,
   zoomExplorerCamera,
 } from '../model/explorerState';
+import { getAssemblyValidationFailures } from '../model/parameterControls';
 import type {
   AssemblySceneProps,
   ExplorerCameraState,
@@ -74,6 +76,13 @@ declare global {
       readonly provider: string;
       readonly apiFormat: string;
       readonly verificationStatus: string;
+      readonly manifestHash: string;
+      readonly parameterValues: AssemblySceneProps['assembly']['parameterValues'] | null;
+      readonly isRebuildingParameters: boolean;
+      readonly unverifiedFailures: readonly string[];
+      readonly buildCacheMode:
+        | NonNullable<AssemblySceneProps['assembly']['validation']['buildTimingMs']>['cacheMode']
+        | null;
       readonly validationPassed: boolean;
       readonly interferenceCount: number;
       readonly nodeCount: number;
@@ -912,6 +921,7 @@ export function AssemblyScene({
   glbArrayBuffer,
   state,
   onSetCamera,
+  onApplyParameters,
   onSetExplodeFactor,
   onToggleExplodePreset,
   onCycleWiringVisibility,
@@ -925,6 +935,7 @@ export function AssemblyScene({
   const learningCalloutsRef = useRef<LearningCalloutsHandle>(null);
   const mountRef = useRef<HTMLDivElement>(null);
   const hudBarRef = useRef<HTMLDivElement>(null);
+  const inspectionControlsRef = useRef<HTMLDivElement>(null);
   const inspectionStatusRef = useRef<HTMLDivElement>(null);
   const backButtonRef = useRef<HTMLButtonElement>(null);
   const calloutRef = useRef<HTMLDivElement>(null);
@@ -1058,7 +1069,7 @@ export function AssemblyScene({
     });
     lastCommittedCameraRef.current = nextLastCommittedCamera;
     if (modelChanged) {
-      playbackInterruptedRef.current = false;
+      playbackInterruptedRef.current = previous.state.isRebuildingParameters;
       if (wheelCommitRef.current !== null) {
         window.clearTimeout(wheelCommitRef.current);
         wheelCommitRef.current = null;
@@ -1100,6 +1111,7 @@ export function AssemblyScene({
       previous.state.isolatedComponentId !== state.isolatedComponentId ||
       previous.state.separatedOffsets !== state.separatedOffsets ||
       previous.state.selectedProvider !== state.selectedProvider ||
+      previous.state.isRebuildingParameters !== state.isRebuildingParameters ||
       previous.calloutNode !== calloutNode ||
       previous.learningState !== learningState
     ) {
@@ -1337,6 +1349,7 @@ export function AssemblyScene({
         hudBarRef.current,
         inspectionStatusRef.current,
         backButtonRef.current,
+        ...Array.from(inspectionControlsRef.current?.children ?? []),
       ].flatMap((element) => {
         if (element === null) return [];
         const bounds = element.getBoundingClientRect();
@@ -1456,6 +1469,12 @@ export function AssemblyScene({
         provider: state.selectedProvider,
         apiFormat: assembly.orchestration.apiFormat,
         verificationStatus: assembly.verificationStatus,
+        manifestHash: assembly.manifest.manifestHash,
+        parameterValues: assembly.parameterValues ?? null,
+        isRebuildingParameters: state.isRebuildingParameters,
+        unverifiedFailures:
+          assembly.verificationStatus === 'unverified' ? assembly.validation.failures : [],
+        buildCacheMode: assembly.validation.buildTimingMs?.cacheMode ?? null,
         validationPassed: assembly.validation.valid,
         interferenceCount: assembly.validation.interferenceCount,
         nodeCount: assembly.nodes.length,
@@ -1576,6 +1595,19 @@ export function AssemblyScene({
       rootGroup.clear();
     };
   }, [assembly, glbArrayBuffer]);
+
+  const unverified = assembly.verificationStatus === 'unverified';
+  const parameters = assembly.parameters;
+  const hasParameters = parameters !== undefined && parameters.length > 0;
+  const hasInspectionControls = unverified || hasParameters;
+
+  useEffect(() => {
+    const controls = inspectionControlsRef.current;
+    if (controls === null) return;
+    const observer = new ResizeObserver(() => runtimeRef.current?.requestRender());
+    observer.observe(controls);
+    return () => observer.disconnect();
+  }, [hasInspectionControls]);
 
   const hasExplanation = learningState.explanation.kind !== 'idle';
   const hasAnswer = learningState.answer.kind !== 'idle';
@@ -1884,6 +1916,39 @@ export function AssemblyScene({
         answeringInOverview={focusedId === null}
         onDismissAnswer={onDismissLearningAnswer}
       />
+
+      {hasInspectionControls ? (
+        <div ref={inspectionControlsRef} className={classes.inspectionControls}>
+          {unverified ? (
+            <div
+              className={classes.unverifiedWarning}
+              role="alert"
+              aria-label="Unverified assembly warning">
+              <strong>Unverified assembly</strong>
+              <p>This assembly failed validation checks.</p>
+              <ul
+                className={classes.validationFailures}
+                tabIndex={0}
+                aria-label="Failed validation checks">
+                {getAssemblyValidationFailures(assembly.validation).map((failure) => (
+                  <li key={failure}>{failure}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          {hasParameters ? (
+            <details className={classes.parameterPanel} aria-label="Assembly parameters" open>
+              <summary>Parameters</summary>
+              <AssemblyParameters
+                key={assembly.manifest.manifestHash}
+                parameters={parameters}
+                state={state}
+                onApplyParameters={onApplyParameters}
+              />
+            </details>
+          ) : null}
+        </div>
+      ) : null}
 
       {state.viewMode.kind === 'part_focus' ? (
         <button

@@ -6,7 +6,7 @@ import http from 'node:http';
 import { registerHooks } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
-import { describe, it } from 'node:test';
+import { after, describe, it } from 'node:test';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -43,8 +43,15 @@ registerHooks({
 
 const { getCatalogArchetypeById } = await import('../../../src/shared/domain/index.ts');
 const { FirebaseEmulatorRepository } = await import('../../../src/shared/firebase/index.ts');
-const { matchesCatalogPlacements, orchestrateProjectAssemblyCreation } =
-  await import('../genkitOrchestrator.ts');
+const {
+  matchesCatalogPlacements,
+  orchestrateProjectAssemblyCreation,
+  rebuildAssemblyWithParameters,
+} = await import('../genkitOrchestrator.ts');
+const { planProjectWithProvider } = await import('../aiProviders.ts');
+const { requestWarmCadBuild, shutdownWarmCadWorker } = await import('../warmCadClient.ts');
+
+after(shutdownWarmCadWorker);
 
 function assertReusesAvailableExports(assembly) {
   const manifestFile = path.join(
@@ -55,8 +62,15 @@ function assertReusesAvailableExports(assembly) {
     assembly.archetypeId,
     'manifest.json',
   );
-  if (fs.existsSync(manifestFile)) {
-    assert.deepEqual(assembly.manifest, JSON.parse(fs.readFileSync(manifestFile, 'utf8')));
+  if (!fs.existsSync(manifestFile)) return;
+  const cachedManifest = JSON.parse(fs.readFileSync(manifestFile, 'utf8'));
+  if (
+    Object.values(cachedManifest.files).every(
+      ({ publicUrl, format }) =>
+        publicUrl === `/assemblies/${cachedManifest.manifestHash}/model.${format}`,
+    )
+  ) {
+    assert.deepEqual(assembly.manifest, cachedManifest);
   }
 }
 
@@ -266,6 +280,192 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
     assert.equal(repository.listCollection('projects').length, 0);
   });
 
+  it('extracts custom dimensions, rebuilds without a provider, and keeps both published bundles', async (t) => {
+    const repository = new FirebaseEmulatorRepository();
+    const prompt = 'Build a custom 6-rotor hexacopter with 320mm wheelbase';
+    const assembly = await orchestrateProjectAssemblyCreation({
+      prompt,
+      provider: 'gemini',
+      repository,
+    });
+    assert.equal(assembly.orchestration.executionMode, 'local_catalog_planner');
+    assert.equal(assembly.archetypeId, 'parametric_multirotor_v1');
+    assert.equal(assembly.parameterValues.rotor_count, 6);
+    assert.equal(assembly.parameterValues.wheelbase_mm, 320);
+    assert.equal(assembly.nodes.filter(({ category }) => category === 'motor').length, 6);
+    const originalDir = path.join(repoRoot, 'public', 'assemblies', assembly.manifest.manifestHash);
+    const originalGlb = fs.readFileSync(path.join(originalDir, 'model.glb'));
+
+    const providerCall = t.mock.method(globalThis, 'fetch', () => {
+      throw new Error('Parameter rebuild must not call an AI provider');
+    });
+    const rebuilt = await rebuildAssemblyWithParameters({
+      archetypeId: assembly.archetypeId,
+      parameterValues: { ...assembly.parameterValues, rotor_count: 4, wheelbase_mm: 264 },
+      title: assembly.title,
+      userPrompt: prompt,
+      orchestration: assembly.orchestration,
+      repository,
+    });
+
+    assert.equal(providerCall.mock.callCount(), 0);
+    assert.notEqual(rebuilt.manifest.manifestHash, assembly.manifest.manifestHash);
+    assert.equal(rebuilt.parameterValues.rotor_count, 4);
+    assert.equal(rebuilt.parameterValues.wheelbase_mm, 260);
+    assert.equal(rebuilt.parameters.find(({ name }) => name === 'wheelbase_mm').value, 260);
+    assert.equal(rebuilt.nodes.filter(({ category }) => category === 'motor').length, 4);
+    assert.ok(rebuilt.relationships.length < assembly.relationships.length);
+    assert.notDeepEqual(rebuilt.assemblySteps, assembly.assemblySteps);
+    assert.equal(rebuilt.validation.buildTimingMs.cacheMode, 'warm_ram');
+    assert.deepEqual(
+      repository.getProjectAssembly(rebuilt.projectId).parameterValues,
+      rebuilt.parameterValues,
+    );
+
+    for (const build of [assembly, rebuilt]) {
+      const publicPath = `/assemblies/${build.manifest.manifestHash}`;
+      for (const format of ['glb', 'step', 'usdz']) {
+        const url = `${publicPath}/model.${format}`;
+        assert.equal(build.manifest.files[format].publicUrl, url);
+        assert.equal(
+          fs.statSync(path.join(repoRoot, 'public', url)).size,
+          build.manifest.files[format].sizeBytes,
+        );
+      }
+      for (const file of ['manifest.json', 'pipeline_result.json']) {
+        assert.ok(fs.statSync(path.join(repoRoot, 'public', publicPath, file)).size > 0);
+      }
+    }
+    assert.deepEqual(fs.readFileSync(path.join(originalDir, 'model.glb')), originalGlb);
+  });
+
+  it('supplements partial live plans with clamped prompt parameters', async (t) => {
+    t.mock.method(globalThis, 'fetch', async () =>
+      Response.json({
+        choices: [
+          {
+            message: {
+              content: JSON.stringify({
+                archetypeId: 'parametric_multirotor_v1',
+                projectTitle: 'Custom multirotor',
+                rationale: 'Requested custom dimensions',
+                plannedSubsystems: [],
+                parameterValues: { wheelbase_mm: 320 },
+              }),
+            },
+          },
+        ],
+      }),
+    );
+    const plan = await planProjectWithProvider({
+      prompt: 'Hexacopter with wheelbase 310 mm, 31mm deck gap, and 5mm arm',
+      provider: 'openai',
+      apiKey: 'sk-test-openai',
+    });
+    assert.deepEqual(plan.parameterValues, {
+      rotor_count: 6,
+      wheelbase_mm: 320,
+      deck_gap_mm: 32,
+      arm_thickness_mm: 5,
+    });
+
+    const localPlan = await planProjectWithProvider({
+      prompt: 'Drone with wheelbase of 400 mm',
+      provider: 'gemini',
+    });
+    assert.equal(localPlan.archetypeId, 'parametric_multirotor_v1');
+    assert.equal(localPlan.parameterValues.wheelbase_mm, 360);
+
+    const roverPlan = await planProjectWithProvider({
+      prompt: 'Build a rover with a 300 mm wheelbase',
+      provider: 'gemini',
+    });
+    assert.equal(roverPlan.archetypeId, 'open_source_rover_v1');
+    assert.equal(roverPlan.parameterValues, undefined);
+  });
+
+  it('repairs a corrupt public manifest directory on subsequent publication', async () => {
+    const repository = new FirebaseEmulatorRepository();
+    const first = await orchestrateProjectAssemblyCreation({
+      prompt: 'Explore an autonomous ground rover chassis with stereo camera',
+      provider: 'gemini',
+      repository,
+    });
+    const publishedGlb = path.join(repoRoot, 'public', first.manifest.files.glb.publicUrl);
+    fs.writeFileSync(publishedGlb, 'corrupt');
+
+    const second = await orchestrateProjectAssemblyCreation({
+      prompt: 'Explore an autonomous ground rover chassis with stereo camera',
+      provider: 'gemini',
+      repository,
+    });
+    assert.equal(second.manifest.manifestHash, first.manifest.manifestHash);
+    assert.equal(fs.statSync(publishedGlb).size, second.manifest.files.glb.sizeBytes);
+    assert.equal(fs.readFileSync(publishedGlb).subarray(0, 4).toString('utf8'), 'glTF');
+  });
+
+  it('releases the warm worker queue after a build deadline expires', async () => {
+    const tempOut = fs.mkdtempSync(path.join(os.tmpdir(), 'zappd-timeout-'));
+    try {
+      await assert.rejects(
+        () =>
+          requestWarmCadBuild(
+            {
+              cmd: 'build',
+              archetypeId: 'open_source_rover_v1',
+              outputDir: tempOut,
+              cacheDir: path.join(repoRoot, 'backend', 'data', 'open_step_cache'),
+            },
+            { timeoutMs: 1 },
+          ),
+        /CAD worker timed out/,
+      );
+      const recovered = await orchestrateProjectAssemblyCreation({
+        prompt: 'Explore an autonomous ground rover chassis with stereo camera',
+        provider: 'gemini',
+        repository: new FirebaseEmulatorRepository(),
+      });
+      assert.equal(recovered.archetypeId, 'open_source_rover_v1');
+      assert.equal(recovered.validation.valid, true);
+    } finally {
+      fs.rmSync(tempOut, { recursive: true, force: true });
+    }
+  });
+
+  it('persists and publishes colliding geometry with its original validation failures when allowed', async () => {
+    const repository = new FirebaseEmulatorRepository();
+    const assembly = await orchestrateProjectAssemblyCreation({
+      prompt: 'I want to build a quadcopter',
+      provider: 'gemini',
+      injectCollisionTest: true,
+      allowUnverified: true,
+      repository,
+    });
+    assert.equal(assembly.verificationStatus, 'unverified');
+    assert.equal(assembly.validation.valid, false);
+    assert.ok(assembly.validation.failures.length > 0);
+    assert.ok(assembly.validation.interferenceCount > 0);
+    const pipeline = JSON.parse(
+      fs.readFileSync(
+        path.join(
+          repoRoot,
+          'public',
+          'assemblies',
+          assembly.manifest.manifestHash,
+          'pipeline_result.json',
+        ),
+        'utf8',
+      ),
+    );
+    for (const field of ['failures', 'electricalFailures', 'floatingComponentIds']) {
+      assert.deepEqual(assembly.validation[field], pipeline.validation[field]);
+    }
+    assert.deepEqual(
+      repository.getProjectAssembly(assembly.projectId).validation,
+      assembly.validation,
+    );
+  });
+
   it('requires a live provider key instead of falling back to keyword matching', async () => {
     const repository = new FirebaseEmulatorRepository();
     const originalCwd = process.cwd();
@@ -372,21 +572,21 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
             step: {
               format: 'step',
               storagePath: `assemblies/${manifestHash}/model.step`,
-              publicUrl: '/assemblies/poppy_humanoid_v1/model.step',
+              publicUrl: `/assemblies/${manifestHash}/model.step`,
               sha256: stepSha,
               sizeBytes: stepBytes.length,
             },
             glb: {
               format: 'glb',
               storagePath: `assemblies/${manifestHash}/model.glb`,
-              publicUrl: '/assemblies/poppy_humanoid_v1/model.glb',
+              publicUrl: `/assemblies/${manifestHash}/model.glb`,
               sha256: glbSha,
               sizeBytes: glbBytes.length,
             },
             usdz: {
               format: 'usdz',
               storagePath: `assemblies/${manifestHash}/model.usdz`,
-              publicUrl: '/assemblies/poppy_humanoid_v1/model.usdz',
+              publicUrl: `/assemblies/${manifestHash}/model.usdz`,
               sha256: usdzSha,
               sizeBytes: usdzBytes.length,
             },
@@ -444,16 +644,24 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
         `#!${process.execPath}`,
         "const fs = require('node:fs');",
         "const path = require('node:path');",
-        'const args = process.argv.slice(2);',
-        "const outDir = args[args.indexOf('--output-dir') + 1];",
-        "const jsonOut = args[args.indexOf('--json-out') + 1];",
-        `const payload = JSON.parse(fs.readFileSync(${JSON.stringify(stubPayloadPath)}, 'utf8'));`,
-        'fs.mkdirSync(outDir, { recursive: true });',
-        `fs.writeFileSync(path.join(outDir, 'model.step'), Buffer.from(${JSON.stringify(stepBytes.toString('base64'))}, 'base64'));`,
-        `fs.writeFileSync(path.join(outDir, 'model.glb'), Buffer.from(${JSON.stringify(glbBytes.toString('base64'))}, 'base64'));`,
-        `fs.writeFileSync(path.join(outDir, 'model.usdz'), Buffer.from(${JSON.stringify(usdzBytes.toString('base64'))}, 'base64'));`,
-        "fs.writeFileSync(path.join(outDir, 'manifest.json'), JSON.stringify(payload.manifest));",
-        'fs.writeFileSync(jsonOut, JSON.stringify(payload));',
+        "const readline = require('node:readline');",
+        'const rl = readline.createInterface({ input: process.stdin });',
+        "rl.on('line', (line) => {",
+        '  const req = JSON.parse(line);',
+        "  if (req.cmd === 'shutdown') {",
+        "    process.stdout.write(JSON.stringify({ id: req.id, ok: true }) + '\\n', () => process.exit(0));",
+        '    rl.close();',
+        '    return;',
+        '  }',
+        `  const payload = JSON.parse(fs.readFileSync(${JSON.stringify(stubPayloadPath)}, 'utf8'));`,
+        '  fs.mkdirSync(req.outputDir, { recursive: true });',
+        `  fs.writeFileSync(path.join(req.outputDir, 'model.step'), Buffer.from(${JSON.stringify(stepBytes.toString('base64'))}, 'base64'));`,
+        `  fs.writeFileSync(path.join(req.outputDir, 'model.glb'), Buffer.from(${JSON.stringify(glbBytes.toString('base64'))}, 'base64'));`,
+        `  fs.writeFileSync(path.join(req.outputDir, 'model.usdz'), Buffer.from(${JSON.stringify(usdzBytes.toString('base64'))}, 'base64'));`,
+        "  fs.writeFileSync(path.join(req.outputDir, 'manifest.json'), JSON.stringify(payload.manifest));",
+        "  fs.writeFileSync(path.join(req.outputDir, 'pipeline_result.json'), JSON.stringify(payload));",
+        "  process.stdout.write(JSON.stringify({ id: req.id, ok: true, result: payload }) + '\\n');",
+        '});',
       ].join('\n'),
       { mode: 0o755 },
     );
@@ -465,8 +673,9 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
       'exports',
       'poppy_humanoid_v1',
     );
-    const publicDir = path.join(isolatedCwd, 'public', 'assemblies', 'poppy_humanoid_v1');
+    const publicDir = path.join(isolatedCwd, 'public', 'assemblies', manifestHash);
 
+    await shutdownWarmCadWorker();
     process.chdir(isolatedCwd);
     try {
       writeExportFixture(precomputedDir, shiftedPayload);
@@ -519,6 +728,54 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
       assert.equal(canonicalRepo.listCollection('projects').length, 1);
       assert.equal(fs.existsSync(path.join(publicDir, 'pipeline_result.json')), true);
     } finally {
+      await shutdownWarmCadWorker();
+      process.chdir(originalCwd);
+      fs.rmSync(isolatedCwd, { recursive: true, force: true });
+    }
+  });
+
+  it('terminates a worker that acknowledges shutdown without exiting', async () => {
+    const originalCwd = process.cwd();
+    const isolatedCwd = fs.mkdtempSync(path.join(os.tmpdir(), 'zappd-lingering-worker-'));
+    const pythonStubPath = path.join(isolatedCwd, 'backend', '.venv', 'bin', 'python');
+    const pidFilePath = path.join(isolatedCwd, 'worker.pid');
+    fs.mkdirSync(path.dirname(pythonStubPath), { recursive: true });
+    fs.writeFileSync(
+      pythonStubPath,
+      [
+        `#!${process.execPath}`,
+        "const fs = require('node:fs');",
+        "const readline = require('node:readline');",
+        `fs.writeFileSync(${JSON.stringify(pidFilePath)}, String(process.pid));`,
+        'setInterval(() => {}, 1000);',
+        'const rl = readline.createInterface({ input: process.stdin });',
+        "rl.on('line', (line) => {",
+        '  const req = JSON.parse(line);',
+        "  process.stdout.write(JSON.stringify({ id: req.id, ok: true, result: { stub: true } }) + '\\n');",
+        '});',
+      ].join('\n'),
+      { mode: 0o755 },
+    );
+
+    await shutdownWarmCadWorker();
+    process.chdir(isolatedCwd);
+    try {
+      const response = await requestWarmCadBuild({
+        cmd: 'build',
+        archetypeId: 'open_source_rover_v1',
+        outputDir: isolatedCwd,
+        cacheDir: isolatedCwd,
+      });
+      assert.deepEqual(response, { stub: true });
+      const workerPid = Number(fs.readFileSync(pidFilePath, 'utf8'));
+      assert.ok(Number.isInteger(workerPid) && workerPid > 0);
+
+      const startedAt = Date.now();
+      await shutdownWarmCadWorker({ closeTimeoutMs: 150 });
+      assert.ok(Date.now() - startedAt < 2_000);
+      assert.throws(() => process.kill(workerPid, 0), { code: 'ESRCH' });
+    } finally {
+      await shutdownWarmCadWorker({ closeTimeoutMs: 150 });
       process.chdir(originalCwd);
       fs.rmSync(isolatedCwd, { recursive: true, force: true });
     }

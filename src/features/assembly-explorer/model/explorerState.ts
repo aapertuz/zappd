@@ -17,6 +17,7 @@ import type {
   ShellVisibilityMode,
   WiringVisibilityMode,
 } from '../types';
+import { extrinsicXyzRotationRows } from './restRotation';
 
 export const DEFAULT_EXPLODE_PRESET = 0.65;
 
@@ -67,9 +68,19 @@ export function computeAssemblyBoundingBoxMeters(
     leaves.length > 0 ? leaves : nonRootNodes.length > 0 ? nonRootNodes : assembly.nodes;
   const min: [number, number, number] = [Infinity, Infinity, Infinity];
   const max: [number, number, number] = [-Infinity, -Infinity, -Infinity];
-  for (const { restPositionMeters, dimensionsMm } of physicalNodes) {
+  for (const { restPositionMeters, restRotationDeg, dimensionsMm } of physicalNodes) {
+    const rotation =
+      restRotationDeg === undefined ? undefined : extrinsicXyzRotationRows(restRotationDeg);
     for (const axis of AXES) {
-      const halfExtent = halfExtentMeters(dimensionsMm[axis]);
+      const row = rotation?.[axis];
+      const halfExtent =
+        row === undefined
+          ? halfExtentMeters(dimensionsMm[axis])
+          : AXES.reduce<number>(
+              (extent, index) =>
+                extent + Math.abs(row[index]) * halfExtentMeters(dimensionsMm[index]),
+              0,
+            );
       min[axis] = Math.min(min[axis], restPositionMeters[axis] - halfExtent);
       max[axis] = Math.max(max[axis], restPositionMeters[axis] + halfExtent);
     }
@@ -121,11 +132,13 @@ function computeFrustumDistance(
   return distance;
 }
 
-export function computeFramedCameraForBoundingBox({
-  center,
-  size: [x, y, z],
-}: AssemblyBoundingBoxMeters): ExplorerCameraState {
-  const { azimuthDeg, elevationDeg } = DEFAULT_EXPLORER_CAMERA;
+export function computeFramedCameraForBoundingBox(
+  { center, size: [x, y, z] }: AssemblyBoundingBoxMeters,
+  {
+    azimuthDeg,
+    elevationDeg,
+  }: Pick<ExplorerCameraState, 'azimuthDeg' | 'elevationDeg'> = DEFAULT_EXPLORER_CAMERA,
+): ExplorerCameraState {
   return {
     azimuthDeg,
     elevationDeg,
@@ -159,6 +172,9 @@ export const INITIAL_ASSEMBLY_EXPLORER_STATE: AssemblyExplorerState = {
   loadingPhase: 'idle',
   loadingProgress: 0,
   errorMessage: null,
+  parameterRequestId: null,
+  isRebuildingParameters: false,
+  parameterErrorMessage: null,
   camera: DEFAULT_EXPLORER_CAMERA,
   viewMode: { kind: 'overview' },
   explodeFactor: 0,
@@ -351,6 +367,57 @@ export function computeCircuitComponentIds(
   return circuitIds;
 }
 
+function applyRebuiltAssembly(
+  state: AssemblyExplorerState,
+  assembly: VerifiedProjectAssembly,
+  glbArrayBuffer: ArrayBuffer,
+): AssemblyExplorerState {
+  const nodeIds = new Set<string>(assembly.nodes.map(({ id }) => id));
+  const retainId = (id: ComponentId | null) => (id !== null && nodeIds.has(id) ? id : null);
+  const separatedOffsets = Object.fromEntries(
+    Object.entries(state.separatedOffsets).filter(([id]) => nodeIds.has(id)),
+  );
+  const { viewMode } = state;
+  const focus = viewMode.kind === 'part_focus' ? viewMode : null;
+  const focusedComponentId = retainId(focus?.componentId ?? null);
+  const bounds = computeAssemblyBoundingBoxMeters(assembly);
+  const overviewCamera = computeFramedCameraForBoundingBox(
+    bounds,
+    focus?.restoreCamera ?? state.camera,
+  );
+  const explodeFactor =
+    focusedComponentId === null && focus !== null
+      ? focus.restoreExplodeFactor
+      : state.explodeFactor;
+  return {
+    ...state,
+    assembly,
+    glbArrayBuffer,
+    parameterRequestId: null,
+    isRebuildingParameters: false,
+    parameterErrorMessage: null,
+    selectedComponentId: retainId(state.selectedComponentId),
+    isolatedComponentId: retainId(state.isolatedComponentId),
+    separatedOffsets,
+    explodeFactor,
+    camera:
+      focusedComponentId === null
+        ? overviewCamera
+        : computeFocusedCameraForComponent(
+            assembly,
+            focusedComponentId,
+            explodeFactor,
+            state.camera,
+            separatedOffsets,
+            state.activeExplodeStage,
+          ),
+    viewMode:
+      focus !== null && focusedComponentId !== null
+        ? { ...focus, restoreCamera: overviewCamera }
+        : { kind: 'overview' },
+  };
+}
+
 export function reduceAssemblyExplorerState(
   state: AssemblyExplorerState,
   action: AssemblyExplorerAction,
@@ -373,6 +440,9 @@ export function reduceAssemblyExplorerState(
         loadingPhase: 'orchestrating',
         loadingProgress: 0.12,
         errorMessage: null,
+        parameterRequestId: null,
+        isRebuildingParameters: false,
+        parameterErrorMessage: null,
       };
     }
     case 'setLoadingProgress': {
@@ -424,6 +494,28 @@ export function reduceAssemblyExplorerState(
         loadingPhase: 'error',
         loadingProgress: 0,
         errorMessage: action.message,
+      };
+    }
+    case 'startParameterRebuild': {
+      if (state.isLoading || state.assembly === null) return state;
+      return {
+        ...state,
+        parameterRequestId: action.requestId,
+        isRebuildingParameters: true,
+        parameterErrorMessage: null,
+      };
+    }
+    case 'rebuildParametersSuccess': {
+      if (state.parameterRequestId !== action.requestId) return state;
+      return applyRebuiltAssembly(state, action.assembly, action.glbArrayBuffer);
+    }
+    case 'rebuildParametersError': {
+      if (state.parameterRequestId !== action.requestId) return state;
+      return {
+        ...state,
+        parameterRequestId: null,
+        isRebuildingParameters: false,
+        parameterErrorMessage: action.message,
       };
     }
     case 'orbitCamera': {

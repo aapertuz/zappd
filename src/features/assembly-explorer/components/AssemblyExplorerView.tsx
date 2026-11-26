@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useReducer } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useReducer, useRef } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { useReducedMotion } from 'react-native-reanimated';
 
@@ -19,7 +19,10 @@ import {
   reduceAssemblyExplorerState,
 } from '../model/explorerState';
 import { AssemblyScene } from '../renderer/AssemblyScene';
-import { loadVerifiedAssemblyForPrompt } from '../services/assemblyRuntimeService';
+import {
+  loadVerifiedAssemblyForPrompt,
+  rebuildAssemblyForParameters,
+} from '../services/assemblyRuntimeService';
 import {
   type AssemblyExplorerProps,
   type ExplorerCameraState,
@@ -104,6 +107,8 @@ export function AssemblyExplorerView({
     reduceAssemblyExplorerState,
     INITIAL_ASSEMBLY_EXPLORER_STATE,
   );
+  const parameterRequest = useRef<AbortController | null>(null);
+  const nextParameterRequestId = useRef(0);
   const assembly = state.errorMessage === null ? state.assembly : null;
   const focusedComponentId =
     state.viewMode.kind === 'part_focus' ? state.viewMode.componentId : null;
@@ -134,6 +139,40 @@ export function AssemblyExplorerView({
     [],
   );
   const exitPartFocus = useCallback(() => dispatch({ type: 'exitPartFocus' }), []);
+
+  const applyParameters = useCallback(
+    (parameterValues: Readonly<Record<string, number>>) => {
+      if (assembly === null || state.isLoading) return;
+      parameterRequest.current?.abort();
+      const controller = new AbortController();
+      parameterRequest.current = controller;
+      const requestId = ++nextParameterRequestId.current;
+      dispatch({ type: 'startParameterRebuild', requestId });
+
+      void rebuildAssemblyForParameters({ assembly, parameterValues, signal: controller.signal })
+        .then(({ assembly: updatedAssembly, glbArrayBuffer }) => {
+          if (controller.signal.aborted) return;
+          dispatch({
+            type: 'rebuildParametersSuccess',
+            requestId,
+            assembly: updatedAssembly,
+            glbArrayBuffer,
+          });
+        })
+        .catch((error: unknown) => {
+          if (controller.signal.aborted) return;
+          dispatch({
+            type: 'rebuildParametersError',
+            requestId,
+            message: error instanceof Error ? error.message : 'Unable to rebuild CAD assembly',
+          });
+        })
+        .finally(() => {
+          if (parameterRequest.current === controller) parameterRequest.current = null;
+        });
+    },
+    [assembly, state.isLoading],
+  );
 
   useEffect(() => {
     dispatch({ type: 'setProvider', provider: selectedProvider });
@@ -181,6 +220,7 @@ export function AssemblyExplorerView({
 
     return () => {
       cancelled = true;
+      parameterRequest.current?.abort();
     };
   }, [submittedPrompt, requestedProvider, providerExplicitlySelected, onResolveProvider]);
 
@@ -238,6 +278,7 @@ export function AssemblyExplorerView({
         state={state}
         learningState={learningState}
         onDismissLearningAnswer={dismissAnswer}
+        onApplyParameters={applyParameters}
         onSetCamera={setCamera}
         onSetExplodeFactor={(explodeFactor: number) =>
           dispatch({ type: 'setExplodeFactor', explodeFactor })
