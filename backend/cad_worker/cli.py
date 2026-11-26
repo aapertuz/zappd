@@ -60,21 +60,7 @@ def main() -> int:
             parser.error("--inject-collision-test requires an explicit --output-dir outside canonical exports")
         forbidden_roots = _collect_forbidden_roots(repo_root)
         out_path = Path(args.output_dir)
-        checked_paths = [
-            out_path,
-            *(
-                out_path / filename
-                for filename in (
-                    "model.glb",
-                    "model.step",
-                    "model.usdz",
-                    "manifest.json",
-                    "pipeline_result.json",
-                    "interference.json",
-                    "engineering.json",
-                )
-            ),
-        ]
+        checked_paths = [out_path]
         if args.json_out:
             checked_paths.append(Path(args.json_out))
         for path_arg in checked_paths:
@@ -82,6 +68,14 @@ def main() -> int:
                 parser.error(
                     "--inject-collision-test paths must be outside canonical exports and public assemblies"
                 )
+        if out_path.is_symlink() or (
+            out_path.exists() and (not out_path.is_dir() or any(out_path.iterdir()))
+        ):
+            parser.error("--inject-collision-test --output-dir must be a new or empty directory")
+        if args.json_out:
+            json_path = Path(args.json_out)
+            if json_path.is_symlink() or json_path.exists():
+                parser.error("--inject-collision-test --json-out must not already exist")
 
     targets = list(CATALOG_SPECS.keys()) if args.all_archetypes else [args.archetype]
     results = []
