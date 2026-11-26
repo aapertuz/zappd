@@ -6,6 +6,7 @@ import {
   listConfiguredAiProviders,
   resolveDefaultConfiguredProvider,
 } from '@/backend/orchestrator/aiProviders';
+import { formatApiError } from '@/backend/orchestrator/errorFormatting';
 import { orchestrateProjectAssemblyCreation } from '@/backend/orchestrator/genkitOrchestrator';
 
 type OrchestrateRequestBody = {
@@ -50,15 +51,13 @@ export async function POST(request: Request): Promise<Response> {
     const assembly = await orchestrateProjectAssemblyCreation({
       prompt: body.prompt,
       provider: effectiveProvider,
-      requireLiveApiKey: true,
+      requireLiveApiKey: body.providerExplicitlySelected,
       parameterValues: body.parameterValues,
       allowUnverified: true,
     });
     return Response.json(assembly, { status: 200 });
   } catch (error: unknown) {
-    return Response.json(
-      { error: error instanceof Error ? error.message : 'Orchestration failed' },
-      { status: 400 },
-    );
+    console.error('Orchestration request failed', error);
+    return Response.json({ error: formatApiError(error, 'Orchestration failed') }, { status: 400 });
   }
 }

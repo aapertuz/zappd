@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -7,7 +6,6 @@ import { z } from 'genkit';
 
 import {
   type AiProviderId,
-  type AssemblyNode,
   type CatalogArchetypeDefinition,
   type VerifiedProjectAssembly,
   canClassifyAsVerified,
@@ -17,8 +15,6 @@ import {
   isAllowedProjectAssembly,
   isVerifiedStatus,
   matchProjectArchetypeFromPrompt,
-  parseVerifiedProjectAssembly,
-  toProjectId,
   verifyOneToOneNodeMapping,
 } from '@/shared/domain';
 import {
@@ -32,7 +28,29 @@ import {
   planProjectWithProvider,
 } from './aiProviders';
 
+import {
+  type AssemblyIdentity,
+  type CadWorkerPayload,
+  OPTIONAL_INSPECTION_REPORT_FILE_NAMES,
+  PUBLISHED_ASSEMBLY_FILE_NAMES,
+  createProjectAssembly,
+  matchesCatalogPlacements,
+  matchesVerifiedCatalogExport,
+  parseCadWorkerPayload,
+  readExportedArtifacts,
+  readOptionalInspectionReports,
+  readVerifiedCatalogExport,
+  usesContentAddressedUrls,
+} from './cadExports';
+
+import {
+  fetchCloudCatalogPayload,
+  matchesCloudArtifactRecords,
+  tryPublishAssemblyToFirebaseCloud,
+} from './firebaseCloudStore';
 import { requestWarmCadBuild } from './warmCadClient';
+
+export { matchesCatalogPlacements } from './cadExports';
 
 const parameterValuesSchema = z.record(z.string(), z.number());
 
@@ -45,17 +63,8 @@ const OrchestrationInputSchema = z.object({
   allowUnverified: z.boolean().optional(),
   parameterValues: parameterValuesSchema.optional(),
   requireLiveApiKey: z.boolean().optional(),
+  syncCloudStorage: z.boolean().optional(),
 });
-
-const PUBLISHED_ASSEMBLY_FILE_NAMES = [
-  'model.glb',
-  'model.step',
-  'model.usdz',
-  'manifest.json',
-  'pipeline_result.json',
-] as const;
-
-const OPTIONAL_INSPECTION_REPORT_FILE_NAMES = ['interference.json', 'engineering.json'] as const;
 
 const RetrievalInputSchema = z.object({
   archetypeId: z.string().min(1),
@@ -78,22 +87,6 @@ export type ComponentRetrievalSummary = {
   readonly assemblyStepsCount: number;
 };
 
-type CadWorkerPayload = Pick<
-  VerifiedProjectAssembly,
-  | 'archetypeId'
-  | 'verificationStatus'
-  | 'nodes'
-  | 'relationships'
-  | 'assemblySteps'
-  | 'manifest'
-  | 'validation'
-  | 'parameters'
-  | 'parameterValues'
-> & {
-  readonly glbNodeIds: readonly string[];
-  readonly usdzPrimPaths: readonly string[];
-};
-
 type CadBuildOptions = {
   readonly archetypeId: string;
   readonly outputDir: string;
@@ -103,126 +96,9 @@ type CadBuildOptions = {
 
 type CadParameters = Readonly<Record<string, number>>;
 
-export function matchesCatalogPlacements(
-  catalogNodes: readonly Pick<AssemblyNode, 'id' | 'restPositionMeters'>[],
-  workerNodes: readonly Pick<AssemblyNode, 'id' | 'restPositionMeters'>[],
-): boolean {
-  if (catalogNodes.length !== workerNodes.length) {
-    return false;
-  }
-  const byId = new Map(workerNodes.map((node) => [node.id, node]));
-  for (const expected of catalogNodes) {
-    const actual = byId.get(expected.id);
-    if (actual === undefined) {
-      return false;
-    }
-    for (let axis = 0; axis < 3; axis += 1) {
-      const expectedValue = expected.restPositionMeters[axis];
-      const actualValue = actual.restPositionMeters[axis];
-      if (
-        expectedValue === undefined ||
-        actualValue === undefined ||
-        Math.abs(expectedValue - actualValue) > 1e-6
-      ) {
-        return false;
-      }
-    }
-  }
-  return true;
-}
-
 type CadOperation =
   | { readonly cmd: 'build'; readonly parameterValues?: CadParameters }
   | { readonly cmd: 'rebuild_params'; readonly parameterValues: CadParameters };
-
-type AssemblyIdentity = Pick<VerifiedProjectAssembly, 'title' | 'userPrompt' | 'orchestration'>;
-
-const workerMetadataSchema = z.object({
-  glbNodeIds: z.array(z.string()),
-  usdzPrimPaths: z.array(z.string()),
-});
-
-const assetFormats = ['step', 'glb', 'usdz'] as const;
-
-function parseCadWorkerPayload(
-  raw: unknown,
-  archetype: CatalogArchetypeDefinition,
-): CadWorkerPayload {
-  const metadata = workerMetadataSchema.parse(raw);
-  const rawPayload = z.record(z.string(), z.unknown()).parse(raw);
-  const {
-    archetypeId,
-    verificationStatus,
-    nodes,
-    relationships,
-    assemblySteps,
-    parameters,
-    parameterValues,
-    manifest,
-    validation,
-  } = parseVerifiedProjectAssembly({
-    ...rawPayload,
-    projectId: 'proj_check',
-    title: archetype.title,
-    userPrompt: archetype.title,
-    rootNodeId: archetype.rootNodeId,
-    relationships: rawPayload.relationships ?? archetype.relationships,
-    assemblySteps: rawPayload.assemblySteps ?? archetype.assemblySteps,
-    orchestration: {
-      provider: 'gemini',
-      modelId: 'googleai/gemini-2.5-flash',
-      apiFormat: 'google_genai',
-      baseUrl: 'https://generativelanguage.googleapis.com',
-      executionMode: 'local_catalog_planner',
-      plannedSubsystems: [],
-    },
-  });
-
-  if (archetypeId !== archetype.archetypeId || manifest.archetypeId !== archetypeId) {
-    throw new Error('CAD worker exported a different archetype');
-  }
-  return {
-    archetypeId,
-    verificationStatus,
-    nodes,
-    relationships,
-    assemblySteps,
-    parameters,
-    parameterValues,
-    manifest,
-    validation,
-    ...metadata,
-  };
-}
-
-function usesContentAddressedUrls({ manifest }: CadWorkerPayload): boolean {
-  return assetFormats.every(
-    (format) =>
-      manifest.files[format].publicUrl === `/assemblies/${manifest.manifestHash}/model.${format}`,
-  );
-}
-
-async function readExportedArtifacts(workDir: string, { manifest }: CadWorkerPayload) {
-  const [step, glb, usdz, manifestBytes] = await Promise.all([
-    fs.readFile(path.join(workDir, 'model.step')),
-    fs.readFile(path.join(workDir, 'model.glb')),
-    fs.readFile(path.join(workDir, 'model.usdz')),
-    fs.readFile(path.join(workDir, 'manifest.json')),
-  ]);
-  const artifacts = { step, glb, usdz };
-  for (const format of assetFormats) {
-    const bytes = artifacts[format];
-    const file = manifest.files[format];
-    if (
-      bytes.length === 0 ||
-      bytes.length !== file.sizeBytes ||
-      createHash('sha256').update(bytes).digest('hex') !== file.sha256
-    ) {
-      throw new Error(`CAD worker exported an invalid ${format.toUpperCase()} artifact`);
-    }
-  }
-  return { ...artifacts, manifest: manifestBytes };
-}
 
 async function tryReuseVerifiedExports(args: {
   readonly archetype: CatalogArchetypeDefinition;
@@ -237,79 +113,7 @@ async function tryReuseVerifiedExports(args: {
   );
 
   try {
-    await Promise.all(
-      PUBLISHED_ASSEMBLY_FILE_NAMES.map((fileName) =>
-        fs.access(path.join(precomputedDir, fileName)),
-      ),
-    );
-    const rawJson: unknown = JSON.parse(
-      await fs.readFile(path.join(precomputedDir, 'pipeline_result.json'), 'utf8'),
-    );
-    const workerResult = parseCadWorkerPayload(rawJson, args.archetype);
-    if (!usesContentAddressedUrls(workerResult) || !isAllowedProjectAssembly(workerResult)) {
-      return null;
-    }
-    if (args.archetype.semantics === 'source_inspection') {
-      if (!matchesCatalogPlacements(args.archetype.nodes, workerResult.nodes)) {
-        return null;
-      }
-    } else {
-      if (
-        !isVerifiedStatus(workerResult.verificationStatus) ||
-        !canClassifyAsVerified(workerResult.validation, workerResult.verificationStatus) ||
-        workerResult.validation.connectivityValid !== true ||
-        workerResult.validation.electricalValid !== true
-      ) {
-        return null;
-      }
-      if (!hasVerifiedUpstreamProvenance(workerResult.nodes, workerResult.verificationStatus)) {
-        return null;
-      }
-      const expectedNodesById = new Map(args.archetype.nodes.map((node) => [node.id, node]));
-      const matchesCatalogContract =
-        workerResult.nodes.length === expectedNodesById.size &&
-        workerResult.nodes.every((actual) => {
-          const expected = expectedNodesById.get(actual.id);
-          if (expected === undefined) {
-            return false;
-          }
-          return (
-            actual.category === expected.category &&
-            actual.provenance.origin === expected.origin &&
-            actual.provenance.sourceUrl === expected.sourceUrl &&
-            actual.provenance.spdxLicense === expected.spdxLicense &&
-            (expected.expectedStepSha256 === undefined ||
-              actual.provenance.stepSha256 === expected.expectedStepSha256) &&
-            JSON.stringify(actual.restPositionMeters) ===
-              JSON.stringify(expected.restPositionMeters) &&
-            JSON.stringify(actual.restRotationDeg ?? null) ===
-              JSON.stringify(expected.restRotationDeg ?? null) &&
-            JSON.stringify(actual.ports ?? null) === JSON.stringify(expected.ports ?? null) &&
-            JSON.stringify(actual.mountingInterfaces ?? null) ===
-              JSON.stringify(expected.mountingInterfaces ?? null)
-          );
-        }) &&
-        JSON.stringify(workerResult.relationships) ===
-          JSON.stringify(args.archetype.relationships) &&
-        JSON.stringify(workerResult.assemblySteps) ===
-          JSON.stringify(args.archetype.assemblySteps) &&
-        !args.archetype.parameters?.some(
-          ({ name, defaultValue }) => workerResult.parameterValues?.[name] !== defaultValue,
-        );
-      if (!matchesCatalogContract) {
-        return null;
-      }
-    }
-    const mappingOk = verifyOneToOneNodeMapping(
-      workerResult.nodes,
-      workerResult.glbNodeIds,
-      workerResult.usdzPrimPaths,
-      { allowUnavailableNodes: args.archetype.semantics === 'source_inspection' },
-    );
-    if (!mappingOk) {
-      return null;
-    }
-    await readExportedArtifacts(precomputedDir, workerResult);
+    const { payload } = await readVerifiedCatalogExport(precomputedDir, args.archetype);
     await fs.mkdir(args.outputDir, { recursive: true });
     await Promise.all([
       ...PUBLISHED_ASSEMBLY_FILE_NAMES.map((fileName) =>
@@ -324,7 +128,7 @@ async function tryReuseVerifiedExports(args: {
         } catch {}
       }),
     ]);
-    return workerResult;
+    return payload;
   } catch {
     return null;
   }
@@ -346,10 +150,34 @@ async function runComponentRetrieval(archetypeId: string): Promise<ComponentRetr
   };
 }
 
+async function tryReuseCloudCatalogExports(
+  archetype: CatalogArchetypeDefinition,
+): Promise<CadWorkerPayload | null> {
+  try {
+    const result = await fetchCloudCatalogPayload(archetype.archetypeId);
+    if (result === null) return null;
+
+    const { pointer, rawPipelineResult } = result;
+    const payload = parseCadWorkerPayload(rawPipelineResult, archetype);
+    return payload.verificationStatus === pointer.verificationStatus &&
+      matchesVerifiedCatalogExport(payload, archetype) &&
+      matchesCloudArtifactRecords(payload.manifest, pointer)
+      ? payload
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+type CadRunResult = {
+  readonly payload: CadWorkerPayload;
+  readonly source: 'local_export' | 'cloud_catalog' | 'local_build';
+};
+
 async function runCadAssemblyAndValidation(
   { archetypeId, outputDir, injectCollisionTest, allowUnverified }: CadBuildOptions,
   operation: CadOperation,
-): Promise<CadWorkerPayload> {
+): Promise<CadRunResult> {
   const archetype = getCatalogArchetypeById(archetypeId);
   if (archetype === undefined) {
     throw new Error(`Unknown CAD archetype "${archetypeId}"`);
@@ -368,9 +196,10 @@ async function runCadAssemblyAndValidation(
       ))
   ) {
     const reused = await tryReuseVerifiedExports({ archetype, outputDir });
-    if (reused !== null) {
-      return reused;
-    }
+    if (reused !== null) return { payload: reused, source: 'local_export' };
+
+    const cloud = await tryReuseCloudCatalogExports(archetype);
+    if (cloud !== null) return { payload: cloud, source: 'cloud_catalog' };
   }
 
   await requestWarmCadBuild({
@@ -414,7 +243,7 @@ async function runCadAssemblyAndValidation(
     );
   }
 
-  return workerResult;
+  return { payload: workerResult, source: 'local_build' };
 }
 
 async function hasValidPublishedArtifacts(
@@ -472,7 +301,8 @@ async function publishAssemblyArtifacts(
 }
 
 async function buildProjectAssembly(
-  options: Omit<CadBuildOptions, 'outputDir'> & AssemblyIdentity,
+  options: Omit<CadBuildOptions, 'outputDir'> &
+    AssemblyIdentity & { readonly syncCloudStorage?: boolean },
   operation: CadOperation,
   repository: FirebaseEmulatorRepository,
 ): Promise<VerifiedProjectAssembly> {
@@ -483,56 +313,19 @@ async function buildProjectAssembly(
 
   const workDir = await fs.mkdtemp(path.join(os.tmpdir(), 'zappd-cad-run-'));
   try {
-    const cadResult = await runCadAssemblyAndValidation(
+    const { payload: cadResult, source } = await runCadAssemblyAndValidation(
       { ...options, outputDir: workDir },
       operation,
     );
-    const {
-      manifest,
-      validation,
-      verificationStatus,
-      nodes,
-      relationships,
-      assemblySteps,
-      parameters,
-      parameterValues,
-    } = cadResult;
-    const catalogNodesById =
-      archetype.generationMode === 'parametric_family'
-        ? null
-        : new Map(archetype.nodes.map((node) => [node.id, node]));
-    const resolvedNodes =
-      catalogNodesById === null
-        ? nodes
-        : nodes.map((node) => {
-            const catalogNode = catalogNodesById.get(node.id);
-            if (catalogNode === undefined) return node;
+    const assembly = createProjectAssembly(cadResult, archetype, options);
 
-            const { enclosureRole: _cachedRole, ...geometryNode } = node;
-            const { enclosureRole, explodeDirection, explodeDistanceMeters } = catalogNode;
-            return {
-              ...geometryNode,
-              explodeDirection,
-              explodeDistanceMeters,
-              ...(enclosureRole === undefined ? {} : { enclosureRole }),
-            };
-          });
-    const assembly: VerifiedProjectAssembly = {
-      projectId: toProjectId(`proj_${archetype.archetypeId}_${manifest.manifestHash.slice(0, 8)}`),
-      archetypeId: archetype.archetypeId,
-      rootNodeId: archetype.rootNodeId,
-      title: options.title,
-      userPrompt: options.userPrompt,
-      orchestration: options.orchestration,
-      manifest,
-      validation,
-      verificationStatus,
-      nodes: resolvedNodes,
-      relationships,
-      assemblySteps,
-      parameters,
-      parameterValues,
-    };
+    if (source === 'cloud_catalog') {
+      await repository.saveProjectAssembly(assembly, undefined, {
+        allowUnverified: options.allowUnverified,
+        syncLiveEmulator: false,
+      });
+      return assembly;
+    }
 
     const artifacts = await readExportedArtifacts(workDir, cadResult);
     await publishAssemblyArtifacts(workDir, cadResult);
@@ -540,6 +333,28 @@ async function buildProjectAssembly(
       allowUnverified: options.allowUnverified,
       syncLiveEmulator: false,
     });
+    if (
+      source === 'local_build' &&
+      (options.syncCloudStorage ?? repository === defaultFirebaseEmulatorRepository) &&
+      process.env.ZAPPD_DISABLE_FIREBASE_CLOUD !== '1' &&
+      isAllowedProjectAssembly(assembly)
+    ) {
+      try {
+        const [rawPipelineResult, optionalReports] = await Promise.all([
+          fs.readFile(path.join(workDir, 'pipeline_result.json')),
+          readOptionalInspectionReports(workDir),
+        ]);
+        await tryPublishAssemblyToFirebaseCloud({
+          assembly: createProjectAssembly(cadResult, archetype),
+          rawPipelineResult,
+          artifacts,
+          optionalReports,
+          updateCatalogPointer: false,
+        });
+      } catch (error) {
+        console.error('Could not prepare CAD artifacts for Firebase publishing', error);
+      }
+    }
     return assembly;
   } finally {
     await fs.rm(workDir, { recursive: true, force: true });
@@ -577,6 +392,7 @@ async function executeProjectOrchestration(
       userPrompt: args.prompt,
       injectCollisionTest: args.injectCollisionTest,
       allowUnverified: args.allowUnverified,
+      syncCloudStorage: args.syncCloudStorage,
       orchestration: {
         provider: plan.provider,
         modelId: plan.modelId,
@@ -597,6 +413,7 @@ export async function rebuildAssemblyWithParameters(
     readonly parameterValues: CadParameters;
     readonly allowUnverified?: boolean;
     readonly repository?: FirebaseEmulatorRepository;
+    readonly syncCloudStorage?: boolean;
   },
 ): Promise<VerifiedProjectAssembly> {
   const parameters = getCatalogArchetypeById(args.archetypeId)?.parameters;
@@ -645,7 +462,12 @@ export function createZappdOrchestratorFlows(repository: FirebaseEmulatorReposit
       inputSchema: CadValidationInputSchema,
     },
     async (input) =>
-      runCadAssemblyAndValidation(input, { cmd: 'build', parameterValues: input.parameterValues }),
+      (
+        await runCadAssemblyAndValidation(input, {
+          cmd: 'build',
+          parameterValues: input.parameterValues,
+        })
+      ).payload,
   );
 
   const orchestrateProjectFlow = ai.defineFlow(
