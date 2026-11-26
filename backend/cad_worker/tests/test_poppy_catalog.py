@@ -229,20 +229,42 @@ def test_cli_rejects_inject_collision_test_into_canonical_exports(monkeypatch: p
     canonical_public = repo_root / "public" / "assemblies" / "poppy_humanoid_v1"
     upper_export = repo_root / "backend" / "data" / "EXPORTS" / "poppy_humanoid_v1"
     upper_public = repo_root / "public" / "ASSEMBLIES" / "poppy_humanoid_v1"
-    for argv in (
+    link_to_export = tmp_path / "export_alias"
+    link_to_export.symlink_to(canonical_export.parent)
+    cases = [
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test"],
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(canonical_export)],
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(canonical_public)],
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(upper_export)],
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(upper_public)],
+        ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(link_to_export / "poppy_humanoid_v1")],
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(tmp_path), "--json-out", str(canonical_export / "pipeline_result.json")],
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(tmp_path), "--json-out", str(canonical_public / "pipeline_result.json")],
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(tmp_path), "--json-out", str(upper_export / "pipeline_result.json")],
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(tmp_path), "--json-out", str(upper_public / "pipeline_result.json")],
+        ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(tmp_path), "--json-out", str(link_to_export / "poppy_humanoid_v1" / "pipeline_result.json")],
         ["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(tmp_path), "--public-dir", str(tmp_path / "pub")],
         ["cli.py", "--all-archetypes", "--inject-collision-test", "--output-dir", str(tmp_path)],
-    ):
+    ]
+    for child in (canonical_export.parent.iterdir() if canonical_export.parent.exists() else ()):
+        if child.is_symlink():
+            resolved_target = child.resolve()
+            cases.append(["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(resolved_target)])
+            cases.append(["cli.py", "--archetype", "poppy_humanoid_v1", "--inject-collision-test", "--output-dir", str(tmp_path), "--json-out", str(resolved_target / "pipeline_result.json")])
+            break
+    for argv in cases:
         monkeypatch.setattr(sys, "argv", argv)
         with pytest.raises(SystemExit) as exc:
             cli.main()
         assert exc.value.code == 2
+
+    fake_repo = tmp_path / "fake_repo"
+    external_target = tmp_path / "external_exports" / "quadcopter_drone_v1"
+    external_target.mkdir(parents=True)
+    fake_exports = fake_repo / "backend" / "data" / "exports"
+    fake_exports.mkdir(parents=True)
+    (fake_exports / "quadcopter_drone_v1").symlink_to(external_target)
+    roots = cli._collect_forbidden_roots(fake_repo)
+    assert cli._is_within_forbidden_root(external_target, roots)
+    assert cli._is_within_forbidden_root(external_target / "missing_dir" / "pipeline_result.json", roots)
+    assert not cli._is_within_forbidden_root(tmp_path / "safe_output", roots)

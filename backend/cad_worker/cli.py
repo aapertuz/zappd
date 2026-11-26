@@ -13,6 +13,20 @@ from catalog_specs import CATALOG_SPECS, resolve_catalog_spec
 from geometry_pipeline import run_cad_pipeline
 
 
+def _collect_forbidden_roots(repo_root: Path) -> tuple[Path, ...]:
+    base_roots = (
+        repo_root / "backend" / "data" / "exports",
+        repo_root / "public" / "assemblies",
+    )
+    roots: list[Path] = []
+    for base in base_roots:
+        roots.extend((base.resolve(), base.absolute()))
+        if base.exists():
+            for child in base.iterdir():
+                roots.extend((child.resolve(), child.absolute()))
+    return tuple(dict.fromkeys(roots))
+
+
 def _is_within_forbidden_root(path_arg: Path, forbidden_roots: tuple[Path, ...]) -> bool:
     for candidate in (path_arg.resolve(), path_arg.absolute()):
         for ancestor in (candidate, *candidate.parents):
@@ -44,14 +58,7 @@ def main() -> int:
             parser.error("--inject-collision-test cannot be combined with --all-archetypes or --public-dir")
         if not args.output_dir:
             parser.error("--inject-collision-test requires an explicit --output-dir outside canonical exports")
-        canonical_exports = repo_root / "backend" / "data" / "exports"
-        canonical_public = repo_root / "public" / "assemblies"
-        forbidden_roots = (
-            canonical_exports.resolve(),
-            canonical_exports.absolute(),
-            canonical_public.resolve(),
-            canonical_public.absolute(),
-        )
+        forbidden_roots = _collect_forbidden_roots(repo_root)
         checked_paths = [Path(args.output_dir)]
         if args.json_out:
             checked_paths.append(Path(args.json_out))
