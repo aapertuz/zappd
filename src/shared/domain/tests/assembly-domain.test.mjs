@@ -10,12 +10,15 @@ import {
 } from '../aiProvider.ts';
 import {
   GEOMETRY_ORIGINS,
+  assemblyHasShellNodes,
   canClassifyAsVerified,
   computeExplodeStageWeight,
+  computeNodeExplodeWeight,
   computeNodeWorldPositionMeters,
   hasVerifiedUpstreamProvenance,
   isGeometryOrigin,
   isPortId,
+  isShellNode,
   isVerificationStatus,
   isVerifiedStatus,
   parseAssemblyNode,
@@ -278,6 +281,89 @@ describe('shared domain contracts', () => {
     for (const wireBundleDiameterMm of [0, -1, Infinity, NaN, '5']) {
       assert.throws(() => parseRelationship({ ...routed, wireBundleDiameterMm }));
     }
+  });
+
+  it('parses optional enclosure roles and identifies shell nodes', () => {
+    const { nodes } = getCatalogArchetypeById('reachy_mini_v1');
+    const blueprint = nodes.find(({ id }) => id === 'comp_reachy_top_shell');
+    const node = {
+      ...blueprint,
+      provenance: {
+        origin: blueprint.origin,
+        verificationStatus: 'composed_validated',
+        spdxLicense: blueprint.spdxLicense,
+        sourceUrl: blueprint.sourceUrl,
+        sourceName: blueprint.sourceName,
+        stepSha256: blueprint.expectedStepSha256,
+      },
+      glbNodeName: blueprint.id,
+      usdzPrimPath: `/World/${blueprint.id}`,
+    };
+    const { enclosureRole, ...legacyNode } = node;
+    const shell = parseAssemblyNode(node);
+    const internal = parseAssemblyNode({ ...node, enclosureRole: 'internal' });
+    const legacy = parseAssemblyNode(legacyNode);
+
+    assert.equal(enclosureRole, 'shell');
+    assert.equal(shell.enclosureRole, 'shell');
+    assert.equal(internal.enclosureRole, 'internal');
+    assert.equal(Object.hasOwn(legacy, 'enclosureRole'), false);
+    assert.throws(() => parseAssemblyNode({ ...node, enclosureRole: 'exterior' }));
+    assert.equal(isShellNode(shell), true);
+    assert.equal(isShellNode(internal), false);
+    assert.equal(isShellNode(legacy), false);
+    assert.equal(assemblyHasShellNodes([internal, legacy]), false);
+    assert.equal(assemblyHasShellNodes([internal, shell, legacy]), true);
+  });
+
+  it('peels Reachy Mini and Rover shells before moving their internal components', () => {
+    for (const [archetypeId, shellId, internalId, shellDistance] of [
+      ['reachy_mini_v1', 'comp_reachy_top_shell', 'comp_reachy_main_plate', 0.165],
+      ['open_source_rover_v1', 'comp_rover_compute_bay', 'comp_nova2_jetson_carrier', 0.075],
+    ]) {
+      const { nodes } = getCatalogArchetypeById(archetypeId);
+      const nodesById = Object.fromEntries(nodes.map((node) => [node.id, node]));
+      const shell = nodesById[shellId];
+      const internal = nodesById[internalId];
+      const position = (node, factor, stage = 'all') =>
+        computeNodeWorldPositionMeters(node, nodesById, factor, {}, stage);
+      const expectedPosition = (node, distance) =>
+        node.restPositionMeters.map(
+          (value, axis) => value + node.explodeDirection[axis] * distance,
+        );
+
+      assert.equal(assemblyHasShellNodes(nodes), true);
+      assert.deepEqual(position(shell, -1), position(shell, 0));
+      assert.deepEqual(position(shell, 0.2), expectedPosition(shell, shellDistance / 2));
+      assert.deepEqual(position(shell, 0.4), expectedPosition(shell, shellDistance));
+      assert.deepEqual(position(shell, 0.8), position(shell, 0.4));
+      assert.deepEqual(position(shell, 0.4, 1), position(shell, 0));
+      assert.deepEqual(position(shell, 0.4, 2), position(shell, 0.4));
+      assert.deepEqual(position(internal, 0.4), internal.restPositionMeters);
+      assert.deepEqual(
+        position(internal, 0.9),
+        expectedPosition(internal, internal.explodeDistanceMeters),
+      );
+      assert.deepEqual(position(internal, 2), position(internal, 1));
+    }
+  });
+
+  it('applies each enclosure-aware ramp and retains the original ramps for open assemblies', () => {
+    assert.equal(computeNodeExplodeWeight({ depth: 0, enclosureRole: 'shell' }, 1, 'all', true), 0);
+    assert.equal(computeNodeExplodeWeight({ depth: 1 }, 0.75, 'all', true), 1);
+    assert.equal(computeNodeExplodeWeight({ depth: 2 }, 0.65, 'all', true), 0.5);
+    assert.equal(computeNodeExplodeWeight({ depth: 3 }, 0.55, 'all', true), 0);
+    assert.equal(computeNodeExplodeWeight({ depth: 3 }, 1, 2, true), 0);
+    assert.ok(Math.abs(computeNodeExplodeWeight({ depth: 3 }, 1, 3, true) - 1) < 1e-9);
+
+    const { nodes } = getCatalogArchetypeById('quadcopter_drone_v1');
+    assert.equal(assemblyHasShellNodes(nodes), false);
+    const nodesById = Object.fromEntries(nodes.map((node) => [node.id, node]));
+    const motor = nodesById.comp_motor_fl;
+    const [x, y, z] = computeNodeWorldPositionMeters(motor, nodesById, 0.4, {});
+    assert.equal(x, motor.restPositionMeters[0]);
+    assert.equal(z, motor.restPositionMeters[2]);
+    assert.ok(Math.abs(y - 0.07256565656565657) < 1e-9);
   });
 
   it('computes hierarchical constraint-axis explosion by assembly depth without axial drift', () => {
