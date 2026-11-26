@@ -115,7 +115,24 @@ export type CadProvenance = {
   readonly stepSha256: AssetChecksum;
 };
 
+export type ComponentGeometry =
+  | { readonly kind: 'assembly' }
+  | { readonly kind: 'available'; readonly role: 'solid' | 'surface' }
+  | { readonly kind: 'unavailable'; readonly reason: string }
+  | {
+      readonly kind: 'visual_only';
+      readonly cadRejectionReason: string;
+      readonly sourceUrl: string;
+      readonly archiveSha256: AssetChecksum;
+      readonly memberPath: string;
+      readonly sha256: AssetChecksum;
+      readonly spdxLicense: string;
+      readonly sourceOccurrencePath: string;
+      readonly sourceCoordinateFrame: 'assembly_y_up_millimeters';
+    };
+
 export type AssemblyNode = {
+  readonly geometry?: ComponentGeometry;
   readonly id: ComponentId;
   readonly parentId: ComponentId | null;
   readonly name: string;
@@ -158,7 +175,72 @@ export type AssemblyInstructionStep = {
   readonly relationshipIds: readonly RelationshipId[];
 };
 
+export const sourceInterferenceSchema = z
+  .object({
+    status: z.literal('partial'),
+    solidCount: z.number().int().nonnegative(),
+    possiblePairCount: z.number().int().nonnegative(),
+    candidatePairCount: z.number().int().nonnegative(),
+    intersectionCount: z.number().int().nonnegative(),
+    unresolvedPairCount: z.number().int().nonnegative(),
+    volumeThresholdMm3: z.number().nonnegative(),
+    aabbToleranceMm: z.number().nonnegative(),
+    excludedComponents: z.array(z.object({ componentId: z.string() })),
+    pairs: z.array(
+      z.discriminatedUnion('status', [
+        z.object({
+          componentIds: z.tuple([z.string(), z.string()]),
+          status: z.literal('intersection'),
+          volumeMm3: z.number().finite().nonnegative(),
+          error: z.null(),
+        }),
+        z.object({
+          componentIds: z.tuple([z.string(), z.string()]),
+          status: z.literal('contact_or_below_threshold'),
+          volumeMm3: z.number().finite().nonnegative(),
+          error: z.null(),
+        }),
+        z.object({
+          componentIds: z.tuple([z.string(), z.string()]),
+          status: z.enum(['failed', 'timeout']),
+          volumeMm3: z.null(),
+          error: z.string().nullable(),
+        }),
+      ]),
+    ),
+    limitations: z.array(z.string()),
+  })
+  .refine(
+    (report) =>
+      report.pairs.length === report.candidatePairCount &&
+      report.pairs.filter((pair) => pair.status === 'intersection').length ===
+        report.intersectionCount &&
+      report.pairs.filter((pair) => pair.status === 'failed' || pair.status === 'timeout')
+        .length === report.unresolvedPairCount &&
+      new Set(report.pairs.map((pair) => [...pair.componentIds].sort().join(':'))).size ===
+        report.pairs.length,
+    'Inconsistent source interference coverage',
+  );
+
+export const engineeringReportSchema = z.object({
+  status: z.literal('unverified'),
+  manufacturingReadiness: z.literal('not_established'),
+  materials: z.literal('unknown'),
+  manufacturingTolerances: z.literal('unknown'),
+  loadsAndConstraints: z.literal('not_verified'),
+  renderDimensionComparison: z.object({
+    maximumErrorMm: z.number().finite().nonnegative(),
+    thresholdMm: z.number().finite().nonnegative(),
+    meaning: z.string(),
+  }),
+  nodeMappingComplete: z.boolean(),
+  rejectedCadComponentIds: z.array(z.string()),
+  surfaceComponentIds: z.array(z.string()),
+});
+
 export type ValidationReport = {
+  readonly sourceInterferenceReport?: z.infer<typeof sourceInterferenceSchema>;
+  readonly engineeringReport?: z.infer<typeof engineeringReportSchema>;
   readonly valid: boolean;
   readonly brepValid: boolean;
   readonly interferenceCount: number;
@@ -334,7 +416,20 @@ export function hasVerifiedUpstreamProvenance(
     return false;
   }
   let hasComposedNode = false;
-  for (const { provenance } of nodes) {
+  for (const node of nodes) {
+    const { provenance, geometry } = node;
+    if (geometry !== undefined) {
+      const hasUnverifiableGeometry =
+        geometry.kind === 'unavailable' ||
+        geometry.kind === 'visual_only' ||
+        (geometry.kind === 'available' && geometry.role === 'surface');
+      const hasNonSolidLeafGeometry =
+        (node.level === 'component' || node.level === 'subcomponent') &&
+        (geometry.kind !== 'available' || geometry.role !== 'solid');
+      if (hasUnverifiableGeometry || hasNonSolidLeafGeometry) {
+        return false;
+      }
+    }
     if (!isGeometryOrigin(provenance.origin)) {
       return false;
     }
@@ -442,15 +537,20 @@ export function verifyOneToOneNodeMapping(
   nodes: readonly AssemblyNode[],
   glbNodeIds: readonly string[],
   usdzPrimPaths: readonly string[],
+  options?: { readonly allowUnavailableNodes?: boolean },
 ): boolean {
+  const allowUnavailableNodes = options?.allowUnavailableNodes === true;
   const leafNodes = nodes.filter(
-    (node) => node.level === 'component' || node.level === 'subcomponent',
+    (node) =>
+      (node.level === 'component' || node.level === 'subcomponent') &&
+      (!allowUnavailableNodes || node.geometry?.kind !== 'unavailable'),
   );
   if (leafNodes.length === 0) {
     return false;
   }
   const glbSet = new Set(glbNodeIds);
   const usdzSet = new Set(usdzPrimPaths);
+  if (glbSet.size !== leafNodes.length || usdzSet.size !== leafNodes.length) return false;
   for (const node of leafNodes) {
     if (!glbSet.has(node.glbNodeName)) {
       return false;
@@ -567,6 +667,50 @@ export function parseConnectorPort(raw: unknown): ConnectorPort {
   return connectorPortSchema.parse(raw);
 }
 
+const componentGeometrySchema: z.ZodType<ComponentGeometry> = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('assembly') }),
+  z.strictObject({ kind: z.literal('available'), role: z.enum(['solid', 'surface']) }),
+  z.strictObject({ kind: z.literal('unavailable'), reason: nonEmptyString }),
+  z.strictObject({
+    kind: z.literal('visual_only'),
+    cadRejectionReason: nonEmptyString,
+    sourceUrl: nonEmptyString.refine(
+      (value) => value.startsWith('https://'),
+      'Invalid visual source URL',
+    ),
+    archiveSha256: z.custom<AssetChecksum>(isAssetChecksum),
+    memberPath: nonEmptyString,
+    sha256: z.custom<AssetChecksum>(isAssetChecksum),
+    spdxLicense: nonEmptyString,
+    sourceOccurrencePath: nonEmptyString,
+    sourceCoordinateFrame: z.literal('assembly_y_up_millimeters'),
+  }),
+]);
+
+export function canInspectSourceAssembly(assembly: {
+  readonly nodes: readonly AssemblyNode[];
+  readonly validation: ValidationReport;
+  readonly verificationStatus: string;
+}): boolean {
+  return (
+    assembly.verificationStatus === 'unverified' &&
+    assembly.validation.brepValid &&
+    assembly.validation.nodeMappingComplete &&
+    assembly.validation.sourceInterferenceReport !== undefined &&
+    assembly.validation.engineeringReport !== undefined &&
+    assembly.nodes.some((node) => node.geometry?.kind === 'available') &&
+    assembly.nodes.every(
+      (node) =>
+        node.geometry !== undefined &&
+        node.provenance.verificationStatus === 'unverified' &&
+        node.provenance.origin === 'open_step_catalog' &&
+        node.provenance.sourceUrl.startsWith('https://') &&
+        isAssetChecksum(node.specifications.sourceSha256) &&
+        isAssetChecksum(node.provenance.stepSha256),
+    )
+  );
+}
+
 export const assemblyNodeFieldsSchema = z.object({
   id: componentIdSchema,
   parentId: componentIdSchema.nullable(),
@@ -582,6 +726,7 @@ export const assemblyNodeFieldsSchema = z.object({
   materialHint: nonEmptyString,
   specifications: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])),
   ports: z.array(connectorPortSchema).optional(),
+  geometry: componentGeometrySchema.optional(),
 });
 
 const assemblyNodeSchema = assemblyNodeFieldsSchema.extend({
@@ -638,6 +783,12 @@ function parseValidationReport(raw: unknown): ValidationReport {
     throw new Error(`Invalid unitSystem: ${String(raw.unitSystem)}`);
   }
   return {
+    ...(raw.sourceInterferenceReport === undefined
+      ? {}
+      : { sourceInterferenceReport: sourceInterferenceSchema.parse(raw.sourceInterferenceReport) }),
+    ...(raw.engineeringReport === undefined
+      ? {}
+      : { engineeringReport: engineeringReportSchema.parse(raw.engineeringReport) }),
     valid: readRequiredBoolean(raw, 'valid'),
     brepValid: readRequiredBoolean(raw, 'brepValid'),
     interferenceCount: readRequiredNumber(raw, 'interferenceCount'),

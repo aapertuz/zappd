@@ -8,6 +8,7 @@ import {
   DEFAULT_AI_PROVIDER,
   type ExplodeStageFilter,
   getAiProviderDescriptor,
+  isVerifiedStatus,
   SUPPORTED_AI_PROVIDERS,
 } from '@/shared/domain';
 
@@ -25,7 +26,7 @@ import {
   type SeparationAxis,
 } from '../types';
 
-const LOADING_CAPTION = 'Loading verified CAD assembly';
+const LOADING_CAPTION = 'Loading CAD assembly';
 
 function AssemblyLoadingBar({
   progress,
@@ -116,7 +117,7 @@ export function AssemblyExplorerView({
 
   useLayoutEffect(() => {
     onActiveLearningContextChange?.(
-      assembly === null
+      assembly === null || !isVerifiedStatus(assembly.verificationStatus)
         ? null
         : {
             assembly,

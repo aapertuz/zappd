@@ -115,6 +115,7 @@ describe('geometry-driven camera framing', () => {
 
   const catalogDistanceBounds = {
     reachy_mini_v1: [1.25, 1.4],
+    poppy_humanoid_v1: [2.8, 3.4],
   };
 
   for (const [name, assembly, minDistance, maxDistance] of [

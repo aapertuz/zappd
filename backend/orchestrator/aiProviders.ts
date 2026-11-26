@@ -331,7 +331,7 @@ export async function planProjectWithProvider(
     archetypeId: matched.archetypeId,
     projectTitle: matched.title,
     plannedSubsystems,
-    rationale: `Matched verified Phase 1 catalog archetype "${matched.archetypeId}" via ${descriptor.displayName} planning contract.`,
+    rationale: `Matched Phase 1 catalog archetype "${matched.archetypeId}" via ${descriptor.displayName} planning contract.`,
     provider: descriptor.provider,
     modelId: descriptor.modelId,
     apiFormat: descriptor.apiFormat,
