@@ -5,10 +5,10 @@ description: 'Verify the Zappd Expo application end-to-end as a user: launch an 
 
 # Verify Zappd
 
-Zappd is an Expo SDK 58 and Expo Router application (`src/app/index.tsx` to `CanvasScreen`, `CanvasView`, `AssemblyExplorerView`, and `LearningCallouts`, plus the server routes `src/app/api/orchestrate+api.ts` and `src/app/api/learn+api.ts`).
+Zappd is an Expo SDK 58 and Expo Router application with two app routes (`src/app/index.tsx` rendering `AssemblySelectorScreen` and `src/app/assemblies/[archetypeId].tsx` rendering `CanvasScreen` or an unavailable fallback) and five API routes (`src/app/api/assemblies/[archetypeId]+api.ts`, `src/app/api/orchestrate+api.ts`, `src/app/api/rebuild+api.ts`, `src/app/api/route-prompt+api.ts`, and `src/app/api/learn+api.ts`).
 
-- **Primary target.** Web UI served by Expo Metro on `http://127.0.0.1:<port>/` (`CanvasView.web.tsx`, `AssemblyScene.web.tsx`, and `LearningCallouts.web.tsx` using React DOM, CSS Modules, and Three.js WebGL), driven in Google Chrome via `zappd-verify.mjs`.
-- **Secondary target.** Native iOS and Android UI (`CanvasView.tsx` using universal `@expo/ui`, plus 2D fallback `NativeAssemblyScene.tsx` re-exported by `AssemblyScene.ios.tsx` and `AssemblyScene.android.tsx`). Because `ios/` and `android/` are CNG-generated and absent in a clean checkout, native verification requires a local development build (`pnpm exec expo run:ios` or `pnpm exec expo run:android`). See [`features/native-canvas.md`](features/native-canvas.md).
+- **Primary target.** Web UI served by Expo Metro on `http://127.0.0.1:<port>/` (`AssemblySelectorView.web.tsx`, `useCatalogTurntable.web.ts`, `CanvasView.web.tsx`, `AssemblyScene.web.tsx`, `AssemblyParameters.web.tsx`, and `LearningCallouts.web.tsx` using React DOM, CSS Modules, and Three.js WebGL), driven in Google Chrome via `zappd-verify.mjs`.
+- **Secondary target.** Native iOS and Android UI (`AssemblySelectorView.tsx`, `CanvasView.tsx` using universal `@expo/ui`, `AssemblyParameters.tsx`, `LearningCallouts.tsx`, and the 2D fallback `NativeAssemblyScene.tsx` re-exported by `AssemblyScene.ios.tsx` and `AssemblyScene.android.tsx`). Because `ios/` and `android/` are CNG-generated and absent in a clean checkout, native verification requires a local development build (`pnpm exec expo run:ios` or `pnpm exec expo run:android`). See [`features/native-canvas.md`](features/native-canvas.md).
 - **Isolation.** Each checkout shares `.expo/`, so the helper allows only one active verification server per checkout realpath and refuses to double-drive an active run. Concurrent runs in separate git worktrees work independently on distinct ephemeral ports (`18081..18999`). Never touch developer port `8081`.
 - **Scratch and evidence.** Run state (`state.json`, `metro.log`, `chrome-profile/`, `chrome.log`) lives under `/tmp/zappd-verify/runs/<run-id>/` and is deleted by cleanup. Proof artifacts live under `/tmp/zappd-verify/evidence/<run-id>/<feature>/` and survive cleanup.
 
@@ -25,7 +25,7 @@ Start an isolated Expo Metro server bound to `127.0.0.1` on a free port in `1808
   1. `GET /status` returns `200` with body `packager-status:running` and `X-React-Native-Project-Root` matching the checkout realpath.
   2. `GET /` returns `200` (`text/html`) containing `aria-label="Assembly catalog"`, `Aero X4`, and `Quadcopter Drone CAD Assembly`.
   3. The preloaded client `entry.bundle` URL in `/` compiles and returns `200`, followed by a clean `GET /` settle check.
-- **Catalog and CAD assets.** Open a card on `/` to navigate to `/assemblies/<archetypeId>`. The selector turntable and explorer share a direct `GET /api/assemblies/<archetypeId>` request and load geometry from the validated CAD export. Catalog loading works without an LLM API key. The server uses local precomputed exports, Firebase Storage, or the CAD worker when available. The prompt composer is inside the explorer. Provider configuration is relevant when testing its AI-backed actions.
+- **Catalog, CAD rebuilds, and AI providers.** Open any of the seven cards on `/` (`Aero X4`, `Kinetix 5`, `Nova II`, `Strider Q4`, `Helix Config`, `Reachy Mini`, `Poppy Mark I`) to navigate to `/assemblies/<archetypeId>`. The catalog turntable and explorer load geometry via `GET /api/assemblies/<archetypeId>` without an LLM API key, using local precomputed exports, Firebase Storage, or the local CAD worker. In-place parameter rebuilds (`POST /api/rebuild`) require the Python CAD worker (`backend/.venv/bin/python`) and verified STEP cache (`backend/data/open_step_cache/`). Provider keys (`DEEPSEEK_API_KEY`, `GEMINI_API_KEY`, or `OPENAI_API_KEY`) enable cloud explanations (`/api/learn`), cloud routing escalation on low-confidence prompts (`/api/route-prompt`), and explicit provider retries on `/api/orchestrate`.
 - **Output.** JSON containing `runId`, `pid`, `port`, `url`, `gitHead`, `logPath`, and `evidenceDir`. Always run `cleanup --run-id <run-id>` when done or after any failure.
 
 ## Doctor
@@ -53,25 +53,25 @@ Read [`features/README.md`](features/README.md) first, then follow the matching 
 
 ### Web driver (Google Chrome via CDP)
 
-1. Launch an isolated headless Chrome session targeting `/` and wait for the catalog buttons to hydrate. Direct explorer URLs wait for the composer to hydrate.
+1. Launch an isolated headless Chrome session targeting `/` (or `/assemblies/<archetypeId>`, or `/assemblies/does_not_exist`) and wait for React hydration.
    ```bash
    ./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-open --run-id <run-id> --path / --width 1280 --height 800
    ```
 2. Re-run `doctor --run-id <run-id>` so `browserAlive` is verified alongside Metro checks.
-3. On the catalog, use `browser-act --action hover --role button --name "Kinetix 5"` or `--action press --key Tab` to change the live turntable. Click a card or press `Enter` or `Space` while it has focus to open the explorer. The `Back to assemblies` button returns to the catalog. Check `diagnostics.selector` for the active card, angle, frame count, and visible cards. Check `diagnostics.webglContexts.active` for a maximum of one live context on the catalog and during navigation.
-4. Drive DOM controls by accessible role and name (`--role textbox --name "Prompt input"`, `--role button --name "Send"`, `--role button --name "Explode (0%)"`, `--role button --name "Wiring visibility: Auto"`, `--role button --name "Back"`), and drive 3D WebGL mesh interactions by projected coordinates from `diagnostics.assembly.nodeScreenPositions` via `browser-act`.
+3. On the catalog, use `browser-act --action hover --role button --name "Kinetix 5"` or `--action press --key Tab` to change the live turntable. Click a card or press `Enter` or `Space` while it has focus to open the explorer. Click `button "Back to assemblies"` (or `link "Back to assemblies"` on the unavailable fallback) to return to `/`. Check `diagnostics.selector` for the active card, angle, frame count, and visible cards. Check `diagnostics.webglContexts.active` for at most one live context on the catalog and across navigation.
+4. Drive DOM controls by accessible role and name (`--role textbox --name "Prompt input"`, `--role button --name "Send"`, `--role button --name "Dismiss notice"`, `--role button --name "Explode (0%)"`, `--role button --name "Wiring visibility: Auto"`, `--role button --name "Shell visibility: Solid"`, `--role button --name "Increase Rotor Count"`, `--role button --name "Apply parameters"`, `--role button --name "Back"`, `--role button --name "Dismiss answer"`), and drive 3D WebGL mesh interactions by projected `[x, y]` coordinates from `diagnostics.assembly.nodeScreenPositions` via `browser-act`.
    - `click` dispatches real mouse move, press, and release events on the control center or canvas coordinate (`--x`, `--y`).
    - `hover` dispatches a real `mouseMoved` pointer event (`pointerType: "mouse"`) on a control center or canvas coordinate (`--x`, `--y`) to trigger overview hover inspection and circuit highlights.
    - `type` focuses the target only when needed (or clears when `--clear` is set), preserving caret position after `Shift+Enter`, and inserts text via CDP `Input.insertText`.
-   - `press` dispatches real `rawKeyDown`, `char`, and `keyUp` events (for example `--key Enter` or `--key Enter --modifiers Shift`).
+   - `press` dispatches real `rawKeyDown`, `char`, and `keyUp` events (for example `--key Enter`, `--key Enter --modifiers Shift`, or `--key Escape`).
    - `resize` updates and persists `Emulation.setDeviceMetricsOverride` dimensions across subsequent CLI invocations.
-   - Open with `--reduced-motion` or change motion in an open tab with `browser-act --action emulate-motion --reduced-motion true`. Compare two snapshots of a visible, loaded card. The angle and frame count should stay the same, and CSS idle animation should stop. Use `--reduced-motion false` to resume motion.
-   - Each `browser-act` waits `120 ms` plus up to two animation frames so `diagnostics.assembly` reflects the rendered frame immediately.
-5. Wait for asynchronous orchestration, GLB loading, initial assembly playback, learning explanations, or provider errors to settle via `browser-wait`.
+   - Open with `--reduced-motion true` or toggle motion in an open tab with `browser-act --action emulate-motion --reduced-motion true`. On the catalog, compare two snapshots to confirm angle and frame count stay frozen. In learning checks under headless SwiftShader, `--reduced-motion true` also bypasses the `54 chars/sec` typewriter animation so settled cards render immediately.
+   - Each `browser-act` waits `120 ms` plus up to two animation frames (capped at `4000 ms` to accommodate headless SwiftShader WebGL frames) so `diagnostics.assembly` reflects the rendered frame immediately.
+5. Wait for asynchronous catalog loading, orchestration, GLB loading, initial assembly playback, in-place parameter rebuilds (`--manifest-hash-not <previous-hash>`), learning explanations, or visible text via `browser-wait`.
    ```bash
-   ./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-wait --run-id <run-id> --archetype quadcopter_drone_v1 --settled --learning-ready explanation --timeout-ms 45000
+   ./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-wait --run-id <run-id> --archetype quadcopter_drone_v1 --settled --learning-ready explanation --timeout-ms 60000
    ```
-6. Capture ARIA trees, screenshots, and read-only composer, 3D assembly, and learning diagnostics (`diagnostics.promptPlaceholder`, `diagnostics.assembly`, `diagnostics.learning`, `diagnostics.isLoadingAssembly`, `diagnostics.hasProviderToolbar`, `diagnostics.errors`) via `browser-snapshot`.
+6. Capture ARIA trees, screenshots, and read-only diagnostics (`diagnostics.promptPlaceholder`, `diagnostics.composerNotice`, `diagnostics.selector`, `diagnostics.webglContexts`, `diagnostics.assembly`, `diagnostics.learning`, `diagnostics.isLoadingAssembly`, `diagnostics.hasProviderToolbar`, `diagnostics.errors`) via `browser-snapshot`.
 7. Close only the browser session with `browser-close --run-id <run-id>` if tearing down Chrome separately, or use `cleanup --run-id <run-id>` to stop both Chrome and Metro together.
 
 ### Native driver
@@ -110,8 +110,9 @@ Proof standards apply to every verification pass.
 
 - Drive only real user interactions (`browser-act`, keyboard events, real clicks and hovers). Never bypass controls via internal state hooks or state-mutating JS evaluation.
 - Capture both the action or pre-submit state and the resulting settled state, including console and page error counts (`errors: []`).
-- Verify 3D WebGL scene and interaction states through `diagnostics.assembly` (`webglActive`, `archetypeId`, `verificationStatus`, `glbNodeCount`, `assemblyStatus`, `camera`, `explodeFactor`, `wiringVisibility`, `hasShell`, `shellVisibility`, `hoveredComponentId`, `hoveredPartCallout`, `selectedComponentId`, `isolatedComponentId`, `viewMode`, `focusedPartCallout`, `circuitHighlightIds`), `diagnostics.learning`, and visual inspection of PNG screenshots. Pair live runs with `pnpm run test:unit` for reducer and domain contracts.
-- If a precondition is unmet (such as no built native app for `native-canvas.md` or no configured AI API key for live orchestration), report the feature or sub-feature as `verified-unreachable` with the unmet precondition and never weaken the journey.
+- Verify 3D WebGL scene and interaction states through `diagnostics.assembly` (`webglActive`, `archetypeId`, `verificationStatus`, `manifestHash`, `parameterValues`, `isRebuildingParameters`, `unverifiedFailures`, `buildCacheMode`, `glbNodeCount`, `assemblyStatus`, `camera`, `explodeFactor`, `wiringVisibility`, `hasShell`, `shellVisibility`, `hoveredComponentId`, `hoveredPartCallout`, `selectedComponentId`, `isolatedComponentId`, `viewMode`, `focusedPartCallout`, `circuitHighlightIds`), `diagnostics.learning`, `diagnostics.composerNotice`, `diagnostics.selector`, `diagnostics.webglContexts`, and visual inspection of PNG screenshots. Pair live runs with `pnpm run test:unit` for reducer, hybrid-router, and domain contracts.
+- Long multi-route verification sessions can exhaust Expo Metro dev SSR memory after repeated SSR reloads. If `doctor` reports `processAlive: false` or `fetch failed`, clean up that run (evidence survives) and launch a fresh run ID.
+- If a precondition is unmet (such as no built native app for `native-canvas.md`, no configured AI API key for cloud responses, or missing `backend/data/open_step_cache/` for live parameter rebuilds), report the feature or sub-feature as `verified-unreachable` with the unmet precondition and never weaken the journey.
 
 ## Cleanup
 
@@ -129,14 +130,14 @@ Tear down only the Chrome session, Expo Metro server, and device panel created b
 
 ## Helpers
 
-Executable helper: [`.agents/skills/verify-zappd/scripts/zappd-verify.mjs`](scripts/zappd-verify.mjs) (with CDP module [`scripts/cdp-browser.mjs`](scripts/cdp-browser.mjs)).
+Executable helper: [`.agents/skills/verify-zappd/scripts/zappd-verify.mjs`](scripts/zappd-verify.mjs) (with CDP module [`scripts/cdp-browser.mjs`](scripts/cdp-browser.mjs) and persistent reduced-motion worker [`scripts/cdp-motion.mjs`](scripts/cdp-motion.mjs)).
 
 - `launch [--run-id <id>] [--port <port>] [--timeout-ms <ms>]` starts an isolated Expo Metro server, waits for usable web readiness, and prints run metadata JSON.
 - `doctor --run-id <id>` runs read-only checks on Metro process, port ownership, `/status`, `/`, `/api/orchestrate`, git HEAD, evidence dir, and (when open) Google Chrome CDP health.
-- `browser-open --run-id <id> [--path /] [--width 1280] [--height 800] [--reduced-motion [true|false]]` launches an isolated headless Chrome CDP session against the run's Metro URL with background-throttling disabled and waits for React hydration.
-- `browser-act --run-id <id> --action <click|hover|type|press|resize|emulate-motion> [--role <r>] [--name <n>] [--x <px> --y <px>] [--text <t>] [--clear] [--key <k>] [--modifiers <csv>] [--width <w>] [--height <h>] [--reduced-motion <true|false>]` drives real mouse, hover, keyboard, and resize input via CDP, waits for rendered animation frames, and returns read-only diagnostics.
-- `browser-wait --run-id <id> [--archetype <id>] [--provider <id>] [--settled] [--learning-ready <explanation|answer>] [--text <substring>] [--timeout-ms <ms>]` polls read-only diagnostics until the requested assembly, provider, animation settlement, learning callout completion, text, or default post-submit settlement matches.
-- `browser-snapshot --run-id <id> [--feature <slug> --step <name> --entry-point <text> --note <text>]` captures the ARIA tree, PNG screenshot, composer, 3D assembly, and learning diagnostics, and console/page error counts, optionally saving directly to `/tmp/zappd-verify/evidence/<run-id>/<feature>/`.
+- `browser-open --run-id <id> [--path /] [--width 1280] [--height 800] [--reduced-motion [true|false]]` launches an isolated headless Chrome CDP session against the run's Metro URL with background-throttling disabled and waits for React hydration on catalog, explorer, or unavailable routes.
+- `browser-act --run-id <id> --action <click|hover|type|press|resize|emulate-motion> [--role <r>] [--name <n>] [--x <px> --y <px>] [--text <t>] [--clear] [--key <k>] [--modifiers <csv>] [--width <w>] [--height <h>] [--reduced-motion <true|false>]` drives real mouse, hover, keyboard, motion-emulation, and resize input via CDP, waits for rendered animation frames, and returns read-only diagnostics.
+- `browser-wait --run-id <id> [--archetype <id>] [--provider <id>] [--settled] [--manifest-hash-not <hash>] [--learning-ready <explanation|answer>] [--text <substring>] [--timeout-ms <ms>]` polls read-only diagnostics until the requested assembly, provider, animation and rebuild settlement, manifest-hash change, learning callout completion, text, or default post-submit settlement matches.
+- `browser-snapshot --run-id <id> [--feature <slug> --step <name> --entry-point <text> --note <text>]` captures the ARIA tree, PNG screenshot, composer, selector, WebGL, 3D assembly, and learning diagnostics, and console/page error counts, optionally saving directly to `/tmp/zappd-verify/evidence/<run-id>/<feature>/`.
 - `browser-close --run-id <id>` stops the verified Chrome session and removes its temporary profile.
 - `save-evidence --run-id <id> --feature <slug> --step <name> [--screenshot <path>] [--snapshot-file <path>] [--entry-point <text>] [--note <text>]` archives surviving PNG, ARIA text, and metadata JSON under `/tmp/zappd-verify/evidence/<run-id>/<feature>/`.
 - `cleanup --run-id <id>` stops verified Chrome and Expo Metro processes, waits for port close, removes scratch state in `/tmp/zappd-verify/runs/<run-id>/`, and reports the surviving evidence file count.
