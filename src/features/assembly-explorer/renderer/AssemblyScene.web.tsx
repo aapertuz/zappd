@@ -19,6 +19,14 @@ import {
   isComponentId,
   isShellNode,
 } from '@/shared/domain';
+import {
+  addCadStudioLights,
+  configureCadStudioRenderer,
+  createCadStudioEnvironment,
+  disposeObjectSubtree,
+  materialTextures,
+  positionCadStudioLights,
+} from '@/shared/ui/cadStudio';
 
 import {
   LearningCallouts,
@@ -181,10 +189,6 @@ const HSL_SCRATCH = { h: 0, s: 0, l: 0 };
 
 function isThreeMesh(obj: THREE.Object3D): obj is THREE.Mesh {
   return 'isMesh' in obj && obj.isMesh === true;
-}
-
-function isThreeLine(obj: THREE.Object3D): obj is THREE.Line {
-  return 'isLine' in obj && obj.isLine === true;
 }
 
 function readUserDataString(userData: unknown, key: string): string | null {
@@ -500,39 +504,6 @@ function HudIcon({ kind }: { readonly kind: keyof typeof HUD_ICON_PATHS }) {
   );
 }
 
-function materialTextures(material: THREE.Material): THREE.Texture[] {
-  return Object.values(material).filter(
-    (value): value is THREE.Texture => value instanceof THREE.Texture,
-  );
-}
-
-function disposeObjectSubtree(root: THREE.Object3D, sharedEnvironment?: THREE.Texture): void {
-  const geometries = new Set<THREE.BufferGeometry>();
-  const materials = new Set<THREE.Material>();
-  const textures = new Set<THREE.Texture>();
-  const bitmaps = new Set<ImageBitmap>();
-
-  root.traverse((object) => {
-    if (!isThreeMesh(object) && !isThreeLine(object)) return;
-    geometries.add(object.geometry);
-    for (const material of [object.material].flat()) materials.add(material);
-  });
-
-  for (const geometry of geometries) geometry.dispose();
-  for (const material of materials) {
-    for (const texture of materialTextures(material)) {
-      if (texture !== sharedEnvironment) textures.add(texture);
-    }
-    material.dispose();
-  }
-  for (const texture of textures) {
-    const image: unknown = texture.source.data;
-    if (typeof ImageBitmap !== 'undefined' && image instanceof ImageBitmap) bitmaps.add(image);
-    texture.dispose();
-  }
-  for (const bitmap of bitmaps) bitmap.close();
-}
-
 function buildPhysicalCadMaterial(
   baseMaterial: THREE.Material,
   materialHint: string,
@@ -593,36 +564,6 @@ function buildPhysicalCadMaterial(
     texture.needsUpdate = true;
   }
   return upgraded;
-}
-
-function createStudioEnvironmentScene(): THREE.Scene {
-  const studio = new THREE.Scene();
-  studio.background = new THREE.Color('#555961');
-  const panelGeometry = new THREE.PlaneGeometry(1, 1);
-  const softboxes = [
-    { color: '#edf4ff', intensity: 2.3, width: 8, height: 5, position: [0, 5, -0.4] },
-    { color: '#f8fafc', intensity: 2.2, width: 4.6, height: 5.5, position: [-3.9, 2.2, 4.5] },
-    { color: '#fff0d7', intensity: 2.8, width: 1.8, height: 5.5, position: [3.3, 2.3, -4.1] },
-    { color: '#b4c5df', intensity: 0.75, width: 3.4, height: 4.6, position: [4, 1.4, 2.5] },
-    { color: '#95a6bf', intensity: 0.52, width: 3, height: 4, position: [-3.9, 0.8, -3.3] },
-    { color: '#50483f', intensity: 0.62, width: 15, height: 15, position: [0, -4.5, 0] },
-  ] satisfies readonly {
-    color: string;
-    intensity: number;
-    width: number;
-    height: number;
-    position: Vector3Tuple;
-  }[];
-
-  for (const { color, intensity, width, height, position } of softboxes) {
-    const radiance = new THREE.Color(color).multiplyScalar(intensity);
-    const panel = new THREE.Mesh(panelGeometry, new THREE.MeshBasicMaterial({ color: radiance }));
-    panel.position.set(...position);
-    panel.scale.set(width, height, 1);
-    panel.lookAt(0, 0, 0);
-    studio.add(panel);
-  }
-  return studio;
 }
 
 type CadMaterialBinding = {
@@ -1163,15 +1104,12 @@ export function AssemblyScene({
     configureCameraViewport(camera, width, height);
     updateCameraFromSpherical(camera, targetsRef.current.camera);
 
-    const hemiLight = new THREE.HemisphereLight('#e6edf7', '#29241e', 0.65);
-    const keyLight = new THREE.DirectionalLight('#f8fafc', 1.9);
+    const studioLights = addCadStudioLights(scene);
+    const { keyLight } = studioLights;
     keyLight.castShadow = true;
     keyLight.shadow.mapSize.set(2048, 2048);
     keyLight.shadow.bias = -0.00015;
     keyLight.shadow.radius = 3;
-
-    const fillLight = new THREE.DirectionalLight('#cbd5e1', 0.75);
-    const rimLight = new THREE.DirectionalLight('#fde68a', 1.35);
 
     const gridHelper = new THREE.GridHelper(0.8, 16, '#5c4b27', '#262118');
     for (const material of [gridHelper.material].flat()) {
@@ -1187,18 +1125,7 @@ export function AssemblyScene({
     shadowFloor.receiveShadow = true;
 
     const rootGroup = new THREE.Group();
-    scene.add(
-      hemiLight,
-      keyLight,
-      keyLight.target,
-      fillLight,
-      fillLight.target,
-      rimLight,
-      rimLight.target,
-      gridHelper,
-      shadowFloor,
-      rootGroup,
-    );
+    scene.add(gridHelper, shadowFloor, rootGroup);
 
     function positionStudioFloor(floorY: number) {
       gridHelper.position.y = floorY;
@@ -1206,7 +1133,7 @@ export function AssemblyScene({
     }
 
     function configureStudio(bounds: AssemblyBoundingBoxMeters) {
-      const [x, y, z] = bounds.center;
+      const [x, , z] = bounds.center;
       const extent = Math.max(...bounds.size);
       const scale = extent / 0.3;
       gridHelper.scale.setScalar(scale);
@@ -1215,10 +1142,7 @@ export function AssemblyScene({
       shadowFloor.position.set(x, bounds.min[1], z);
       positionStudioFloor(bounds.min[1]);
 
-      keyLight.position.set(x + 0.8 * scale, y + 1.6 * scale, z + 1.1 * scale);
-      fillLight.position.set(x - 0.95 * scale, y + 0.65 * scale, z + 0.55 * scale);
-      rimLight.position.set(x + scale, y + 0.85 * scale, z - 0.95 * scale);
-      for (const light of [keyLight, fillLight, rimLight]) light.target.position.set(x, y, z);
+      positionCadStudioLights(studioLights, bounds.center, scale);
       const shadowCamera = keyLight.shadow.camera;
       const shadowRadius = 0.35 * scale;
       shadowCamera.left = -shadowRadius;
@@ -1241,26 +1165,18 @@ export function AssemblyScene({
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       renderer.setSize(width, height);
-      renderer.outputColorSpace = THREE.SRGBColorSpace;
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.06;
+      configureCadStudioRenderer(renderer);
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFShadowMap;
       renderer.shadowMap.autoUpdate = false;
-      const pmremGenerator = new THREE.PMREMGenerator(renderer);
-      const studioEnvironment = createStudioEnvironmentScene();
-      try {
-        envRenderTarget = pmremGenerator.fromScene(studioEnvironment, 0.04);
-      } finally {
-        disposeObjectSubtree(studioEnvironment);
-        pmremGenerator.dispose();
-      }
+      envRenderTarget = createCadStudioEnvironment(renderer);
       scene.environment = envRenderTarget.texture;
       mount.replaceChildren(renderer.domElement);
     } catch {
       envRenderTarget?.dispose();
       envRenderTarget = null;
       renderer?.dispose();
+      renderer?.forceContextLoss();
       renderer = null;
       queueMicrotask(() => {
         if (!disposed) setWebglActive(false);
@@ -1536,6 +1452,7 @@ export function AssemblyScene({
       keyLight.shadow.dispose();
       envRenderTarget?.dispose();
       renderer?.dispose();
+      renderer?.forceContextLoss();
       mount.replaceChildren();
       runtimeRef.current = null;
       if (window.__zappdAssemblyDiagnostics === publishedDiagnostics) {

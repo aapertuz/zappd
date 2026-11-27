@@ -409,7 +409,7 @@ describe('wiring visibility', () => {
     assert.equal(state.wiringVisibility, 'hide');
     const loaded = reduceAssemblyExplorerState(state, {
       type: 'loadAssemblySuccess',
-      promptId: 1,
+      requestId: 1,
       assembly: CATALOG_ARCHETYPES[0],
       glbArrayBuffer: new ArrayBuffer(0),
     });
@@ -421,7 +421,7 @@ describe('shell visibility', () => {
   const assembly = getCatalogArchetypeById('reachy_mini_v1');
   const loadAssembly = {
     type: 'loadAssemblySuccess',
-    promptId: 1,
+    requestId: 1,
     assembly,
     glbArrayBuffer: new ArrayBuffer(0),
   };
@@ -618,20 +618,20 @@ describe('assembly explorer loading state', () => {
     const initial = INITIAL_ASSEMBLY_EXPLORER_STATE;
     assert.equal(initial.loadingPhase, 'idle');
     assert.equal(initial.loadingProgress, 0);
-    const loading = reduceAssemblyExplorerState(initial, { type: 'startLoading', promptId: 1 });
+    const loading = reduceAssemblyExplorerState(initial, { type: 'startLoading', requestId: 1 });
     assert.equal(loading.isLoading, true);
     assert.equal(loading.loadingPhase, 'orchestrating');
     assert.equal(loading.loadingProgress, 0.12);
     const progressing = reduceAssemblyExplorerState(loading, {
       type: 'setLoadingProgress',
-      promptId: 1,
+      requestId: 1,
       phase: 'orchestrating',
       progress: 0.4,
     });
     assert.equal(progressing.loadingProgress, 0.4);
     const downloading = reduceAssemblyExplorerState(progressing, {
       type: 'setLoadingProgress',
-      promptId: 1,
+      requestId: 1,
       phase: 'downloading',
       progress: 0.72,
     });
@@ -640,7 +640,7 @@ describe('assembly explorer loading state', () => {
     assert.equal(
       reduceAssemblyExplorerState(downloading, {
         type: 'setLoadingProgress',
-        promptId: 1,
+        requestId: 1,
         phase: 'orchestrating',
         progress: 0.49,
       }),
@@ -649,7 +649,7 @@ describe('assembly explorer loading state', () => {
     assert.equal(
       reduceAssemblyExplorerState(downloading, {
         type: 'setLoadingProgress',
-        promptId: 1,
+        requestId: 1,
         phase: 'downloading',
         progress: -0.5,
       }),
@@ -657,7 +657,7 @@ describe('assembly explorer loading state', () => {
     );
     const ready = reduceAssemblyExplorerState(downloading, {
       type: 'setLoadingProgress',
-      promptId: 1,
+      requestId: 1,
       phase: 'ready',
       progress: 2,
     });
@@ -665,7 +665,7 @@ describe('assembly explorer loading state', () => {
     assert.equal(ready.loadingProgress, 1);
     const loaded = reduceAssemblyExplorerState(ready, {
       type: 'loadAssemblySuccess',
-      promptId: 1,
+      requestId: 1,
       assembly: syntheticAssembly([200, 150, 180]),
       glbArrayBuffer: new ArrayBuffer(0),
     });
@@ -677,26 +677,26 @@ describe('assembly explorer loading state', () => {
   it('ignores superseded progress and resets the bar after a failure or new request', () => {
     const previous = reduceAssemblyExplorerState(INITIAL_ASSEMBLY_EXPLORER_STATE, {
       type: 'startLoading',
-      promptId: 1,
+      requestId: 1,
     });
-    const current = reduceAssemblyExplorerState(previous, { type: 'startLoading', promptId: 2 });
+    const current = reduceAssemblyExplorerState(previous, { type: 'startLoading', requestId: 2 });
     const lateProgress = {
       type: 'setLoadingProgress',
-      promptId: 1,
+      requestId: 1,
       phase: 'downloading',
       progress: 0.8,
     };
     assert.equal(reduceAssemblyExplorerState(current, lateProgress), current);
     const failed = reduceAssemblyExplorerState(current, {
       type: 'loadAssemblyError',
-      promptId: 2,
+      requestId: 2,
       message: 'GLB download failed',
     });
     assert.equal(failed.loadingPhase, 'error');
     assert.equal(failed.loadingProgress, 0);
     assert.equal(failed.isLoading, false);
-    assert.equal(reduceAssemblyExplorerState(failed, { ...lateProgress, promptId: 2 }), failed);
-    const retry = reduceAssemblyExplorerState(failed, { type: 'startLoading', promptId: 3 });
+    assert.equal(reduceAssemblyExplorerState(failed, { ...lateProgress, requestId: 2 }), failed);
+    const retry = reduceAssemblyExplorerState(failed, { type: 'startLoading', requestId: 3 });
     assert.equal(retry.loadingPhase, 'orchestrating');
     assert.equal(retry.loadingProgress, 0.12);
   });
@@ -708,7 +708,7 @@ describe('assembly explorer focus mode', () => {
   const plateId = toComponentId('comp_base_plate_upper');
   const loadAssembly = {
     type: 'loadAssemblySuccess',
-    promptId: 1,
+    requestId: 1,
     assembly: {
       archetypeId: 'quadcopter_drone_v1',
       nodes: [
@@ -817,7 +817,7 @@ describe('assembly explorer focus mode', () => {
       componentId: plateId,
     });
     assert.equal(focused.viewMode.kind, 'part_focus');
-    const reloaded = reduceAssemblyExplorerState(focused, { ...loadAssembly, promptId: 2 });
+    const reloaded = reduceAssemblyExplorerState(focused, { ...loadAssembly, requestId: 2 });
     assert.deepEqual(reloaded.viewMode, { kind: 'overview' });
     assert.equal(reloaded.selectedComponentId, null);
     assert.equal(reloaded.isolatedComponentId, null);
@@ -872,7 +872,7 @@ describe('assembly parameter rebuild state', () => {
   const initialGlb = new ArrayBuffer(8);
   const loaded = reduceAssemblyExplorerState(INITIAL_ASSEMBLY_EXPLORER_STATE, {
     type: 'loadAssemblySuccess',
-    promptId: 1,
+    requestId: 1,
     assembly,
     glbArrayBuffer: initialGlb,
   });
@@ -905,7 +905,10 @@ describe('assembly parameter rebuild state', () => {
       }),
       superseded,
     );
-    const switched = reduceAssemblyExplorerState(superseded, { type: 'startLoading', promptId: 2 });
+    const switched = reduceAssemblyExplorerState(superseded, {
+      type: 'startLoading',
+      requestId: 2,
+    });
     assert.equal(switched.isRebuildingParameters, false);
     assert.equal(reduceAssemblyExplorerState(switched, { ...success, requestId: 2 }), switched);
   });

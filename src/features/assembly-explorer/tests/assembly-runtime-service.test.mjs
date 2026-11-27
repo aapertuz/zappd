@@ -3,7 +3,11 @@ import { Buffer } from 'node:buffer';
 import { registerHooks } from 'node:module';
 import { it } from 'node:test';
 
-import { FirebaseEmulatorRepository, buildFirebaseStorageMediaUrl } from '@/shared/firebase';
+import {
+  FirebaseEmulatorRepository,
+  buildFirebaseStorageMediaUrl,
+  defaultFirebaseEmulatorRepository,
+} from '@/shared/firebase';
 
 import { assembly, glbBytes } from '../../../shared/firebase/tests/catalogFixture.mjs';
 
@@ -27,7 +31,13 @@ process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID = 'test-project';
 process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET = 'test-bucket';
 delete process.env.EXPO_PUBLIC_FIREBASE_USE_EMULATORS;
 
-const { loadVerifiedAssemblyForPrompt } = await import('../services/assemblyRuntimeService.ts');
+const {
+  clearCachedCatalogBundles,
+  loadVerifiedAssemblyByArchetypeId,
+  loadVerifiedAssemblyForPrompt,
+  peekCachedCatalogBundle,
+  preloadCatalogAssemblyBundle,
+} = await import('../services/assemblyRuntimeService.ts');
 
 const localUrl = assembly.manifest.files.glb.publicUrl;
 const cloudUrl = buildFirebaseStorageMediaUrl(
@@ -94,4 +104,85 @@ it('does not retry the GLB download after the request aborts', async (test) => {
   });
   await assert.rejects(result, { name: 'AbortError' });
   assert.deepEqual(requests, ['/api/orchestrate', cloudUrl]);
+});
+
+const catalogEndpoint = `/api/assemblies/${assembly.archetypeId}`;
+
+it('preloads an assembly directly and hands off the same GLB to the explorer', async (test) => {
+  clearCachedCatalogBundles();
+  test.after(clearCachedCatalogBundles);
+  const requests = [];
+  const progress = [];
+  const save = test.mock.method(
+    defaultFirebaseEmulatorRepository,
+    'saveProjectAssembly',
+    async () => {},
+  );
+  test.mock.method(globalThis, 'fetch', async (url, options) => {
+    requests.push([url, options.method]);
+    if (url === catalogEndpoint) return Response.json(assembly);
+    if (url === cloudUrl) return new Response(glbBytes);
+    throw new Error(`Unexpected request for ${url}`);
+  });
+
+  assert.equal(peekCachedCatalogBundle(assembly.archetypeId), undefined);
+  const preview = preloadCatalogAssemblyBundle(assembly.archetypeId);
+  const explorer = loadVerifiedAssemblyByArchetypeId({
+    archetypeId: assembly.archetypeId,
+    onProgress: (status) => progress.push(status),
+  });
+  const bundle = await preview;
+  assert.equal(await explorer, bundle);
+  assert.equal(peekCachedCatalogBundle(assembly.archetypeId), bundle);
+  assert.equal(await preloadCatalogAssemblyBundle(assembly.archetypeId), bundle);
+  assert.equal(save.mock.callCount(), 1);
+  assert.deepEqual(Buffer.from(bundle.glbArrayBuffer), glbBytes);
+  assert.deepEqual(requests, [
+    [catalogEndpoint, 'GET'],
+    [cloudUrl, undefined],
+  ]);
+  assert.deepEqual(progress.at(-1), { phase: 'ready', progress: 1 });
+});
+
+it('surfaces catalog errors and retries a failed request without caching it', async (test) => {
+  clearCachedCatalogBundles();
+  test.after(clearCachedCatalogBundles);
+  let assemblyRequests = 0;
+  const repository = new FirebaseEmulatorRepository();
+  test.mock.method(repository, 'saveProjectAssembly', async () => {});
+  test.mock.method(globalThis, 'fetch', async (url) => {
+    if (url === cloudUrl) return new Response(glbBytes);
+    assert.equal(url, catalogEndpoint);
+    assemblyRequests += 1;
+    return assemblyRequests === 1
+      ? Response.json({ error: 'Catalog export unavailable' }, { status: 400 })
+      : Response.json(assembly);
+  });
+  const load = () =>
+    loadVerifiedAssemblyByArchetypeId({ archetypeId: assembly.archetypeId, repository });
+  await assert.rejects(load(), /Catalog export unavailable/);
+  assert.equal((await load()).assembly.archetypeId, assembly.archetypeId);
+  assert.equal(assemblyRequests, 2);
+});
+
+it('aborts an explorer wait and lets the shared preview download complete', async (test) => {
+  clearCachedCatalogBundles();
+  test.after(clearCachedCatalogBundles);
+  const { promise: response, resolve } = Promise.withResolvers();
+  test.mock.method(defaultFirebaseEmulatorRepository, 'saveProjectAssembly', async () => {});
+  test.mock.method(globalThis, 'fetch', async (url) => {
+    if (url === catalogEndpoint) return response;
+    if (url === cloudUrl) return new Response(glbBytes);
+    throw new Error(`Unexpected request for ${url}`);
+  });
+  const controller = new AbortController();
+  const preview = preloadCatalogAssemblyBundle(assembly.archetypeId);
+  const explorer = loadVerifiedAssemblyByArchetypeId({
+    archetypeId: assembly.archetypeId,
+    signal: controller.signal,
+  });
+  controller.abort();
+  await assert.rejects(explorer, { name: 'AbortError' });
+  resolve(Response.json(assembly));
+  assert.equal(await preview, peekCachedCatalogBundle(assembly.archetypeId));
 });

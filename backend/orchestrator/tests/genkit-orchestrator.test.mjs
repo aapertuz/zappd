@@ -44,11 +44,12 @@ registerHooks({
 const { getCatalogArchetypeById } = await import('../../../src/shared/domain/index.ts');
 const { FirebaseEmulatorRepository } = await import('../../../src/shared/firebase/index.ts');
 const {
+  loadCatalogProjectAssembly,
   matchesCatalogPlacements,
   orchestrateProjectAssemblyCreation,
   rebuildAssemblyWithParameters,
 } = await import('../genkitOrchestrator.ts');
-const { planProjectWithProvider } = await import('../aiProviders.ts');
+const { listConfiguredAiProviders, planProjectWithProvider } = await import('../aiProviders.ts');
 const { requestWarmCadBuild, shutdownWarmCadWorker } = await import('../warmCadClient.ts');
 
 after(shutdownWarmCadWorker);
@@ -75,6 +76,44 @@ function assertReusesAvailableExports(assembly) {
 }
 
 describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emulator persistence', () => {
+  it('loads a catalog assembly without any configured LLM key', async () => {
+    const repository = new FirebaseEmulatorRepository();
+    const cwd = process.cwd();
+    const isolatedCwd = fs.mkdtempSync(path.join(os.tmpdir(), 'zappd-catalog-no-env-'));
+    const keys = ['GEMINI_API_KEY', 'OPENAI_API_KEY', 'DEEPSEEK_API_KEY'];
+    const previousKeys = new Map(keys.map((key) => [key, process.env[key]]));
+    try {
+      fs.symlinkSync(path.join(repoRoot, 'backend'), path.join(isolatedCwd, 'backend'), 'dir');
+      for (const key of keys) delete process.env[key];
+      process.chdir(isolatedCwd);
+      assert.deepEqual(listConfiguredAiProviders(), []);
+
+      const assembly = await loadCatalogProjectAssembly({
+        archetypeId: 'quadcopter_drone_v1',
+        repository,
+        syncCloudStorage: false,
+      });
+      assert.equal(assembly.archetypeId, 'quadcopter_drone_v1');
+      assert.equal(assembly.title, 'Quadcopter Drone CAD Assembly');
+      assert.equal(assembly.orchestration.executionMode, 'local_catalog_planner');
+      assert.equal(assembly.validation.valid, true);
+      assert.deepEqual(repository.getProjectAssembly(assembly.projectId), assembly);
+    } finally {
+      process.chdir(cwd);
+      fs.rmSync(isolatedCwd, { recursive: true, force: true });
+      for (const [key, previous] of previousKeys) {
+        if (previous !== undefined) process.env[key] = previous;
+      }
+    }
+  });
+
+  it('rejects an unknown catalog assembly before accessing CAD assets', async () => {
+    await assert.rejects(
+      loadCatalogProjectAssembly({ archetypeId: 'missing_archetype' }),
+      /Unknown CAD archetype "missing_archetype"/,
+    );
+  });
+
   it('orchestrates a quadcopter request end-to-end and persists hierarchy and binaries', async () => {
     const repository = new FirebaseEmulatorRepository();
     const assembly = await orchestrateProjectAssemblyCreation({

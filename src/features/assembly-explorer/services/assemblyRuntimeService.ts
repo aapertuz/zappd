@@ -1,5 +1,6 @@
 import {
   type AiProviderId,
+  type CatalogArchetypeId,
   type VerifiedProjectAssembly,
   canRenderAssembly,
   parseVerifiedProjectAssembly,
@@ -109,24 +110,31 @@ async function fetchGlb(
   throw new Error(`Failed to load GLB geometry for ${archetypeId}: ${failure ?? 'No asset URL'}`);
 }
 
-async function requestAssemblyBundle(
-  endpoint: string,
-  body: object,
-  action: string,
-  { repository = defaultFirebaseEmulatorRepository, onProgress, signal }: BundleOptions,
-): Promise<LoadedAssemblyBundle> {
-  onProgress?.({ phase: 'orchestrating', progress: 0.12 });
-  const response = await fetch(endpoint, {
+function postAssemblyRequest(body: object): RequestInit {
+  return {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
-    signal,
-  });
+  };
+}
+
+async function requestAssemblyBundle(
+  endpoint: string,
+  request: RequestInit,
+  action: string,
+  { repository = defaultFirebaseEmulatorRepository, onProgress, signal }: BundleOptions,
+  expectedArchetypeId?: CatalogArchetypeId,
+): Promise<LoadedAssemblyBundle> {
+  onProgress?.({ phase: 'orchestrating', progress: 0.12 });
+  const response = await fetch(endpoint, { ...request, signal });
   if (!response.ok) {
     throw new Error(await readRequestErrorMessage(response, action));
   }
 
   const assembly = parseVerifiedProjectAssembly(await response.json());
+  if (expectedArchetypeId !== undefined && assembly.archetypeId !== expectedArchetypeId) {
+    throw new Error(`Catalog returned ${assembly.archetypeId} for ${expectedArchetypeId}`);
+  }
   if (!canRenderAssembly(assembly)) {
     throw new Error(`Assembly ${assembly.archetypeId} failed OpenCascade validation checks`);
   }
@@ -159,7 +167,7 @@ export function loadVerifiedAssemblyForPrompt({
 }): Promise<LoadedAssemblyBundle> {
   return requestAssemblyBundle(
     '/api/orchestrate',
-    { prompt, provider, providerExplicitlySelected },
+    postAssemblyRequest({ prompt, provider, providerExplicitlySelected }),
     'Orchestration',
     options,
   );
@@ -175,8 +183,115 @@ export function rebuildAssemblyForParameters({
 }): Promise<LoadedAssemblyBundle> {
   return requestAssemblyBundle(
     '/api/rebuild',
-    { archetypeId, title, userPrompt, orchestration, parameterValues },
+    postAssemblyRequest({ archetypeId, title, userPrompt, orchestration, parameterValues }),
     'Parameter rebuild',
     options,
   );
+}
+
+type PendingCatalogBundle = {
+  readonly promise: Promise<LoadedAssemblyBundle>;
+  subscribe(listener: ReportProgress): () => void;
+};
+
+type CatalogBundleCache = {
+  readonly resolved: Map<CatalogArchetypeId, LoadedAssemblyBundle>;
+  readonly pending: Map<CatalogArchetypeId, PendingCatalogBundle>;
+};
+
+let catalogCaches = new WeakMap<FirebaseEmulatorRepository, CatalogBundleCache>();
+
+export function clearCachedCatalogBundles(): void {
+  catalogCaches = new WeakMap();
+}
+
+export function peekCachedCatalogBundle(
+  archetypeId: CatalogArchetypeId,
+): LoadedAssemblyBundle | undefined {
+  return catalogCaches.get(defaultFirebaseEmulatorRepository)?.resolved.get(archetypeId);
+}
+
+function startCatalogDownload(
+  archetypeId: CatalogArchetypeId,
+  repository: FirebaseEmulatorRepository,
+  cache: CatalogBundleCache,
+): PendingCatalogBundle {
+  const listeners = new Set<ReportProgress>();
+  let latest: AssemblyLoadingProgress = { phase: 'orchestrating', progress: 0.12 };
+  const promise = requestAssemblyBundle(
+    `/api/assemblies/${encodeURIComponent(archetypeId)}`,
+    { method: 'GET' },
+    'Catalog assembly',
+    {
+      repository,
+      onProgress: (progress) => {
+        latest = progress;
+        for (const report of listeners) report(progress);
+      },
+    },
+    archetypeId,
+  )
+    .then((bundle) => {
+      cache.resolved.set(archetypeId, bundle);
+      return bundle;
+    })
+    .finally(() => {
+      cache.pending.delete(archetypeId);
+    });
+  const pending = {
+    promise,
+    subscribe(listener: ReportProgress) {
+      listener(latest);
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+  };
+  cache.pending.set(archetypeId, pending);
+  return pending;
+}
+
+export async function loadVerifiedAssemblyByArchetypeId({
+  archetypeId,
+  repository = defaultFirebaseEmulatorRepository,
+  onProgress,
+  signal,
+}: BundleOptions & {
+  readonly archetypeId: CatalogArchetypeId;
+}): Promise<LoadedAssemblyBundle> {
+  signal?.throwIfAborted();
+  let cache = catalogCaches.get(repository);
+  if (cache === undefined) {
+    cache = { resolved: new Map(), pending: new Map() };
+    catalogCaches.set(repository, cache);
+  }
+  const cached = cache.resolved.get(archetypeId);
+  if (cached !== undefined) {
+    onProgress?.({ phase: 'ready', progress: 1 });
+    return cached;
+  }
+  const pending =
+    cache.pending.get(archetypeId) ?? startCatalogDownload(archetypeId, repository, cache);
+  const unsubscribe = onProgress === undefined ? undefined : pending.subscribe(onProgress);
+  if (signal === undefined) return pending.promise.finally(unsubscribe);
+
+  return new Promise<LoadedAssemblyBundle>((resolve, reject) => {
+    const abort = () => {
+      unsubscribe?.();
+      reject(signal.reason);
+    };
+    signal.addEventListener('abort', abort, { once: true });
+    void pending.promise.then(resolve, reject).finally(() => {
+      unsubscribe?.();
+      signal.removeEventListener('abort', abort);
+    });
+    if (signal.aborted) abort();
+  });
+}
+
+export function preloadCatalogAssemblyBundle(
+  archetypeId: CatalogArchetypeId,
+): Promise<LoadedAssemblyBundle> {
+  return loadVerifiedAssemblyByArchetypeId({ archetypeId });
 }

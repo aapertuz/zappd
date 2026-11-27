@@ -34,6 +34,7 @@ import {
   OPTIONAL_INSPECTION_REPORT_FILE_NAMES,
   PUBLISHED_ASSEMBLY_FILE_NAMES,
   createProjectAssembly,
+  defaultCatalogIdentity,
   matchesCatalogPlacements,
   matchesVerifiedCatalogExport,
   parseCadWorkerPayload,
@@ -403,6 +404,28 @@ async function executeProjectOrchestration(
       },
     },
     { cmd: 'build', parameterValues },
+    repository,
+  );
+}
+
+export async function loadCatalogProjectAssembly({
+  archetypeId,
+  allowUnverified,
+  repository = defaultFirebaseEmulatorRepository,
+  syncCloudStorage,
+}: {
+  readonly archetypeId: string;
+  readonly allowUnverified?: boolean;
+  readonly repository?: FirebaseEmulatorRepository;
+  readonly syncCloudStorage?: boolean;
+}): Promise<VerifiedProjectAssembly> {
+  const archetype = getCatalogArchetypeById(archetypeId);
+  if (archetype === undefined) {
+    throw new Error(`Unknown CAD archetype "${archetypeId}"`);
+  }
+  return buildProjectAssembly(
+    { ...defaultCatalogIdentity(archetype), archetypeId, allowUnverified, syncCloudStorage },
+    { cmd: 'build' },
     repository,
   );
 }

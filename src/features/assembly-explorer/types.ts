@@ -1,5 +1,6 @@
 import {
   type AiProviderId,
+  type CatalogArchetypeId,
   type ComponentId,
   type ExplodeStageFilter,
   type Vector3Tuple,
@@ -38,7 +39,7 @@ export type ExplorerViewMode =
 
 export type AssemblyExplorerState = {
   readonly selectedProvider: AiProviderId;
-  readonly lastPromptId: number | null;
+  readonly lastRequestId: number | null;
   readonly assembly: VerifiedProjectAssembly | null;
   readonly glbArrayBuffer: ArrayBuffer | null;
   readonly isLoading: boolean;
@@ -61,15 +62,15 @@ export type AssemblyExplorerState = {
 
 export type AssemblyExplorerAction =
   | { readonly type: 'setProvider'; readonly provider: AiProviderId }
-  | { readonly type: 'startLoading'; readonly promptId: number }
-  | ({ readonly type: 'setLoadingProgress'; readonly promptId: number } & AssemblyLoadingProgress)
+  | { readonly type: 'startLoading'; readonly requestId: number }
+  | ({ readonly type: 'setLoadingProgress'; readonly requestId: number } & AssemblyLoadingProgress)
   | {
       readonly type: 'loadAssemblySuccess';
-      readonly promptId: number;
+      readonly requestId: number;
       readonly assembly: VerifiedProjectAssembly;
       readonly glbArrayBuffer: ArrayBuffer;
     }
-  | { readonly type: 'loadAssemblyError'; readonly promptId: number; readonly message: string }
+  | { readonly type: 'loadAssemblyError'; readonly requestId: number; readonly message: string }
   | { readonly type: 'startParameterRebuild'; readonly requestId: number }
   | {
       readonly type: 'rebuildParametersSuccess';
@@ -136,10 +137,14 @@ export type ActiveExplorerLearningContext = {
   readonly focusedComponentName: string | null;
 };
 
+export type AssemblyExplorerRequest =
+  | { readonly kind: 'archetype'; readonly id: number; readonly archetypeId: CatalogArchetypeId }
+  | { readonly kind: 'prompt'; readonly id: number; readonly text: string };
+
 export type AssemblyExplorerProps = {
   readonly submittedQuestion?: LearningQuestionSubmission | null;
   readonly onActiveLearningContextChange?: (context: ActiveExplorerLearningContext | null) => void;
-  readonly submittedPrompt: { readonly id: number; readonly text: string } | null;
+  readonly request: AssemblyExplorerRequest;
   readonly selectedProvider: AiProviderId;
   readonly providerExplicitlySelected: boolean;
   readonly onSelectProvider: (provider: AiProviderId) => void;

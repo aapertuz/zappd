@@ -2,6 +2,7 @@
   --hud-accent: #f5c451;
   --hud-text: #f3ede0;
   --hud-muted: #aba08e;
+  --explorer-top: calc(max(20px, env(safe-area-inset-top)) + var(--explorer-controls-offset, 0px));
   position: relative;
   width: 100%;
   height: 100%;
@@ -37,7 +38,7 @@
 .hudBar,
 .backButton {
   position: absolute;
-  top: max(20px, env(safe-area-inset-top));
+  top: var(--explorer-top);
   z-index: 25;
   display: flex;
   align-items: center;
@@ -312,7 +313,7 @@
 }
 
 .inspectionStatus {
-  --inspection-top: max(20px, env(safe-area-inset-top));
+  --inspection-top: calc(var(--explorer-top) + var(--catalog-inspection-offset, 0px));
   position: absolute;
   top: var(--inspection-top);
   left: max(20px, env(safe-area-inset-left));
@@ -404,21 +405,21 @@
 
 @media (max-width: 1024px) {
   .inspectionStatus {
-    --inspection-top: calc(max(20px, env(safe-area-inset-top)) + 52px);
+    --inspection-top: calc(var(--explorer-top) + 52px);
   }
 
   .explorerRoot:has(.inspectionStatus) .backButton {
-    top: calc(max(20px, env(safe-area-inset-top)) + 52px);
+    top: calc(var(--explorer-top) + 52px);
   }
 
   .explorerRoot:has(.backButton) .inspectionStatus {
-    --inspection-top: calc(max(20px, env(safe-area-inset-top)) + 96px);
+    --inspection-top: calc(var(--explorer-top) + 96px);
   }
 }
 
 @media (max-width: 800px) {
   .backButton {
-    top: calc(max(20px, env(safe-area-inset-top)) + 52px);
+    top: calc(var(--explorer-top) + 52px);
   }
 }
 
@@ -491,10 +492,10 @@
 .inspectionControls {
   position: absolute;
   z-index: 24;
-  top: calc(max(20px, env(safe-area-inset-top)) + 52px);
+  top: calc(var(--explorer-top) + 52px);
   left: max(20px, env(safe-area-inset-left));
   width: min(248px, calc(100% - 90px));
-  max-height: calc(100% - max(20px, env(safe-area-inset-top)) - 174px);
+  max-height: calc(100% - var(--explorer-top) - 174px);
   display: grid;
   gap: 8px;
   overflow: auto;
