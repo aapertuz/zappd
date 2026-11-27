@@ -313,15 +313,9 @@
 }
 
 .inspectionStatus {
-  --inspection-top: calc(var(--explorer-top) + var(--catalog-inspection-offset, 0px));
-  position: absolute;
-  top: var(--inspection-top);
-  left: max(20px, env(safe-area-inset-left));
-  z-index: 20;
+  position: static;
   box-sizing: border-box;
-  max-width: min(390px, calc(100% - 40px));
-  max-height: calc(100% - var(--inspection-top) - 112px);
-  overflow-y: auto;
+  width: min(390px, 100%);
   padding: 12px 14px;
   border: 1px solid rgba(245, 196, 81, 0.34);
   border-radius: 14px;
@@ -335,6 +329,7 @@
   line-height: 1.45;
   display: grid;
   gap: 6px;
+  pointer-events: auto;
 }
 
 .inspectionHeadline {
@@ -404,15 +399,11 @@
 }
 
 @media (max-width: 1024px) {
-  .inspectionStatus {
-    --inspection-top: calc(var(--explorer-top) + 52px);
-  }
-
   .explorerRoot:has(.inspectionStatus) .backButton {
     top: calc(var(--explorer-top) + 52px);
   }
 
-  .explorerRoot:has(.backButton) .inspectionStatus {
+  .explorerRoot:has(.backButton):has(.inspectionStatus) .inspectionControls {
     --inspection-top: calc(var(--explorer-top) + 96px);
   }
 }
@@ -490,22 +481,26 @@
 }
 
 .inspectionControls {
+  --inspection-top: calc(var(--explorer-top) + var(--catalog-inspection-offset, 0px));
   position: absolute;
   z-index: 24;
-  top: calc(var(--explorer-top) + 52px);
+  top: var(--inspection-top);
   left: max(20px, env(safe-area-inset-left));
-  width: min(248px, calc(100% - 90px));
-  max-height: calc(100% - var(--explorer-top) - 174px);
+  width: fit-content;
+  max-width: min(390px, calc(100% - 40px));
+  max-height: calc(100% - var(--inspection-top) - 112px);
   display: grid;
   gap: 8px;
   overflow: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
+  pointer-events: none;
 }
 
 .unverifiedWarning,
 .parameterPanel {
   box-sizing: border-box;
+  width: min(248px, 100%);
   padding: 10px 12px;
   border: 1px solid rgba(245, 196, 81, 0.25);
   border-radius: 12px;
@@ -513,6 +508,7 @@
   color: var(--hud-text);
   font-size: 12px;
   line-height: 1.35;
+  pointer-events: auto;
 }
 
 .unverifiedWarning {
@@ -628,6 +624,10 @@
 }
 
 @media (max-width: 800px) {
+  .inspectionControls {
+    --inspection-top: calc(var(--explorer-top) + 52px);
+  }
+
   .explorerRoot:has(.inspectionControls) .backButton {
     left: auto;
     right: max(12px, env(safe-area-inset-right));
@@ -638,6 +638,11 @@
 @media (max-width: 640px) {
   .inspectionControls {
     left: max(12px, env(safe-area-inset-left));
-    width: min(218px, calc(100% - 82px));
+    max-width: calc(100% - 24px);
+  }
+
+  .unverifiedWarning,
+  .parameterPanel {
+    width: min(218px, calc(100vw - 82px));
   }
 }
