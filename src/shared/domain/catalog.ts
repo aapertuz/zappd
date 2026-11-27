@@ -48,6 +48,7 @@ export type CatalogArchetypeDefinition = {
   readonly semantics?: 'documented_assembly' | 'source_inspection';
   readonly archetypeId: CatalogArchetypeId;
   readonly title: string;
+  readonly commercialName: string;
   readonly summary: string;
   readonly keywords: readonly string[];
   readonly rootNodeId: ComponentId;
@@ -74,6 +75,7 @@ const catalogArchetypeSchema = z.strictObject({
   semantics: z.enum(['documented_assembly', 'source_inspection']).optional(),
   archetypeId: z.custom<CatalogArchetypeId>(isCatalogArchetypeId),
   title: nonEmptyString,
+  commercialName: nonEmptyString,
   summary: nonEmptyString,
   keywords: z.array(nonEmptyString),
   rootNodeId: z.custom<ComponentId>(isComponentId),

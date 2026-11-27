@@ -1,6 +1,7 @@
 {
   "archetypeId": "reachy_mini_v1",
   "title": "Reachy Mini",
+  "commercialName": "Reachy Mini",
   "summary": "desktop companion robot reconstructed by HeyPCB from Pollen Robotics' Reachy Mini Wireless",
   "keywords": [
     "reachy",

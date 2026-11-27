@@ -1,6 +1,7 @@
 {
   "archetypeId": "open_quadruped_v1",
   "title": "Open Quadruped",
+  "commercialName": "Strider Q4",
   "summary": "Four-legged walking robot by Adham Elarabawy with a 3S battery, a PWM servo hub, and three routed leads in an open service bay.",
   "keywords": [
     "open quadruped",

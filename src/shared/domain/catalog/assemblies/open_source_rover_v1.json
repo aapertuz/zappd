@@ -1,6 +1,7 @@
 {
   "archetypeId": "open_source_rover_v1",
   "title": "NOVA2 Open-Source Rover CAD Assembly",
+  "commercialName": "Nova II",
   "summary": "AstroX NOVA2 autonomous planetary ground rover with modular chassis tub, Jetson Nano compute bay, dual steering wheel brackets, Dynamixel XL430 actuators, rigid flange couplings, and ZED 2i stereo depth camera.",
   "keywords": [
     "rover",

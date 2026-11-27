@@ -325,6 +325,7 @@ def materialize_multirotor(template: dict, cache_dir: Path, overrides: dict | No
 
     return {
         "archetypeId": ARCHETYPE_ID, "title": "Parametric Multirotor",
+        "commercialName": "Helix Config",
         "summary": "reconfigurable aircraft with four or six propellers, a dual-deck chassis, and routed electronics",
         "keywords": ["parametric", "hexacopter", "custom drone", "6-rotor", "multirotor"],
         "generationMode": "parametric_family", "rootNodeId": _ROOT_ID, "nodes": nodes,

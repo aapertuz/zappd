@@ -643,6 +643,7 @@ def make_catalog(assembly: HeyPcbAssembly, nodes: dict, solids: dict, staging: P
     relationships = [*mechanical_relationships(assembly, nodes), *circuits]
     catalog = {
         "archetypeId": ARCHETYPE, "title": "Reachy Mini",
+        "commercialName": "Reachy Mini",
         "summary": "desktop companion robot reconstructed by HeyPCB from Pollen Robotics' Reachy Mini Wireless",
         "keywords": ["reachy", "reachy mini", "desktop companion", "pollen", "stewart", "antennas", "companion robot"],
         "rootNodeId": ROOT_ID, "generationMode": "reference_catalog", "spdxLicense": LICENSE,

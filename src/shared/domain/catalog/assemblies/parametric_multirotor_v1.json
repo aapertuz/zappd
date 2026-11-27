@@ -1,6 +1,7 @@
 {
   "archetypeId": "parametric_multirotor_v1",
   "title": "Parametric Multirotor",
+  "commercialName": "Helix Config",
   "summary": "reconfigurable aircraft with four or six propellers, a dual-deck chassis, and routed electronics",
   "keywords": ["parametric", "hexacopter", "custom drone", "6-rotor", "multirotor"],
   "generationMode": "parametric_family",
