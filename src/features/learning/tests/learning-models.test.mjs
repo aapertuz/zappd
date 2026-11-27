@@ -3,15 +3,20 @@ import { describe, it } from 'node:test';
 
 import {
   CATALOG_ARCHETYPES,
+  OPEN_QUADRUPED_ARCHETYPE,
+  PARAMETRIC_MULTIROTOR_ARCHETYPE,
+  POPPY_ARCHETYPE,
   QUADCOPTER_ARCHETYPE,
+  REACHY_MINI_ARCHETYPE,
   ROBOTIC_ARM_ARCHETYPE,
   ROVER_ARCHETYPE,
 } from '@/shared/domain';
 
 import { computeLearningCalloutsLayout } from '../model/calloutLayout.ts';
 import { INITIAL_LEARNING_STATE, reduceLearningState } from '../model/learningState.ts';
-import { classifyCanvasPrompt } from '../model/promptRouter.ts';
+import { classifyCanvasPrompt, classifyCanvasPromptWithConfidence } from '../model/promptRouter.ts';
 import { advanceTypewriterProgress, isTypewriterWriting } from '../model/typewriter.ts';
+import { resolveCanvasPromptRoute } from '../services/promptRoutingService.ts';
 
 describe('learning callout state', () => {
   it('restores completed overview and part explanations until the project resets', () => {
@@ -217,12 +222,15 @@ describe('canvas prompt routing', () => {
     assert.deepEqual(classifyCanvasPrompt('Explain the arms', null), { kind: 'load_assembly' });
     assert.deepEqual(classifyCanvasPrompt('Build a 5-DOF SO-100 robotic arm', drone), {
       kind: 'load_assembly',
+      targetArchetypeId: ROBOTIC_ARM_ARCHETYPE.archetypeId,
     });
     assert.deepEqual(classifyCanvasPrompt('Inspect a planetary rover', drone), {
       kind: 'load_assembly',
+      targetArchetypeId: ROVER_ARCHETYPE.archetypeId,
     });
     assert.deepEqual(classifyCanvasPrompt('Please switch to the quadcopter', rover), {
       kind: 'load_assembly',
+      targetArchetypeId: QUADCOPTER_ARCHETYPE.archetypeId,
     });
   });
 
@@ -248,6 +256,10 @@ describe('canvas prompt routing', () => {
       kind: 'ask_question',
       targetComponentId: QUADCOPTER_ARCHETYPE.rootNodeId,
     });
+    assert.deepEqual(classifyCanvasPrompt('compare this drone with reachy mini', multirotor), {
+      kind: 'ask_question',
+      targetComponentId: PARAMETRIC_MULTIROTOR_ARCHETYPE.rootNodeId,
+    });
   });
 
   it('keeps focus for questions and component commands and switches for a different archetype', () => {
@@ -263,16 +275,150 @@ describe('canvas prompt routing', () => {
         targetComponentId: arm.focusedComponentId,
       });
     }
-    assert.deepEqual(classifyCanvasPrompt('Load a quadcopter', arm), { kind: 'load_assembly' });
+    assert.deepEqual(classifyCanvasPrompt('Load a quadcopter', arm), {
+      kind: 'load_assembly',
+      targetArchetypeId: QUADCOPTER_ARCHETYPE.archetypeId,
+    });
     assert.deepEqual(classifyCanvasPrompt('Build a 5-DOF SO-100 robotic arm', arm), {
       kind: 'load_assembly',
+      targetArchetypeId: ROBOTIC_ARM_ARCHETYPE.archetypeId,
     });
     assert.deepEqual(classifyCanvasPrompt('Inspect a planetary rover', arm), {
       kind: 'load_assembly',
+      targetArchetypeId: ROVER_ARCHETYPE.archetypeId,
     });
     assert.deepEqual(classifyCanvasPrompt('Inspect a four-legged quadruped', arm), {
       kind: 'load_assembly',
+      targetArchetypeId: OPEN_QUADRUPED_ARCHETYPE.archetypeId,
     });
+  });
+
+  const focusedDrone = { ...drone, focusedComponentId: 'comp_motor_rr' };
+  const multirotorValues = {
+    rotor_count: 6,
+    wheelbase_mm: 320,
+    deck_gap_mm: 26,
+    arm_thickness_mm: 4,
+  };
+  const multirotor = {
+    assembly: {
+      ...PARAMETRIC_MULTIROTOR_ARCHETYPE,
+      parameters: PARAMETRIC_MULTIROTOR_ARCHETYPE.parameters.map((parameter) => ({
+        ...parameter,
+        value: multirotorValues[parameter.name],
+      })),
+    },
+  };
+
+  it('switches catalog assemblies from overview and part focus, even with a polite request or typo', () => {
+    for (const context of [drone, focusedDrone]) {
+      for (const [prompt, target, confidence] of [
+        ['i want to build a reachy mini', REACHY_MINI_ARCHETYPE, 'high'],
+        ['can you load reachy mini', REACHY_MINI_ARCHETYPE, 'low'],
+        ['rechy mini', REACHY_MINI_ARCHETYPE, 'low'],
+        ['quiero construir un reachy mini', REACHY_MINI_ARCHETYPE, 'low'],
+        ['switch from quadcopter drone to poppy', POPPY_ARCHETYPE, 'high'],
+      ]) {
+        assert.deepEqual(classifyCanvasPromptWithConfidence(prompt, context), {
+          decision: { kind: 'load_assembly', targetArchetypeId: target.archetypeId },
+          confidence,
+        });
+      }
+    }
+  });
+
+  it('loads new parametric drones with their requested dimensions and promotes the active fixed drone for edits', () => {
+    const targetArchetypeId = PARAMETRIC_MULTIROTOR_ARCHETYPE.archetypeId;
+    assert.deepEqual(
+      classifyCanvasPrompt('build a custom 6-rotor drone with 300mm wheelbase', focusedDrone),
+      {
+        kind: 'load_assembly',
+        targetArchetypeId,
+        parameterValues: {
+          rotor_count: 6,
+          wheelbase_mm: 300,
+          deck_gap_mm: 26,
+          arm_thickness_mm: 4,
+        },
+      },
+    );
+    assert.deepEqual(classifyCanvasPrompt('add 2 more rotors', focusedDrone), {
+      kind: 'modify_assembly',
+      targetArchetypeId,
+      parameterValues: { rotor_count: 6, wheelbase_mm: 260, deck_gap_mm: 26, arm_thickness_mm: 4 },
+    });
+  });
+
+  it('preserves untouched values across absolute, relative, and qualitative edits', () => {
+    for (const [prompt, changedValues] of [
+      [
+        'set wheelbase to 280 and arm thickness to 5.5mm',
+        { wheelbase_mm: 280, arm_thickness_mm: 5.5 },
+      ],
+      [
+        'reduce wheelbase by 20mm and increase deck gap by 4mm',
+        { wheelbase_mm: 300, deck_gap_mm: 30 },
+      ],
+      ['make the arms thicker', { arm_thickness_mm: 5 }],
+      ['switch back to 4 rotors', { rotor_count: 4 }],
+      ['set wheelbase to 999mm and deck gap to 29mm', { wheelbase_mm: 360, deck_gap_mm: 30 }],
+    ]) {
+      assert.deepEqual(classifyCanvasPrompt(prompt, multirotor), {
+        kind: 'modify_assembly',
+        targetArchetypeId: PARAMETRIC_MULTIROTOR_ARCHETYPE.archetypeId,
+        parameterValues: { ...multirotorValues, ...changedValues },
+      });
+    }
+  });
+
+  it('treats hypothetical and capability prompts as questions eligible for cloud disambiguation', () => {
+    for (const prompt of [
+      'can this drone fly with 6 rotors?',
+      'can we fly this drone with 6 rotors?',
+      'would a wider wheelbase help',
+      'what happens if you increase the deck gap',
+      'how is reachy mini different from this drone?',
+      'could I build a reachy mini with these motors?',
+      'rover vs poppy',
+    ]) {
+      assert.deepEqual(classifyCanvasPromptWithConfidence(prompt, focusedDrone), {
+        decision: { kind: 'ask_question', targetComponentId: focusedDrone.focusedComponentId },
+        confidence: 'low',
+      });
+    }
+    assert.equal(
+      classifyCanvasPromptWithConfidence('Explain this motor', focusedDrone).confidence,
+      'high',
+    );
+    assert.equal(
+      classifyCanvasPromptWithConfidence('How does the Rear Right Brushless Motor work?', drone)
+        .confidence,
+      'high',
+    );
+    assert.equal(
+      classifyCanvasPromptWithConfidence('What is the wheelbase right now?', multirotor).confidence,
+      'high',
+    );
+  });
+
+  it('describes unsupported edits using the active assembly and its available parameter ranges', () => {
+    const fixedReachy = classifyCanvasPrompt('make reachy mini taller', {
+      assembly: REACHY_MINI_ARCHETYPE,
+    });
+    assert.equal(fixedReachy.kind, 'unsupported_modify');
+    assert.match(fixedReachy.reason, /fixed reference assembly/);
+    const fixedDrone = classifyCanvasPrompt('add a lidar to this drone', drone);
+    assert.equal(fixedDrone.kind, 'unsupported_modify');
+    assert.match(fixedDrone.reason, /220–360 mm/);
+    const parametric = classifyCanvasPrompt('paint this drone matte black', multirotor);
+    assert.equal(parametric.kind, 'unsupported_modify');
+    for (const { label } of multirotor.assembly.parameters)
+      assert.ok(parametric.reason.includes(label));
+    assert.match(parametric.reason, /220–360 mm/);
+    assert.equal(
+      classifyCanvasPrompt('change this quadcopter to red', drone).kind,
+      'unsupported_modify',
+    );
   });
 
   it('has a documented connection for every selectable part in documented assemblies', () => {
@@ -365,6 +511,155 @@ describe('canvas prompt routing', () => {
         );
       }
     }
+  });
+});
+
+describe('hybrid canvas prompt routing', () => {
+  const activeContext = { assembly: QUADCOPTER_ARCHETYPE };
+  const input = {
+    prompt: 'can you load reachy mini?',
+    activeContext,
+    provider: 'deepseek',
+    providerExplicitlySelected: true,
+    isOnline: () => true,
+  };
+
+  it('keeps clear commands and empty canvases off the cloud path', async (t) => {
+    const routeCloud = t.mock.fn();
+    for (const [prompt, context] of [
+      ['load reachy mini', activeContext],
+      ['Explain the motor', activeContext],
+      ['quiero abrir un reachy mini', null],
+    ]) {
+      assert.equal(
+        (await resolveCanvasPromptRoute({ ...input, prompt, activeContext: context, routeCloud }))
+          .source,
+        'deterministic',
+      );
+    }
+    assert.equal(routeCloud.mock.callCount(), 0);
+  });
+
+  it('escalates low-confidence prompts with only the serializable active assembly context', async (t) => {
+    const decision = {
+      kind: 'load_assembly',
+      targetArchetypeId: REACHY_MINI_ARCHETYPE.archetypeId,
+    };
+    const routeCloud = t.mock.fn(async () => ({ provider: 'deepseek', decision }));
+    assert.deepEqual(await resolveCanvasPromptRoute({ ...input, routeCloud }), {
+      decision,
+      source: 'cloud',
+    });
+    const [request, signal] = routeCloud.mock.calls[0].arguments;
+    assert.deepEqual(request, {
+      prompt: input.prompt,
+      provider: input.provider,
+      providerExplicitlySelected: true,
+      activeContext: {
+        archetypeId: QUADCOPTER_ARCHETYPE.archetypeId,
+        title: QUADCOPTER_ARCHETYPE.title,
+        rootNodeId: QUADCOPTER_ARCHETYPE.rootNodeId,
+        focusedComponentId: null,
+        focusedComponentName: null,
+        parameters: undefined,
+      },
+    });
+    assert.ok(signal instanceof AbortSignal);
+  });
+
+  it('preserves focus and locally named components on cloud questions', async () => {
+    const routeCloud = async () => ({
+      provider: 'deepseek',
+      decision: { kind: 'ask_question', targetComponentId: QUADCOPTER_ARCHETYPE.rootNodeId },
+    });
+    const prompt = 'Could the Rear Right Brushless Motor lift a camera?';
+    for (const [context, expected] of [
+      [activeContext, 'comp_motor_rr'],
+      [{ ...activeContext, focusedComponentId: 'comp_motor_fl' }, 'comp_motor_fl'],
+    ]) {
+      const result = await resolveCanvasPromptRoute({
+        ...input,
+        prompt,
+        activeContext: context,
+        routeCloud,
+      });
+      assert.deepEqual(result, {
+        decision: { kind: 'ask_question', targetComponentId: expected },
+        source: 'cloud',
+      });
+    }
+  });
+
+  it('skips the cloud when offline and falls back for network or invalid responses', async (t) => {
+    const decision = {
+      kind: 'load_assembly',
+      targetArchetypeId: REACHY_MINI_ARCHETYPE.archetypeId,
+    };
+    const offlineCloud = t.mock.fn();
+    assert.deepEqual(
+      await resolveCanvasPromptRoute({ ...input, isOnline: () => false, routeCloud: offlineCloud }),
+      {
+        decision,
+        source: 'deterministic',
+      },
+    );
+    assert.equal(offlineCloud.mock.callCount(), 0);
+
+    for (const routeCloud of [
+      async () => {
+        throw new TypeError('Network unavailable');
+      },
+      async () => ({
+        decision: { kind: 'load_assembly', targetArchetypeId: 'unknown' },
+        provider: 'deepseek',
+      }),
+      async () => ({ decision, provider: 'not-a-provider' }),
+    ]) {
+      assert.deepEqual(await resolveCanvasPromptRoute({ ...input, routeCloud }), {
+        decision,
+        source: 'deterministic_fallback',
+      });
+    }
+  });
+
+  it('falls back at the three-second deadline even while the transport is still pending', async (t) => {
+    t.mock.timers.enable({ apis: ['setTimeout'] });
+    const routeCloud = t.mock.fn(() => new Promise(() => {}));
+    const result = resolveCanvasPromptRoute({ ...input, routeCloud });
+    const [, signal] = routeCloud.mock.calls[0].arguments;
+    t.mock.timers.tick(2999);
+    assert.equal(signal.aborted, false);
+    t.mock.timers.tick(1);
+    assert.equal(signal.aborted, true);
+    assert.deepEqual(await result, {
+      decision: { kind: 'load_assembly', targetArchetypeId: REACHY_MINI_ARCHETYPE.archetypeId },
+      source: 'deterministic_fallback',
+    });
+  });
+
+  it('propagates caller cancellation and aborts an in-flight request', async (t) => {
+    const controller = new AbortController();
+    const routeCloud = t.mock.fn(() => new Promise(() => {}));
+    const result = resolveCanvasPromptRoute({ ...input, routeCloud, signal: controller.signal });
+    const [, requestSignal] = routeCloud.mock.calls[0].arguments;
+    controller.abort();
+    await assert.rejects(result, { name: 'AbortError' });
+    assert.equal(requestSignal.aborted, true);
+  });
+
+  it('uses the routing HTTP endpoint and falls back for a non-success response', async (t) => {
+    const fetchMock = t.mock.method(
+      globalThis,
+      'fetch',
+      async () => new Response(null, { status: 503 }),
+    );
+    const result = await resolveCanvasPromptRoute(input);
+    const [url, options] = fetchMock.mock.calls[0].arguments;
+    assert.equal(url, '/api/route-prompt');
+    assert.equal(options.method, 'POST');
+    assert.equal(JSON.parse(options.body).prompt, input.prompt);
+    assert.equal(result.source, 'deterministic_fallback');
+    assert.equal(result.decision.targetArchetypeId, REACHY_MINI_ARCHETYPE.archetypeId);
   });
 });
 

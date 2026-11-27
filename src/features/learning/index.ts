@@ -32,7 +32,7 @@ export {
   type LearningCalloutSlotState,
   type LearningState,
 } from './model/learningState';
-export { classifyCanvasPrompt } from './model/promptRouter';
+export { classifyCanvasPrompt, classifyCanvasPromptWithConfidence } from './model/promptRouter';
 export { advanceTypewriterProgress, isTypewriterWriting } from './model/typewriter';
 export {
   hydrateComponentLearningContext,
@@ -45,3 +45,4 @@ export {
   type CloudLearningRunner,
   type LearningResult,
 } from './services/learningEngine';
+export { resolveCanvasPromptRoute } from './services/promptRoutingService';

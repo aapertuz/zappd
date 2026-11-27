@@ -135,3 +135,15 @@ export {
   type ProjectLearningDocuments,
   type ResolvedComponentRelationship,
 } from './learning';
+export {
+  DRONE_PARAMETRIC_ARCHETYPE_ID,
+  formatUnsupportedModifyNotice,
+  parsePromptRouteCloudRequest,
+  parsePromptRouteCloudResponse,
+  supportsDroneParameterPromotion,
+  type CanvasPromptRouteDecision,
+  type PromptRouteActiveContext,
+  type PromptRouteCloudRequest,
+  type PromptRouteCloudResponse,
+  type PromptRouteConfidence,
+} from './promptRouting';
