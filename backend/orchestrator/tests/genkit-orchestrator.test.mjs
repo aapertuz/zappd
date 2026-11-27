@@ -41,7 +41,8 @@ registerHooks({
   },
 });
 
-const { getCatalogArchetypeById } = await import('../../../src/shared/domain/index.ts');
+const { getCatalogArchetypeById, parsePromptRouteCloudRequest, parsePromptRouteCloudResponse } =
+  await import('../../../src/shared/domain/index.ts');
 const { FirebaseEmulatorRepository } = await import('../../../src/shared/firebase/index.ts');
 const {
   matchesCatalogPlacements,
@@ -49,6 +50,7 @@ const {
   rebuildAssemblyWithParameters,
 } = await import('../genkitOrchestrator.ts');
 const { planProjectWithProvider } = await import('../aiProviders.ts');
+const { classifyPromptWithCloudProvider } = await import('../promptRouteResponder.ts');
 const { requestWarmCadBuild, shutdownWarmCadWorker } = await import('../warmCadClient.ts');
 
 after(shutdownWarmCadWorker);
@@ -278,6 +280,31 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
       /OpenCascade validation rejected assembly/,
     );
     assert.equal(repository.listCollection('projects').length, 0);
+  });
+
+  it('orchestrates the explicit catalog archetype and clamps only the supplied dimensions', async (t) => {
+    const providerCall = t.mock.method(globalThis, 'fetch', () => {
+      throw new Error('An explicit catalog selection must not call an AI planner');
+    });
+    const assembly = await orchestrateProjectAssemblyCreation({
+      prompt: 'quiero construir un reachy mini, wheelbase 230mm',
+      archetypeId: 'parametric_multirotor_v1',
+      parameterValues: { rotor_count: 6, wheelbase_mm: 326, deck_gap_mm: 999 },
+      provider: 'openai',
+      apiKey: 'sk-test',
+      allowUnverified: true,
+      syncCloudStorage: false,
+      repository: new FirebaseEmulatorRepository(),
+    });
+    assert.equal(providerCall.mock.callCount(), 0);
+    assert.equal(assembly.archetypeId, 'parametric_multirotor_v1');
+    assert.equal(assembly.orchestration.executionMode, 'local_catalog_planner');
+    assert.deepEqual(assembly.parameterValues, {
+      rotor_count: 6,
+      wheelbase_mm: 330,
+      deck_gap_mm: 36,
+      arm_thickness_mm: 4,
+    });
   });
 
   it('extracts custom dimensions, rebuilds without a provider, and keeps both published bundles', async (t) => {
@@ -778,6 +805,154 @@ describe('Genkit multi-provider orchestrator with OpenCascade and Firebase emula
       await shutdownWarmCadWorker({ closeTimeoutMs: 150 });
       process.chdir(originalCwd);
       fs.rmSync(isolatedCwd, { recursive: true, force: true });
+    }
+  });
+});
+
+describe('cloud canvas prompt routing', () => {
+  const activeContext = (archetypeId) => {
+    const assembly = getCatalogArchetypeById(archetypeId);
+    return {
+      archetypeId,
+      title: assembly.title,
+      rootNodeId: assembly.rootNodeId,
+      focusedComponentId: null,
+      focusedComponentName: null,
+      parameters: assembly.parameters?.map((parameter) => ({
+        ...parameter,
+        value: parameter.name === 'wheelbase_mm' ? 320 : parameter.value,
+      })),
+    };
+  };
+  const request = (archetypeId) => ({
+    prompt: 'Could you change the deck gap?',
+    activeContext: activeContext(archetypeId),
+    provider: 'deepseek',
+    providerExplicitlySelected: true,
+  });
+
+  it('validates the HTTP request and the discriminated response shape', () => {
+    const valid = request('parametric_multirotor_v1');
+    assert.deepEqual(parsePromptRouteCloudRequest(valid), valid);
+    for (const invalid of [
+      { ...valid, unexpected: true },
+      { ...valid, provider: 'invalid' },
+      { ...valid, activeContext: { ...valid.activeContext, archetypeId: 'invalid' } },
+      { ...valid, activeContext: { ...valid.activeContext, rootNodeId: 'invalid root ID' } },
+    ])
+      assert.throws(() => parsePromptRouteCloudRequest(invalid), { name: 'ZodError' });
+    assert.throws(
+      () =>
+        parsePromptRouteCloudResponse({
+          provider: 'deepseek',
+          decision: {
+            kind: 'modify_assembly',
+            targetArchetypeId: 'parametric_multirotor_v1',
+            parameterValues: { wheelbase_mm: '320' },
+          },
+        }),
+      { name: 'ZodError' },
+    );
+  });
+
+  it('uses JSON provider responses to promote fixed drones, preserve live parameters, and guard invalid edits', async () => {
+    const requests = [];
+    let response;
+    const server = http.createServer(async (incoming, outgoing) => {
+      const chunks = [];
+      for await (const chunk of incoming) chunks.push(chunk);
+      requests.push({
+        url: incoming.url,
+        body: JSON.parse(Buffer.concat(chunks).toString('utf8')),
+      });
+      outgoing.writeHead(200, { 'Content-Type': 'application/json' });
+      outgoing.end(
+        JSON.stringify({ choices: [{ message: { content: JSON.stringify(response) } }] }),
+      );
+    });
+    await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const { port } = server.address();
+    const options = { apiKey: 'sk-test', baseUrl: `http://127.0.0.1:${port}/v1` };
+
+    try {
+      response = {
+        intent: 'modify_assembly',
+        targetArchetypeId: 'unrecognized_model_id',
+        parameterValues: { deck_gap_mm: 31, arm_thickness_mm: 100, unknown_value: 12 },
+      };
+      const modified = await classifyPromptWithCloudProvider(
+        request('parametric_multirotor_v1'),
+        options,
+      );
+      assert.deepEqual(modified, {
+        provider: 'deepseek',
+        decision: {
+          kind: 'modify_assembly',
+          targetArchetypeId: 'parametric_multirotor_v1',
+          parameterValues: {
+            rotor_count: 4,
+            wheelbase_mm: 320,
+            deck_gap_mm: 32,
+            arm_thickness_mm: 6,
+          },
+        },
+      });
+      assert.deepEqual(parsePromptRouteCloudResponse(modified), modified);
+      assert.equal(requests[0].url, '/v1/chat/completions');
+      assert.deepEqual(requests[0].body.response_format, { type: 'json_object' });
+      assert.deepEqual(
+        JSON.parse(requests[0].body.messages[1].content).activeAssembly.currentParameters,
+        {
+          rotor_count: 4,
+          wheelbase_mm: 320,
+          deck_gap_mm: 26,
+          arm_thickness_mm: 4,
+        },
+      );
+
+      const promoted = await classifyPromptWithCloudProvider(
+        request('quadcopter_drone_v1'),
+        options,
+      );
+      assert.equal(promoted.decision.targetArchetypeId, 'parametric_multirotor_v1');
+      assert.equal(promoted.decision.parameterValues.wheelbase_mm, 260);
+
+      const fixed = await classifyPromptWithCloudProvider(request('reachy_mini_v1'), options);
+      assert.equal(fixed.decision.kind, 'unsupported_modify');
+      assert.match(fixed.decision.reason, /fixed reference assembly/);
+
+      response = { ...response, parameterValues: { unknown_value: 12 } };
+      const unsupported = await classifyPromptWithCloudProvider(
+        request('parametric_multirotor_v1'),
+        options,
+      );
+      assert.equal(unsupported.decision.kind, 'unsupported_modify');
+      assert.match(unsupported.decision.reason, /Wheelbase/);
+
+      response = { intent: 'load_assembly', targetArchetypeId: 'missing_catalog_id' };
+      const missingTarget = await classifyPromptWithCloudProvider(
+        request('quadcopter_drone_v1'),
+        options,
+      );
+      assert.deepEqual(missingTarget.decision, { kind: 'load_assembly' });
+
+      response = { intent: 'load_assembly', targetArchetypeId: 'reachy_mini_v1', inventKey: true };
+      await assert.rejects(
+        classifyPromptWithCloudProvider(request('quadcopter_drone_v1'), options),
+        { name: 'ZodError' },
+      );
+
+      response = {
+        intent: 'modify_assembly',
+        targetArchetypeId: 'parametric_multirotor_v1',
+        parameterValues: { wheelbase_mm: '320' },
+      };
+      await assert.rejects(
+        classifyPromptWithCloudProvider(request('quadcopter_drone_v1'), options),
+        { name: 'ZodError' },
+      );
+    } finally {
+      await new Promise((resolve) => server.close(resolve));
     }
   });
 });
