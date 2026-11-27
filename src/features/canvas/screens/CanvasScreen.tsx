@@ -5,27 +5,34 @@ import { type AiProviderId, DEFAULT_AI_PROVIDER } from '@/shared/domain';
 import {
   AssemblyExplorerView,
   type ActiveExplorerLearningContext,
+  type AssemblyExplorerRequest,
 } from '@/features/assembly-explorer';
 import { classifyCanvasPrompt, type LearningQuestionSubmission } from '@/features/learning';
 
 import { CanvasView } from '../components/CanvasView';
 import {
   INITIAL_CANVAS_COMPOSER_STATE,
-  type CanvasPromptSubmission,
   canSubmitPrompt,
   normalizePromptDraft,
   reduceCanvasComposerState,
 } from '../model/composerState';
 import { type CanvasScreenProps } from '../types';
 
-export function CanvasScreen({ onSubmitPrompt }: CanvasScreenProps) {
+export function CanvasScreen({
+  initialArchetypeId,
+  onBackToCatalog,
+  onSubmitPrompt,
+}: CanvasScreenProps) {
   const [state, dispatch] = useReducer(reduceCanvasComposerState, INITIAL_CANVAS_COMPOSER_STATE);
   const [selectedProvider, setSelectedProvider] = useState<AiProviderId>(DEFAULT_AI_PROVIDER);
   const [providerExplicitlySelected, setProviderExplicitlySelected] = useState(false);
   const [activeLearningContext, setActiveLearningContext] =
     useState<ActiveExplorerLearningContext | null>(null);
-  const [submittedAssemblyPrompt, setSubmittedAssemblyPrompt] =
-    useState<CanvasPromptSubmission | null>(null);
+  const [assemblyRequest, setAssemblyRequest] = useState<AssemblyExplorerRequest | null>(
+    initialArchetypeId === undefined
+      ? null
+      : { kind: 'archetype', id: 0, archetypeId: initialArchetypeId },
+  );
   const [submittedQuestion, setSubmittedQuestion] = useState<LearningQuestionSubmission | null>(
     null,
   );
@@ -48,7 +55,7 @@ export function CanvasScreen({ onSubmitPrompt }: CanvasScreenProps) {
     const classification = classifyCanvasPrompt(normalized, activeLearningContext);
     const id = state.nextSubmissionId;
     if (classification.kind === 'load_assembly') {
-      setSubmittedAssemblyPrompt({ id, text: normalized });
+      setAssemblyRequest({ kind: 'prompt', id, text: normalized });
       setSubmittedQuestion(null);
     } else {
       setSubmittedQuestion({
@@ -67,9 +74,9 @@ export function CanvasScreen({ onSubmitPrompt }: CanvasScreenProps) {
   }
 
   const surfaceContent =
-    submittedAssemblyPrompt !== null ? (
+    assemblyRequest !== null ? (
       <AssemblyExplorerView
-        submittedPrompt={submittedAssemblyPrompt}
+        request={assemblyRequest}
         submittedQuestion={submittedQuestion}
         onActiveLearningContextChange={setActiveLearningContext}
         selectedProvider={selectedProvider}
@@ -85,6 +92,7 @@ export function CanvasScreen({ onSubmitPrompt }: CanvasScreenProps) {
       placeholder={placeholder}
       canSubmit={canSubmit}
       surfaceContent={surfaceContent}
+      onBackToCatalog={onBackToCatalog}
       onDraftChange={handleDraftChange}
       onSubmit={handleSubmit}
     />

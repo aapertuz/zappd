@@ -1,5 +1,5 @@
-import { CanvasScreen } from '@/features/canvas';
+import { AssemblySelectorScreen } from '@/features/projects';
 
-export default function CanvasRoute() {
-  return <CanvasScreen />;
+export default function RootRoute() {
+  return <AssemblySelectorScreen />;
 }

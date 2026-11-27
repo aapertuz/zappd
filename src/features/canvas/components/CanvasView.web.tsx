@@ -8,6 +8,7 @@ export function CanvasView({
   placeholder = 'Describe a CAD assembly to explore...',
   canSubmit,
   surfaceContent,
+  onBackToCatalog,
   onDraftChange,
   onSubmit,
 }: CanvasViewProps) {
@@ -32,7 +33,17 @@ export function CanvasView({
   }
 
   return (
-    <main className={classes.canvas}>
+    <main className={classes.canvas} data-catalog-navigation={onBackToCatalog !== undefined}>
+      {onBackToCatalog !== undefined && (
+        <button
+          type="button"
+          aria-label="Back to assemblies"
+          className={classes.catalogBack}
+          onClick={onBackToCatalog}>
+          <span aria-hidden="true">←</span>
+          Assemblies
+        </button>
+      )}
       <div className={classes.surface}>{surfaceContent}</div>
       <div className={classes.composerDock}>
         <form className={classes.composer} onSubmit={handleFormSubmit}>
