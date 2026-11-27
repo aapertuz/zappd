@@ -1,17 +1,17 @@
-import { useReducer, useState } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 
 import { type AiProviderId, DEFAULT_AI_PROVIDER } from '@/shared/domain';
 
 import {
   AssemblyExplorerView,
   type ActiveExplorerLearningContext,
+  type AssemblyExplorerProps,
 } from '@/features/assembly-explorer';
-import { classifyCanvasPrompt, type LearningQuestionSubmission } from '@/features/learning';
+import { resolveCanvasPromptRoute, type LearningQuestionSubmission } from '@/features/learning';
 
 import { CanvasView } from '../components/CanvasView';
 import {
   INITIAL_CANVAS_COMPOSER_STATE,
-  type CanvasPromptSubmission,
   canSubmitPrompt,
   normalizePromptDraft,
   reduceCanvasComposerState,
@@ -25,10 +25,14 @@ export function CanvasScreen({ onSubmitPrompt }: CanvasScreenProps) {
   const [activeLearningContext, setActiveLearningContext] =
     useState<ActiveExplorerLearningContext | null>(null);
   const [submittedAssemblyPrompt, setSubmittedAssemblyPrompt] =
-    useState<CanvasPromptSubmission | null>(null);
+    useState<AssemblyExplorerProps['submittedPrompt']>(null);
+  const [submittedParameterEdit, setSubmittedParameterEdit] =
+    useState<AssemblyExplorerProps['submittedParameterEdit']>(null);
   const [submittedQuestion, setSubmittedQuestion] = useState<LearningQuestionSubmission | null>(
     null,
   );
+  const [unsupportedNotice, setUnsupportedNotice] = useState<string | null>(null);
+  const routingRequest = useRef<AbortController | null>(null);
   const canSubmit = canSubmitPrompt(state.draft);
   const focusedName = activeLearningContext?.focusedComponentName ?? null;
   const placeholder =
@@ -38,27 +42,66 @@ export function CanvasScreen({ onSubmitPrompt }: CanvasScreenProps) {
         ? 'Describe a CAD assembly to explore...'
         : 'Ask a question or describe another CAD assembly...';
 
+  useEffect(() => () => routingRequest.current?.abort(), []);
+
   function handleDraftChange(text: string) {
+    if (text !== state.draft) setUnsupportedNotice(null);
     dispatch({ type: 'changeDraft', text });
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     const normalized = normalizePromptDraft(state.draft);
     if (normalized.length === 0) return;
-    const classification = classifyCanvasPrompt(normalized, activeLearningContext);
     const id = state.nextSubmissionId;
-    if (classification.kind === 'load_assembly') {
-      setSubmittedAssemblyPrompt({ id, text: normalized });
-      setSubmittedQuestion(null);
-    } else {
-      setSubmittedQuestion({
-        id,
-        question: normalized,
-        targetComponentId: classification.targetComponentId,
-      });
-    }
+    routingRequest.current?.abort();
+    const controller = new AbortController();
+    routingRequest.current = controller;
+    setUnsupportedNotice(null);
     dispatch({ type: 'submit' });
     onSubmitPrompt?.(normalized);
+
+    try {
+      const { decision } = await resolveCanvasPromptRoute({
+        prompt: normalized,
+        activeContext: activeLearningContext,
+        provider: selectedProvider,
+        providerExplicitlySelected,
+        signal: controller.signal,
+      });
+      if (controller.signal.aborted) return;
+
+      if (decision.kind === 'unsupported_modify') {
+        setUnsupportedNotice(decision.reason);
+      } else if (decision.kind === 'ask_question') {
+        setSubmittedQuestion({
+          id,
+          question: normalized,
+          targetComponentId: decision.targetComponentId,
+        });
+      } else {
+        setSubmittedQuestion(null);
+        const assembly = activeLearningContext?.assembly;
+        if (
+          decision.kind === 'modify_assembly' &&
+          assembly?.archetypeId === decision.targetArchetypeId &&
+          assembly.parameters?.length
+        ) {
+          setSubmittedParameterEdit({ id, parameterValues: decision.parameterValues });
+        } else {
+          setSubmittedParameterEdit(null);
+          setSubmittedAssemblyPrompt({
+            id,
+            text: normalized,
+            archetypeId: decision.targetArchetypeId,
+            parameterValues: decision.parameterValues,
+          });
+        }
+      }
+    } catch (error) {
+      if (!controller.signal.aborted) throw error;
+    } finally {
+      if (routingRequest.current === controller) routingRequest.current = null;
+    }
   }
 
   function handleSelectProvider(provider: AiProviderId) {
@@ -71,6 +114,7 @@ export function CanvasScreen({ onSubmitPrompt }: CanvasScreenProps) {
       <AssemblyExplorerView
         submittedPrompt={submittedAssemblyPrompt}
         submittedQuestion={submittedQuestion}
+        submittedParameterEdit={submittedParameterEdit}
         onActiveLearningContextChange={setActiveLearningContext}
         selectedProvider={selectedProvider}
         providerExplicitlySelected={providerExplicitlySelected}
@@ -85,6 +129,8 @@ export function CanvasScreen({ onSubmitPrompt }: CanvasScreenProps) {
       placeholder={placeholder}
       canSubmit={canSubmit}
       surfaceContent={surfaceContent}
+      notice={unsupportedNotice}
+      onDismissNotice={() => setUnsupportedNotice(null)}
       onDraftChange={handleDraftChange}
       onSubmit={handleSubmit}
     />

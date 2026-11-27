@@ -9,7 +9,7 @@ import {
   useNativeState,
 } from '@expo/ui';
 import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import arrowUpIcon from '../assets/arrow-up.xml';
@@ -35,6 +35,8 @@ export function CanvasView({
   placeholder = 'Describe a CAD assembly to explore...',
   canSubmit,
   surfaceContent,
+  notice,
+  onDismissNotice,
   onDraftChange,
   onSubmit,
 }: CanvasViewProps) {
@@ -70,6 +72,24 @@ export function CanvasView({
           <Pressable style={styles.dismissArea} onPress={handleDismissKeyboard} />
         )}
         <View style={styles.composerDock}>
+          {notice !== null ? (
+            <View style={styles.notice}>
+              <Text
+                accessibilityRole="alert"
+                accessibilityLiveRegion="polite"
+                style={styles.noticeText}>
+                {notice}
+              </Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Dismiss notice"
+                onPress={onDismissNotice}
+                hitSlop={8}
+                style={styles.dismissNotice}>
+                <Text style={styles.dismissNoticeText}>×</Text>
+              </Pressable>
+            </View>
+          ) : null}
           <View style={styles.composer}>
             <Host style={styles.inputHost} matchContents={{ vertical: true }} colorScheme="dark">
               <TextInput
@@ -130,6 +150,35 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     paddingHorizontal: CANVAS_LAYOUT.composerHorizontalInset,
     paddingBottom: 12,
+  },
+  notice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+    paddingLeft: 14,
+    paddingRight: 6,
+    paddingVertical: 4,
+    backgroundColor: '#211b12',
+    borderColor: CANVAS_COLORS.composerBorder,
+    borderWidth: 1,
+    borderRadius: 16,
+  },
+  noticeText: {
+    flex: 1,
+    color: '#f4dfad',
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  dismissNotice: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dismissNoticeText: {
+    color: '#f4dfad',
+    fontSize: 22,
   },
   composer: {
     flexDirection: 'row',

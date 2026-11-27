@@ -1,5 +1,6 @@
 import {
   type AiProviderId,
+  type CatalogArchetypeId,
   type ComponentId,
   type ExplodeStageFilter,
   type Vector3Tuple,
@@ -139,7 +140,16 @@ export type ActiveExplorerLearningContext = {
 export type AssemblyExplorerProps = {
   readonly submittedQuestion?: LearningQuestionSubmission | null;
   readonly onActiveLearningContextChange?: (context: ActiveExplorerLearningContext | null) => void;
-  readonly submittedPrompt: { readonly id: number; readonly text: string } | null;
+  readonly submittedPrompt: {
+    readonly id: number;
+    readonly text: string;
+    readonly archetypeId?: CatalogArchetypeId;
+    readonly parameterValues?: Readonly<Record<string, number>>;
+  } | null;
+  readonly submittedParameterEdit?: {
+    readonly id: number;
+    readonly parameterValues: Readonly<Record<string, number>>;
+  } | null;
   readonly selectedProvider: AiProviderId;
   readonly providerExplicitlySelected: boolean;
   readonly onSelectProvider: (provider: AiProviderId) => void;

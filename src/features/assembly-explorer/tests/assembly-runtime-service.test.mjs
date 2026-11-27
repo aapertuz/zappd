@@ -35,7 +35,7 @@ const cloudUrl = buildFirebaseStorageMediaUrl(
   assembly.manifest.files.glb.storagePath,
 );
 
-function loadBundle(test, readCloud) {
+function loadBundle(test, readCloud, overrides = {}) {
   const requests = [];
   const progress = [];
   const controller = new AbortController();
@@ -44,7 +44,15 @@ function loadBundle(test, readCloud) {
   test.mock.method(globalThis, 'fetch', async (url, options) => {
     requests.push(url);
     assert.equal(options.signal, controller.signal);
-    if (url === '/api/orchestrate') return Response.json(assembly);
+    if (url === '/api/orchestrate') {
+      assert.deepEqual(JSON.parse(options.body), {
+        prompt: 'Build a quadcopter',
+        provider: 'gemini',
+        providerExplicitlySelected: false,
+        ...overrides,
+      });
+      return Response.json(assembly);
+    }
     if (url === cloudUrl) return readCloud(controller);
     if (url === localUrl) return new Response(glbBytes);
     throw new Error(`Unexpected request for ${url}`);
@@ -55,6 +63,7 @@ function loadBundle(test, readCloud) {
     repository,
     signal: controller.signal,
     onProgress: (status) => progress.push(status),
+    ...overrides,
   });
   return { requests, progress, result };
 }
@@ -94,4 +103,13 @@ it('does not retry the GLB download after the request aborts', async (test) => {
   });
   await assert.rejects(result, { name: 'AbortError' });
   assert.deepEqual(requests, ['/api/orchestrate', cloudUrl]);
+});
+
+it('forwards the chosen archetype and numeric parameters to orchestration', async (test) => {
+  const { result } = loadBundle(test, () => new Response(glbBytes), {
+    prompt: 'change wheelbase to 320mm',
+    archetypeId: 'parametric_multirotor_v1',
+    parameterValues: { rotor_count: 6, wheelbase_mm: 320, deck_gap_mm: 26, arm_thickness_mm: 4 },
+  });
+  await result;
 });
