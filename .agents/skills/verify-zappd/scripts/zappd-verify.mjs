@@ -72,6 +72,16 @@ function parseCliArgs(argv) {
       continue;
     }
     const key = token.slice(2);
+    if (key === 'reduced-motion') {
+      const nextToken = rest[index + 1];
+      if (nextToken === 'true' || nextToken === 'false') {
+        flags[key] = nextToken;
+        index += 1;
+      } else {
+        flags[key] = 'true';
+      }
+      continue;
+    }
     if (BOOLEAN_FLAGS.has(key)) {
       flags[key] = true;
       continue;
@@ -255,6 +265,20 @@ async function terminateAndVerifyPortClosed(pid, port, sigtermWaitMs) {
   }
 }
 
+function hasAssemblyCatalog(html) {
+  return (
+    html.includes('aria-label="Assembly catalog"') &&
+    html.includes('Aero X4') &&
+    html.includes('Quadcopter Drone CAD Assembly')
+  );
+}
+
+function parseReducedMotion(value) {
+  if (value === undefined) return undefined;
+  if (value === 'true' || value === 'false') return value === 'true';
+  fail('Use --reduced-motion true or --reduced-motion false');
+}
+
 async function checkInstanceUsable(baseUrl, repoRoot, remainingMs) {
   const statusTimeout = Math.min(3000, Math.max(500, remainingMs));
   const statusRes = await fetchText(`${baseUrl}/status`, statusTimeout);
@@ -285,13 +309,10 @@ async function checkInstanceUsable(baseUrl, repoRoot, remainingMs) {
       reason: `Unexpected / response: status=${rootRes.status} content-type=${contentType}`,
     };
   }
-  if (
-    !rootRes.body.includes('aria-label="Prompt input"') ||
-    !rootRes.body.includes('aria-label="Send"')
-  ) {
+  if (!hasAssemblyCatalog(rootRes.body)) {
     return {
       ready: false,
-      reason: 'Root HTML missing expected Prompt input or Send controls',
+      reason: 'Root HTML missing the Assembly catalog or Aero X4 card',
     };
   }
 
@@ -312,11 +333,7 @@ async function checkInstanceUsable(baseUrl, repoRoot, remainingMs) {
   }
 
   const settleRes = await fetchText(`${baseUrl}/`, Math.min(10000, Math.max(1000, remainingMs)));
-  if (
-    settleRes.status !== 200 ||
-    !settleRes.body.includes('aria-label="Prompt input"') ||
-    !settleRes.body.includes('aria-label="Send"')
-  ) {
+  if (settleRes.status !== 200 || !hasAssemblyCatalog(settleRes.body)) {
     return {
       ready: false,
       reason: `Post-bundle SSR check not ready: status=${settleRes.status}`,
@@ -590,11 +607,9 @@ async function handleDoctor(flags) {
   try {
     const rootRes = await fetchText(`${state.url}/`, 8000);
     const contentType = rootRes.headers.get('content-type') ?? '';
-    const hasControls =
-      rootRes.body.includes('aria-label="Prompt input"') &&
-      rootRes.body.includes('aria-label="Send"');
-    routeOk = rootRes.status === 200 && contentType.includes('text/html') && hasControls;
-    routeDetail = `status=${rootRes.status} content-type=${contentType} hasControls=${hasControls}`;
+    const hasCatalog = hasAssemblyCatalog(rootRes.body);
+    routeOk = rootRes.status === 200 && contentType.includes('text/html') && hasCatalog;
+    routeDetail = `status=${rootRes.status} content-type=${contentType} hasCatalog=${hasCatalog}`;
   } catch (error) {
     routeDetail = error instanceof Error ? error.message : String(error);
   }
@@ -716,6 +731,7 @@ async function handleBrowserOpen(flags) {
   }
 
   const targetPath = flags.path ?? '/';
+  const reducedMotion = parseReducedMotion(flags['reduced-motion']);
   const width = flags.width ? Number.parseInt(flags.width, 10) : 1280;
   const height = flags.height ? Number.parseInt(flags.height, 10) : 800;
   if (!Number.isInteger(width) || width < 240 || !Number.isInteger(height) || height < 240) {
@@ -756,6 +772,7 @@ async function handleBrowserOpen(flags) {
       logPath: chromeLogPath,
       width,
       height,
+      reducedMotion,
     });
     state.browser = browser;
     writeRunState(statePath, state);
@@ -803,6 +820,8 @@ async function handleBrowserAct(flags) {
     modifiers: flags.modifiers ? flags.modifiers.split(',') : [],
     width: flags.width ? Number.parseInt(flags.width, 10) : undefined,
     height: flags.height ? Number.parseInt(flags.height, 10) : undefined,
+    reducedMotion: parseReducedMotion(flags['reduced-motion']),
+    motionPort: state.browser.motionPort,
     viewport: {
       width: state.browser.width,
       height: state.browser.height,
@@ -823,6 +842,9 @@ async function handleBrowserAct(flags) {
   }
   if (action === 'type' && (!options.role || !options.name)) {
     fail('type action requires --role and --name');
+  }
+  if (action === 'emulate-motion' && options.reducedMotion === undefined) {
+    fail('emulate-motion action requires --reduced-motion true or false');
   }
   if (action === 'press' && !options.key) {
     fail('press action requires --key');

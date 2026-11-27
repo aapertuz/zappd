@@ -1,10 +1,10 @@
 # Prompt submission
 
-Prompt submission lets a user submit a non-empty prompt via the `Send` button or `Enter` key, ignores whitespace-only drafts, resets the composer height and draft, mounts `AssemblyExplorerView` via `POST /api/orchestrate`, routes follow-up prompts between learning questions and explicit archetype switches, and retries orchestration when clicking a provider in `ProviderSwitcher` after an error.
+Prompt submission lets a user submit a non-empty prompt via the `Send` button or `Enter` key, ignores whitespace-only drafts, resets the composer height and draft, loads another assembly via `POST /api/orchestrate`, routes follow-up prompts between learning questions and explicit archetype switches, and retries orchestration when clicking a provider in `ProviderSwitcher` after an error.
 
 ## Sub-features
 
-- `submit-whitespace-noop` blocks submission on whitespace-only input when pressing `Enter` and leaves the explorer unmounted.
+- `submit-whitespace-noop` blocks submission on whitespace-only input when pressing `Enter` and keeps the current assembly open.
 - `submit-click` submits a trimmed multiline draft when clicking `Send`, clears the composer, resets textarea height (`80px` to `56px`), and loads the matched catalog assembly (or renders the missing-key alert with `ProviderSwitcher`).
 - `submit-followup-routing` routes questions and non-load follow-ups on a loaded assembly to learning Q&A (`ask_question`) without reloading the scene, while explicit load commands naming a specific catalog archetype (`quadcopter_drone_v1`, `robotic_arm_3dof_v1`, or `open_source_rover_v1`) replace the loaded assembly.
 - `submit-enter` submits a consecutive explicit load prompt when pressing `Enter` without `Shift`, clears the composer, and replaces the loaded assembly with the newly matched archetype.
@@ -21,16 +21,16 @@ Prompt submission lets a user submit a non-empty prompt via the `Send` button or
 
 Preconditions:
 
-- Zappd Metro server and Chrome session are healthy (`./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-open --run-id <run-id> --path / --width 1280 --height 800` and `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs doctor --run-id <run-id>` exiting `0` with `checks` entries `orchestrateEndpoint` and `browserAlive` both `ok: true`).
+- Zappd Metro server and Chrome session are healthy (`./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-open --run-id <run-id> --path /assemblies/open_source_rover_v1 --width 1280 --height 800` and `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs doctor --run-id <run-id>` exiting `0` with `checks` entries `orchestrateEndpoint` and `browserAlive` both `ok: true`).
 - Check `orchestrateEndpoint` detail from `doctor`. When `configuredProviders` is non-empty, submission resolves a validated 3D assembly. When empty, submission resolves the missing-key error and `ProviderSwitcher`.
 
-- **Initial disabled state.** Capture the starting screen on a fresh `/`.
-  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-snapshot --run-id <run-id> --feature prompt-submission --step 01-initial --entry-point "GET / in Chrome" --note "Empty initial composer; Send disabled; no explorer mounted; 0 errors"`
-    `diagnostics.promptValue === ""`, `diagnostics.promptPlaceholder === "Describe a CAD assembly to explore..."`, `diagnostics.sendDisabled === true`, `diagnostics.assembly === null`, and `errors: []`.
+- **Initial disabled state.** Wait for Nova II with `browser-wait --run-id <run-id> --archetype open_source_rover_v1 --settled` and capture the starting screen.
+  - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-snapshot --run-id <run-id> --feature prompt-submission --step 01-initial --entry-point "Nova II explorer in Chrome" --note "Empty initial composer; Send disabled; Nova II loaded; 0 errors"`
+    `diagnostics.promptValue === ""`, `diagnostics.promptPlaceholder === "Ask a question or describe another CAD assembly..."`, `diagnostics.sendDisabled === true`, `diagnostics.assembly.archetypeId === "open_source_rover_v1"`, and `errors: []`.
 - **Whitespace Enter no-op.** Enter spaces and press `Enter`.
   - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action type --role textbox --name "Prompt input" --clear --text "   "`
   - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action press --key Enter`
-    Draft remains `"   "`, `diagnostics.sendDisabled === true`, `diagnostics.isLoadingAssembly === false`, and `diagnostics.assembly === null`.
+    Draft remains `"   "`, `diagnostics.sendDisabled === true`, `diagnostics.isLoadingAssembly === false`, and `diagnostics.assembly.archetypeId === "open_source_rover_v1"`.
 - **Populated multiline draft before click.** Enter a 2-line quadcopter prompt and capture proof.
   - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action type --role textbox --name "Prompt input" --clear --text "Inspect quadcopter drone"`
   - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action press --key Enter --modifiers Shift`

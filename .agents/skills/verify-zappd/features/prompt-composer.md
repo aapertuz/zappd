@@ -4,7 +4,7 @@ Prompt composer lets a user edit a prompt draft, updates its placeholder text to
 
 ## Sub-features
 
-- `composer-empty-state` disables `Send` when the draft is empty and shows placeholder `"Describe a CAD assembly to explore..."` before an assembly loads.
+- `composer-empty-state` disables `Send` when the draft is empty in an opened assembly.
 - `composer-context-placeholder` switches `Prompt input` placeholder to `"Ask a question or describe another CAD assembly..."` in loaded overview and `"Ask about <Part Name>..."` in part focus.
 - `composer-whitespace-guard` keeps `Send` disabled when the draft contains only spaces or newlines.
 - `composer-enable-send` enables `Send` as soon as the draft contains non-whitespace characters.
@@ -12,15 +12,15 @@ Prompt composer lets a user edit a prompt draft, updates its placeholder text to
 
 ## How to get to it (user POV)
 
-- Click or focus `Prompt input` at the bottom of the canvas in Chrome and type text.
+- Open an assembly, then type in `Prompt input` at the bottom of the canvas.
 - Press `Shift+Enter` inside `Prompt input` to insert a newline.
 
 ## Driving it with Chrome (zappd-verify)
 
 Preconditions:
 
-- Zappd Metro server and Chrome session are healthy (`./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-open --run-id <run-id> --path / --width 1280 --height 800` and `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs doctor --run-id <run-id>` exiting `0` with `checks` entry `{ name: "browserAlive", ok: true }`).
-- `Prompt input` starts empty (`promptValue === ""`, `promptPlaceholder === "Describe a CAD assembly to explore..."`, `sendDisabled === true`).
+- Zappd Metro server and Chrome session are healthy (`./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-open --run-id <run-id> --path /assemblies/quadcopter_drone_v1 --width 1280 --height 800` and `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs doctor --run-id <run-id>` exiting `0` with `checks` entry `{ name: "browserAlive", ok: true }`).
+- Wait for Aero X4 with `browser-wait --run-id <run-id> --archetype quadcopter_drone_v1 --settled`. Confirm an empty `promptValue`, `sendDisabled === true`, and `promptPlaceholder === "Ask a question or describe another CAD assembly..."`.
 
 - **Whitespace guard (spaces and newline) and proof.** Enter spaces and a `Shift+Enter` newline into `Prompt input` and capture proof.
   - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action type --role textbox --name "Prompt input" --text "   "`
@@ -35,7 +35,7 @@ Preconditions:
   - `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-act --run-id <run-id> --action type --role textbox --name "Prompt input" --text "Line 2"`
   - Repeat for `Line 3` through `Line 6`, then run `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-snapshot --run-id <run-id> --feature prompt-composer --step 02-multiline-grow --entry-point "Shift+Enter multiline draft (6 lines)" --note "Textarea grew from 56px and clamped at 136px (max-height 120px + 16px padding); 0 errors"`.
     `diagnostics.promptValue` equals `"Line 1\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6"`, `diagnostics.promptHeight === 136`, `diagnostics.promptMaxHeight === "120px"`, `diagnostics.promptScrollHeight > diagnostics.promptHeight`, `diagnostics.promptOverflowY === "auto"`, and `errors` is `[]`.
-- **Context-sensitive placeholder check.** Verify `diagnostics.promptPlaceholder` shifts to `"Ask a question or describe another CAD assembly..."` after loading an assembly in `prompt-submission` and to `"Ask about <Part Name>..."` after focusing a part in `assembly-explorer`.
+- **Context-sensitive placeholder check.** Verify `diagnostics.promptPlaceholder` shifts to `"Ask a question or describe another CAD assembly..."` in the assembly overview and to `"Ask about <Part Name>..."` after focusing a part in `assembly-explorer`.
 
 ## Gotchas
 

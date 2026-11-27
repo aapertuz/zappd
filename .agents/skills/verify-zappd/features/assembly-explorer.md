@@ -15,7 +15,7 @@ Assembly explorer renders a validated multi-part CAD assembly with baked PBR mat
 
 ## How to get to it (user POV)
 
-- Submit a robotics project prompt (such as `"Inspect quadcopter drone"`, `"Build a 5-DOF SO-100 robotic arm"`, or `"Inspect open source rover"`) in `Prompt input` on `/` with at least one AI provider key configured in the environment, `.env.local`, or `.env`.
+- Choose `Aero X4`, `Kinetix 5`, or `Nova II` on `/` to open its explorer.
 - Move the pointer over 3D parts in overview to inspect part names and electrical circuit highlights.
 - Click `Explode (0%)`, drag `Explode factor`, click `Wiring`, click `Zoom in` or `Zoom out`, drag the canvas to orbit, click any 3D piece to focus it, and click `Back` (or press `Escape`) to return to overview.
 
@@ -23,7 +23,7 @@ Assembly explorer renders a validated multi-part CAD assembly with baked PBR mat
 
 Preconditions:
 
-- Zappd Metro server and Chrome session are healthy (`doctor --run-id <run-id>` exits `0` with `orchestrateEndpoint` reporting at least one provider in `configuredProviders` and `browserAlive` `ok: true`). If `configuredProviders` is empty, live 3D loading is `verified-unreachable` due to missing live API key configuration.
+- Zappd Metro server and Chrome session are healthy (`doctor --run-id <run-id>` exits `0` with `browserAlive` `ok: true`).
 - A validated assembly is loaded and its initial playback has settled (`browser-wait --run-id <run-id> --archetype quadcopter_drone_v1 --settled --timeout-ms 45000`).
 
 - **Settled overview and geometry-framed camera proof.** Capture the settled overview baseline and record `camera.distanceMeters` (about `0.80 m` for `quadcopter_drone_v1`, `0.79 m` for `robotic_arm_3dof_v1`, `0.75 m` for `open_source_rover_v1`) plus a visible electronics node coordinate from `nodeScreenPositions` (for example `comp_quad_flight_controller`).
