@@ -231,7 +231,7 @@ export async function emulateReducedMotion(cdp, reduced) {
   });
 }
 
-async function waitForAnimationFrames(cdp, frameCount = 2, maxWaitMs = 1500) {
+async function waitForAnimationFrames(cdp, frameCount = 2, maxWaitMs = 4000) {
   await cdp.send('Runtime.evaluate', {
     awaitPromise: true,
     returnByValue: true,
@@ -320,6 +320,9 @@ async function readPageDiagnostics(cdp) {
         document.querySelector('[role="progressbar"][aria-label="Loading CAD assembly"]') !==
           null;
       const hasProviderToolbar = document.querySelector('[role="toolbar"]') !== null;
+      const dismissNoticeButton = document.querySelector('button[aria-label="Dismiss notice"]');
+      const noticeStatus = dismissNoticeButton?.parentElement?.querySelector('[role="status"]');
+      const composerNotice = noticeStatus?.textContent?.trim() || null;
       return {
         url: window.location.href,
         title: document.title,
@@ -337,6 +340,7 @@ async function readPageDiagnostics(cdp) {
         overflowX: document.documentElement.scrollWidth > window.innerWidth,
         isLoadingAssembly,
         hasProviderToolbar,
+        composerNotice,
         assembly,
         selector: window.__zappdSelectorDiagnostics ?? null,
         webglContexts: window.__zappdVerifyWebglStats ?? null,
@@ -674,7 +678,7 @@ export async function launchChromeSession({
           returnByValue: true,
           expression: `(() => {
             const control = document.querySelector(
-              '[aria-label="Assembly catalog"] button, textarea[aria-label="Prompt input"]',
+              '[aria-label="Assembly catalog"] button, textarea[aria-label="Prompt input"], a[href="/"]',
             );
             return document.readyState === 'complete' && control !== null &&
               Object.keys(control).some((key) => key.startsWith('__reactProps$'));
@@ -912,7 +916,16 @@ export async function waitForBrowserState(pageWsUrl, options) {
         : true;
       const providerMatched = options.provider ? assembly?.provider === options.provider : true;
       const settledMatched = options.settled
-        ? glbReady && assembly?.assemblyStatus === 'settled'
+        ? glbReady &&
+          assembly?.assemblyStatus === 'settled' &&
+          assembly?.isRebuildingParameters !== true
+        : true;
+      const manifestHashMatched = options.manifestHashNot
+        ? glbReady &&
+          assembly?.isRebuildingParameters !== true &&
+          typeof assembly?.manifestHash === 'string' &&
+          assembly.manifestHash.length > 0 &&
+          assembly.manifestHash !== options.manifestHashNot
         : true;
       const learningCard = options.learningReady
         ? (diagnostics?.learning?.[options.learningReady] ?? null)
@@ -929,8 +942,10 @@ export async function waitForBrowserState(pageWsUrl, options) {
         !options.archetype &&
         !options.provider &&
         !options.settled &&
+        !options.manifestHashNot &&
         !options.learningReady
           ? !diagnostics?.isLoadingAssembly &&
+            assembly?.isRebuildingParameters !== true &&
             (glbReady || diagnostics?.hasProviderToolbar === true)
           : true;
 
@@ -939,6 +954,7 @@ export async function waitForBrowserState(pageWsUrl, options) {
         archetypeMatched &&
         providerMatched &&
         settledMatched &&
+        manifestHashMatched &&
         learningMatched &&
         defaultSettled
       ) {
@@ -952,7 +968,7 @@ export async function waitForBrowserState(pageWsUrl, options) {
     }
 
     throw new Error(
-      `Timed out waiting for browser state after ${timeoutMs}ms (archetype=${options.archetype ?? 'any'}, provider=${options.provider ?? 'any'}, settled=${String(Boolean(options.settled))}, learningReady=${options.learningReady ?? 'none'}, text=${options.text ? JSON.stringify(options.text) : 'any'}, lastArchetype=${lastDiagnostics?.assembly?.archetypeId ?? 'none'}, assemblyStatus=${lastDiagnostics?.assembly?.assemblyStatus ?? 'none'}, loading=${String(lastDiagnostics?.isLoadingAssembly)})`,
+      `Timed out waiting for browser state after ${timeoutMs}ms (archetype=${options.archetype ?? 'any'}, provider=${options.provider ?? 'any'}, settled=${String(Boolean(options.settled))}, manifestHashNot=${options.manifestHashNot ?? 'none'}, learningReady=${options.learningReady ?? 'none'}, text=${options.text ? JSON.stringify(options.text) : 'any'}, lastArchetype=${lastDiagnostics?.assembly?.archetypeId ?? 'none'}, lastManifestHash=${lastDiagnostics?.assembly?.manifestHash ?? 'none'}, rebuilding=${String(Boolean(lastDiagnostics?.assembly?.isRebuildingParameters))}, assemblyStatus=${lastDiagnostics?.assembly?.assemblyStatus ?? 'none'}, loading=${String(lastDiagnostics?.isLoadingAssembly)})`,
     );
   });
 }

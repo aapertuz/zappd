@@ -903,6 +903,7 @@ async function handleBrowserWait(flags) {
       provider: flags.provider,
       text: flags.text,
       settled: Boolean(flags.settled),
+      manifestHashNot: flags['manifest-hash-not'],
       learningReady,
       timeoutMs,
       viewport: {
