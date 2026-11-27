@@ -139,12 +139,22 @@ export type ActiveExplorerLearningContext = {
 
 export type AssemblyExplorerRequest =
   | { readonly kind: 'archetype'; readonly id: number; readonly archetypeId: CatalogArchetypeId }
-  | { readonly kind: 'prompt'; readonly id: number; readonly text: string };
+  | {
+      readonly kind: 'prompt';
+      readonly id: number;
+      readonly text: string;
+      readonly archetypeId?: CatalogArchetypeId;
+      readonly parameterValues?: Readonly<Record<string, number>>;
+    };
 
 export type AssemblyExplorerProps = {
   readonly submittedQuestion?: LearningQuestionSubmission | null;
   readonly onActiveLearningContextChange?: (context: ActiveExplorerLearningContext | null) => void;
   readonly request: AssemblyExplorerRequest;
+  readonly submittedParameterEdit?: {
+    readonly id: number;
+    readonly parameterValues: Readonly<Record<string, number>>;
+  } | null;
   readonly selectedProvider: AiProviderId;
   readonly providerExplicitlySelected: boolean;
   readonly onSelectProvider: (provider: AiProviderId) => void;

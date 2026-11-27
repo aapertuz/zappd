@@ -9,6 +9,8 @@ export function CanvasView({
   canSubmit,
   surfaceContent,
   onBackToCatalog,
+  notice,
+  onDismissNotice,
   onDraftChange,
   onSubmit,
 }: CanvasViewProps) {
@@ -46,6 +48,18 @@ export function CanvasView({
       )}
       <div className={classes.surface}>{surfaceContent}</div>
       <div className={classes.composerDock}>
+        {notice !== null ? (
+          <div className={classes.notice}>
+            <span role="status">{notice}</span>
+            <button
+              type="button"
+              className={classes.dismissNotice}
+              aria-label="Dismiss notice"
+              onClick={onDismissNotice}>
+              <span aria-hidden="true">×</span>
+            </button>
+          </div>
+        ) : null}
         <form className={classes.composer} onSubmit={handleFormSubmit}>
           <textarea
             ref={textareaRef}

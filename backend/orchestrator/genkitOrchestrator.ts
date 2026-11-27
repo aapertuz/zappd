@@ -7,12 +7,14 @@ import { z } from 'genkit';
 import {
   type AiProviderId,
   type CatalogArchetypeDefinition,
+  type CatalogArchetypeId,
   type VerifiedProjectAssembly,
   canClassifyAsVerified,
   clampAssemblyParameterValues,
   getCatalogArchetypeById,
   hasVerifiedUpstreamProvenance,
   isAllowedProjectAssembly,
+  isCatalogArchetypeId,
   isVerifiedStatus,
   matchProjectArchetypeFromPrompt,
   verifyOneToOneNodeMapping,
@@ -57,6 +59,7 @@ const parameterValuesSchema = z.record(z.string(), z.number());
 
 const OrchestrationInputSchema = z.object({
   prompt: z.string().min(1),
+  archetypeId: z.custom<CatalogArchetypeId>(isCatalogArchetypeId).optional(),
   provider: z.enum(['gemini', 'openai', 'deepseek']).default('gemini'),
   apiKey: z.string().optional(),
   baseUrl: z.string().optional(),
@@ -464,6 +467,7 @@ export function createZappdOrchestratorFlows(repository: FirebaseEmulatorReposit
     async (input) =>
       planProjectWithProvider({
         prompt: input.prompt,
+        archetypeId: input.archetypeId,
         provider: input.provider,
         apiKey: input.apiKey,
         baseUrl: input.baseUrl,

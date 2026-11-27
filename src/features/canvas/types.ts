@@ -14,6 +14,8 @@ export type CanvasViewProps = {
   readonly canSubmit: boolean;
   readonly surfaceContent?: ReactNode;
   readonly onBackToCatalog?: () => void;
+  readonly notice: string | null;
+  readonly onDismissNotice: () => void;
   readonly onDraftChange: (text: string) => void;
   readonly onSubmit: () => void;
 };

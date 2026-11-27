@@ -11,6 +11,7 @@ import {
   type AiApiFormat,
   type AiModelDescriptor,
   type AiProviderId,
+  type CatalogArchetypeId,
   CATALOG_ARCHETYPES,
   PARAMETRIC_MULTIROTOR_ARCHETYPE,
   clampAssemblyParameterValues,
@@ -31,6 +32,7 @@ export type ProjectPlanOutput = z.infer<typeof ProjectPlanOutputSchema>;
 
 export type ProviderPlanRequest = {
   readonly prompt: string;
+  readonly archetypeId?: CatalogArchetypeId;
   readonly provider: AiProviderId;
   readonly apiKey?: string;
   readonly baseUrl?: string;
@@ -364,6 +366,25 @@ export async function planProjectWithProvider(
   const descriptor = getAiProviderDescriptor(request.provider);
   const resolvedBaseUrl = request.baseUrl ?? descriptor.defaultBaseUrl;
   const resolvedModel = request.modelName ?? descriptor.rawModelName;
+  if (request.archetypeId !== undefined) {
+    const archetype = getCatalogArchetypeById(request.archetypeId);
+    if (archetype === undefined)
+      throw new Error(`Unknown catalog archetype "${request.archetypeId}"`);
+    return {
+      archetypeId: archetype.archetypeId,
+      projectTitle: archetype.title,
+      plannedSubsystems: archetype.nodes
+        .filter(({ level }) => level === 'subsystem')
+        .map(({ name }) => name),
+      rationale: `Using the explicitly requested catalog archetype "${archetype.archetypeId}".`,
+      provider: descriptor.provider,
+      modelId: descriptor.modelId,
+      apiFormat: descriptor.apiFormat,
+      baseUrl: resolvedBaseUrl,
+      executionMode: 'local_catalog_planner',
+    };
+  }
+
   const resolvedApiKey = request.apiKey ?? resolveProviderApiKey(request.provider);
 
   if (resolvedApiKey === undefined && request.requireLiveApiKey === true) {

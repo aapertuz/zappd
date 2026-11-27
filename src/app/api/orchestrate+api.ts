@@ -1,6 +1,13 @@
 import { z } from 'zod';
 
-import { type AiProviderId, DEFAULT_AI_PROVIDER, parseAiProviderId } from '@/shared/domain';
+import {
+  type AiProviderId,
+  type CatalogArchetypeId,
+  DEFAULT_AI_PROVIDER,
+  getCatalogArchetypeById,
+  isCatalogArchetypeId,
+  parseAiProviderId,
+} from '@/shared/domain';
 
 import {
   listConfiguredAiProviders,
@@ -11,6 +18,7 @@ import { orchestrateProjectAssemblyCreation } from '@/backend/orchestrator/genki
 
 type OrchestrateRequestBody = {
   readonly prompt: string;
+  readonly archetypeId?: CatalogArchetypeId;
   readonly provider: AiProviderId;
   readonly providerExplicitlySelected: boolean;
   readonly parameterValues?: Record<string, number>;
@@ -27,8 +35,16 @@ function parseOrchestrateRequestBody(raw: unknown): OrchestrateRequestBody {
   if (typeof raw.prompt !== 'string' || raw.prompt.trim().length === 0) {
     throw new Error('Prompt must be a non-empty string');
   }
+  const { archetypeId } = raw;
+  if (
+    archetypeId !== undefined &&
+    (!isCatalogArchetypeId(archetypeId) || !getCatalogArchetypeById(archetypeId))
+  ) {
+    throw new Error('Unknown catalog archetype');
+  }
   return {
     prompt: raw.prompt.trim(),
+    archetypeId,
     provider: parseAiProviderId(raw.provider),
     providerExplicitlySelected: raw.providerExplicitlySelected === true,
     parameterValues: z.record(z.string(), z.number()).optional().parse(raw.parameterValues),
@@ -50,6 +66,7 @@ export async function POST(request: Request): Promise<Response> {
       : resolveDefaultConfiguredProvider(body.provider);
     const assembly = await orchestrateProjectAssemblyCreation({
       prompt: body.prompt,
+      archetypeId: body.archetypeId,
       provider: effectiveProvider,
       requireLiveApiKey: body.providerExplicitlySelected,
       parameterValues: body.parameterValues,

@@ -8,7 +8,6 @@ import {
   DEFAULT_AI_PROVIDER,
   type ExplodeStageFilter,
   getAiProviderDescriptor,
-  isVerifiedStatus,
   SUPPORTED_AI_PROVIDERS,
 } from '@/shared/domain';
 
@@ -99,6 +98,7 @@ function ProviderSwitcher({
 export function AssemblyExplorerView({
   request,
   submittedQuestion = null,
+  submittedParameterEdit = null,
   onActiveLearningContextChange,
   selectedProvider,
   providerExplicitlySelected,
@@ -111,6 +111,7 @@ export function AssemblyExplorerView({
   );
   const parameterRequest = useRef<AbortController | null>(null);
   const nextParameterRequestId = useRef(0);
+  const lastSubmittedParameterEditId = useRef<number | null>(null);
   const assembly = state.errorMessage === null ? state.assembly : null;
   const focusedComponentId =
     state.viewMode.kind === 'part_focus' ? state.viewMode.componentId : null;
@@ -124,7 +125,7 @@ export function AssemblyExplorerView({
 
   useLayoutEffect(() => {
     onActiveLearningContextChange?.(
-      assembly === null || !isVerifiedStatus(assembly.verificationStatus)
+      assembly === null
         ? null
         : {
             assembly,
@@ -203,6 +204,8 @@ export function AssemblyExplorerView({
           })
         : loadVerifiedAssemblyForPrompt({
             prompt: request.text,
+            archetypeId: request.archetypeId,
+            parameterValues: request.parameterValues,
             provider: promptProvider,
             providerExplicitlySelected: explicitPromptProvider,
             onProgress,
@@ -232,6 +235,16 @@ export function AssemblyExplorerView({
       parameterRequest.current?.abort();
     };
   }, [request, promptProvider, explicitPromptProvider, onResolveProvider]);
+
+  useEffect(() => {
+    if (
+      submittedParameterEdit === null ||
+      submittedParameterEdit.id === lastSubmittedParameterEditId.current
+    )
+      return;
+    lastSubmittedParameterEditId.current = submittedParameterEdit.id;
+    applyParameters(submittedParameterEdit.parameterValues);
+  }, [applyParameters, submittedParameterEdit]);
 
   useEffect(() => {
     const requestId = state.lastRequestId;

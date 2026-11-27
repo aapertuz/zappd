@@ -159,15 +159,25 @@ export function loadVerifiedAssemblyForPrompt({
   prompt,
   provider,
   providerExplicitlySelected = false,
+  archetypeId,
+  parameterValues,
   ...options
 }: BundleOptions & {
   readonly prompt: string;
   readonly provider: AiProviderId;
   readonly providerExplicitlySelected?: boolean;
+  readonly archetypeId?: CatalogArchetypeId;
+  readonly parameterValues?: Readonly<Record<string, number>>;
 }): Promise<LoadedAssemblyBundle> {
   return requestAssemblyBundle(
     '/api/orchestrate',
-    postAssemblyRequest({ prompt, provider, providerExplicitlySelected }),
+    postAssemblyRequest({
+      prompt,
+      provider,
+      providerExplicitlySelected,
+      archetypeId,
+      parameterValues,
+    }),
     'Orchestration',
     options,
   );
