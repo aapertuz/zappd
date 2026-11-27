@@ -8,7 +8,6 @@ import {
   DEFAULT_AI_PROVIDER,
   type ExplodeStageFilter,
   getAiProviderDescriptor,
-  isVerifiedStatus,
   SUPPORTED_AI_PROVIDERS,
 } from '@/shared/domain';
 
@@ -97,6 +96,7 @@ function ProviderSwitcher({
 export function AssemblyExplorerView({
   submittedPrompt,
   submittedQuestion = null,
+  submittedParameterEdit = null,
   onActiveLearningContextChange,
   selectedProvider,
   providerExplicitlySelected,
@@ -109,6 +109,7 @@ export function AssemblyExplorerView({
   );
   const parameterRequest = useRef<AbortController | null>(null);
   const nextParameterRequestId = useRef(0);
+  const lastSubmittedParameterEditId = useRef<number | null>(null);
   const assembly = state.errorMessage === null ? state.assembly : null;
   const focusedComponentId =
     state.viewMode.kind === 'part_focus' ? state.viewMode.componentId : null;
@@ -122,7 +123,7 @@ export function AssemblyExplorerView({
 
   useLayoutEffect(() => {
     onActiveLearningContextChange?.(
-      assembly === null || !isVerifiedStatus(assembly.verificationStatus)
+      assembly === null
         ? null
         : {
             assembly,
@@ -183,22 +184,25 @@ export function AssemblyExplorerView({
       return;
     }
 
-    let cancelled = false;
+    const controller = new AbortController();
     const promptId = submittedPrompt.id;
     dispatch({ type: 'startLoading', promptId });
 
     void loadVerifiedAssemblyForPrompt({
       prompt: submittedPrompt.text,
+      archetypeId: submittedPrompt.archetypeId,
+      parameterValues: submittedPrompt.parameterValues,
+      signal: controller.signal,
       provider: requestedProvider,
       providerExplicitlySelected,
       onProgress: (progress) => {
-        if (!cancelled) {
+        if (!controller.signal.aborted) {
           dispatch({ type: 'setLoadingProgress', promptId, ...progress });
         }
       },
     })
       .then((bundle) => {
-        if (cancelled) {
+        if (controller.signal.aborted) {
           return;
         }
         dispatch({
@@ -210,7 +214,7 @@ export function AssemblyExplorerView({
         onResolveProvider(bundle.assembly.orchestration.provider);
       })
       .catch((error: unknown) => {
-        if (cancelled) {
+        if (controller.signal.aborted) {
           return;
         }
         const message =
@@ -219,10 +223,20 @@ export function AssemblyExplorerView({
       });
 
     return () => {
-      cancelled = true;
+      controller.abort();
       parameterRequest.current?.abort();
     };
   }, [submittedPrompt, requestedProvider, providerExplicitlySelected, onResolveProvider]);
+
+  useEffect(() => {
+    if (
+      submittedParameterEdit === null ||
+      submittedParameterEdit.id === lastSubmittedParameterEditId.current
+    )
+      return;
+    lastSubmittedParameterEditId.current = submittedParameterEdit.id;
+    applyParameters(submittedParameterEdit.parameterValues);
+  }, [applyParameters, submittedParameterEdit]);
 
   useEffect(() => {
     const promptId = state.lastPromptId;

@@ -8,6 +8,8 @@ export function CanvasView({
   placeholder = 'Describe a CAD assembly to explore...',
   canSubmit,
   surfaceContent,
+  notice,
+  onDismissNotice,
   onDraftChange,
   onSubmit,
 }: CanvasViewProps) {
@@ -35,6 +37,18 @@ export function CanvasView({
     <main className={classes.canvas}>
       <div className={classes.surface}>{surfaceContent}</div>
       <div className={classes.composerDock}>
+        {notice !== null ? (
+          <div className={classes.notice}>
+            <span role="status">{notice}</span>
+            <button
+              type="button"
+              className={classes.dismissNotice}
+              aria-label="Dismiss notice"
+              onClick={onDismissNotice}>
+              <span aria-hidden="true">×</span>
+            </button>
+          </div>
+        ) : null}
         <form className={classes.composer} onSubmit={handleFormSubmit}>
           <textarea
             ref={textareaRef}

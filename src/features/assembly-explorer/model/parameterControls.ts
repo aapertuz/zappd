@@ -11,12 +11,25 @@ export function formatAssemblyParameterValue(parameter: AssemblyParameter, value
 }
 
 export function useAssemblyParameterDraft(parameters: readonly AssemblyParameter[]) {
-  const [draft, setDraft] = useState<Readonly<Record<string, number>>>({});
+  const [draftState, setDraftState] = useState<{
+    readonly parameters: readonly AssemblyParameter[];
+    readonly values: Readonly<Record<string, number>>;
+  }>({ parameters, values: {} });
+  const draft = draftState.parameters === parameters ? draftState.values : {};
+  if (draftState.parameters !== parameters) {
+    setDraftState({ parameters, values: {} });
+  }
   return {
     dirty: parameters.some(({ name, value }) => (draft[name] ?? value) !== value),
     values: Object.fromEntries(parameters.map(({ name, value }) => [name, draft[name] ?? value])),
     setValue: (name: string, value: number) =>
-      setDraft((current) => ({ ...current, [name]: value })),
+      setDraftState((current) => ({
+        parameters,
+        values: {
+          ...(current.parameters === parameters ? current.values : {}),
+          [name]: value,
+        },
+      })),
   };
 }
 
