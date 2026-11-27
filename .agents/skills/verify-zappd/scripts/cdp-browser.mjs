@@ -1,6 +1,8 @@
 import { Buffer } from 'node:buffer';
-import { execFileSync, spawn } from 'node:child_process';
+import { execFileSync, fork, spawn } from 'node:child_process';
+import { once } from 'node:events';
 import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { setTimeout as delay } from 'node:timers/promises';
 
 const CHROME_CANDIDATES = [
@@ -182,6 +184,11 @@ class CdpClient {
     });
   }
 
+  waitForClose() {
+    if (this.socket?.readyState !== globalThis.WebSocket.OPEN) return Promise.resolve();
+    return new Promise((resolve) => this.socket.addEventListener('close', resolve, { once: true }));
+  }
+
   close() {
     for (const [id, entry] of this.pending.entries()) {
       this.pending.delete(id);
@@ -195,7 +202,7 @@ class CdpClient {
   }
 }
 
-async function withCdpPage(pageWsUrl, task) {
+export async function withCdpPage(pageWsUrl, task) {
   const client = new CdpClient(pageWsUrl);
   await client.connect();
   try {
@@ -214,6 +221,13 @@ async function applyViewport(cdp, viewport) {
     height: viewport.height,
     deviceScaleFactor: 1,
     mobile: viewport.width < 600,
+  });
+}
+
+export async function emulateReducedMotion(cdp, reduced) {
+  if (typeof reduced !== 'boolean') return;
+  await cdp.send('Emulation.setEmulatedMedia', {
+    features: [{ name: 'prefers-reduced-motion', value: reduced ? 'reduce' : 'no-preference' }],
   });
 }
 
@@ -324,6 +338,8 @@ async function readPageDiagnostics(cdp) {
         isLoadingAssembly,
         hasProviderToolbar,
         assembly,
+        selector: window.__zappdSelectorDiagnostics ?? null,
+        webglContexts: window.__zappdVerifyWebglStats ?? null,
         learning: window.__zappdLearningDiagnostics ?? null,
         errors: Array.isArray(window.__zappdVerifyErrors) ? window.__zappdVerifyErrors : [],
       };
@@ -484,6 +500,39 @@ function computeModifierMask(modifiers) {
   return mask;
 }
 
+async function startMotionSession(pageWsUrl, reducedMotion, logPath) {
+  const logFd = fs.openSync(logPath, 'a');
+  let worker;
+  try {
+    worker = fork(
+      fileURLToPath(new URL('./cdp-motion.mjs', import.meta.url)),
+      [pageWsUrl, String(reducedMotion)],
+      {
+        detached: true,
+        stdio: ['ignore', logFd, logFd, 'ipc'],
+      },
+    );
+  } finally {
+    fs.closeSync(logFd);
+  }
+
+  try {
+    const signal = AbortSignal.timeout(10000);
+    const [{ port }] = await Promise.race([
+      once(worker, 'message', { signal }),
+      once(worker, 'exit', { signal }).then(() => {
+        throw new Error('Chrome motion controls exited before opening');
+      }),
+    ]);
+    worker.disconnect();
+    worker.unref();
+    return port;
+  } catch (error) {
+    worker.kill();
+    throw error;
+  }
+}
+
 export async function launchChromeSession({
   url,
   profileDir,
@@ -491,6 +540,7 @@ export async function launchChromeSession({
   logPath,
   width = 1280,
   height = 800,
+  reducedMotion,
 }) {
   const chromeBin = findChromeBinary();
   if (!chromeBin) {
@@ -559,6 +609,11 @@ export async function launchChromeSession({
       throw new Error(`Timed out waiting for Chrome CDP target on port ${cdpPort}`);
     }
 
+    const motionPort = await startMotionSession(
+      pageTarget.webSocketDebuggerUrl,
+      reducedMotion,
+      logPath,
+    );
     await withCdpPage(pageTarget.webSocketDebuggerUrl, async (cdp) => {
       await cdp.send('Page.enable');
       await cdp.send('DOM.enable');
@@ -567,6 +622,34 @@ export async function launchChromeSession({
       await applyViewport(cdp, { width, height });
       await cdp.send('Page.addScriptToEvaluateOnNewDocument', {
         source: `(() => {
+          let created = 0;
+          const seen = new WeakSet();
+          const contexts = new Set();
+          const getContext = HTMLCanvasElement.prototype.getContext;
+          HTMLCanvasElement.prototype.getContext = function (...args) {
+            const context = Reflect.apply(getContext, this, args);
+            if (
+              context && ['webgl', 'webgl2', 'experimental-webgl'].includes(args[0]) &&
+              !seen.has(context)
+            ) {
+              seen.add(context);
+              contexts.add(new WeakRef(context));
+              created += 1;
+            }
+            return context;
+          };
+          window.__zappdVerifyWebglStats = Object.freeze({
+            get created() { return created; },
+            get active() {
+              let active = 0;
+              for (const reference of contexts) {
+                const context = reference.deref();
+                if (!context) contexts.delete(reference);
+                else if (!context.isContextLost()) active += 1;
+              }
+              return active;
+            },
+          });
           const errors = [];
           window.__zappdVerifyErrors = errors;
           const origError = console.error.bind(console);
@@ -590,12 +673,11 @@ export async function launchChromeSession({
         const evalRes = await cdp.send('Runtime.evaluate', {
           returnByValue: true,
           expression: `(() => {
-            const textarea = document.querySelector('textarea[aria-label="Prompt input"]');
-            const sendButton = document.querySelector('button[aria-label="Send"]');
-            if (document.readyState !== 'complete' || !textarea || !sendButton) {
-              return false;
-            }
-            return Object.keys(textarea).some((key) => key.startsWith('__reactProps$'));
+            const control = document.querySelector(
+              '[aria-label="Assembly catalog"] button, textarea[aria-label="Prompt input"]',
+            );
+            return document.readyState === 'complete' && control !== null &&
+              Object.keys(control).some((key) => key.startsWith('__reactProps$'));
           })()`,
         });
         if (evalRes.result?.value === true) {
@@ -614,6 +696,7 @@ export async function launchChromeSession({
       pid: child.pid,
       pgid: child.pid,
       cdpPort,
+      motionPort,
       profileDir,
       pageWsUrl: pageTarget.webSocketDebuggerUrl,
       targetId: pageTarget.id,
@@ -656,6 +739,19 @@ export async function performBrowserAction(pageWsUrl, options) {
     await applyViewport(cdp, options.viewport);
 
     switch (options.action) {
+      case 'emulate-motion': {
+        if (!options.motionPort)
+          throw new Error('Reopen Chrome to enable persistent motion controls');
+        const response = await fetch(
+          `http://127.0.0.1:${options.motionPort}/motion/${options.reducedMotion}`,
+          {
+            method: 'PUT',
+            signal: AbortSignal.timeout(3000),
+          },
+        );
+        if (!response.ok) throw new Error(`Chrome motion override failed: HTTP ${response.status}`);
+        break;
+      }
       case 'resize': {
         await applyViewport(cdp, { width: options.width, height: options.height });
         break;

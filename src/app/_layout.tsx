@@ -15,6 +15,7 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: CANVAS_COLORS.background },
         }}>
         <Stack.Screen name="index" />
+        <Stack.Screen name="assemblies/[archetypeId]" />
       </Stack>
     </>
   );

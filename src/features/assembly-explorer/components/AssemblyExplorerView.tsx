@@ -19,11 +19,13 @@ import {
 } from '../model/explorerState';
 import { AssemblyScene } from '../renderer/AssemblyScene';
 import {
+  loadVerifiedAssemblyByArchetypeId,
   loadVerifiedAssemblyForPrompt,
   rebuildAssemblyForParameters,
 } from '../services/assemblyRuntimeService';
 import {
   type AssemblyExplorerProps,
+  type AssemblyLoadingProgress,
   type ExplorerCameraState,
   type SeparationAxis,
 } from '../types';
@@ -94,7 +96,7 @@ function ProviderSwitcher({
 }
 
 export function AssemblyExplorerView({
-  submittedPrompt,
+  request,
   submittedQuestion = null,
   submittedParameterEdit = null,
   onActiveLearningContextChange,
@@ -179,54 +181,60 @@ export function AssemblyExplorerView({
     dispatch({ type: 'setProvider', provider: selectedProvider });
   }, [selectedProvider]);
 
+  const promptProvider = request.kind === 'prompt' ? requestedProvider : DEFAULT_AI_PROVIDER;
+  const explicitPromptProvider = request.kind === 'prompt' && providerExplicitlySelected;
+
   useEffect(() => {
-    if (submittedPrompt === null) {
-      return;
-    }
-
     const controller = new AbortController();
-    const promptId = submittedPrompt.id;
-    dispatch({ type: 'startLoading', promptId });
+    const { signal } = controller;
+    const requestId = request.id;
+    const onProgress = (progress: AssemblyLoadingProgress) => {
+      if (!signal.aborted) {
+        dispatch({ type: 'setLoadingProgress', requestId, ...progress });
+      }
+    };
+    dispatch({ type: 'startLoading', requestId });
 
-    void loadVerifiedAssemblyForPrompt({
-      prompt: submittedPrompt.text,
-      archetypeId: submittedPrompt.archetypeId,
-      parameterValues: submittedPrompt.parameterValues,
-      signal: controller.signal,
-      provider: requestedProvider,
-      providerExplicitlySelected,
-      onProgress: (progress) => {
-        if (!controller.signal.aborted) {
-          dispatch({ type: 'setLoadingProgress', promptId, ...progress });
-        }
-      },
-    })
+    const bundleRequest =
+      request.kind === 'archetype'
+        ? loadVerifiedAssemblyByArchetypeId({
+            archetypeId: request.archetypeId,
+            onProgress,
+            signal,
+          })
+        : loadVerifiedAssemblyForPrompt({
+            prompt: request.text,
+            archetypeId: request.archetypeId,
+            parameterValues: request.parameterValues,
+            provider: promptProvider,
+            providerExplicitlySelected: explicitPromptProvider,
+            onProgress,
+            signal,
+          });
+
+    void bundleRequest
       .then((bundle) => {
-        if (controller.signal.aborted) {
-          return;
-        }
+        if (signal.aborted) return;
         dispatch({
           type: 'loadAssemblySuccess',
-          promptId,
+          requestId,
           assembly: bundle.assembly,
           glbArrayBuffer: bundle.glbArrayBuffer,
         });
-        onResolveProvider(bundle.assembly.orchestration.provider);
+        if (request.kind === 'prompt') onResolveProvider(bundle.assembly.orchestration.provider);
       })
       .catch((error: unknown) => {
-        if (controller.signal.aborted) {
-          return;
-        }
+        if (signal.aborted) return;
         const message =
           error instanceof Error ? error.message : 'Unable to load CAD assembly bundle';
-        dispatch({ type: 'loadAssemblyError', promptId, message });
+        dispatch({ type: 'loadAssemblyError', requestId, message });
       });
 
     return () => {
       controller.abort();
       parameterRequest.current?.abort();
     };
-  }, [submittedPrompt, requestedProvider, providerExplicitlySelected, onResolveProvider]);
+  }, [request, promptProvider, explicitPromptProvider, onResolveProvider]);
 
   useEffect(() => {
     if (
@@ -239,21 +247,21 @@ export function AssemblyExplorerView({
   }, [applyParameters, submittedParameterEdit]);
 
   useEffect(() => {
-    const promptId = state.lastPromptId;
-    if (state.loadingPhase !== 'orchestrating' || promptId === null) return;
+    const requestId = state.lastRequestId;
+    if (state.loadingPhase !== 'orchestrating' || requestId === null) return;
 
     const startedAt = Date.now();
     const interval = setInterval(() => {
       const elapsedMs = Date.now() - startedAt;
       dispatch({
         type: 'setLoadingProgress',
-        promptId,
+        requestId,
         phase: 'orchestrating',
         progress: 0.5 - 0.38 * Math.exp(-elapsedMs / 2500),
       });
     }, 120);
     return () => clearInterval(interval);
-  }, [state.lastPromptId, state.loadingPhase]);
+  }, [state.lastRequestId, state.loadingPhase]);
 
   if (state.isLoading && state.assembly === null) {
     return (
@@ -271,10 +279,12 @@ export function AssemblyExplorerView({
           <Text accessibilityRole="alert" style={styles.errorText}>
             {state.errorMessage}
           </Text>
-          <ProviderSwitcher
-            selectedProvider={state.selectedProvider}
-            onSelectProvider={onSelectProvider}
-          />
+          {request.kind === 'prompt' && (
+            <ProviderSwitcher
+              selectedProvider={state.selectedProvider}
+              onSelectProvider={onSelectProvider}
+            />
+          )}
         </View>
       </View>
     );

@@ -23,6 +23,7 @@ export type {
   ActiveExplorerLearningContext,
   AssemblyExplorerAction,
   AssemblyExplorerProps,
+  AssemblyExplorerRequest,
   AssemblyExplorerState,
   AssemblyLoadingPhase,
   AssemblyLoadingProgress,
@@ -30,3 +31,10 @@ export type {
   ExplorerCameraState,
   SeparationAxis,
 } from './types';
+export {
+  clearCachedCatalogBundles,
+  loadVerifiedAssemblyByArchetypeId,
+  type LoadedAssemblyBundle,
+  peekCachedCatalogBundle,
+  preloadCatalogAssemblyBundle,
+} from './services/assemblyRuntimeService';

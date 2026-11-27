@@ -1,6 +1,7 @@
 {
   "archetypeId": "robotic_arm_3dof_v1",
   "title": "SO-ARM100 5-DOF Robotic Manipulator Assembly",
+  "commercialName": "Kinetix 5",
   "summary": "Open-source TheRobotStudio SO-ARM100 follower manipulator with STS3215 serial bus servos, shoulder yaw turntable, upper/lower links, wrist differential clevis, and articulated gripper.",
   "keywords": [
     "arm",

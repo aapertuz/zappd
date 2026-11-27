@@ -23,9 +23,9 @@ Start an isolated Expo Metro server bound to `127.0.0.1` on a free port in `1808
 - **Underlying command.** `node <expo/bin/cli> start --localhost --port <port>` in the repository root.
 - **Usable readiness criteria.** `launch` waits (default `--timeout-ms 60000`) until three checks pass.
   1. `GET /status` returns `200` with body `packager-status:running` and `X-React-Native-Project-Root` matching the checkout realpath.
-  2. `GET /` returns `200` (`text/html`) containing `aria-label="Prompt input"` and `aria-label="Send"`.
+  2. `GET /` returns `200` (`text/html`) containing `aria-label="Assembly catalog"`, `Aero X4`, and `Quadcopter Drone CAD Assembly`.
   3. The preloaded client `entry.bundle` URL in `/` compiles and returns `200`, followed by a clean `GET /` settle check.
-- **Orchestration and CAD assets.** Initial `/` holds an empty composer draft in memory (`src/features/canvas/model/composerState.ts`) with no auth or database setup. Submitting an initial prompt calls `POST /api/orchestrate`, which requires at least one live provider API key in the environment, `.env.local`, or `.env` (`DEEPSEEK_API_KEY`, `GEMINI_API_KEY`, or `OPENAI_API_KEY`) and serves validated CAD exports from `backend/data/exports/` and `public/assemblies/` (or generates them via `backend/.venv/bin/python`). In a fresh git worktree, gitignored `node_modules/`, `.env.local`, `backend/.venv/`, `backend/data/exports/`, and `public/assemblies/` are absent until installed or linked. Without a configured key, submission renders an alert error and `ProviderSwitcher`.
+- **Catalog and CAD assets.** Open a card on `/` to navigate to `/assemblies/<archetypeId>`. The selector turntable and explorer share a direct `GET /api/assemblies/<archetypeId>` request and load geometry from the validated CAD export. Catalog loading works without an LLM API key. The server uses local precomputed exports, Firebase Storage, or the CAD worker when available. The prompt composer is inside the explorer. Provider configuration is relevant when testing its AI-backed actions.
 - **Output.** JSON containing `runId`, `pid`, `port`, `url`, `gitHead`, `logPath`, and `evidenceDir`. Always run `cleanup --run-id <run-id>` when done or after any failure.
 
 ## Doctor
@@ -41,7 +41,7 @@ It exits `0` only when all checks pass.
 1. `processAlive` confirms the recorded PID is alive and its `ps` command line is `expo` on `--port <port>`.
 2. `portOwner` confirms `lsof` reports the recorded PID owns `127.0.0.1:<port>`.
 3. `statusEndpoint` confirms `GET /status` returns `packager-status:running` for this exact checkout realpath.
-4. `rootRouteRender` confirms `GET /` returns `200` HTML with `Prompt input` and `Send`.
+4. `rootRouteRender` confirms `GET /` returns `200` HTML with the Assembly catalog, Aero X4, and its technical title.
 5. `orchestrateEndpoint` confirms `GET /api/orchestrate` returns `200` JSON and reports `configuredProviders` and `defaultProvider`.
 6. `gitRevisionMatch` confirms `git rev-parse HEAD` matches the revision recorded at launch.
 7. `evidenceDirExists` confirms `/tmp/zappd-verify/evidence/<run-id>/` exists.
@@ -53,24 +53,26 @@ Read [`features/README.md`](features/README.md) first, then follow the matching 
 
 ### Web driver (Google Chrome via CDP)
 
-1. Launch an isolated headless Chrome session targeting `/` and wait for React hydration.
+1. Launch an isolated headless Chrome session targeting `/` and wait for the catalog buttons to hydrate. Direct explorer URLs wait for the composer to hydrate.
    ```bash
    ./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-open --run-id <run-id> --path / --width 1280 --height 800
    ```
 2. Re-run `doctor --run-id <run-id>` so `browserAlive` is verified alongside Metro checks.
-3. Drive DOM controls by accessible role and name (`--role textbox --name "Prompt input"`, `--role button --name "Send"`, `--role button --name "Explode (0%)"`, `--role button --name "Wiring visibility: Auto"`, `--role button --name "Back"`), and drive 3D WebGL mesh interactions by projected coordinates from `diagnostics.assembly.nodeScreenPositions` via `browser-act`.
+3. On the catalog, use `browser-act --action hover --role button --name "Kinetix 5"` or `--action press --key Tab` to change the live turntable. Click a card or press `Enter` or `Space` while it has focus to open the explorer. The `Back to assemblies` button returns to the catalog. Check `diagnostics.selector` for the active card, angle, frame count, and visible cards. Check `diagnostics.webglContexts.active` for a maximum of one live context on the catalog and during navigation.
+4. Drive DOM controls by accessible role and name (`--role textbox --name "Prompt input"`, `--role button --name "Send"`, `--role button --name "Explode (0%)"`, `--role button --name "Wiring visibility: Auto"`, `--role button --name "Back"`), and drive 3D WebGL mesh interactions by projected coordinates from `diagnostics.assembly.nodeScreenPositions` via `browser-act`.
    - `click` dispatches real mouse move, press, and release events on the control center or canvas coordinate (`--x`, `--y`).
    - `hover` dispatches a real `mouseMoved` pointer event (`pointerType: "mouse"`) on a control center or canvas coordinate (`--x`, `--y`) to trigger overview hover inspection and circuit highlights.
    - `type` focuses the target only when needed (or clears when `--clear` is set), preserving caret position after `Shift+Enter`, and inserts text via CDP `Input.insertText`.
    - `press` dispatches real `rawKeyDown`, `char`, and `keyUp` events (for example `--key Enter` or `--key Enter --modifiers Shift`).
    - `resize` updates and persists `Emulation.setDeviceMetricsOverride` dimensions across subsequent CLI invocations.
+   - Open with `--reduced-motion` or change motion in an open tab with `browser-act --action emulate-motion --reduced-motion true`. Compare two snapshots of a visible, loaded card. The angle and frame count should stay the same, and CSS idle animation should stop. Use `--reduced-motion false` to resume motion.
    - Each `browser-act` waits `120 ms` plus up to two animation frames so `diagnostics.assembly` reflects the rendered frame immediately.
-4. Wait for asynchronous orchestration, GLB loading, initial assembly playback, learning explanations, or provider errors to settle via `browser-wait`.
+5. Wait for asynchronous orchestration, GLB loading, initial assembly playback, learning explanations, or provider errors to settle via `browser-wait`.
    ```bash
    ./.agents/skills/verify-zappd/scripts/zappd-verify.mjs browser-wait --run-id <run-id> --archetype quadcopter_drone_v1 --settled --learning-ready explanation --timeout-ms 45000
    ```
-5. Capture ARIA trees, screenshots, and read-only composer, 3D assembly, and learning diagnostics (`diagnostics.promptPlaceholder`, `diagnostics.assembly`, `diagnostics.learning`, `diagnostics.isLoadingAssembly`, `diagnostics.hasProviderToolbar`, `diagnostics.errors`) via `browser-snapshot`.
-6. Close only the browser session with `browser-close --run-id <run-id>` if tearing down Chrome separately, or use `cleanup --run-id <run-id>` to stop both Chrome and Metro together.
+6. Capture ARIA trees, screenshots, and read-only composer, 3D assembly, and learning diagnostics (`diagnostics.promptPlaceholder`, `diagnostics.assembly`, `diagnostics.learning`, `diagnostics.isLoadingAssembly`, `diagnostics.hasProviderToolbar`, `diagnostics.errors`) via `browser-snapshot`.
+7. Close only the browser session with `browser-close --run-id <run-id>` if tearing down Chrome separately, or use `cleanup --run-id <run-id>` to stop both Chrome and Metro together.
 
 ### Native driver
 
@@ -131,8 +133,8 @@ Executable helper: [`.agents/skills/verify-zappd/scripts/zappd-verify.mjs`](scri
 
 - `launch [--run-id <id>] [--port <port>] [--timeout-ms <ms>]` starts an isolated Expo Metro server, waits for usable web readiness, and prints run metadata JSON.
 - `doctor --run-id <id>` runs read-only checks on Metro process, port ownership, `/status`, `/`, `/api/orchestrate`, git HEAD, evidence dir, and (when open) Google Chrome CDP health.
-- `browser-open --run-id <id> [--path /] [--width 1280] [--height 800]` launches an isolated headless Chrome CDP session against the run's Metro URL with background-throttling disabled and waits for React hydration.
-- `browser-act --run-id <id> --action <click|hover|type|press|resize> [--role <r>] [--name <n>] [--x <px> --y <px>] [--text <t>] [--clear] [--key <k>] [--modifiers <csv>] [--width <w>] [--height <h>]` drives real mouse, hover, keyboard, and resize input via CDP, waits for rendered animation frames, and returns read-only diagnostics.
+- `browser-open --run-id <id> [--path /] [--width 1280] [--height 800] [--reduced-motion [true|false]]` launches an isolated headless Chrome CDP session against the run's Metro URL with background-throttling disabled and waits for React hydration.
+- `browser-act --run-id <id> --action <click|hover|type|press|resize|emulate-motion> [--role <r>] [--name <n>] [--x <px> --y <px>] [--text <t>] [--clear] [--key <k>] [--modifiers <csv>] [--width <w>] [--height <h>] [--reduced-motion <true|false>]` drives real mouse, hover, keyboard, and resize input via CDP, waits for rendered animation frames, and returns read-only diagnostics.
 - `browser-wait --run-id <id> [--archetype <id>] [--provider <id>] [--settled] [--learning-ready <explanation|answer>] [--text <substring>] [--timeout-ms <ms>]` polls read-only diagnostics until the requested assembly, provider, animation settlement, learning callout completion, text, or default post-submit settlement matches.
 - `browser-snapshot --run-id <id> [--feature <slug> --step <name> --entry-point <text> --note <text>]` captures the ARIA tree, PNG screenshot, composer, 3D assembly, and learning diagnostics, and console/page error counts, optionally saving directly to `/tmp/zappd-verify/evidence/<run-id>/<feature>/`.
 - `browser-close --run-id <id>` stops the verified Chrome session and removes its temporary profile.

@@ -15,7 +15,7 @@ Loading an assembly opens an automatic plain-English overview explanation once i
 
 ## How to get to it (user POV)
 
-1. Submit a prompt for a supported assembly and wait for the initial animation to settle so the `Overview` card appears.
+1. Choose a supported assembly on `/` and wait for the initial animation to settle so the `Overview` card appears.
 2. Click a visible CAD part to read its `Explanation` card, or stay in overview.
 3. Enter a question in `Prompt input` and press `Send` or `Enter`.
 4. Press `Back` (or `Escape` on web) to return to overview. Press `Dismiss answer` to close the answer card.
@@ -27,11 +27,10 @@ Preconditions:
 - Launch an isolated Metro run (`zappd-verify.mjs launch`), open Chrome at `1280x800` (`browser-open`), and confirm `doctor --run-id <run-id>` exits `0` with `browserAlive` `ok: true` and at least one provider in `configuredProviders`.
 - In the commands below, `$verify` is `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs` and `$run` is the run ID.
 
-- **Load the assembly and verify Overview explanation.** Submit a quadcopter prompt and wait for both initial playback and the overview typewriter to settle.
-  - `"$verify" browser-act --run-id "$run" --action type --role textbox --name "Prompt input" --text "Inspect quadcopter drone"`
-  - `"$verify" browser-act --run-id "$run" --action press --key Enter`
+- **Load the assembly and verify Overview explanation.** Choose `Aero X4` and wait for both initial playback and the overview typewriter to settle.
+  - `"$verify" browser-act --run-id "$run" --action click --role button --name "Aero X4"`
   - `"$verify" browser-wait --run-id "$run" --archetype quadcopter_drone_v1 --settled --learning-ready explanation --timeout-ms 45000`
-  - `"$verify" browser-snapshot --run-id "$run" --feature learning --step 01-overview-settled --entry-point "Prompt input -> settled overview" --note "Overview explanation settled with source badge; 0 errors"`
+  - `"$verify" browser-snapshot --run-id "$run" --feature learning --step 01-overview-settled --entry-point "Aero X4 card to settled overview" --note "Overview explanation settled with source badge; 0 errors"`
     Diagnostics confirm `assembly.assemblyStatus === "settled"`, `learning.explanation.componentId === "proj_quadcopter"`, `learning.explanation.kind === "ready"`, `learning.explanation.isWriting === false`, `learning.explanation.visibleLength === learning.explanation.fullLength`, `learning.explanation.rect !== null`, `ariaLines` includes `status "Component explanation"` with heading `OVERVIEW`, and `errors: []`.
 - **Focus a part and verify Part explanation.** Read a visible leaf piece coordinate from `diagnostics.assembly.nodeScreenPositions` (for example `comp_quad_flight_controller`), click it, wait for the explanation to settle, and capture proof.
   - `"$verify" browser-act --run-id "$run" --action click --x "$x" --y "$y"`

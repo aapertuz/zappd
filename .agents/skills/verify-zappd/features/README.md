@@ -7,12 +7,12 @@ This directory is the maintained source for verifying the user-facing behavior o
 - Launch an isolated Zappd Expo Metro server with `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs launch` on an ephemeral port in `18081..18999`.
 - Run `./.agents/skills/verify-zappd/scripts/zappd-verify.mjs doctor --run-id <run-id>` and require exit code `0` (`ok: true`) before driving any feature. Inspect the `orchestrateEndpoint` check detail to see which AI providers (`configuredProviders`) have keys configured in the environment, `.env.local`, or `.env`.
 - Ensure no other active verification run owns this checkout. Run concurrent checks only in separate git worktrees, and install or link gitignored dependencies (`node_modules/`, `.env.local`, `backend/.venv/`, or precomputed `backend/data/exports/`) when testing from a clean worktree.
-- Fresh `/` starts with an empty in-memory prompt draft and no mounted explorer. Submitting an initial prompt mounts `AssemblyExplorerView` and sends `POST /api/orchestrate`, which requires at least one configured live API key (`DEEPSEEK_API_KEY`, `GEMINI_API_KEY`, or `OPENAI_API_KEY`) to load a 3D assembly.
+- Fresh `/` opens the assembly catalog. Select `Aero X4` to open the explorer and composer through `GET /api/assemblies/quadcopter_drone_v1`. This route works with an empty `configuredProviders` list.
 - Never drive a Metro server or Chrome session not opened by this verification run.
 
 ## Driving conventions
 
-- Start every recipe from a fresh `/` route unless its preconditions state otherwise. Run empty-canvas checks (`canvas-shell`, `prompt-composer`) before submitting any prompt, or reopen a fresh Chrome session.
+- Start at `/` and select the card required by the recipe. Use `browser-open --path /assemblies/quadcopter_drone_v1` when testing a direct link. Run composer checks before editing the draft.
 - Target DOM controls by ARIA roles and accessible names (`textbox "Prompt input"`, `button "Send"`, `button "Explode (0%)"`, `button "Wiring visibility: Auto"`, `button "Back"`, `button "Dismiss answer"`), never CSS selectors. Target 3D WebGL canvas meshes for `hover` and `click` using projected coordinates read from `diagnostics.assembly.nodeScreenPositions`.
 - Treat helper commands verbatim and verify the live `runId`, `port`, and `errors: []` on every call.
 - Wait for async `/api/orchestrate`, GLB loading, initial assembly playback, and learning callouts with `zappd-verify.mjs browser-wait` (`--archetype`, `--settled`, `--learning-ready`) before snapshotting settled states.
@@ -40,7 +40,8 @@ Each feature file starts with an H1 title and one paragraph describing the user-
 
 ## Features
 
-- [Canvas shell](./canvas-shell.md) covers initial empty `/` load, dark radial studio canvas, floating glass composer dock, zero-error web rendering, and desktop/mobile viewport layouts.
+- [Assembly catalog](../SKILL.md#web-driver-google-chrome-via-cdp) covers card selection, direct catalog loading, reduced motion, and return navigation.
+- [Canvas shell](./canvas-shell.md) covers the dark radial studio canvas, floating glass composer dock, and desktop and mobile layouts inside an assembly.
 - [Prompt composer](./prompt-composer.md) covers draft typing, context-sensitive placeholder text, empty/whitespace send guarding, and multiline auto-grow.
 - [Prompt submission](./prompt-submission.md) covers click and `Enter` submission, multiline height reset, `/api/orchestrate` settlement, follow-up Q&A versus project-switch routing, and error-state provider switching.
 - [Assembly explorer](./assembly-explorer.md) covers WebGL 3D CAD rendering with baked PBR skins, geometry-driven camera framing, overview hover inspection, explode HUD, wiring visibility cycling, click-to-focus smooth glide with electrical circuit trace highlighting, `Back` restoration, and responsive mobile layout.

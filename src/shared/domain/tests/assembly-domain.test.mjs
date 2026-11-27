@@ -99,6 +99,27 @@ describe('shared domain contracts', () => {
     }
   });
 
+  it('requires a commercial name for every catalog assembly', () => {
+    assert.deepEqual(
+      Object.fromEntries(
+        CATALOG_ARCHETYPES.map(({ archetypeId, commercialName }) => [archetypeId, commercialName]),
+      ),
+      {
+        quadcopter_drone_v1: 'Aero X4',
+        robotic_arm_3dof_v1: 'Kinetix 5',
+        open_source_rover_v1: 'Nova II',
+        open_quadruped_v1: 'Strider Q4',
+        parametric_multirotor_v1: 'Helix Config',
+        reachy_mini_v1: 'Reachy Mini',
+        poppy_humanoid_v1: 'Poppy Mark I',
+      },
+    );
+    for (const { commercialName: _name, ...spec } of CATALOG_ARCHETYPES) {
+      assert.throws(() => parseCatalogArchetype(spec), /commercialName/);
+      assert.throws(() => parseCatalogArchetype({ ...spec, commercialName: '' }), /commercialName/);
+    }
+  });
+
   it('routes gemini via google_genai and both openai and deepseek via openai_compatible api', () => {
     assert.equal(getAiProviderDescriptor('gemini').apiFormat, 'google_genai');
     assert.equal(getAiProviderDescriptor('openai').apiFormat, 'openai_compatible');

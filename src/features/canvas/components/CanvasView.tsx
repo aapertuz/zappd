@@ -35,6 +35,7 @@ export function CanvasView({
   placeholder = 'Describe a CAD assembly to explore...',
   canSubmit,
   surfaceContent,
+  onBackToCatalog,
   notice,
   onDismissNotice,
   onDraftChange,
@@ -66,6 +67,15 @@ export function CanvasView({
       <KeyboardAvoidingView
         style={styles.keyboardContainer}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        {onBackToCatalog !== undefined && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Back to assemblies"
+            onPress={onBackToCatalog}
+            style={styles.catalogBack}>
+            <Text style={styles.catalogBackText}>← Assemblies</Text>
+          </Pressable>
+        )}
         {surfaceContent !== undefined && surfaceContent !== null ? (
           <View style={styles.dismissArea}>{surfaceContent}</View>
         ) : (
@@ -140,6 +150,23 @@ const styles = StyleSheet.create({
   },
   keyboardContainer: {
     flex: 1,
+  },
+  catalogBack: {
+    alignSelf: 'flex-start',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 42,
+    margin: 12,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: '#F5C45155',
+    borderRadius: 24,
+    backgroundColor: '#12110EE6',
+  },
+  catalogBackText: {
+    color: '#FAF6ED',
+    fontSize: 13,
+    fontWeight: '600',
   },
   dismissArea: {
     flex: 1,

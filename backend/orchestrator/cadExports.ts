@@ -270,7 +270,7 @@ export async function readVerifiedCatalogExport(
   return { payload, artifacts, rawPipelineResult };
 }
 
-function defaultCatalogIdentity({ title }: CatalogArchetypeDefinition): AssemblyIdentity {
+export function defaultCatalogIdentity({ title }: CatalogArchetypeDefinition): AssemblyIdentity {
   const { provider, modelId, apiFormat, defaultBaseUrl } = getAiProviderDescriptor('gemini');
   return {
     title,

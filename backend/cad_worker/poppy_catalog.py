@@ -186,6 +186,7 @@ def _import_poppy(source_path: Path, cache_dir: Path) -> dict:
         "semantics": "source_inspection",
         "archetypeId": "poppy_humanoid_v1",
         "title": "Poppy Humanoid source CAD inspection",
+        "commercialName": "Poppy Mark I",
         "summary": (
             "Official Poppy Humanoid 1.0.2 source assembly. Front shell uses an official "
             "visual-only mesh; head_face CAD remains rejected. Engineering validation is not "

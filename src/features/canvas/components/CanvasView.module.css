@@ -13,6 +13,46 @@
   );
 }
 
+.canvas[data-catalog-navigation='true'] {
+  --catalog-inspection-offset: 52px;
+}
+
+.catalogBack {
+  position: absolute;
+  top: max(20px, env(safe-area-inset-top));
+  left: max(20px, env(safe-area-inset-left));
+  z-index: 29;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid rgba(245, 196, 81, 0.35);
+  border-radius: 999px;
+  background: rgba(18, 16, 13, 0.58);
+  backdrop-filter: blur(22px);
+  color: #faf6ed;
+  font: 600 13px/1 var(--font-display);
+  cursor: pointer;
+}
+
+.catalogBack span {
+  color: #f5c451;
+  font-size: 17px;
+}
+
+.catalogBack:hover,
+.catalogBack:focus-visible {
+  border-color: #f5c451;
+}
+
+@media (max-width: 800px) {
+  .canvas[data-catalog-navigation='true'] {
+    --explorer-controls-offset: 52px;
+    --catalog-inspection-offset: 0px;
+  }
+}
+
 .surface {
   position: absolute;
   inset: 0;

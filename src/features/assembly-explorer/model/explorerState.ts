@@ -165,7 +165,7 @@ const INITIAL_EXPLORER_PROVIDER: AiProviderId = 'deepseek';
 
 export const INITIAL_ASSEMBLY_EXPLORER_STATE: AssemblyExplorerState = {
   selectedProvider: INITIAL_EXPLORER_PROVIDER,
-  lastPromptId: null,
+  lastRequestId: null,
   assembly: null,
   glbArrayBuffer: null,
   isLoading: false,
@@ -435,7 +435,7 @@ export function reduceAssemblyExplorerState(
     case 'startLoading': {
       return {
         ...state,
-        lastPromptId: action.promptId,
+        lastRequestId: action.requestId,
         isLoading: true,
         loadingPhase: 'orchestrating',
         loadingProgress: 0.12,
@@ -448,7 +448,7 @@ export function reduceAssemblyExplorerState(
     case 'setLoadingProgress': {
       if (
         !state.isLoading ||
-        state.lastPromptId !== action.promptId ||
+        state.lastRequestId !== action.requestId ||
         state.loadingPhase === 'ready' ||
         (action.phase === 'orchestrating' && state.loadingPhase !== 'orchestrating')
       ) {
@@ -461,12 +461,12 @@ export function reduceAssemblyExplorerState(
       return { ...state, loadingPhase: action.phase, loadingProgress: progress };
     }
     case 'loadAssemblySuccess': {
-      if (state.lastPromptId !== null && action.promptId < state.lastPromptId) {
+      if (state.lastRequestId !== null && action.requestId < state.lastRequestId) {
         return state;
       }
       return {
         ...state,
-        lastPromptId: action.promptId,
+        lastRequestId: action.requestId,
         assembly: action.assembly,
         glbArrayBuffer: action.glbArrayBuffer,
         isLoading: false,
@@ -485,7 +485,7 @@ export function reduceAssemblyExplorerState(
       };
     }
     case 'loadAssemblyError': {
-      if (state.lastPromptId !== null && action.promptId < state.lastPromptId) {
+      if (state.lastRequestId !== null && action.requestId < state.lastRequestId) {
         return state;
       }
       return {

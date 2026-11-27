@@ -1,6 +1,7 @@
 {
   "archetypeId": "quadcopter_drone_v1",
   "title": "Quadcopter Drone CAD Assembly",
+  "commercialName": "Aero X4",
   "summary": "Open-source FreeCAD multi-rotor UAV airframe with dual octagonal plates, 4 cantilevered motor arms, 8 standoff fasteners, 4 outrunner motors, 4 dual-blade propellers, and 4 hub lock covers.",
   "keywords": ["drone", "quadcopter", "uav", "multirotor", "copter", "fly", "aerial"],
   "rootNodeId": "proj_quadcopter",
