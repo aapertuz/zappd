@@ -877,7 +877,6 @@ export function AssemblyScene({
   const mountRef = useRef<HTMLDivElement>(null);
   const hudBarRef = useRef<HTMLDivElement>(null);
   const inspectionControlsRef = useRef<HTMLDivElement>(null);
-  const inspectionStatusRef = useRef<HTMLDivElement>(null);
   const backButtonRef = useRef<HTMLButtonElement>(null);
   const calloutRef = useRef<HTMLDivElement>(null);
   const labelRef = useRef<HTMLDivElement>(null);
@@ -1263,7 +1262,6 @@ export function AssemblyScene({
       const viewport = mount.getBoundingClientRect();
       const overlayObstacles = [
         hudBarRef.current,
-        inspectionStatusRef.current,
         backButtonRef.current,
         ...Array.from(inspectionControlsRef.current?.children ?? []),
       ].flatMap((element) => {
@@ -1436,7 +1434,6 @@ export function AssemblyScene({
     });
     resizeObserver.observe(mount);
     if (hudBarRef.current !== null) resizeObserver.observe(hudBarRef.current);
-    if (inspectionStatusRef.current !== null) resizeObserver.observe(inspectionStatusRef.current);
     if (composerForm !== null) resizeObserver.observe(composerForm);
     requestRender();
 
@@ -1516,15 +1513,21 @@ export function AssemblyScene({
   const unverified = assembly.verificationStatus === 'unverified';
   const parameters = assembly.parameters;
   const hasParameters = parameters !== undefined && parameters.length > 0;
-  const hasInspectionControls = unverified || hasParameters;
+  const hasPartialInspection = assembly.nodes.some(
+    (node) => node.geometry?.kind === 'unavailable' || node.geometry?.kind === 'visual_only',
+  );
+  const hasInspectionControls = unverified || hasParameters || hasPartialInspection;
 
   useEffect(() => {
     const controls = inspectionControlsRef.current;
     if (controls === null) return;
     const observer = new ResizeObserver(() => runtimeRef.current?.requestRender());
     observer.observe(controls);
+    for (const child of controls.children) {
+      observer.observe(child);
+    }
     return () => observer.disconnect();
-  }, [hasInspectionControls]);
+  }, [unverified, hasParameters, hasPartialInspection]);
 
   const hasExplanation = learningState.explanation.kind !== 'idle';
   const hasAnswer = learningState.answer.kind !== 'idle';
@@ -1662,129 +1665,6 @@ export function AssemblyScene({
 
   return (
     <section className={classes.explorerRoot} aria-label="3D Assembly Explorer">
-      {assembly.nodes.some(
-        (node) => node.geometry?.kind === 'unavailable' || node.geometry?.kind === 'visual_only',
-      ) ? (
-        <div ref={inspectionStatusRef} role="status" className={classes.inspectionStatus}>
-          <p className={classes.inspectionHeadline}>
-            Partial CAD inspection · engineering unverified. Head shell is visual only; two thighs
-            are surfaces.
-          </p>
-          <div className={classes.inspectionLinks}>
-            <a
-              className={classes.inspectionLink}
-              href={
-                assembly.nodes.find((node) => node.id === assembly.rootNodeId)?.provenance.sourceUrl
-              }>
-              Poppy project and authors · CC-BY-SA-4.0 · Official source STEP
-            </a>
-            {assembly.nodes.map((node) =>
-              node.geometry?.kind === 'visual_only' ? (
-                <a key={node.id} className={classes.inspectionLink} href={node.geometry.sourceUrl}>
-                  Official {node.name} STL · visual only · CC-BY-SA-4.0
-                </a>
-              ) : null,
-            )}
-          </div>
-          <details className={classes.inspectionDetails}>
-            <summary className={classes.inspectionSummary}>Inspection validation limits</summary>
-            {assembly.validation.sourceInterferenceReport ? (
-              <div className={classes.inspectionBody}>
-                <p>
-                  {assembly.validation.sourceInterferenceReport.solidCount} solids examined ·{' '}
-                  {assembly.validation.sourceInterferenceReport.candidatePairCount} candidate pairs
-                  · {assembly.validation.sourceInterferenceReport.intersectionCount} intersections ·{' '}
-                  {assembly.validation.sourceInterferenceReport.unresolvedPairCount} unresolved ·{' '}
-                  {assembly.validation.sourceInterferenceReport.excludedComponents.length} excluded
-                </p>
-                <p>
-                  {
-                    assembly.validation.sourceInterferenceReport.pairs.filter(
-                      (pair) => pair.status === 'contact_or_below_threshold',
-                    ).length
-                  }{' '}
-                  pairs below the reporting threshold. Common-volume threshold{' '}
-                  {assembly.validation.sourceInterferenceReport.volumeThresholdMm3} mm³; bounds
-                  tolerance {assembly.validation.sourceInterferenceReport.aabbToleranceMm} mm. These
-                  measurements do not establish intended fits or manufacturing readiness. Materials
-                  and manufacturing tolerances remain unknown.
-                </p>
-                <details className={classes.inspectionNestedDetails}>
-                  <summary className={classes.inspectionSummary}>
-                    Measured and unresolved pairs
-                  </summary>
-                  <p>
-                    Excluded CAD:{' '}
-                    {assembly.validation.sourceInterferenceReport.excludedComponents
-                      .map((component) => component.componentId)
-                      .join(', ')}
-                  </p>
-                  <div className={classes.inspectionScrollList}>
-                    {assembly.validation.sourceInterferenceReport.pairs
-                      .filter((pair) => pair.status !== 'contact_or_below_threshold')
-                      .map((pair) => (
-                        <p key={pair.componentIds.join(':')}>
-                          {pair.componentIds.join(' / ')} · {pair.status}
-                          {pair.volumeMm3 === null
-                            ? pair.error
-                            : ` · ${pair.volumeMm3.toFixed(4)} mm³`}
-                        </p>
-                      ))}
-                  </div>
-                </details>
-              </div>
-            ) : null}
-            <div className={classes.inspectionScrollList}>
-              {assembly.validation.engineeringReport ? (
-                <p>
-                  Render bounds error{' '}
-                  {assembly.validation.engineeringReport.renderDimensionComparison.maximumErrorMm.toFixed(
-                    4,
-                  )}{' '}
-                  mm against{' '}
-                  {assembly.validation.engineeringReport.renderDimensionComparison.thresholdMm} mm.
-                  This is a render comparison, not a manufacturing tolerance. Node mapping{' '}
-                  {assembly.validation.engineeringReport.nodeMappingComplete
-                    ? 'complete'
-                    : 'incomplete'}
-                  .
-                </p>
-              ) : null}
-              {assembly.validation.failures.map((failure) => (
-                <p key={failure}>{failure}</p>
-              ))}
-            </div>
-          </details>
-          <details className={classes.inspectionDetails}>
-            <summary className={classes.inspectionSummary}>Source component hierarchy</summary>
-            <div className={classes.inspectionHierarchyList}>
-              {assembly.nodes.map((node) => (
-                <button
-                  key={node.id}
-                  type="button"
-                  className={classes.inspectionNodeButton}
-                  aria-label={`Select source component ${node.id}`}
-                  aria-pressed={state.selectedComponentId === node.id}
-                  onClick={() =>
-                    node.geometry?.kind === 'available' || node.geometry?.kind === 'visual_only'
-                      ? onFocusComponent(node.id)
-                      : onSelectComponent(node.id)
-                  }
-                  style={{ paddingInlineStart: 6 + node.depth * 8 }}>
-                  {node.name} ·{' '}
-                  {node.geometry?.kind === 'unavailable'
-                    ? 'geometry unavailable: source validation failed'
-                    : node.geometry?.kind === 'visual_only'
-                      ? 'official STL · visual only · CAD rejected'
-                      : node.geometry?.kind === 'available'
-                        ? node.geometry.role
-                        : 'assembly'}
-                </button>
-              ))}
-            </div>
-          </details>
-        </div>
-      ) : null}
       <div
         ref={mountRef}
         className={classes.canvasMount}
@@ -1851,6 +1731,135 @@ export function AssemblyScene({
                   <li key={failure}>{failure}</li>
                 ))}
               </ul>
+            </div>
+          ) : null}
+          {hasPartialInspection ? (
+            <div role="status" className={classes.inspectionStatus}>
+              <p className={classes.inspectionHeadline}>
+                Partial CAD inspection · engineering unverified. Head shell is visual only; two
+                thighs are surfaces.
+              </p>
+              <div className={classes.inspectionLinks}>
+                <a
+                  className={classes.inspectionLink}
+                  href={
+                    assembly.nodes.find((node) => node.id === assembly.rootNodeId)?.provenance
+                      .sourceUrl
+                  }>
+                  Poppy project and authors · CC-BY-SA-4.0 · Official source STEP
+                </a>
+                {assembly.nodes.map((node) =>
+                  node.geometry?.kind === 'visual_only' ? (
+                    <a
+                      key={node.id}
+                      className={classes.inspectionLink}
+                      href={node.geometry.sourceUrl}>
+                      Official {node.name} STL · visual only · CC-BY-SA-4.0
+                    </a>
+                  ) : null,
+                )}
+              </div>
+              <details className={classes.inspectionDetails}>
+                <summary className={classes.inspectionSummary}>
+                  Inspection validation limits
+                </summary>
+                {assembly.validation.sourceInterferenceReport ? (
+                  <div className={classes.inspectionBody}>
+                    <p>
+                      {assembly.validation.sourceInterferenceReport.solidCount} solids examined ·{' '}
+                      {assembly.validation.sourceInterferenceReport.candidatePairCount} candidate
+                      pairs · {assembly.validation.sourceInterferenceReport.intersectionCount}{' '}
+                      intersections ·{' '}
+                      {assembly.validation.sourceInterferenceReport.unresolvedPairCount} unresolved
+                      · {assembly.validation.sourceInterferenceReport.excludedComponents.length}{' '}
+                      excluded
+                    </p>
+                    <p>
+                      {
+                        assembly.validation.sourceInterferenceReport.pairs.filter(
+                          (pair) => pair.status === 'contact_or_below_threshold',
+                        ).length
+                      }{' '}
+                      pairs below the reporting threshold. Common-volume threshold{' '}
+                      {assembly.validation.sourceInterferenceReport.volumeThresholdMm3} mm³; bounds
+                      tolerance {assembly.validation.sourceInterferenceReport.aabbToleranceMm} mm.
+                      These measurements do not establish intended fits or manufacturing readiness.
+                      Materials and manufacturing tolerances remain unknown.
+                    </p>
+                    <details className={classes.inspectionNestedDetails}>
+                      <summary className={classes.inspectionSummary}>
+                        Measured and unresolved pairs
+                      </summary>
+                      <p>
+                        Excluded CAD:{' '}
+                        {assembly.validation.sourceInterferenceReport.excludedComponents
+                          .map((component) => component.componentId)
+                          .join(', ')}
+                      </p>
+                      <div className={classes.inspectionScrollList}>
+                        {assembly.validation.sourceInterferenceReport.pairs
+                          .filter((pair) => pair.status !== 'contact_or_below_threshold')
+                          .map((pair) => (
+                            <p key={pair.componentIds.join(':')}>
+                              {pair.componentIds.join(' / ')} · {pair.status}
+                              {pair.volumeMm3 === null
+                                ? pair.error
+                                : ` · ${pair.volumeMm3.toFixed(4)} mm³`}
+                            </p>
+                          ))}
+                      </div>
+                    </details>
+                  </div>
+                ) : null}
+                <div className={classes.inspectionScrollList}>
+                  {assembly.validation.engineeringReport ? (
+                    <p>
+                      Render bounds error{' '}
+                      {assembly.validation.engineeringReport.renderDimensionComparison.maximumErrorMm.toFixed(
+                        4,
+                      )}{' '}
+                      mm against{' '}
+                      {assembly.validation.engineeringReport.renderDimensionComparison.thresholdMm}{' '}
+                      mm. This is a render comparison, not a manufacturing tolerance. Node mapping{' '}
+                      {assembly.validation.engineeringReport.nodeMappingComplete
+                        ? 'complete'
+                        : 'incomplete'}
+                      .
+                    </p>
+                  ) : null}
+                  {assembly.validation.failures.map((failure) => (
+                    <p key={failure}>{failure}</p>
+                  ))}
+                </div>
+              </details>
+              <details className={classes.inspectionDetails}>
+                <summary className={classes.inspectionSummary}>Source component hierarchy</summary>
+                <div className={classes.inspectionHierarchyList}>
+                  {assembly.nodes.map((node) => (
+                    <button
+                      key={node.id}
+                      type="button"
+                      className={classes.inspectionNodeButton}
+                      aria-label={`Select source component ${node.id}`}
+                      aria-pressed={state.selectedComponentId === node.id}
+                      onClick={() =>
+                        node.geometry?.kind === 'available' || node.geometry?.kind === 'visual_only'
+                          ? onFocusComponent(node.id)
+                          : onSelectComponent(node.id)
+                      }
+                      style={{ paddingInlineStart: 6 + node.depth * 8 }}>
+                      {node.name} ·{' '}
+                      {node.geometry?.kind === 'unavailable'
+                        ? 'geometry unavailable: source validation failed'
+                        : node.geometry?.kind === 'visual_only'
+                          ? 'official STL · visual only · CAD rejected'
+                          : node.geometry?.kind === 'available'
+                            ? node.geometry.role
+                            : 'assembly'}
+                    </button>
+                  ))}
+                </div>
+              </details>
             </div>
           ) : null}
           {hasParameters ? (
