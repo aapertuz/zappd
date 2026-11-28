@@ -147,6 +147,17 @@ def test_cots_registry_resolves_valid_centered_steps_with_ports(cots_parts: dict
         "kicad_quadruped_servo_hub",
         "kicad_poppy_usb2ax",
         "kicad_poppy_upper_3p_hub",
+        "kicad_poppy_power_dist",
+        "kicad_poppy_5v_buck",
+        "kicad_poppy_audio_amp",
+        "kicad_quadruped_power_bec",
+        "kicad_quadruped_compute",
+        "kicad_nav_imu",
+        "kicad_nova2_motor_pdb",
+        "kicad_quad_pdb_bec",
+        "kicad_quad_telemetry_beacon",
+        "kicad_so100_power_host",
+        "kicad_reachy_compute_module",
     }
     for cid, part in cots_parts.items():
         resolved = resolve_component_step({**part, "id": cid}, tmp_path)
@@ -171,7 +182,18 @@ def test_cots_registry_resolves_valid_centered_steps_with_ports(cots_parts: dict
             assert port["role"] in {"source", "sink", "bidirectional"}
             assert 0 <= port["minVoltageV"] <= port["nominalVoltageV"] <= port["maxVoltageV"]
             assert port["maxCurrentA"] > 0
-            assert port["busKind"] in {"dc_power", "usb_data", "ttl_serial", "i2c_spi_uart", "pwm_signal", "brushless_phase"}
+            assert port["busKind"] in {
+                "dc_power",
+                "usb_data",
+                "ttl_serial",
+                "i2c_spi_uart",
+                "pwm_signal",
+                "brushless_phase",
+                "can_bus",
+                "analog_audio",
+                "pdm_audio",
+                "mipi_csi2",
+            }
             x, y, z = port["localPositionMeters"]
             position = np.array([x, -z, y]) * 1000
             assert np.all(position >= lower - 0.001)

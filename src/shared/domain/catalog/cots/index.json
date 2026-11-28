@@ -218,7 +218,7 @@
     "sourceUrl": "kicad://zappd/kicad_quad_flight_controller",
     "sourceName": "Zappd kicad_quad_flight_controller.kicad_pcb with KiCad kicad-packages3D models",
     "stepFixtureName": "kicad_quad_flight_controller.step",
-    "expectedStepSha256": "0ff4be30d9f595e08107563f24fc1ae2b875371d90602c3d7b367fc42ae4bc7c",
+    "expectedStepSha256": "7cff7e3d053aae646bba2d8e0fd2183cd79ffcc26a83e37982d910061b176648",
     "dimensionsMm": [36.0, 36.175, 5.845],
     "materialHint": "fr4_pcb",
     "colorHex": "#247052",
@@ -239,7 +239,7 @@
       "pcbWidthMm": 36,
       "pcbLengthMm": 36,
       "pcbThicknessMm": 1.6,
-      "brepFaces": 3121,
+      "brepFaces": 4133,
       "xcafColors": 10,
       "referenceLayout": true
     },
@@ -283,6 +283,62 @@
         "maxCurrentA": 0.25,
         "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"],
         "localPositionMeters": [0.008, 0.0029225, -0.0110875],
+        "exitDirection": [0.0, 1.0, -0.0]
+      },
+      {
+        "portId": "port_power_in",
+        "label": "5V power input",
+        "connectorType": "JST-GH 4-pin",
+        "busKind": "dc_power",
+        "role": "sink",
+        "minVoltageV": 4.75,
+        "nominalVoltageV": 5,
+        "maxVoltageV": 5.25,
+        "maxCurrentA": 2,
+        "wireColorsHex": ["#cc2929", "#222428"],
+        "localPositionMeters": [-0.0122, 0.0029225, 0.0054125],
+        "exitDirection": [0.0, 1.0, -0.0]
+      },
+      {
+        "portId": "port_gps",
+        "label": "GPS / compass bus",
+        "connectorType": "JST-GH 4-pin",
+        "busKind": "i2c_spi_uart",
+        "role": "bidirectional",
+        "minVoltageV": 3,
+        "nominalVoltageV": 3.3,
+        "maxVoltageV": 3.6,
+        "maxCurrentA": 0.25,
+        "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"],
+        "localPositionMeters": [0.0122, 0.0029225, 0.0054125],
+        "exitDirection": [0.0, 1.0, -0.0]
+      },
+      {
+        "portId": "port_esc_aux",
+        "label": "Auxiliary ESC link",
+        "connectorType": "JST-GH 4-pin",
+        "busKind": "pwm_signal",
+        "role": "source",
+        "minVoltageV": 3,
+        "nominalVoltageV": 3.3,
+        "maxVoltageV": 3.6,
+        "maxCurrentA": 0.25,
+        "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"],
+        "localPositionMeters": [-0.0122, 0.0029225, -0.0025875],
+        "exitDirection": [0.0, 1.0, -0.0]
+      },
+      {
+        "portId": "port_telemetry",
+        "label": "Telemetry UART",
+        "connectorType": "JST-GH 4-pin",
+        "busKind": "i2c_spi_uart",
+        "role": "bidirectional",
+        "minVoltageV": 3,
+        "nominalVoltageV": 3.3,
+        "maxVoltageV": 3.6,
+        "maxCurrentA": 0.25,
+        "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"],
+        "localPositionMeters": [0.0122, 0.0029225, -0.0025875],
         "exitDirection": [0.0, 1.0, -0.0]
       }
     ]
@@ -849,6 +905,898 @@
         "wireColorsHex": ["#cc2929", "#222428", "#e5c158"],
         "localPositionMeters": [0.019, 0.004, -0.0047],
         "exitDirection": [0.0, 0.0, -1.0]
+      }
+    ]
+  },
+  {
+    "cotsId": "kicad_poppy_power_dist",
+    "name": "Poppy 12V power distribution board",
+    "origin": "kicad_pcb_step",
+    "spdxLicense": "CC-BY-SA-4.0",
+    "sourceUrl": "kicad://zappd/kicad_poppy_power_dist",
+    "sourceName": "Zappd kicad_poppy_power_dist.kicad_pcb with KiCad kicad-packages3D models",
+    "stepFixtureName": "kicad_poppy_power_dist.step",
+    "expectedStepSha256": "a2b367b8903d3bffa393157e06ea24a0b31adfee11e2115ec356400e4880d220",
+    "dimensionsMm": [46.0, 20.5, 26.0],
+    "materialHint": "fr4_pcb",
+    "colorHex": "#247052",
+    "category": "power_distribution",
+    "tags": ["poppy", "power-distribution", "12v", "xt60"],
+    "mountingInterfaces": [
+      {
+        "interfaceId": "mount_board",
+        "label": "Edge clamp mount",
+        "kind": "clamp",
+        "holeDiameterMm": 3.2,
+        "localPositionMeters": [0, 0, 0],
+        "normalDirection": [0, 0, -1]
+      }
+    ],
+    "specifications": {
+      "pcbWidthMm": 46,
+      "pcbLengthMm": 26,
+      "pcbThicknessMm": 1.6,
+      "brepFaces": 939,
+      "xcafColors": 9,
+      "referenceLayout": true
+    },
+    "ports": [
+      {
+        "portId": "port_battery_in",
+        "label": "12V battery input",
+        "connectorType": "XT60",
+        "busKind": "dc_power",
+        "role": "sink",
+        "minVoltageV": 9,
+        "nominalVoltageV": 12,
+        "maxVoltageV": 14.8,
+        "maxCurrentA": 15,
+        "wireColorsHex": ["#cc2929", "#222428"],
+        "localPositionMeters": [-0.0124, 0.004, -0.01025],
+        "exitDirection": [0.0, 0.0, -1.0]
+      },
+      {
+        "portId": "port_upper_smps",
+        "label": "Upper SMPS feed",
+        "connectorType": "JST-PH 3-pin",
+        "busKind": "dc_power",
+        "role": "source",
+        "minVoltageV": 9,
+        "nominalVoltageV": 12,
+        "maxVoltageV": 14.8,
+        "maxCurrentA": 5,
+        "wireColorsHex": ["#cc2929", "#222428"],
+        "localPositionMeters": [-0.014, -0.007, -0.00025],
+        "exitDirection": [0.0, 0.0, -1.0]
+      },
+      {
+        "portId": "port_lower_smps",
+        "label": "Lower SMPS feed",
+        "connectorType": "JST-PH 3-pin",
+        "busKind": "dc_power",
+        "role": "source",
+        "minVoltageV": 9,
+        "nominalVoltageV": 12,
+        "maxVoltageV": 14.8,
+        "maxCurrentA": 5,
+        "wireColorsHex": ["#cc2929", "#222428"],
+        "localPositionMeters": [0.0, -0.007, -0.00025],
+        "exitDirection": [0.0, 0.0, -1.0]
+      },
+      {
+        "portId": "port_buck_out",
+        "label": "5V buck regulator feed",
+        "connectorType": "JST-PH 3-pin",
+        "busKind": "dc_power",
+        "role": "source",
+        "minVoltageV": 9,
+        "nominalVoltageV": 12,
+        "maxVoltageV": 14.8,
+        "maxCurrentA": 5,
+        "wireColorsHex": ["#cc2929", "#222428"],
+        "localPositionMeters": [0.014, -0.007, -0.00025],
+        "exitDirection": [0.0, 0.0, -1.0]
+      }
+    ]
+  },
+  {
+    "cotsId": "kicad_poppy_5v_buck",
+    "name": "Poppy 12V to 5V buck regulator",
+    "origin": "kicad_pcb_step",
+    "spdxLicense": "CC-BY-SA-4.0",
+    "sourceUrl": "kicad://zappd/kicad_poppy_5v_buck",
+    "sourceName": "Zappd kicad_poppy_5v_buck.kicad_pcb with KiCad kicad-packages3D models",
+    "stepFixtureName": "kicad_poppy_5v_buck.step",
+    "expectedStepSha256": "1375d1459e130d6d3313f6d4edc2ee307394eeede8c96c131a5cc91a33ea08b7",
+    "dimensionsMm": [34.0, 11.4, 22.0],
+    "materialHint": "fr4_pcb",
+    "colorHex": "#247052",
+    "category": "power_regulator",
+    "tags": ["poppy", "buck", "5v", "regulator"],
+    "mountingInterfaces": [
+      {
+        "interfaceId": "mount_board",
+        "label": "Edge clamp mount",
+        "kind": "clamp",
+        "holeDiameterMm": 3.2,
+        "localPositionMeters": [0, 0, 0],
+        "normalDirection": [0, 0, -1]
+      }
+    ],
+    "specifications": {
+      "pcbWidthMm": 34,
+      "pcbLengthMm": 22,
+      "pcbThicknessMm": 1.6,
+      "brepFaces": 1085,
+      "xcafColors": 7,
+      "referenceLayout": true
+    },
+    "ports": [
+      {
+        "portId": "port_dc_in",
+        "label": "12V DC input",
+        "connectorType": "JST-PH 3-pin",
+        "busKind": "dc_power",
+        "role": "sink",
+        "minVoltageV": 9,
+        "nominalVoltageV": 12,
+        "maxVoltageV": 14.8,
+        "maxCurrentA": 2.5,
+        "wireColorsHex": ["#cc2929", "#222428"],
+        "localPositionMeters": [-0.01, -0.007, -0.0037],
+        "exitDirection": [0.0, 0.0, -1.0]
+      },
+      {
+        "portId": "port_5v_compute",
+        "label": "5V compute output",
+        "connectorType": "JST-PH 3-pin",
+        "busKind": "dc_power",
+        "role": "source",
+        "minVoltageV": 4.75,
+        "nominalVoltageV": 5,
+        "maxVoltageV": 5.25,
+        "maxCurrentA": 4,
+        "wireColorsHex": ["#cc2929", "#222428"],
+        "localPositionMeters": [0.0, -0.007, -0.0037],
+        "exitDirection": [0.0, 0.0, -1.0]
+      },
+      {
+        "portId": "port_5v_aux",
+        "label": "5V auxiliary output",
+        "connectorType": "JST-PH 3-pin",
+        "busKind": "dc_power",
+        "role": "source",
+        "minVoltageV": 4.75,
+        "nominalVoltageV": 5,
+        "maxVoltageV": 5.25,
+        "maxCurrentA": 1.5,
+        "wireColorsHex": ["#cc2929", "#222428"],
+        "localPositionMeters": [0.01, -0.007, -0.0037],
+        "exitDirection": [0.0, 0.0, -1.0]
+      }
+    ]
+  },
+  {
+    "cotsId": "kicad_poppy_audio_amp",
+    "name": "Poppy stereo audio amplifier",
+    "origin": "kicad_pcb_step",
+    "spdxLicense": "CC-BY-SA-4.0",
+    "sourceUrl": "kicad://zappd/kicad_poppy_audio_amp",
+    "sourceName": "Zappd kicad_poppy_audio_amp.kicad_pcb with KiCad kicad-packages3D models",
+    "stepFixtureName": "kicad_poppy_audio_amp.step",
+    "expectedStepSha256": "5c8d5e849e82c7be9c73dfd168f881c207e4f2cfce6c01a244c8916cb34bdaf6",
+    "dimensionsMm": [32.0, 9.4, 20.0],
+    "materialHint": "fr4_pcb",
+    "colorHex": "#247052",
+    "category": "audio_amplifier",
+    "tags": ["poppy", "audio", "amplifier", "speaker"],
+    "mountingInterfaces": [
+      {
+        "interfaceId": "mount_board",
+        "label": "Edge clamp mount",
+        "kind": "clamp",
+        "holeDiameterMm": 3.2,
+        "localPositionMeters": [0, 0, 0],
+        "normalDirection": [0, 0, -1]
+      }
+    ],
+    "specifications": {
+      "pcbWidthMm": 32,
+      "pcbLengthMm": 20,
+      "pcbThicknessMm": 1.6,
+      "brepFaces": 1244,
+      "xcafColors": 6,
+      "referenceLayout": true
+    },
+    "ports": [
+      {
+        "portId": "port_5v_in",
+        "label": "5V power input",
+        "connectorType": "JST-PH 3-pin",
+        "busKind": "dc_power",
+        "role": "sink",
+        "minVoltageV": 4.75,
+        "nominalVoltageV": 5,
+        "maxVoltageV": 5.25,
+        "maxCurrentA": 1.5,
+        "wireColorsHex": ["#cc2929", "#222428"],
+        "localPositionMeters": [-0.01, 0.004, -0.0047],
+        "exitDirection": [0.0, 0.0, -1.0]
+      },
+      {
+        "portId": "port_audio_in",
+        "label": "Stereo audio input",
+        "connectorType": "JST-GH 4-pin",
+        "busKind": "analog_audio",
+        "role": "sink",
+        "minVoltageV": 0,
+        "nominalVoltageV": 3.3,
+        "maxVoltageV": 5,
+        "maxCurrentA": 0.1,
+        "wireColorsHex": ["#222428", "#3b82f6", "#e5c158"],
+        "localPositionMeters": [0.01, 0.0045, -0.0029],
+        "exitDirection": [0.0, 0.0, -1.0]
+      },
+      {
+        "portId": "port_spk_left",
+        "label": "Left speaker output",
+        "connectorType": "JST-PH 3-pin",
+        "busKind": "analog_audio",
+        "role": "source",
+        "minVoltageV": 0,
+        "nominalVoltageV": 4.47,
+        "maxVoltageV": 5,
+        "maxCurrentA": 1.0,
+        "wireColorsHex": ["#cc2929", "#222428"],
+        "localPositionMeters": [-0.009, -0.006, -0.0047],
+        "exitDirection": [0.0, 0.0, -1.0]
+      },
+      {
+        "portId": "port_spk_right",
+        "label": "Right speaker output",
+        "connectorType": "JST-PH 3-pin",
+        "busKind": "analog_audio",
+        "role": "source",
+        "minVoltageV": 0,
+        "nominalVoltageV": 4.47,
+        "maxVoltageV": 5,
+        "maxCurrentA": 1.0,
+        "wireColorsHex": ["#cc2929", "#222428"],
+        "localPositionMeters": [0.007, -0.006, -0.0047],
+        "exitDirection": [0.0, 0.0, -1.0]
+      }
+    ]
+  },
+  {
+    "cotsId": "kicad_quadruped_power_bec",
+    "name": "Quadruped power distribution and 5V BEC",
+    "origin": "kicad_pcb_step",
+    "spdxLicense": "CC-BY-SA-4.0",
+    "sourceUrl": "kicad://zappd/kicad_quadruped_power_bec",
+    "sourceName": "Zappd kicad_quadruped_power_bec.kicad_pcb with KiCad kicad-packages3D models",
+    "stepFixtureName": "kicad_quadruped_power_bec.step",
+    "expectedStepSha256": "21da2b688f8d5996fed2a38f630fa54e8018066c91d09d71a3e0fb6806f17453",
+    "dimensionsMm": [44.0, 28.0, 20.5],
+    "materialHint": "fr4_pcb",
+    "colorHex": "#247052",
+    "category": "power_distribution",
+    "tags": ["quadruped", "bec", "pdb", "5v", "xt60"],
+    "mountingInterfaces": [
+      {
+        "interfaceId": "mount_board",
+        "label": "Four-hole M3 PCB mount",
+        "kind": "m3_standoff",
+        "holeDiameterMm": 3.2,
+        "boltPitchMm": [36, 20],
+        "localPositionMeters": [0, 0, 0],
+        "normalDirection": [0, 1, 0]
+      }
+    ],
+    "specifications": {
+      "pcbWidthMm": 44,
+      "pcbLengthMm": 28,
+      "pcbThicknessMm": 1.6,
+      "brepFaces": 736,
+      "xcafColors": 10,
+      "referenceLayout": true
+    },
+    "ports": [
+      {
+        "portId": "port_batt_in",
+        "label": "3S battery input",
+        "connectorType": "XT60",
+        "busKind": "dc_power",
+        "role": "sink",
+        "minVoltageV": 9,
+        "nominalVoltageV": 11.1,
+        "maxVoltageV": 12.6,
+        "maxCurrentA": 15,
+        "wireColorsHex": ["#cc2929", "#222428"],
+        "localPositionMeters": [-0.0109, 0.01025, 0.0025],
+        "exitDirection": [0.0, 1.0, -0.0]
+      },
+      {
+        "portId": "port_hub_out",
+        "label": "Servo hub power output",
+        "connectorType": "XT60",
+        "busKind": "dc_power",
+        "role": "source",
+        "minVoltageV": 9,
+        "nominalVoltageV": 11.1,
+        "maxVoltageV": 12.6,
+        "maxCurrentA": 15,
+        "wireColorsHex": ["#cc2929", "#222428"],
+        "localPositionMeters": [0.0096, 0.01025, 0.0025],
+        "exitDirection": [0.0, 1.0, -0.0]
+      },
+      {
+        "portId": "port_5v_out",
+        "label": "5V compute rail",
+        "connectorType": "JST-PH 3-pin",
+        "busKind": "dc_power",
+        "role": "source",
+        "minVoltageV": 4.75,
+        "nominalVoltageV": 5,
+        "maxVoltageV": 5.25,
+        "maxCurrentA": 3,
+        "wireColorsHex": ["#cc2929", "#222428"],
+        "localPositionMeters": [-0.009, 0.00025, -0.0085],
+        "exitDirection": [0.0, 1.0, -0.0]
+      }
+    ]
+  },
+  {
+    "cotsId": "kicad_quadruped_compute",
+    "name": "Quadruped gait compute module",
+    "origin": "kicad_pcb_step",
+    "spdxLicense": "CC-BY-SA-4.0",
+    "sourceUrl": "kicad://zappd/kicad_quadruped_compute",
+    "sourceName": "Zappd kicad_quadruped_compute.kicad_pcb with KiCad kicad-packages3D models",
+    "stepFixtureName": "kicad_quadruped_compute.step",
+    "expectedStepSha256": "ac24887d8cfd37827d90dbf7e8639eb40c4ca49d47266956a98ee39d0fdd3907",
+    "dimensionsMm": [56.0, 42.175, 11.4],
+    "materialHint": "fr4_pcb",
+    "colorHex": "#247052",
+    "category": "compute_module",
+    "tags": ["quadruped", "compute", "gait-controller", "usb"],
+    "mountingInterfaces": [
+      {
+        "interfaceId": "mount_board",
+        "label": "Four-hole M3 PCB mount",
+        "kind": "m3_standoff",
+        "holeDiameterMm": 3.2,
+        "boltPitchMm": [48, 34],
+        "localPositionMeters": [0, 0, 0],
+        "normalDirection": [0, 1, 0]
+      }
+    ],
+    "specifications": {
+      "pcbWidthMm": 56,
+      "pcbLengthMm": 42,
+      "pcbThicknessMm": 1.6,
+      "brepFaces": 3148,
+      "xcafColors": 11,
+      "referenceLayout": true
+    },
+    "ports": [
+      {
+        "portId": "port_usb",
+        "label": "USB host link",
+        "connectorType": "USB-C",
+        "busKind": "usb_data",
+        "role": "bidirectional",
+        "minVoltageV": 4.75,
+        "nominalVoltageV": 5,
+        "maxVoltageV": 5.25,
+        "maxCurrentA": 0.5,
+        "localPositionMeters": [0.0, -0.00065, 0.0210875],
+        "exitDirection": [0.0, 0.0, 1.0]
+      },
+      {
+        "portId": "port_dc_in",
+        "label": "5V power input",
+        "connectorType": "JST-PH 3-pin",
+        "busKind": "dc_power",
+        "role": "sink",
+        "minVoltageV": 4.75,
+        "nominalVoltageV": 5,
+        "maxVoltageV": 5.25,
+        "maxCurrentA": 3,
+        "wireColorsHex": ["#cc2929", "#222428"],
+        "localPositionMeters": [-0.012, 0.0037, -0.0140875],
+        "exitDirection": [0.0, 1.0, -0.0]
+      },
+      {
+        "portId": "port_imu",
+        "label": "IMU sensor bus",
+        "connectorType": "JST-GH 4-pin",
+        "busKind": "i2c_spi_uart",
+        "role": "bidirectional",
+        "minVoltageV": 3,
+        "nominalVoltageV": 3.3,
+        "maxVoltageV": 3.6,
+        "maxCurrentA": 0.25,
+        "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"],
+        "localPositionMeters": [0.012, 0.0019, -0.0140875],
+        "exitDirection": [0.0, 1.0, -0.0]
+      }
+    ]
+  },
+  {
+    "cotsId": "kicad_nav_imu",
+    "name": "9-DOF navigation IMU and GPS sensor module",
+    "origin": "kicad_pcb_step",
+    "spdxLicense": "CC-BY-SA-4.0",
+    "sourceUrl": "kicad://zappd/kicad_nav_imu",
+    "sourceName": "Zappd kicad_nav_imu.kicad_pcb with KiCad kicad-packages3D models",
+    "stepFixtureName": "kicad_nav_imu.step",
+    "expectedStepSha256": "499d5523ee54c403344ae3c6e340ac0abf3328da1475d8c8475580cb5f18ae2a",
+    "dimensionsMm": [22.0, 18.0, 5.845],
+    "materialHint": "fr4_pcb",
+    "colorHex": "#247052",
+    "category": "sensor_module",
+    "tags": ["imu", "gps", "navigation", "i2c", "uart"],
+    "mountingInterfaces": [
+      {
+        "interfaceId": "mount_board",
+        "label": "Edge clamp mount",
+        "kind": "clamp",
+        "holeDiameterMm": 3.2,
+        "localPositionMeters": [0, 0, 0],
+        "normalDirection": [0, 1, 0]
+      }
+    ],
+    "specifications": {
+      "pcbWidthMm": 22,
+      "pcbLengthMm": 18,
+      "pcbThicknessMm": 1.6,
+      "brepFaces": 688,
+      "xcafColors": 7,
+      "referenceLayout": true
+    },
+    "ports": [
+      {
+        "portId": "port_sensor_bus",
+        "label": "Navigation sensor bus",
+        "connectorType": "JST-GH 4-pin",
+        "busKind": "i2c_spi_uart",
+        "role": "bidirectional",
+        "minVoltageV": 3,
+        "nominalVoltageV": 3.3,
+        "maxVoltageV": 3.6,
+        "maxCurrentA": 0.25,
+        "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"],
+        "localPositionMeters": [0.0045, 0.0029225, -0.0],
+        "exitDirection": [0.0, 1.0, -0.0]
+      }
+    ]
+  },
+  {
+    "cotsId": "kicad_nova2_motor_pdb",
+    "name": "Nova2 rover motor driver and power distribution board",
+    "origin": "kicad_pcb_step",
+    "spdxLicense": "CC-BY-SA-4.0",
+    "sourceUrl": "kicad://zappd/kicad_nova2_motor_pdb",
+    "sourceName": "Zappd kicad_nova2_motor_pdb.kicad_pcb with KiCad kicad-packages3D models",
+    "stepFixtureName": "kicad_nova2_motor_pdb.step",
+    "expectedStepSha256": "1ff9e1b4b1758dc4d1dec406ec5b6a76802bd35d988882ad64f7cb041783f279",
+    "dimensionsMm": [58.3, 38.0, 20.5],
+    "materialHint": "fr4_pcb",
+    "colorHex": "#247052",
+    "category": "motor_controller",
+    "tags": ["nova2", "rover", "motor-driver", "pdb", "xt60"],
+    "mountingInterfaces": [
+      {
+        "interfaceId": "mount_board",
+        "label": "Four-hole M3 PCB mount",
+        "kind": "m3_standoff",
+        "holeDiameterMm": 3.2,
+        "boltPitchMm": [50, 30],
+        "localPositionMeters": [0, 0, 0],
+        "normalDirection": [0, 1, 0]
+      }
+    ],
+    "specifications": {
+      "pcbWidthMm": 58,
+      "pcbLengthMm": 38,
+      "pcbThicknessMm": 1.6,
+      "brepFaces": 1762,
+      "xcafColors": 10,
+      "referenceLayout": true
+    },
+    "ports": [
+      {
+        "portId": "port_batt_in",
+        "label": "3S battery input",
+        "connectorType": "XT60",
+        "busKind": "dc_power",
+        "role": "sink",
+        "minVoltageV": 9,
+        "nominalVoltageV": 11.1,
+        "maxVoltageV": 12.6,
+        "maxCurrentA": 15,
+        "wireColorsHex": ["#cc2929", "#222428"],
+        "localPositionMeters": [0.01575, 0.01025, -0.0],
+        "exitDirection": [0.0, 1.0, -0.0]
+      },
+      {
+        "portId": "port_carrier_out",
+        "label": "Jetson carrier DC output",
+        "connectorType": "DC barrel jack",
+        "busKind": "dc_power",
+        "role": "source",
+        "minVoltageV": 9,
+        "nominalVoltageV": 11.1,
+        "maxVoltageV": 12.6,
+        "maxCurrentA": 3,
+        "wireColorsHex": ["#cc2929", "#222428"],
+        "localPositionMeters": [-0.02915, 0.00065, -0.0],
+        "exitDirection": [-1.0, 0.0, -0.0]
+      },
+      {
+        "portId": "port_bus_coupler",
+        "label": "Auxiliary power bus coupler",
+        "connectorType": "JST-PH 3-pin",
+        "busKind": "dc_power",
+        "role": "source",
+        "minVoltageV": 9,
+        "nominalVoltageV": 11.1,
+        "maxVoltageV": 12.6,
+        "maxCurrentA": 5,
+        "wireColorsHex": ["#cc2929", "#222428"],
+        "localPositionMeters": [-0.01285, 0.00025, 0.0125],
+        "exitDirection": [0.0, 1.0, -0.0]
+      },
+      {
+        "portId": "port_ctrl_uart",
+        "label": "Carrier control UART",
+        "connectorType": "JST-GH 4-pin",
+        "busKind": "i2c_spi_uart",
+        "role": "bidirectional",
+        "minVoltageV": 3,
+        "nominalVoltageV": 3.3,
+        "maxVoltageV": 3.6,
+        "maxCurrentA": 0.25,
+        "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"],
+        "localPositionMeters": [-0.00085, -0.00155, 0.013],
+        "exitDirection": [0.0, 1.0, -0.0]
+      },
+      {
+        "portId": "port_imu_bus",
+        "label": "IMU telemetry bus",
+        "connectorType": "JST-GH 4-pin",
+        "busKind": "i2c_spi_uart",
+        "role": "bidirectional",
+        "minVoltageV": 3,
+        "nominalVoltageV": 3.3,
+        "maxVoltageV": 3.6,
+        "maxCurrentA": 0.25,
+        "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"],
+        "localPositionMeters": [0.01215, -0.00155, 0.013],
+        "exitDirection": [0.0, 1.0, -0.0]
+      },
+      {
+        "portId": "port_drive_left",
+        "label": "Left drive bus",
+        "connectorType": "JST-PH 3-pin",
+        "busKind": "ttl_serial",
+        "role": "source",
+        "minVoltageV": 9,
+        "nominalVoltageV": 11.1,
+        "maxVoltageV": 12.6,
+        "maxCurrentA": 2.5,
+        "wireColorsHex": ["#cc2929", "#222428", "#e5c158"],
+        "localPositionMeters": [-0.00985, 0.00025, -0.013],
+        "exitDirection": [0.0, 1.0, -0.0]
+      },
+      {
+        "portId": "port_drive_right",
+        "label": "Right drive bus",
+        "connectorType": "JST-PH 3-pin",
+        "busKind": "ttl_serial",
+        "role": "source",
+        "minVoltageV": 9,
+        "nominalVoltageV": 11.1,
+        "maxVoltageV": 12.6,
+        "maxCurrentA": 2.5,
+        "wireColorsHex": ["#cc2929", "#222428", "#e5c158"],
+        "localPositionMeters": [0.00815, 0.00025, -0.013],
+        "exitDirection": [0.0, 1.0, -0.0]
+      }
+    ]
+  },
+  {
+    "cotsId": "kicad_quad_pdb_bec",
+    "name": "Multirotor power distribution and 5V BEC",
+    "origin": "kicad_pcb_step",
+    "spdxLicense": "CC-BY-SA-4.0",
+    "sourceUrl": "kicad://zappd/kicad_quad_pdb_bec",
+    "sourceName": "Zappd kicad_quad_pdb_bec.kicad_pcb with KiCad kicad-packages3D models",
+    "stepFixtureName": "kicad_quad_pdb_bec.step",
+    "expectedStepSha256": "70feb9dcfd2566bbe4431276dfd7b89a79756cf6f26e97e996ed705337c20267",
+    "dimensionsMm": [46.0, 28.0, 20.5],
+    "materialHint": "fr4_pcb",
+    "colorHex": "#247052",
+    "category": "power_distribution",
+    "tags": ["quadcopter", "multirotor", "pdb", "bec", "5v", "xt60"],
+    "mountingInterfaces": [
+      {
+        "interfaceId": "mount_board",
+        "label": "Four-hole M3 PCB mount",
+        "kind": "m3_standoff",
+        "holeDiameterMm": 3.2,
+        "boltPitchMm": [38, 20],
+        "localPositionMeters": [0, 0, 0],
+        "normalDirection": [0, 1, 0]
+      }
+    ],
+    "specifications": {
+      "pcbWidthMm": 46,
+      "pcbLengthMm": 28,
+      "pcbThicknessMm": 1.6,
+      "brepFaces": 1124,
+      "xcafColors": 10,
+      "referenceLayout": true
+    },
+    "ports": [
+      {
+        "portId": "port_batt_in",
+        "label": "Battery input",
+        "connectorType": "XT60",
+        "busKind": "dc_power",
+        "role": "sink",
+        "minVoltageV": 9,
+        "nominalVoltageV": 11.1,
+        "maxVoltageV": 25.2,
+        "maxCurrentA": 15,
+        "wireColorsHex": ["#cc2929", "#222428"],
+        "localPositionMeters": [-0.0119, 0.01025, 0.001],
+        "exitDirection": [0.0, 1.0, -0.0]
+      },
+      {
+        "portId": "port_esc_primary",
+        "label": "Primary ESC power output",
+        "connectorType": "XT60",
+        "busKind": "dc_power",
+        "role": "source",
+        "minVoltageV": 9,
+        "nominalVoltageV": 11.1,
+        "maxVoltageV": 25.2,
+        "maxCurrentA": 15,
+        "wireColorsHex": ["#cc2929", "#222428"],
+        "localPositionMeters": [0.0106, 0.01025, 0.001],
+        "exitDirection": [0.0, 1.0, -0.0]
+      },
+      {
+        "portId": "port_esc_aux",
+        "label": "Auxiliary ESC power output",
+        "connectorType": "JST-PH 3-pin",
+        "busKind": "dc_power",
+        "role": "source",
+        "minVoltageV": 9,
+        "nominalVoltageV": 11.1,
+        "maxVoltageV": 25.2,
+        "maxCurrentA": 7.5,
+        "wireColorsHex": ["#cc2929", "#222428"],
+        "localPositionMeters": [-0.011, 0.00025, -0.009],
+        "exitDirection": [0.0, 1.0, -0.0]
+      },
+      {
+        "portId": "port_5v_fc",
+        "label": "5V flight controller rail",
+        "connectorType": "JST-GH 4-pin",
+        "busKind": "dc_power",
+        "role": "source",
+        "minVoltageV": 4.75,
+        "nominalVoltageV": 5,
+        "maxVoltageV": 5.25,
+        "maxCurrentA": 2,
+        "wireColorsHex": ["#cc2929", "#222428"],
+        "localPositionMeters": [0.01, -0.00155, -0.009],
+        "exitDirection": [0.0, 1.0, -0.0]
+      },
+      {
+        "portId": "port_5v_vtx",
+        "label": "5V telemetry / VTX rail",
+        "connectorType": "JST-GH 4-pin",
+        "busKind": "dc_power",
+        "role": "source",
+        "minVoltageV": 4.75,
+        "nominalVoltageV": 5,
+        "maxVoltageV": 5.25,
+        "maxCurrentA": 1,
+        "wireColorsHex": ["#cc2929", "#222428"],
+        "localPositionMeters": [0.0, -0.00155, 0.01],
+        "exitDirection": [0.0, 1.0, -0.0]
+      }
+    ]
+  },
+  {
+    "cotsId": "kicad_quad_telemetry_beacon",
+    "name": "Multirotor telemetry and VTX beacon",
+    "origin": "kicad_pcb_step",
+    "spdxLicense": "CC-BY-SA-4.0",
+    "sourceUrl": "kicad://zappd/kicad_quad_telemetry_beacon",
+    "sourceName": "Zappd kicad_quad_telemetry_beacon.kicad_pcb with KiCad kicad-packages3D models",
+    "stepFixtureName": "kicad_quad_telemetry_beacon.step",
+    "expectedStepSha256": "fe7d7edca2783e563d89ac002730057ea963e5017db5c4c1c8e646ecaebdfae6",
+    "dimensionsMm": [22.0, 16.0, 5.845],
+    "materialHint": "fr4_pcb",
+    "colorHex": "#247052",
+    "category": "telemetry_beacon",
+    "tags": ["multirotor", "vtx", "telemetry", "buzzer"],
+    "mountingInterfaces": [
+      {
+        "interfaceId": "mount_board",
+        "label": "Edge clamp mount",
+        "kind": "clamp",
+        "holeDiameterMm": 3.2,
+        "localPositionMeters": [0, 0, 0],
+        "normalDirection": [0, 1, 0]
+      }
+    ],
+    "specifications": {
+      "pcbWidthMm": 22,
+      "pcbLengthMm": 16,
+      "pcbThicknessMm": 1.6,
+      "brepFaces": 941,
+      "xcafColors": 7,
+      "referenceLayout": true
+    },
+    "ports": [
+      {
+        "portId": "port_5v_in",
+        "label": "5V power input",
+        "connectorType": "JST-GH 4-pin",
+        "busKind": "dc_power",
+        "role": "sink",
+        "minVoltageV": 4.75,
+        "nominalVoltageV": 5,
+        "maxVoltageV": 5.25,
+        "maxCurrentA": 1,
+        "wireColorsHex": ["#cc2929", "#222428"],
+        "localPositionMeters": [0.0045, 0.0029225, 0.004],
+        "exitDirection": [0.0, 1.0, -0.0]
+      },
+      {
+        "portId": "port_telemetry",
+        "label": "Telemetry UART",
+        "connectorType": "JST-GH 4-pin",
+        "busKind": "i2c_spi_uart",
+        "role": "bidirectional",
+        "minVoltageV": 3,
+        "nominalVoltageV": 3.3,
+        "maxVoltageV": 3.6,
+        "maxCurrentA": 0.25,
+        "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"],
+        "localPositionMeters": [0.0045, 0.0029225, -0.004],
+        "exitDirection": [0.0, 1.0, -0.0]
+      }
+    ]
+  },
+  {
+    "cotsId": "kicad_so100_power_host",
+    "name": "SO-100 compute and 5.5V power host",
+    "origin": "kicad_pcb_step",
+    "spdxLicense": "CC-BY-SA-4.0",
+    "sourceUrl": "kicad://zappd/kicad_so100_power_host",
+    "sourceName": "Zappd kicad_so100_power_host.kicad_pcb with KiCad kicad-packages3D models",
+    "stepFixtureName": "kicad_so100_power_host.step",
+    "expectedStepSha256": "6c023d3d2078211ff870ace99ad3025c31984f8e060163b50141a26fddc6fa33",
+    "dimensionsMm": [56.3, 38.175, 14.6],
+    "materialHint": "fr4_pcb",
+    "colorHex": "#247052",
+    "category": "compute_power_host",
+    "tags": ["so100", "robotic-arm", "power-supply", "usb-host"],
+    "mountingInterfaces": [
+      {
+        "interfaceId": "mount_board",
+        "label": "Four-hole M3 PCB mount",
+        "kind": "m3_standoff",
+        "holeDiameterMm": 3.2,
+        "boltPitchMm": [48, 30],
+        "localPositionMeters": [0, 0, 0],
+        "normalDirection": [0, 1, 0]
+      }
+    ],
+    "specifications": {
+      "pcbWidthMm": 56,
+      "pcbLengthMm": 38,
+      "pcbThicknessMm": 1.6,
+      "brepFaces": 2902,
+      "xcafColors": 10,
+      "referenceLayout": true
+    },
+    "ports": [
+      {
+        "portId": "port_usb_host",
+        "label": "USB host data",
+        "connectorType": "USB-C",
+        "busKind": "usb_data",
+        "role": "bidirectional",
+        "minVoltageV": 4.75,
+        "nominalVoltageV": 5,
+        "maxVoltageV": 5.25,
+        "maxCurrentA": 0.5,
+        "localPositionMeters": [0.00815, -0.00175, 0.0190875],
+        "exitDirection": [0.0, 0.0, 1.0]
+      },
+      {
+        "portId": "port_dc_out",
+        "label": "5.5V DC barrel output",
+        "connectorType": "DC barrel jack",
+        "busKind": "dc_power",
+        "role": "source",
+        "minVoltageV": 5,
+        "nominalVoltageV": 5.5,
+        "maxVoltageV": 6,
+        "maxCurrentA": 3,
+        "wireColorsHex": ["#cc2929", "#222428"],
+        "localPositionMeters": [-0.02815, 0.003, -8.75e-5],
+        "exitDirection": [-1.0, 0.0, -0.0]
+      }
+    ]
+  },
+  {
+    "cotsId": "kicad_reachy_compute_module",
+    "name": "Reachy Mini wireless compute module",
+    "origin": "kicad_pcb_step",
+    "spdxLicense": "CC-BY-SA-4.0",
+    "sourceUrl": "kicad://zappd/kicad_reachy_compute_module",
+    "sourceName": "Zappd kicad_reachy_compute_module.kicad_pcb with KiCad kicad-packages3D models",
+    "stepFixtureName": "kicad_reachy_compute_module.step",
+    "expectedStepSha256": "8352fdda07f46019d00a7ae32035cea70879f00a258a8bee15c8dc27cf29acd2",
+    "dimensionsMm": [54.0, 28.175, 9.4],
+    "materialHint": "fr4_pcb",
+    "colorHex": "#247052",
+    "category": "compute_module",
+    "tags": ["reachy-mini", "compute", "raspberry-pi", "wireless"],
+    "mountingInterfaces": [
+      {
+        "interfaceId": "mount_board",
+        "label": "Four-hole M2.5 PCB mount",
+        "kind": "m2_5_standoff",
+        "holeDiameterMm": 2.5,
+        "boltPitchMm": [46, 20],
+        "localPositionMeters": [0, 0, 0],
+        "normalDirection": [0, 1, 0]
+      }
+    ],
+    "specifications": {
+      "pcbWidthMm": 54,
+      "pcbLengthMm": 28,
+      "pcbThicknessMm": 1.6,
+      "brepFaces": 3228,
+      "xcafColors": 10,
+      "referenceLayout": true
+    },
+    "ports": [
+      {
+        "portId": "port_usb_bus",
+        "label": "USB data bus",
+        "connectorType": "USB-C",
+        "busKind": "usb_data",
+        "role": "bidirectional",
+        "minVoltageV": 4.75,
+        "nominalVoltageV": 5,
+        "maxVoltageV": 5.25,
+        "maxCurrentA": 0.5,
+        "localPositionMeters": [0.002, 0.00035, 0.0140875],
+        "exitDirection": [0.0, 0.0, 1.0]
+      },
+      {
+        "portId": "port_5v_in",
+        "label": "5V power input",
+        "connectorType": "JST-PH 3-pin",
+        "busKind": "dc_power",
+        "role": "sink",
+        "minVoltageV": 4.75,
+        "nominalVoltageV": 5,
+        "maxVoltageV": 5.25,
+        "maxCurrentA": 2.5,
+        "wireColorsHex": ["#cc2929", "#222428"],
+        "localPositionMeters": [0.002, 0.0047, -0.0080875],
+        "exitDirection": [0.0, 1.0, -0.0]
       }
     ]
   },

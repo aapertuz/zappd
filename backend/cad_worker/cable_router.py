@@ -64,6 +64,8 @@ _DEFAULT_COLORS = {
     "ttl_serial": (*_RED_BLACK, "#e5c158"),
     "pwm_signal": (*_RED_BLACK, "#3b82f6"),
     "i2c_spi_uart": (*_RED_BLACK, "#3b82f6"),
+    "analog_audio": _RED_BLACK,
+    "mipi_csi2": ("#222428", "#ececec", "#3b82f6"),
 }
 
 

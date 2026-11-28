@@ -1,0 +1,9 @@
+{
+  "meta": {
+    "filename": "kicad_quadruped_power_bec.kicad_pro",
+    "version": 1
+  },
+  "text_variables": {
+    "ZAPPD_KICAD_MODELS": "${KIPRJMOD}/../../data/cots_library/kicad_3d"
+  }
+}

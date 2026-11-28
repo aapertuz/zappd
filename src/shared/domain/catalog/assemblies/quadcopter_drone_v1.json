@@ -900,7 +900,7 @@
       "sourceUrl": "kicad://zappd/kicad_quad_flight_controller",
       "sourceName": "Zappd kicad_quad_flight_controller.kicad_pcb with KiCad kicad-packages3D models",
       "stepFixtureName": "kicad_quad_flight_controller.step",
-      "expectedStepSha256": "0ff4be30d9f595e08107563f24fc1ae2b875371d90602c3d7b367fc42ae4bc7c",
+      "expectedStepSha256": "7cff7e3d053aae646bba2d8e0fd2183cd79ffcc26a83e37982d910061b176648",
       "dimensionsMm": [36.0, 5.845, 36.175],
       "materialHint": "fr4_pcb",
       "colorHex": "#247052",
@@ -908,7 +908,7 @@
         "pcbWidthMm": 36,
         "pcbLengthMm": 36,
         "pcbThicknessMm": 1.6,
-        "brepFaces": 3121,
+        "brepFaces": 4133,
         "xcafColors": 10,
         "referenceLayout": true
       },
@@ -935,6 +935,38 @@
           "connectorType": "JST-GH 4-pin",
           "busKind": "i2c_spi_uart",
           "localPositionMeters": [0.008, 0.0029225, -0.0110875],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_power_in",
+          "label": "5V power input",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "dc_power",
+          "localPositionMeters": [-0.0122, 0.0029225, 0.0054125],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_gps",
+          "label": "GPS / compass bus",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "i2c_spi_uart",
+          "localPositionMeters": [0.0122, 0.0029225, 0.0054125],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_esc_aux",
+          "label": "Auxiliary ESC link",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "pwm_signal",
+          "localPositionMeters": [-0.0122, 0.0029225, -0.0025875],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_telemetry",
+          "label": "Telemetry UART",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "i2c_spi_uart",
+          "localPositionMeters": [0.0122, 0.0029225, -0.0025875],
           "exitDirection": [0.0, 1.0, -0.0]
         }
       ]
