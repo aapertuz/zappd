@@ -87,3 +87,23 @@ def test_cli_persists_pipeline_wrapper_metadata_for_cached_inspection(
 
     result = json.loads((output_dir / "pipeline_result.json").read_text(encoding="utf-8"))
     assert result["validation"]["sourceInspection"] is True
+
+
+def test_worker_uses_shared_assembly_nodes_with_pinned_source_metadata(monkeypatch, tmp_path):
+    import dual_scorpion_catalog as catalog_module
+
+    source_path = tmp_path / "src/shared/domain/data/dual_scorpion_v1.json"
+    source_path.parent.mkdir(parents=True)
+    source_path.write_text(json.dumps({
+        "archetypeId": "dual_scorpion_v1",
+        "sourceCommit": catalog_module.SOURCE_COMMIT,
+        "nodes": [{"id": "old_source_node"}],
+    }))
+    assembly_path = tmp_path / "assembly.json"
+    assembly_path.write_text(json.dumps({"nodes": [{"id": "shared_assembly_node"}]}))
+    monkeypatch.setattr(catalog_module, "REPO_ROOT", tmp_path)
+
+    catalog = catalog_module._load_catalog(assembly_path)
+
+    assert catalog["nodes"] == [{"id": "shared_assembly_node"}]
+    assert catalog["sourceCommit"] == catalog_module.SOURCE_COMMIT

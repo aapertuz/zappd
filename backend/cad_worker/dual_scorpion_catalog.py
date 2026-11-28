@@ -32,7 +32,7 @@ SOURCE_URDF_PATH = "dual_scorpion_Full_urdf/urdf/scorpion.urdf"
 SOURCE_URDF_URL = f"{SOURCE_RAW_BASE}/{SOURCE_URDF_PATH}"
 SOURCE_LICENSE = "Apache-2.0"
 SOURCE_NAME = f"Momoi Open Source Organization, Dual Scorpion at {SOURCE_COMMIT}"
-CATALOG_PATH = REPO_ROOT / "src" / "shared" / "domain" / "data" / "dual_scorpion_v1.json"
+CATALOG_PATH = REPO_ROOT / "src" / "shared" / "domain" / "catalog" / "assemblies" / "dual_scorpion_v1.json"
 SOURCE_PART_PATTERN = re.compile(r"(.+)_\d+")
 SOURCE_COMPONENT_PATTERN = re.compile(r"^[A-Za-z0-9_]+$")
 ROOT_ID = "dual_scorpion_assembly"
@@ -515,7 +515,9 @@ def _assign_inspection_offsets(nodes: list[dict[str, Any]]) -> None:
 
 
 def _load_catalog(catalog_path: Path) -> dict[str, Any]:
-    catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    source_manifest_path = REPO_ROOT / "src/shared/domain/data/dual_scorpion_v1.json"
+    source_manifest = json.loads(source_manifest_path.read_text(encoding="utf-8"))
+    catalog = {**source_manifest, **json.loads(catalog_path.read_text(encoding="utf-8"))}
     if catalog.get("archetypeId") != ARCHETYPE_ID or catalog.get("sourceCommit") != SOURCE_COMMIT:
         raise ValueError("Dual Scorpion catalog is not pinned to the supported source commit")
     return catalog

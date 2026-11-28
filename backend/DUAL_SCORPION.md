@@ -1,6 +1,6 @@
 # Dual Scorpion source inspection
 
-The catalog imports the 70 follower STEP parts from [momoiorg-repository/dual_scorpion](https://github.com/momoiorg-repository/dual_scorpion) at commit [`cc5b46ca9611ea5568b017bc5bff9f01945d25a3`](https://github.com/momoiorg-repository/dual_scorpion/commit/cc5b46ca9611ea5568b017bc5bff9f01945d25a3). The archive includes the Apache-2.0 license. Source files keep their upstream URLs and SHA-256 values in `src/shared/domain/data/dual_scorpion_v1.json`.
+The catalog imports the 70 follower STEP parts from [momoiorg-repository/dual_scorpion](https://github.com/momoiorg-repository/dual_scorpion) at commit [`cc5b46ca9611ea5568b017bc5bff9f01945d25a3`](https://github.com/momoiorg-repository/dual_scorpion/commit/cc5b46ca9611ea5568b017bc5bff9f01945d25a3). The archive includes the Apache-2.0 license. Source files keep their upstream URLs and SHA-256 values in `src/shared/domain/catalog/assemblies/dual_scorpion_v1.json`.
 
 ## Import the source archive
 

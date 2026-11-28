@@ -24,6 +24,7 @@ import {
   isGeometryOrigin,
   isVerifiedStatus,
 } from './assembly';
+import dualScorpionSourceCatalog from './catalog/assemblies/dual_scorpion_v1.json' with { type: 'json' };
 import openQuadrupedCatalog from './catalog/assemblies/open_quadruped_v1.json' with { type: 'json' };
 import roverCatalog from './catalog/assemblies/open_source_rover_v1.json' with { type: 'json' };
 import parametricMultirotorCatalog from './catalog/assemblies/parametric_multirotor_v1.json' with { type: 'json' };
@@ -31,7 +32,6 @@ import poppyCatalog from './catalog/assemblies/poppy_humanoid_v1.json' with { ty
 import quadcopterCatalog from './catalog/assemblies/quadcopter_drone_v1.json' with { type: 'json' };
 import reachyMiniCatalog from './catalog/assemblies/reachy_mini_v1.json' with { type: 'json' };
 import roboticArmCatalog from './catalog/assemblies/robotic_arm_3dof_v1.json' with { type: 'json' };
-import dualScorpionSourceCatalog from './data/dual_scorpion_v1.json' with { type: 'json' };
 
 export type CatalogComponentBlueprint = Omit<
   AssemblyNode,
