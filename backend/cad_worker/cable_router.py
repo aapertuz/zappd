@@ -269,7 +269,9 @@ def write_colored_step(
             entity.SetId(TCollection_HAsciiString(str(occurrence_id)))
     if writer.Write(str(step_path)) != IFSelect_RetDone:
         raise RuntimeError(f"Could not write colored STEP file {step_path}")
-    if styled_steps or any(colors for _, _, colors in components):
+    color_labels = Sequence_TDF_Label()
+    color_tool.GetColors(color_labels)
+    if color_labels.Length() > 0:
         stabilize_step_presentation(step_path)
 
 
