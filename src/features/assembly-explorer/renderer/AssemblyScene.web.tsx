@@ -37,6 +37,7 @@ import {
 
 import { AssemblyParameters } from './AssemblyParameters';
 import classes from './AssemblyScene.web.module.css';
+import { resolveRenderQuality } from './renderQuality';
 import {
   type AnimatedNodePose,
   type AssemblyAnimationController,
@@ -556,6 +557,13 @@ function buildPhysicalCadMaterial(
     });
   }
 
+  upgraded.setValues({
+    color: upgraded.color,
+    metalness: upgraded.metalness,
+    roughness: upgraded.roughness,
+    clearcoat: profile.clearcoat,
+    clearcoatRoughness: profile.clearcoatRoughness,
+  });
   upgraded.envMapIntensity = profile.envMapIntensity;
   upgraded.ior = profile.ior;
   for (const texture of materialTextures(upgraded)) {
@@ -602,6 +610,7 @@ type SceneRuntime = {
   readonly pointerNdc: THREE.Vector2;
   readonly pointerHits: THREE.Intersection[];
   readonly environmentMap: THREE.Texture | undefined;
+  readonly renderer: THREE.WebGLRenderer | null;
   readonly webglActive: boolean;
   readonly maxAnisotropy: number;
   readonly requestRender: () => void;
@@ -1197,6 +1206,7 @@ export function AssemblyScene({
       pointerNdc: new THREE.Vector2(),
       pointerHits: [],
       environmentMap: envRenderTarget?.texture,
+      renderer,
       webglActive: renderer !== null,
       maxAnisotropy: renderer?.capabilities.getMaxAnisotropy() ?? 1,
       requestRender,
@@ -1486,10 +1496,17 @@ export function AssemblyScene({
         });
         if (playbackInterruptedRef.current) settleAssemblyPlayback(animation);
         animationRef.current = animation;
+        const quality = resolveRenderQuality(gltf.scene);
+        if (runtime.renderer !== null) {
+          runtime.renderer.setPixelRatio(
+            Math.min(window.devicePixelRatio || 1, quality.maxPixelRatio),
+          );
+          runtime.renderer.shadowMap.enabled = quality.shadows;
+        }
         runtime.model = bindAssemblyModel(
           gltf.scene,
           animation.schedule,
-          runtime.webglActive,
+          runtime.webglActive && quality.edges,
           runtime.maxAnisotropy,
           runtime.environmentMap,
         );
