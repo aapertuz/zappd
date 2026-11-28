@@ -15,7 +15,7 @@ const report = JSON.parse(
 
 it('retains measured pair status, excluded CAD and unresolved pair identities', () => {
   const parsed = sourceInterferenceSchema.parse(report);
-  assert.equal(parsed.solidCount, 235);
+  assert.equal(parsed.solidCount, 249);
   assert.equal(parsed.intersectionCount, 102);
   assert.equal(parsed.unresolvedPairCount, 0);
   assert.throws(() => sourceInterferenceSchema.parse({ ...report, unresolvedPairCount: 999 }));

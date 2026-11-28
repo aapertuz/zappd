@@ -24,4 +24,4 @@ def test_current_catalog_falls_back_to_the_repository_fixture_caches(tmp_path):
     spec = json.loads(POPPY_SPEC_PATH.read_text())
     report = load_cached_report(copy.deepcopy(spec), tmp_path)
     assert report is not None
-    assert report["solidCount"] == 235
+    assert report["solidCount"] == 249

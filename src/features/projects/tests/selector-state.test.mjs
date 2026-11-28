@@ -22,7 +22,7 @@ it('builds an ordered card for each catalog assembly with separate commercial an
     archetypeId: 'quadcopter_drone_v1',
     commercialName: 'Aero X4',
     technicalTitle: 'Quadcopter Drone CAD Assembly',
-    partCount: 42,
+    partCount: 50,
     category: 'Flight',
     badge: 'verified',
   });

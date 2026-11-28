@@ -494,14 +494,20 @@ describe('electrical circuits', () => {
         'comp_quad_flight_controller',
         'comp_quad_4in1_esc',
         'comp_quad_elrs_receiver',
+        'comp_quad_pdb_bec',
+        'comp_quad_gps_imu',
+        'comp_quad_telemetry_beacon',
         'comp_quad_cable_fc_esc',
         'comp_quad_cable_rx_fc',
+        'comp_quad_cable_pdb_fc_5v',
+        'comp_quad_cable_gps_fc',
+        'comp_quad_cable_telemetry_fc',
       ],
     ],
     [
       'quadcopter_drone_v1',
       'comp_quad_battery_pack',
-      ['comp_quad_battery_pack', 'comp_quad_4in1_esc', 'comp_quad_cable_battery_esc'],
+      ['comp_quad_battery_pack', 'comp_quad_pdb_bec', 'comp_quad_cable_battery_esc'],
     ],
     ['quadcopter_drone_v1', 'subcomp_standoff_1', []],
     [
@@ -518,7 +524,7 @@ describe('electrical circuits', () => {
     [
       'parametric_multirotor_v1',
       'comp_multi_wire_esc_power',
-      ['comp_multi_wire_esc_power', 'comp_multi_battery', 'comp_multi_esc'],
+      ['comp_multi_wire_esc_power', 'comp_multi_pdb_bec', 'comp_multi_esc'],
     ],
     [
       'poppy_humanoid_v1',
@@ -570,10 +576,16 @@ describe('electrical circuits', () => {
         'comp_poppy_usb2ax_lower',
         'poppy_1_28_8_2',
         'poppy_1_28_14',
+        'comp_poppy_5v_buck',
+        'comp_poppy_audio_amp',
+        'poppy_1_28_7',
         'comp_poppy_cable_usb_upper',
         'comp_poppy_cable_usb_lower',
         'comp_poppy_cable_camera',
         'comp_poppy_cable_imu',
+        'comp_poppy_cable_xu4_power',
+        'comp_poppy_cable_audio_in',
+        'comp_poppy_cable_display',
       ],
     ],
   ];
@@ -590,7 +602,7 @@ describe('electrical circuits', () => {
     const assembly = getCatalogArchetypeById('quadcopter_drone_v1');
     const battery = 'comp_quad_battery_pack';
     const cable = 'comp_quad_cable_battery_esc';
-    const esc = 'comp_quad_4in1_esc';
+    const pdb = 'comp_quad_pdb_bec';
     const receiver = 'comp_quad_elrs_receiver';
     const directRelationship = {
       id: 'rel_direct_cable_receiver',
@@ -604,7 +616,7 @@ describe('electrical circuits', () => {
     };
     assert.deepEqual(
       computeCircuitComponentIds(withDirectLink, cable),
-      new Set([cable, battery, esc, receiver]),
+      new Set([cable, battery, pdb, receiver]),
     );
     assert.deepEqual(
       computeCircuitComponentIds({ ...assembly, relationships: [directRelationship] }, receiver),
