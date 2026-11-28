@@ -124,6 +124,8 @@ def main() -> int:
                 output_dir=out_dir,
                 cache_dir=cache_dir,
                 inject_collision_test=args.inject_collision_test,
+                xbf_cache_dir=args.xbf_cache_dir,
+                render_views_dir=args.render_views_dir,
             )
         else:
             result = pipeline(

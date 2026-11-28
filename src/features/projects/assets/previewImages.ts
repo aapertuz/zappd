@@ -1,5 +1,6 @@
 import {
   type CatalogArchetypeId,
+  DUAL_SCORPION_ARCHETYPE,
   OPEN_QUADRUPED_ARCHETYPE,
   PARAMETRIC_MULTIROTOR_ARCHETYPE,
   POPPY_ARCHETYPE,
@@ -9,6 +10,7 @@ import {
   ROVER_ARCHETYPE,
 } from '@/shared/domain';
 
+import dualScorpion from '@/assets/images/assembly-previews/dual_scorpion_v1.png';
 import quadruped from '@/assets/images/assembly-previews/open_quadruped_v1.png';
 import rover from '@/assets/images/assembly-previews/open_source_rover_v1.png';
 import multirotor from '@/assets/images/assembly-previews/parametric_multirotor_v1.png';
@@ -22,6 +24,7 @@ export const previewImages: Readonly<Record<CatalogArchetypeId, number>> = {
   [ROVER_ARCHETYPE.archetypeId]: rover,
   [PARAMETRIC_MULTIROTOR_ARCHETYPE.archetypeId]: multirotor,
   [POPPY_ARCHETYPE.archetypeId]: poppy,
+  [DUAL_SCORPION_ARCHETYPE.archetypeId]: dualScorpion,
   [QUADCOPTER_ARCHETYPE.archetypeId]: drone,
   [REACHY_MINI_ARCHETYPE.archetypeId]: reachy,
   [ROBOTIC_ARM_ARCHETYPE.archetypeId]: arm,

@@ -25,15 +25,28 @@ def _build(request: dict, cache: CadAssetCache) -> dict:
         raise ValueError("injectCollisionTest must be a boolean")
     render_dir = request.get("renderViewsDir")
     archetype_id = request["archetypeId"]
+    output_dir = Path(request["outputDir"])
+    cache_dir = Path(request["cacheDir"])
+    spec = resolve_catalog_spec(archetype_id)
     pipeline = run_cad_pipeline
     if archetype_id == "poppy_humanoid_v1":
         from poppy_pipeline import run_poppy_pipeline
 
         pipeline = run_poppy_pipeline
+    elif archetype_id == "dual_scorpion_v1":
+        from dual_scorpion_catalog import CATALOG_PATH, download_pinned_archive, prepare_pinned_source
+        from dual_scorpion_pipeline import run_dual_scorpion_pipeline
+
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        archive_path = cache_dir / "dual_scorpion_source.zip"
+        if not archive_path.is_file():
+            download_pinned_archive(archive_path)
+        spec = prepare_pinned_source(archive_path, cache_dir, CATALOG_PATH)
+        pipeline = run_dual_scorpion_pipeline
     return pipeline(
-        resolve_catalog_spec(archetype_id),
-        Path(request["outputDir"]),
-        Path(request["cacheDir"]),
+        spec,
+        output_dir,
+        cache_dir,
         inject_collision_test=inject_collision,
         asset_cache=cache,
         parameter_overrides=params,

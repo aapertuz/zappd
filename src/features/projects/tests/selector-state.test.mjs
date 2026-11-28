@@ -31,6 +31,10 @@ it('builds an ordered card for each catalog assembly with separate commercial an
     'source_inspection',
   );
   assert.equal(
+    cards.find(({ archetypeId }) => archetypeId === 'dual_scorpion_v1').badge,
+    'source_inspection',
+  );
+  assert.equal(
     cards.find(({ archetypeId }) => archetypeId === 'parametric_multirotor_v1').badge,
     'parametric',
   );

@@ -1,5 +1,6 @@
 import {
   type CatalogArchetypeId,
+  DUAL_SCORPION_ARCHETYPE,
   OPEN_QUADRUPED_ARCHETYPE,
   PARAMETRIC_MULTIROTOR_ARCHETYPE,
   POPPY_ARCHETYPE,
@@ -21,6 +22,7 @@ const categories: Readonly<Record<CatalogArchetypeId, string>> = {
   [PARAMETRIC_MULTIROTOR_ARCHETYPE.archetypeId]: 'Configurable flight',
   [REACHY_MINI_ARCHETYPE.archetypeId]: 'Desktop robot',
   [POPPY_ARCHETYPE.archetypeId]: 'Humanoid',
+  [DUAL_SCORPION_ARCHETYPE.archetypeId]: 'Bimanual robot',
 };
 
 export function buildCatalogAssemblyCards(): readonly CatalogAssemblyCard[] {

@@ -61,7 +61,7 @@ def test_cli_persists_pipeline_wrapper_metadata_for_cached_inspection(
     catalog_module.download_pinned_archive = lambda path: path
     catalog_module.prepare_pinned_source = lambda archive, cache, catalog: {"nodes": []}
     pipeline_module = ModuleType("dual_scorpion_pipeline")
-    pipeline_module.run_dual_scorpion_pipeline = lambda spec, output_dir, cache_dir, inject_collision_test: {
+    pipeline_module.run_dual_scorpion_pipeline = lambda spec, output_dir, cache_dir, inject_collision_test, **kwargs: {
         "archetypeId": "dual_scorpion_v1",
         "verificationStatus": "unverified",
         "validation": {"sourceInspection": True},

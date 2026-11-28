@@ -48,6 +48,10 @@ import {
 } from '../model/assemblyAnimation';
 import { type CalloutAnchor, computePartCalloutRect } from '../model/calloutPlacement';
 import {
+  resolveDualScorpionDisplayStyles,
+  type DualScorpionDisplayStyle,
+} from '../model/dualScorpionDisplayStyle';
+import {
   type AssemblyBoundingBoxMeters,
   computeAssemblyBoundingBoxMeters,
   computeCameraZoomLimits,
@@ -59,10 +63,6 @@ import {
   zoomExplorerCamera,
 } from '../model/explorerState';
 import { getAssemblyValidationFailures } from '../model/parameterControls';
-import {
-  resolveDualScorpionDisplayStyles,
-  type DualScorpionDisplayStyle,
-} from '../model/dualScorpionDisplayStyle';
 import type {
   AssemblySceneProps,
   ExplorerCameraState,
