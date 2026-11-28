@@ -15,7 +15,7 @@ it('matches Poppy and preserves hierarchy without invented instructions', () => 
     catalog.archetypeId,
   );
   assert.equal(catalog.semantics, 'source_inspection');
-  assert.equal(catalog.nodes.length, 289);
+  assert.equal(catalog.nodes.length, 303);
   assert.equal(catalog.nodes.length, new Set(catalog.nodes.map((node) => node.id)).size);
   assert.equal(catalog.nodes.filter((node) => node.parentId === null).length, 1);
   const ids = new Set(catalog.nodes.map((node) => node.id));
@@ -42,21 +42,28 @@ it('catalogs Poppy boards, routed cables, and separate Dynamixel buses', () => {
   const portNodes = nodes.filter(({ ports }) => ports?.length > 0);
   assert.deepEqual(
     new Set(boards.map(({ id }) => id)),
-    new Set(['comp_poppy_usb2ax_upper', 'comp_poppy_usb2ax_lower', 'comp_poppy_upper_3p_hub']),
+    new Set([
+      'comp_poppy_usb2ax_upper',
+      'comp_poppy_usb2ax_lower',
+      'comp_poppy_upper_3p_hub',
+      'comp_poppy_power_dist',
+      'comp_poppy_5v_buck',
+      'comp_poppy_audio_amp',
+    ]),
   );
-  assert.equal(cables.length, 33);
-  assert.equal(portNodes.length, 34);
-  assert.equal(portNodes.filter(({ origin }) => origin === 'open_step_catalog').length, 31);
+  assert.equal(cables.length, 43);
+  assert.equal(portNodes.length, 41);
+  assert.equal(portNodes.filter(({ origin }) => origin === 'open_step_catalog').length, 34);
   assert.ok(boards.every((board) => portNodes.includes(board)));
 
   const electrical = relationships.filter(
     ({ connectionType }) => connectionType === 'electrical_bus' || connectionType === 'power_bus',
   );
-  assert.equal(relationships.length, 69);
-  assert.equal(electrical.length, 33);
+  assert.equal(relationships.length, 93);
+  assert.equal(electrical.length, 43);
   assert.equal(
     relationships.filter(({ connectionType }) => connectionType === 'assembly_mount').length,
-    36,
+    50,
   );
 
   const nodesById = new Map(portNodes.map((node) => [node.id, node]));
@@ -65,7 +72,7 @@ it('catalogs Poppy boards, routed cables, and separate Dynamixel buses', () => {
       .get(fromComponentId)
       ?.ports.some(
         ({ portId, busKind }) =>
-          portId === fromPortId && (busKind === 'ttl_serial' || busKind === 'dc_power'),
+          portId === fromPortId && (busKind === 'ttl_serial' || portId === 'port_dxl_power'),
       ),
   );
   assert.equal(dynamixelLinks.length, 29);
@@ -77,6 +84,64 @@ it('catalogs Poppy boards, routed cables, and separate Dynamixel buses', () => {
     controllers.add(from);
   }
   assert.deepEqual(controllers, new Set(['upper_body_controller', 'lower_body_controller']));
+});
+
+it('routes battery and 5 V power and connects each head peripheral to its assigned port', () => {
+  const { nodes, relationships } = getCatalogArchetypeById('poppy_humanoid_v1');
+  const nodesById = new Map(nodes.map((node) => [node.id, node]));
+  const relationshipsById = new Map(
+    relationships.map((relationship) => [relationship.id, relationship]),
+  );
+  const battery = nodesById.get('comp_poppy_battery');
+  assert.equal(battery.category, 'power');
+  assert.equal(battery.origin, 'cots_library_step');
+  assert.equal(
+    battery.ports.find(({ portId }) => portId === 'port_pack_out').nominalVoltageV,
+    11.1,
+  );
+
+  for (const [cable, source, fromPort, sink, toPort, bus, voltage] of [
+    [
+      'batt_main',
+      'comp_poppy_battery',
+      'pack_out',
+      'comp_poppy_power_dist',
+      'battery_in',
+      'dc_power',
+      12,
+    ],
+    ['smps_upper_in', 'comp_poppy_power_dist', 'upper_smps', 'poppy_1_18', 'dc_in', 'dc_power', 12],
+    ['smps_lower_in', 'comp_poppy_power_dist', 'lower_smps', 'poppy_1_19', 'dc_in', 'dc_power', 12],
+    ['buck_in', 'comp_poppy_power_dist', 'buck_out', 'comp_poppy_5v_buck', 'dc_in', 'dc_power', 12],
+    ['xu4_power', 'comp_poppy_5v_buck', '5v_compute', 'poppy_1_28_3', 'dc_in', 'dc_power', 5],
+    ['amp_power', 'comp_poppy_5v_buck', '5v_aux', 'comp_poppy_audio_amp', '5v_in', 'dc_power', 5],
+    ['audio_in', 'poppy_1_28_3', 'audio_out', 'comp_poppy_audio_amp', 'audio_in', 'analog_audio'],
+    ['spk_left', 'comp_poppy_audio_amp', 'spk_left', 'poppy_1_28_10', 'spk_in', 'analog_audio'],
+    ['spk_right', 'comp_poppy_audio_amp', 'spk_right', 'poppy_1_28_11', 'spk_in', 'analog_audio'],
+    ['display', 'poppy_1_28_3', 'display_out', 'poppy_1_28_7', 'display_in', 'mipi_csi2'],
+  ]) {
+    const { specifications } = nodesById.get(`comp_poppy_cable_${cable}`);
+    const relationship = relationshipsById.get(specifications.relationshipId);
+    const isPower = bus === 'dc_power';
+    assert.equal(specifications.controller, isPower ? 'power_distribution' : 'head_peripherals');
+    assert.equal(relationship.connectionType, isPower ? 'power_bus' : 'electrical_bus');
+    assert.equal(relationship.routingStyle, 'filleted_polyline');
+    assert.ok(relationship.routingWaypointsMeters.length > 0);
+    assert.deepEqual(
+      [
+        relationship.fromComponentId,
+        relationship.fromPortId,
+        relationship.toComponentId,
+        relationship.toPortId,
+      ],
+      [source, `port_${fromPort}`, sink, `port_${toPort}`],
+    );
+    const input = nodesById.get(sink).ports.find(({ portId }) => portId === `port_${toPort}`);
+    assert.equal(input.busKind, bus);
+    if (isPower) {
+      assert.equal(input.nominalVoltageV, voltage);
+    }
+  }
 });
 
 it('maps available components while retaining rejected component identities', () => {

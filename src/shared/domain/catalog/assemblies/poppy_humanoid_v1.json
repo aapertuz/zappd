@@ -5237,6 +5237,18 @@
           "exitDirection": [0.0, 1.0, 0.0],
           "wireColorsHex": ["#cc2929", "#222428"],
           "nominalVoltageV": 12
+        },
+        {
+          "portId": "port_dc_in",
+          "label": "12 V reference input",
+          "connectorType": "Reference power input",
+          "busKind": "dc_power",
+          "localPositionMeters": [-0.007, -0.02665, -0.0005],
+          "exitDirection": [0.0, -1.0, 0.0],
+          "role": "sink",
+          "minVoltageV": 9,
+          "nominalVoltageV": 12,
+          "maxVoltageV": 14.8
         }
       ]
     },
@@ -5280,6 +5292,18 @@
           "exitDirection": [0.0, 0.0, -1.0],
           "wireColorsHex": ["#cc2929", "#222428"],
           "nominalVoltageV": 12
+        },
+        {
+          "portId": "port_dc_in",
+          "label": "12 V reference input",
+          "connectorType": "Reference power input",
+          "busKind": "dc_power",
+          "localPositionMeters": [0.007, 0.02665, -0.0005],
+          "exitDirection": [0.0, 1.0, 0.0],
+          "role": "sink",
+          "minVoltageV": 9,
+          "nominalVoltageV": 12,
+          "maxVoltageV": 14.8
         }
       ]
     },
@@ -7468,6 +7492,38 @@
           "localPositionMeters": [0.029642, 0.002176, 0.0245761],
           "exitDirection": [0.0, 0.0, 1.0],
           "wireColorsHex": ["#222428", "#cc2929", "#3b82f6"]
+        },
+        {
+          "portId": "port_dc_in",
+          "label": "5 V computer power input",
+          "connectorType": "5.5 \u00d7 2.1 mm barrel jack",
+          "busKind": "dc_power",
+          "localPositionMeters": [0.04215, -0.003, -0.018],
+          "exitDirection": [1.0, 0.0, 0.0],
+          "role": "sink",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 4
+        },
+        {
+          "portId": "port_audio_out",
+          "label": "Analog audio after USB adapter",
+          "connectorType": "USB audio adapter output datum",
+          "busKind": "analog_audio",
+          "localPositionMeters": [-0.012858, 0.0081012, -0.002408],
+          "exitDirection": [0.0, 1.0, 0.0],
+          "role": "source",
+          "wireColorsHex": ["#ececec", "#cc2929", "#222428"]
+        },
+        {
+          "portId": "port_display_out",
+          "label": "Display signal after HDMI bridge",
+          "connectorType": "HDMI bridge output datum",
+          "busKind": "mipi_csi2",
+          "localPositionMeters": [-0.0422, 0.009, 0.012],
+          "exitDirection": [-1.0, 0.0, 0.0],
+          "role": "source"
         }
       ]
     },
@@ -7587,7 +7643,18 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "02b73e5a66026e5fb29711b77b5c5993a4613b635309bbace8abd06411349238"
+      "expectedStepSha256": "02b73e5a66026e5fb29711b77b5c5993a4613b635309bbace8abd06411349238",
+      "ports": [
+        {
+          "portId": "port_display_in",
+          "label": "Reference display input",
+          "connectorType": "Display interface datum",
+          "busKind": "mipi_csi2",
+          "localPositionMeters": [0.0215, 0.0258181, -0.013996],
+          "exitDirection": [0.0, 1.0, 0.0],
+          "role": "sink"
+        }
+      ]
     },
     {
       "id": "poppy_1_28_8",
@@ -7802,7 +7869,18 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "d8dd6890692385304afb87648412e265d3c0c10df30e3f76e90b865c5445f31b"
+      "expectedStepSha256": "d8dd6890692385304afb87648412e265d3c0c10df30e3f76e90b865c5445f31b",
+      "ports": [
+        {
+          "portId": "port_spk_in",
+          "label": "Left speaker input",
+          "connectorType": "Reference speaker terminals",
+          "busKind": "analog_audio",
+          "localPositionMeters": [0.0052, -0.002, 0.0],
+          "exitDirection": [1.0, 0.0, 0.0],
+          "role": "sink"
+        }
+      ]
     },
     {
       "id": "poppy_1_28_11",
@@ -7831,7 +7909,18 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "cdadd9624a3e544e9686d5e7ea431ed8a446a018ab6817caa32b6e28bc531251"
+      "expectedStepSha256": "cdadd9624a3e544e9686d5e7ea431ed8a446a018ab6817caa32b6e28bc531251",
+      "ports": [
+        {
+          "portId": "port_spk_in",
+          "label": "Right speaker input",
+          "connectorType": "Reference speaker terminals",
+          "busKind": "analog_audio",
+          "localPositionMeters": [-0.0052, -0.002, 0.0],
+          "exitDirection": [-1.0, 0.0, 0.0],
+          "role": "sink"
+        }
+      ]
     },
     {
       "id": "poppy_1_28_12",
@@ -8043,7 +8132,12 @@
           "connectorType": "USB-C",
           "busKind": "usb_data",
           "localPositionMeters": [0.0, 0.014975, -0.00035],
-          "exitDirection": [0.0, 1.0, 0.0]
+          "exitDirection": [0.0, 1.0, 0.0],
+          "role": "bidirectional",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 0.5
         },
         {
           "portId": "port_dxl_ttl",
@@ -8052,6 +8146,11 @@
           "busKind": "ttl_serial",
           "localPositionMeters": [0.0, -0.011, -0.0047],
           "exitDirection": [0.0, 0.0, -1.0],
+          "role": "bidirectional",
+          "minVoltageV": 9,
+          "nominalVoltageV": 12,
+          "maxVoltageV": 14.8,
+          "maxCurrentA": 5,
           "wireColorsHex": ["#222428", "#e5c158"]
         }
       ]
@@ -8092,7 +8191,12 @@
           "connectorType": "USB-C",
           "busKind": "usb_data",
           "localPositionMeters": [0.0, 0.014975, -0.00035],
-          "exitDirection": [0.0, 1.0, 0.0]
+          "exitDirection": [0.0, 1.0, 0.0],
+          "role": "bidirectional",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 0.5
         },
         {
           "portId": "port_dxl_ttl",
@@ -8101,6 +8205,11 @@
           "busKind": "ttl_serial",
           "localPositionMeters": [0.0, -0.011, -0.0047],
           "exitDirection": [0.0, 0.0, -1.0],
+          "role": "bidirectional",
+          "minVoltageV": 9,
+          "nominalVoltageV": 12,
+          "maxVoltageV": 14.8,
+          "maxCurrentA": 5,
           "wireColorsHex": ["#222428", "#e5c158"]
         }
       ]
@@ -8141,7 +8250,12 @@
           "connectorType": "JST-PH 3-pin",
           "busKind": "ttl_serial",
           "localPositionMeters": [-0.015, -0.004, -0.0047],
-          "exitDirection": [0.0, 0.0, -1.0]
+          "exitDirection": [0.0, 0.0, -1.0],
+          "role": "bidirectional",
+          "minVoltageV": 9,
+          "nominalVoltageV": 12,
+          "maxVoltageV": 14.8,
+          "maxCurrentA": 5
         },
         {
           "portId": "port_hub_2",
@@ -8150,7 +8264,11 @@
           "busKind": "dc_power",
           "localPositionMeters": [0.002, -0.004, -0.0047],
           "exitDirection": [0.0, 0.0, -1.0],
-          "nominalVoltageV": 12
+          "role": "bidirectional",
+          "minVoltageV": 9,
+          "nominalVoltageV": 12,
+          "maxVoltageV": 14.8,
+          "maxCurrentA": 5
         },
         {
           "portId": "port_hub_3",
@@ -8158,7 +8276,12 @@
           "connectorType": "JST-PH 3-pin",
           "busKind": "ttl_serial",
           "localPositionMeters": [-0.015, 0.004, -0.0047],
-          "exitDirection": [0.0, 0.0, -1.0]
+          "exitDirection": [0.0, 0.0, -1.0],
+          "role": "bidirectional",
+          "minVoltageV": 9,
+          "nominalVoltageV": 12,
+          "maxVoltageV": 14.8,
+          "maxCurrentA": 5
         },
         {
           "portId": "port_hub_4",
@@ -8166,7 +8289,12 @@
           "connectorType": "JST-PH 3-pin",
           "busKind": "ttl_serial",
           "localPositionMeters": [0.002, 0.004, -0.0047],
-          "exitDirection": [0.0, 0.0, -1.0]
+          "exitDirection": [0.0, 0.0, -1.0],
+          "role": "bidirectional",
+          "minVoltageV": 9,
+          "nominalVoltageV": 12,
+          "maxVoltageV": 14.8,
+          "maxCurrentA": 5
         },
         {
           "portId": "port_hub_5",
@@ -8174,7 +8302,12 @@
           "connectorType": "JST-PH 3-pin",
           "busKind": "ttl_serial",
           "localPositionMeters": [0.019, -0.004, -0.0047],
-          "exitDirection": [0.0, 0.0, -1.0]
+          "exitDirection": [0.0, 0.0, -1.0],
+          "role": "bidirectional",
+          "minVoltageV": 9,
+          "nominalVoltageV": 12,
+          "maxVoltageV": 14.8,
+          "maxCurrentA": 5
         },
         {
           "portId": "port_hub_6",
@@ -8182,7 +8315,373 @@
           "connectorType": "JST-PH 3-pin",
           "busKind": "ttl_serial",
           "localPositionMeters": [0.019, 0.004, -0.0047],
-          "exitDirection": [0.0, 0.0, -1.0]
+          "exitDirection": [0.0, 0.0, -1.0],
+          "role": "bidirectional",
+          "minVoltageV": 9,
+          "nominalVoltageV": 12,
+          "maxVoltageV": 14.8,
+          "maxCurrentA": 5
+        }
+      ]
+    },
+    {
+      "id": "comp_poppy_battery",
+      "geometry": { "kind": "available", "role": "solid" },
+      "parentId": "sub_poppy_electronics",
+      "name": "3S 18650 battery pack",
+      "level": "component",
+      "depth": 2,
+      "category": "power",
+      "colorHex": "#3f3f46",
+      "materialHint": "li_ion_battery",
+      "explodeDirection": [0.0, 0.0, -1.0],
+      "explodeDistanceMeters": 0.035,
+      "origin": "cots_library_step",
+      "spdxLicense": "NOASSERTION",
+      "sourceUrl": "https://raw.githubusercontent.com/robotjaol/custom-components/1626f92986822050eb3a6232f536b564801d6426/BATTERY_HOLDER_18650_X3/3%20Battery%20Holder%20With%20Batteries.step",
+      "sourceName": "robotjaol/custom-components 3 Battery Holder With Batteries.step",
+      "restPositionMeters": [0.0, 0.138, -0.108],
+      "dimensionsMm": [77.98, 24.74, 59.63],
+      "stepFixtureName": "cots_battery_3s_18650.step",
+      "expectedStepSha256": "2447b23136e63ef600e444d6d1cda79b3e6b0405f8e6f5667f069647d5d4b611",
+      "specifications": {
+        "seriesCells": 3,
+        "cellFormat": "18650",
+        "brepFaces": 498,
+        "xcafColors": 5,
+        "controller": "power_distribution"
+      },
+      "ports": [
+        {
+          "portId": "port_tab_1",
+          "label": "Battery holder contact 1",
+          "connectorType": "Solder tab",
+          "busKind": "dc_power",
+          "localPositionMeters": [-0.03624, -0.01237, 0.019255],
+          "exitDirection": [0, -1, 0],
+          "role": "bidirectional",
+          "minVoltageV": 3,
+          "nominalVoltageV": 3.7,
+          "maxVoltageV": 4.2,
+          "maxCurrentA": 15
+        },
+        {
+          "portId": "port_tab_2",
+          "label": "Battery holder contact 2",
+          "connectorType": "Solder tab",
+          "busKind": "dc_power",
+          "localPositionMeters": [-0.03624, -0.01237, -4.5e-5],
+          "exitDirection": [0, -1, 0],
+          "role": "bidirectional",
+          "minVoltageV": 3,
+          "nominalVoltageV": 3.7,
+          "maxVoltageV": 4.2,
+          "maxCurrentA": 15
+        },
+        {
+          "portId": "port_tab_3",
+          "label": "Battery holder contact 3",
+          "connectorType": "Solder tab",
+          "busKind": "dc_power",
+          "localPositionMeters": [-0.03624, -0.01237, -0.019345],
+          "exitDirection": [0, -1, 0],
+          "role": "bidirectional",
+          "minVoltageV": 3,
+          "nominalVoltageV": 3.7,
+          "maxVoltageV": 4.2,
+          "maxCurrentA": 15
+        },
+        {
+          "portId": "port_tab_4",
+          "label": "Battery holder contact 4",
+          "connectorType": "Solder tab",
+          "busKind": "dc_power",
+          "localPositionMeters": [0.03624, -0.01237, 0.019345],
+          "exitDirection": [0, -1, 0],
+          "role": "bidirectional",
+          "minVoltageV": 3,
+          "nominalVoltageV": 3.7,
+          "maxVoltageV": 4.2,
+          "maxCurrentA": 15
+        },
+        {
+          "portId": "port_tab_5",
+          "label": "Battery holder contact 5",
+          "connectorType": "Solder tab",
+          "busKind": "dc_power",
+          "localPositionMeters": [0.03624, -0.01237, 4.5e-5],
+          "exitDirection": [0, -1, 0],
+          "role": "bidirectional",
+          "minVoltageV": 3,
+          "nominalVoltageV": 3.7,
+          "maxVoltageV": 4.2,
+          "maxCurrentA": 15
+        },
+        {
+          "portId": "port_tab_6",
+          "label": "Battery holder contact 6",
+          "connectorType": "Solder tab",
+          "busKind": "dc_power",
+          "localPositionMeters": [0.03624, -0.01237, -0.019255],
+          "exitDirection": [0, -1, 0],
+          "role": "bidirectional",
+          "minVoltageV": 3,
+          "nominalVoltageV": 3.7,
+          "maxVoltageV": 4.2,
+          "maxCurrentA": 15
+        },
+        {
+          "portId": "port_pack_out",
+          "label": "3S pack output",
+          "connectorType": "Solder tabs",
+          "busKind": "dc_power",
+          "localPositionMeters": [-0.03624, -0.01237, 0.019255],
+          "exitDirection": [0, -1, 0],
+          "role": "source",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 12.6,
+          "maxCurrentA": 15
+        }
+      ]
+    },
+    {
+      "id": "comp_poppy_power_dist",
+      "geometry": { "kind": "available", "role": "solid" },
+      "parentId": "sub_poppy_electronics",
+      "name": "12 V power distribution and switch board",
+      "level": "component",
+      "depth": 2,
+      "category": "electronics",
+      "colorHex": "#247052",
+      "materialHint": "fr4_pcb",
+      "explodeDirection": [0.0, 0.0, -1.0],
+      "explodeDistanceMeters": 0.035,
+      "origin": "kicad_pcb_step",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "kicad://zappd/kicad_poppy_power_dist",
+      "sourceName": "Zappd kicad_poppy_power_dist.kicad_pcb with KiCad kicad-packages3D models",
+      "restPositionMeters": [0.0, 0.171, -0.062],
+      "dimensionsMm": [46.0, 26.0, 20.5],
+      "stepFixtureName": "kicad_poppy_power_dist.step",
+      "expectedStepSha256": "a2b367b8903d3bffa393157e06ea24a0b31adfee11e2115ec356400e4880d220",
+      "specifications": {
+        "pcbWidthMm": 46,
+        "pcbLengthMm": 26,
+        "pcbThicknessMm": 1.6,
+        "brepFaces": 939,
+        "xcafColors": 9,
+        "referenceLayout": true,
+        "controller": "power_distribution"
+      },
+      "ports": [
+        {
+          "portId": "port_battery_in",
+          "label": "12V battery input",
+          "connectorType": "XT60",
+          "busKind": "dc_power",
+          "localPositionMeters": [-0.0124, 0.004, -0.01025],
+          "exitDirection": [0.0, 0.0, -1.0],
+          "role": "sink",
+          "minVoltageV": 9,
+          "nominalVoltageV": 12,
+          "maxVoltageV": 14.8,
+          "maxCurrentA": 15
+        },
+        {
+          "portId": "port_upper_smps",
+          "label": "Upper SMPS feed",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "dc_power",
+          "localPositionMeters": [-0.014, -0.007, -0.00025],
+          "exitDirection": [0.0, 0.0, -1.0],
+          "role": "source",
+          "minVoltageV": 9,
+          "nominalVoltageV": 12,
+          "maxVoltageV": 14.8,
+          "maxCurrentA": 5
+        },
+        {
+          "portId": "port_lower_smps",
+          "label": "Lower SMPS feed",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "dc_power",
+          "localPositionMeters": [0.0, -0.007, -0.00025],
+          "exitDirection": [0.0, 0.0, -1.0],
+          "role": "source",
+          "minVoltageV": 9,
+          "nominalVoltageV": 12,
+          "maxVoltageV": 14.8,
+          "maxCurrentA": 5
+        },
+        {
+          "portId": "port_buck_out",
+          "label": "5V buck regulator feed",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "dc_power",
+          "localPositionMeters": [0.014, -0.007, -0.00025],
+          "exitDirection": [0.0, 0.0, -1.0],
+          "role": "source",
+          "minVoltageV": 9,
+          "nominalVoltageV": 12,
+          "maxVoltageV": 14.8,
+          "maxCurrentA": 5
+        }
+      ]
+    },
+    {
+      "id": "comp_poppy_5v_buck",
+      "geometry": { "kind": "available", "role": "solid" },
+      "parentId": "sub_poppy_electronics",
+      "name": "12 V to 5 V buck regulator",
+      "level": "component",
+      "depth": 2,
+      "category": "electronics",
+      "colorHex": "#247052",
+      "materialHint": "fr4_pcb",
+      "explodeDirection": [0.0, 0.0, -1.0],
+      "explodeDistanceMeters": 0.035,
+      "origin": "kicad_pcb_step",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "kicad://zappd/kicad_poppy_5v_buck",
+      "sourceName": "Zappd kicad_poppy_5v_buck.kicad_pcb with KiCad kicad-packages3D models",
+      "restPositionMeters": [0.037, 0.269, -0.082],
+      "dimensionsMm": [34.0, 22.0, 11.4],
+      "stepFixtureName": "kicad_poppy_5v_buck.step",
+      "expectedStepSha256": "1375d1459e130d6d3313f6d4edc2ee307394eeede8c96c131a5cc91a33ea08b7",
+      "specifications": {
+        "pcbWidthMm": 34,
+        "pcbLengthMm": 22,
+        "pcbThicknessMm": 1.6,
+        "brepFaces": 1085,
+        "xcafColors": 7,
+        "referenceLayout": true,
+        "controller": "power_distribution",
+        "combinedOutputLimitA": 4
+      },
+      "ports": [
+        {
+          "portId": "port_dc_in",
+          "label": "12V DC input",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "dc_power",
+          "localPositionMeters": [-0.01, -0.007, -0.0037],
+          "exitDirection": [0.0, 0.0, -1.0],
+          "role": "sink",
+          "minVoltageV": 9,
+          "nominalVoltageV": 12,
+          "maxVoltageV": 14.8,
+          "maxCurrentA": 2.5
+        },
+        {
+          "portId": "port_5v_compute",
+          "label": "5V compute output",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "dc_power",
+          "localPositionMeters": [0.0, -0.007, -0.0037],
+          "exitDirection": [0.0, 0.0, -1.0],
+          "role": "source",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 4
+        },
+        {
+          "portId": "port_5v_aux",
+          "label": "5V auxiliary output",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "dc_power",
+          "localPositionMeters": [0.01, -0.007, -0.0037],
+          "exitDirection": [0.0, 0.0, -1.0],
+          "role": "source",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 1.5
+        }
+      ]
+    },
+    {
+      "id": "comp_poppy_audio_amp",
+      "geometry": { "kind": "available", "role": "solid" },
+      "parentId": "sub_poppy_electronics",
+      "name": "Stereo class-D audio amplifier",
+      "level": "component",
+      "depth": 2,
+      "category": "electronics",
+      "colorHex": "#247052",
+      "materialHint": "fr4_pcb",
+      "explodeDirection": [0.0, 0.0, -1.0],
+      "explodeDistanceMeters": 0.035,
+      "origin": "kicad_pcb_step",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "kicad://zappd/kicad_poppy_audio_amp",
+      "sourceName": "Zappd kicad_poppy_audio_amp.kicad_pcb with KiCad kicad-packages3D models",
+      "restPositionMeters": [0.0, 0.375, -0.057],
+      "dimensionsMm": [32.0, 20.0, 9.4],
+      "stepFixtureName": "kicad_poppy_audio_amp.step",
+      "expectedStepSha256": "5c8d5e849e82c7be9c73dfd168f881c207e4f2cfce6c01a244c8916cb34bdaf6",
+      "specifications": {
+        "pcbWidthMm": 32,
+        "pcbLengthMm": 20,
+        "pcbThicknessMm": 1.6,
+        "brepFaces": 1244,
+        "xcafColors": 6,
+        "referenceLayout": true,
+        "controller": "head_peripherals"
+      },
+      "ports": [
+        {
+          "portId": "port_5v_in",
+          "label": "5V power input",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "dc_power",
+          "localPositionMeters": [-0.01, 0.004, -0.0047],
+          "exitDirection": [0.0, 0.0, -1.0],
+          "role": "sink",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 1.5
+        },
+        {
+          "portId": "port_audio_in",
+          "label": "Stereo audio input",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "analog_audio",
+          "localPositionMeters": [0.01, 0.0045, -0.0029],
+          "exitDirection": [0.0, 0.0, -1.0],
+          "role": "sink",
+          "minVoltageV": 0,
+          "nominalVoltageV": 3.3,
+          "maxVoltageV": 5,
+          "maxCurrentA": 0.1
+        },
+        {
+          "portId": "port_spk_left",
+          "label": "Left speaker output",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "analog_audio",
+          "localPositionMeters": [-0.009, -0.006, -0.0047],
+          "exitDirection": [0.0, 0.0, -1.0],
+          "role": "source",
+          "minVoltageV": 0,
+          "nominalVoltageV": 4.47,
+          "maxVoltageV": 5,
+          "maxCurrentA": 1.0
+        },
+        {
+          "portId": "port_spk_right",
+          "label": "Right speaker output",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "analog_audio",
+          "localPositionMeters": [0.007, -0.006, -0.0047],
+          "exitDirection": [0.0, 0.0, -1.0],
+          "role": "source",
+          "minVoltageV": 0,
+          "nominalVoltageV": 4.47,
+          "maxVoltageV": 5,
+          "maxCurrentA": 1.0
         }
       ]
     },
@@ -9089,6 +9588,296 @@
       "expectedStepSha256": "f6d1f72580b181382595e969957760d8a83d8a284255bb4c0773352c36adc877",
       "restPositionMeters": [0.02180463536396109, 0.33275245005, 0.004450249769476624],
       "dimensionsMm": [13.390729472077833, 10.395100100000036, 27.932299538953252]
+    },
+    {
+      "id": "comp_poppy_cable_batt_main",
+      "geometry": { "kind": "available", "role": "solid" },
+      "parentId": "sub_poppy_wiring",
+      "name": "Battery pack feed",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#222428",
+      "materialHint": "silicone_wire",
+      "explodeDirection": [0.0, 0.0, -1.0],
+      "explodeDistanceMeters": 0.035,
+      "origin": "procedural_harness",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "harness://zappd/poppy_humanoid_v1/rel_poppy_wire_batt_main",
+      "sourceName": "Poppy Humanoid inspection routing",
+      "stepFixtureName": "comp_poppy_cable_batt_main.step",
+      "specifications": {
+        "relationshipId": "rel_poppy_wire_batt_main",
+        "controller": "power_distribution",
+        "circuit": "power_distribution",
+        "busKind": "dc_power",
+        "fromConnectorClearanceMm": 0.5,
+        "toConnectorClearanceMm": 0.5
+      },
+      "expectedStepSha256": "1c7b3fc3bf019157d3a73824029cb4bffba0836383b291e7036e22bb521edda3",
+      "restPositionMeters": [-0.023960141874991844, 0.14760502596125274, -0.0814320588735294],
+      "dimensionsMm": [25.853834097075143, 56.20029783237837, 17.364117747058813]
+    },
+    {
+      "id": "comp_poppy_cable_smps_upper_in",
+      "geometry": { "kind": "available", "role": "solid" },
+      "parentId": "sub_poppy_wiring",
+      "name": "Upper injector supply",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#222428",
+      "materialHint": "silicone_wire",
+      "explodeDirection": [0.0, 0.0, -1.0],
+      "explodeDistanceMeters": 0.035,
+      "origin": "procedural_harness",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "harness://zappd/poppy_humanoid_v1/rel_poppy_wire_smps_upper_in",
+      "sourceName": "Poppy Humanoid inspection routing",
+      "stepFixtureName": "comp_poppy_cable_smps_upper_in.step",
+      "specifications": {
+        "relationshipId": "rel_poppy_wire_smps_upper_in",
+        "controller": "power_distribution",
+        "circuit": "power_distribution",
+        "busKind": "dc_power",
+        "fromConnectorClearanceMm": 0.5,
+        "toConnectorClearanceMm": 0.5
+      },
+      "expectedStepSha256": "bce268d185eb2eae703e4b4ce7c083121ea083645ff08e3cc3e6c69a8bb54995",
+      "restPositionMeters": [-0.015523905634723329, 0.17590379406764708, -0.05522584157251453],
+      "dimensionsMm": [18.825415618976738, 24.866411864705896, 25.182416718717413]
+    },
+    {
+      "id": "comp_poppy_cable_smps_lower_in",
+      "geometry": { "kind": "available", "role": "solid" },
+      "parentId": "sub_poppy_wiring",
+      "name": "Lower injector supply",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#222428",
+      "materialHint": "silicone_wire",
+      "explodeDirection": [0.0, 0.0, -1.0],
+      "explodeDistanceMeters": 0.035,
+      "origin": "procedural_harness",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "harness://zappd/poppy_humanoid_v1/rel_poppy_wire_smps_lower_in",
+      "sourceName": "Poppy Humanoid inspection routing",
+      "stepFixtureName": "comp_poppy_cable_smps_lower_in.step",
+      "specifications": {
+        "relationshipId": "rel_poppy_wire_smps_lower_in",
+        "controller": "power_distribution",
+        "circuit": "power_distribution",
+        "busKind": "dc_power",
+        "fromConnectorClearanceMm": 0.5,
+        "toConnectorClearanceMm": 0.5
+      },
+      "expectedStepSha256": "0ef344658e5bafe16fa8698af7f59ea4395f0739a7de68aae3cd14903668993a",
+      "restPositionMeters": [0.003494208802547212, 0.14133970593235293, -0.062016138300840185],
+      "dimensionsMm": [9.256064863917956, 46.379411864705844, 12.426616102258727]
+    },
+    {
+      "id": "comp_poppy_cable_buck_in",
+      "geometry": { "kind": "available", "role": "solid" },
+      "parentId": "sub_poppy_wiring",
+      "name": "Buck regulator input",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#222428",
+      "materialHint": "silicone_wire",
+      "explodeDirection": [0.0, 0.0, -1.0],
+      "explodeDistanceMeters": 0.035,
+      "origin": "procedural_harness",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "harness://zappd/poppy_humanoid_v1/rel_poppy_wire_buck_in",
+      "sourceName": "Poppy Humanoid inspection routing",
+      "stepFixtureName": "comp_poppy_cable_buck_in.step",
+      "specifications": {
+        "relationshipId": "rel_poppy_wire_buck_in",
+        "controller": "power_distribution",
+        "circuit": "power_distribution",
+        "busKind": "dc_power",
+        "fromConnectorClearanceMm": 0.5,
+        "toConnectorClearanceMm": 0.5
+      },
+      "expectedStepSha256": "498365d7785d013f8852073b9c15f4ef86741a52fcbb41853e2bf9caea667354",
+      "restPositionMeters": [0.02048954818497541, 0.21307879060556997, -0.07725296046192857],
+      "dimensionsMm": [15.246743628774341, 99.21640494055168, 29.005920923857175]
+    },
+    {
+      "id": "comp_poppy_cable_xu4_power",
+      "geometry": { "kind": "available", "role": "solid" },
+      "parentId": "sub_poppy_wiring",
+      "name": "Odroid 5 V supply",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#222428",
+      "materialHint": "silicone_wire",
+      "explodeDirection": [0.0, 0.0, -1.0],
+      "explodeDistanceMeters": 0.035,
+      "origin": "procedural_harness",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "harness://zappd/poppy_humanoid_v1/rel_poppy_wire_xu4_power",
+      "sourceName": "Poppy Humanoid inspection routing",
+      "stepFixtureName": "comp_poppy_cable_xu4_power.step",
+      "specifications": {
+        "relationshipId": "rel_poppy_wire_xu4_power",
+        "controller": "power_distribution",
+        "circuit": "power_distribution",
+        "busKind": "dc_power",
+        "fromConnectorClearanceMm": 0.5,
+        "toConnectorClearanceMm": 0.5
+      },
+      "expectedStepSha256": "5be59591a85eeadb05e31dc46fc25d36846c8e9c883581b88fff85c0547a2578",
+      "restPositionMeters": [0.023556817385699782, 0.2973069311291951, -0.061696442258132006],
+      "dimensionsMm": [41.36637203640143, 71.67268598780197, 59.703014663482044]
+    },
+    {
+      "id": "comp_poppy_cable_amp_power",
+      "geometry": { "kind": "available", "role": "solid" },
+      "parentId": "sub_poppy_wiring",
+      "name": "Amplifier 5 V supply",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#222428",
+      "materialHint": "silicone_wire",
+      "explodeDirection": [0.0, 0.0, -1.0],
+      "explodeDistanceMeters": 0.035,
+      "origin": "procedural_harness",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "harness://zappd/poppy_humanoid_v1/rel_poppy_wire_amp_power",
+      "sourceName": "Poppy Humanoid inspection routing",
+      "stepFixtureName": "comp_poppy_cable_amp_power.step",
+      "specifications": {
+        "relationshipId": "rel_poppy_wire_amp_power",
+        "controller": "power_distribution",
+        "circuit": "power_distribution",
+        "busKind": "dc_power",
+        "fromConnectorClearanceMm": 0.5,
+        "toConnectorClearanceMm": 0.5
+      },
+      "expectedStepSha256": "3245f37b2da1844451bc42e7b63f2d3490e0546ef93e1227e434c74ea176a07e",
+      "restPositionMeters": [0.018622144796691092, 0.32074270640856595, -0.07732807627409816],
+      "dimensionsMm": [59.023357665441345, 118.54423654654374, 30.25615254819634]
+    },
+    {
+      "id": "comp_poppy_cable_audio_in",
+      "geometry": { "kind": "available", "role": "solid" },
+      "parentId": "sub_poppy_wiring",
+      "name": "Stereo line input",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#222428",
+      "materialHint": "silicone_wire",
+      "explodeDirection": [0.0, 0.0, -1.0],
+      "explodeDistanceMeters": 0.035,
+      "origin": "procedural_harness",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "harness://zappd/poppy_humanoid_v1/rel_poppy_wire_audio_in",
+      "sourceName": "Poppy Humanoid inspection routing",
+      "stepFixtureName": "comp_poppy_cable_audio_in.step",
+      "specifications": {
+        "relationshipId": "rel_poppy_wire_audio_in",
+        "controller": "head_peripherals",
+        "circuit": "head_peripherals",
+        "busKind": "analog_audio",
+        "fromConnectorClearanceMm": 0.5,
+        "toConnectorClearanceMm": 0.5
+      },
+      "expectedStepSha256": "4483969f84097eab1b183db49d7a0b477605ca9872eb236f7d292bd9ea2e6e96",
+      "restPositionMeters": [-0.0051030153415990145, 0.3672955856553583, -0.03918560605487686],
+      "dimensionsMm": [32.89598218802324, 46.74077131071675, 55.86941974177648]
+    },
+    {
+      "id": "comp_poppy_cable_spk_left",
+      "geometry": { "kind": "available", "role": "solid" },
+      "parentId": "sub_poppy_wiring",
+      "name": "Left speaker harness",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#222428",
+      "materialHint": "silicone_wire",
+      "explodeDirection": [0.0, 0.0, -1.0],
+      "explodeDistanceMeters": 0.035,
+      "origin": "procedural_harness",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "harness://zappd/poppy_humanoid_v1/rel_poppy_wire_spk_left",
+      "sourceName": "Poppy Humanoid inspection routing",
+      "stepFixtureName": "comp_poppy_cable_spk_left.step",
+      "specifications": {
+        "relationshipId": "rel_poppy_wire_spk_left",
+        "controller": "head_peripherals",
+        "circuit": "head_peripherals",
+        "busKind": "analog_audio",
+        "fromConnectorClearanceMm": 0.5,
+        "toConnectorClearanceMm": 0.5
+      },
+      "expectedStepSha256": "9cb236985aea2a8d6e01ddd8ae6ecca556a0878c7eccb2d8dfddc696703ddb8c",
+      "restPositionMeters": [-0.029703911714705888, 0.3613587871510192, -0.027446964456080355],
+      "dimensionsMm": [43.44017657058825, 41.99405406249599, 80.72995093209376]
+    },
+    {
+      "id": "comp_poppy_cable_spk_right",
+      "geometry": { "kind": "available", "role": "solid" },
+      "parentId": "sub_poppy_wiring",
+      "name": "Right speaker harness",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#222428",
+      "materialHint": "silicone_wire",
+      "explodeDirection": [0.0, 0.0, -1.0],
+      "explodeDistanceMeters": 0.035,
+      "origin": "procedural_harness",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "harness://zappd/poppy_humanoid_v1/rel_poppy_wire_spk_right",
+      "sourceName": "Poppy Humanoid inspection routing",
+      "stepFixtureName": "comp_poppy_cable_spk_right.step",
+      "specifications": {
+        "relationshipId": "rel_poppy_wire_spk_right",
+        "controller": "head_peripherals",
+        "circuit": "head_peripherals",
+        "busKind": "analog_audio",
+        "fromConnectorClearanceMm": 0.5,
+        "toConnectorClearanceMm": 0.5
+      },
+      "expectedStepSha256": "1e95b27f1ea1fe6ea7e26e51d603b16bfe21a10cb58f7ec22e6b7a50b4f0336a",
+      "restPositionMeters": [0.028703911714705887, 0.36126441815611227, -0.027379244547860955],
+      "dimensionsMm": [45.44017657058824, 41.74181857754519, 80.85181862140449]
+    },
+    {
+      "id": "comp_poppy_cable_display",
+      "geometry": { "kind": "available", "role": "solid" },
+      "parentId": "sub_poppy_wiring",
+      "name": "Head display harness",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#222428",
+      "materialHint": "silicone_wire",
+      "explodeDirection": [0.0, 0.0, -1.0],
+      "explodeDistanceMeters": 0.035,
+      "origin": "procedural_harness",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "harness://zappd/poppy_humanoid_v1/rel_poppy_wire_display",
+      "sourceName": "Poppy Humanoid inspection routing",
+      "stepFixtureName": "comp_poppy_cable_display.step",
+      "specifications": {
+        "relationshipId": "rel_poppy_wire_display",
+        "controller": "head_peripherals",
+        "circuit": "head_peripherals",
+        "busKind": "mipi_csi2",
+        "fromConnectorClearanceMm": 0.5,
+        "toConnectorClearanceMm": 0.5
+      },
+      "expectedStepSha256": "2220f4386b80c830a5e1d0a788f11c3b7e755a24144f6d502ca7e8a317b1d745",
+      "restPositionMeters": [-0.013903146367251346, 0.3672218993100158, -0.003786006103582675],
+      "dimensionsMm": [73.46994133032256, 46.695798820031655, 39.611987992834656]
     }
   ],
   "relationships": [
@@ -9114,6 +9903,38 @@
       "toComponentId": "comp_poppy_upper_3p_hub",
       "connectionType": "assembly_mount",
       "howConnected": "Behind the chest near the upper power injector.",
+      "whyConnected": "Locates the reference part in the Poppy inspection assembly."
+    },
+    {
+      "id": "rel_poppy_mount_battery",
+      "fromComponentId": "poppy_1_14",
+      "toComponentId": "comp_poppy_battery",
+      "connectionType": "assembly_mount",
+      "howConnected": "Reference pack placement behind the lower torso.",
+      "whyConnected": "Locates the reference part in the Poppy inspection assembly."
+    },
+    {
+      "id": "rel_poppy_mount_power_dist",
+      "fromComponentId": "poppy_1_17_1",
+      "toComponentId": "comp_poppy_power_dist",
+      "connectionType": "assembly_mount",
+      "howConnected": "Rear torso placement between the two Dynamixel power injectors.",
+      "whyConnected": "Locates the reference part in the Poppy inspection assembly."
+    },
+    {
+      "id": "rel_poppy_mount_5v_buck",
+      "fromComponentId": "poppy_1_17_1",
+      "toComponentId": "comp_poppy_5v_buck",
+      "connectionType": "assembly_mount",
+      "howConnected": "Rear upper chest placement below the neck.",
+      "whyConnected": "Locates the reference part in the Poppy inspection assembly."
+    },
+    {
+      "id": "rel_poppy_mount_audio_amp",
+      "fromComponentId": "poppy_1_28_1",
+      "toComponentId": "comp_poppy_audio_amp",
+      "connectionType": "assembly_mount",
+      "howConnected": "Reference amplifier placement behind the head computer.",
       "whyConnected": "Locates the reference part in the Poppy inspection assembly."
     },
     {
@@ -9992,6 +10813,270 @@
       "id": "rel_poppy_mount_cable_imu",
       "fromComponentId": "sub_poppy_wiring",
       "toComponentId": "comp_poppy_cable_imu",
+      "connectionType": "assembly_mount",
+      "howConnected": "Shows the cable path between its connector endpoints.",
+      "whyConnected": "Locates the reference part in the Poppy inspection assembly."
+    },
+    {
+      "id": "rel_poppy_wire_batt_main",
+      "fromComponentId": "comp_poppy_battery",
+      "fromPortId": "port_pack_out",
+      "toComponentId": "comp_poppy_power_dist",
+      "toPortId": "port_battery_in",
+      "connectionType": "power_bus",
+      "howConnected": "A routed lead connects the reference port datums.",
+      "whyConnected": "Feeds the 3S pack into the distribution board.",
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [-0.03624, 0.11963, -0.088745],
+        [-0.023, 0.129, -0.076],
+        [-0.0124, 0.175, -0.07825]
+      ],
+      "wireBundleDiameterMm": 2.2
+    },
+    {
+      "id": "rel_poppy_mount_cable_batt_main",
+      "fromComponentId": "sub_poppy_wiring",
+      "toComponentId": "comp_poppy_cable_batt_main",
+      "connectionType": "assembly_mount",
+      "howConnected": "Shows the cable path between its connector endpoints.",
+      "whyConnected": "Locates the reference part in the Poppy inspection assembly."
+    },
+    {
+      "id": "rel_poppy_wire_smps_upper_in",
+      "fromComponentId": "comp_poppy_power_dist",
+      "fromPortId": "port_upper_smps",
+      "toComponentId": "poppy_1_18",
+      "toPortId": "port_dc_in",
+      "connectionType": "power_bus",
+      "howConnected": "A routed lead connects the reference port datums.",
+      "whyConnected": "Supplies the upper Dynamixel power injector.",
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [-0.014, 0.164, -0.06825],
+        [-0.025, 0.173, -0.056],
+        [-0.023, 0.175, -0.052],
+        [-0.007, 0.182837, -0.04365]
+      ],
+      "wireBundleDiameterMm": 1.8
+    },
+    {
+      "id": "rel_poppy_mount_cable_smps_upper_in",
+      "fromComponentId": "sub_poppy_wiring",
+      "toComponentId": "comp_poppy_cable_smps_upper_in",
+      "connectionType": "assembly_mount",
+      "howConnected": "Shows the cable path between its connector endpoints.",
+      "whyConnected": "Locates the reference part in the Poppy inspection assembly."
+    },
+    {
+      "id": "rel_poppy_wire_smps_lower_in",
+      "fromComponentId": "comp_poppy_power_dist",
+      "fromPortId": "port_lower_smps",
+      "toComponentId": "poppy_1_19",
+      "toPortId": "port_dc_in",
+      "connectionType": "power_bus",
+      "howConnected": "A routed lead connects the reference port datums.",
+      "whyConnected": "Supplies the lower Dynamixel power injector.",
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [0.0, 0.164, -0.06825],
+        [0.007, 0.12365, -0.05645]
+      ],
+      "wireBundleDiameterMm": 1.8
+    },
+    {
+      "id": "rel_poppy_mount_cable_smps_lower_in",
+      "fromComponentId": "sub_poppy_wiring",
+      "toComponentId": "comp_poppy_cable_smps_lower_in",
+      "connectionType": "assembly_mount",
+      "howConnected": "Shows the cable path between its connector endpoints.",
+      "whyConnected": "Locates the reference part in the Poppy inspection assembly."
+    },
+    {
+      "id": "rel_poppy_wire_buck_in",
+      "fromComponentId": "comp_poppy_power_dist",
+      "fromPortId": "port_buck_out",
+      "toComponentId": "comp_poppy_5v_buck",
+      "toPortId": "port_dc_in",
+      "connectionType": "power_bus",
+      "howConnected": "A routed lead connects the reference port datums.",
+      "whyConnected": "Supplies the 5 V regulator from the distribution board.",
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [0.014, 0.164, -0.06825],
+        [0.027, 0.262, -0.0917]
+      ],
+      "wireBundleDiameterMm": 1.8
+    },
+    {
+      "id": "rel_poppy_mount_cable_buck_in",
+      "fromComponentId": "sub_poppy_wiring",
+      "toComponentId": "comp_poppy_cable_buck_in",
+      "connectionType": "assembly_mount",
+      "howConnected": "Shows the cable path between its connector endpoints.",
+      "whyConnected": "Locates the reference part in the Poppy inspection assembly."
+    },
+    {
+      "id": "rel_poppy_wire_xu4_power",
+      "fromComponentId": "comp_poppy_5v_buck",
+      "fromPortId": "port_5v_compute",
+      "toComponentId": "poppy_1_28_3",
+      "toPortId": "port_dc_in",
+      "connectionType": "power_bus",
+      "howConnected": "A routed lead connects the reference port datums.",
+      "whyConnected": "Supplies regulated 5 V to the head computer.",
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [0.037, 0.262, -0.0917],
+        [0.032, 0.288, -0.082],
+        [0.022, 0.288, -0.052],
+        [0.01, 0.282, -0.04],
+        [0.006, 0.282, -0.036],
+        [0.004, 0.284, -0.034],
+        [0.004, 0.29, -0.032],
+        [0.042, 0.328, -0.048],
+        [0.043508, 0.332324, -0.052092]
+      ],
+      "wireBundleDiameterMm": 1.8
+    },
+    {
+      "id": "rel_poppy_mount_cable_xu4_power",
+      "fromComponentId": "sub_poppy_wiring",
+      "toComponentId": "comp_poppy_cable_xu4_power",
+      "connectionType": "assembly_mount",
+      "howConnected": "Shows the cable path between its connector endpoints.",
+      "whyConnected": "Locates the reference part in the Poppy inspection assembly."
+    },
+    {
+      "id": "rel_poppy_wire_amp_power",
+      "fromComponentId": "comp_poppy_5v_buck",
+      "fromPortId": "port_5v_aux",
+      "toComponentId": "comp_poppy_audio_amp",
+      "toPortId": "port_5v_in",
+      "connectionType": "power_bus",
+      "howConnected": "A routed lead connects the reference port datums.",
+      "whyConnected": "Supplies regulated 5 V to the amplifier.",
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [0.047, 0.262, -0.0917],
+        [0.018, 0.312, -0.09],
+        [-0.008, 0.374, -0.072],
+        [-0.01, 0.379, -0.0677]
+      ],
+      "wireBundleDiameterMm": 1.8
+    },
+    {
+      "id": "rel_poppy_mount_cable_amp_power",
+      "fromComponentId": "sub_poppy_wiring",
+      "toComponentId": "comp_poppy_cable_amp_power",
+      "connectionType": "assembly_mount",
+      "howConnected": "Shows the cable path between its connector endpoints.",
+      "whyConnected": "Locates the reference part in the Poppy inspection assembly."
+    },
+    {
+      "id": "rel_poppy_wire_audio_in",
+      "fromComponentId": "poppy_1_28_3",
+      "fromPortId": "port_audio_out",
+      "toComponentId": "comp_poppy_audio_amp",
+      "toPortId": "port_audio_in",
+      "connectionType": "electrical_bus",
+      "howConnected": "A routed lead connects the reference port datums.",
+      "whyConnected": "Carries the audio signal from a reference USB audio adapter to the amplifier input.",
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [-0.0155, 0.349425, -0.0365],
+        [-0.022, 0.358, -0.028],
+        [-0.016, 0.358, -0.02],
+        [-0.008, 0.372, -0.012],
+        [-0.006, 0.388, -0.016],
+        [0.006, 0.39, -0.062],
+        [0.01, 0.3795, -0.0679]
+      ],
+      "wireBundleDiameterMm": 1.8
+    },
+    {
+      "id": "rel_poppy_mount_cable_audio_in",
+      "fromComponentId": "sub_poppy_wiring",
+      "toComponentId": "comp_poppy_cable_audio_in",
+      "connectionType": "assembly_mount",
+      "howConnected": "Shows the cable path between its connector endpoints.",
+      "whyConnected": "Locates the reference part in the Poppy inspection assembly."
+    },
+    {
+      "id": "rel_poppy_wire_spk_left",
+      "fromComponentId": "comp_poppy_audio_amp",
+      "fromPortId": "port_spk_left",
+      "toComponentId": "poppy_1_28_10",
+      "toPortId": "port_spk_in",
+      "connectionType": "electrical_bus",
+      "howConnected": "A routed lead connects the reference port datums.",
+      "whyConnected": "Carries the amplified left channel to the left head speaker.",
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [-0.009, 0.369, -0.0677],
+        [-0.022, 0.374, -0.062],
+        [-0.048, 0.382, -0.014],
+        [-0.045924, 0.341374, 0.012382]
+      ],
+      "wireBundleDiameterMm": 1.6
+    },
+    {
+      "id": "rel_poppy_mount_cable_spk_left",
+      "fromComponentId": "sub_poppy_wiring",
+      "toComponentId": "comp_poppy_cable_spk_left",
+      "connectionType": "assembly_mount",
+      "howConnected": "Shows the cable path between its connector endpoints.",
+      "whyConnected": "Locates the reference part in the Poppy inspection assembly."
+    },
+    {
+      "id": "rel_poppy_wire_spk_right",
+      "fromComponentId": "comp_poppy_audio_amp",
+      "fromPortId": "port_spk_right",
+      "toComponentId": "poppy_1_28_11",
+      "toPortId": "port_spk_in",
+      "connectionType": "electrical_bus",
+      "howConnected": "A routed lead connects the reference port datums.",
+      "whyConnected": "Carries the amplified right channel to the right head speaker.",
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [0.007, 0.369, -0.0677],
+        [0.02, 0.372, -0.062],
+        [0.048, 0.382, -0.014],
+        [0.045924, 0.341374, 0.012382]
+      ],
+      "wireBundleDiameterMm": 1.6
+    },
+    {
+      "id": "rel_poppy_mount_cable_spk_right",
+      "fromComponentId": "sub_poppy_wiring",
+      "toComponentId": "comp_poppy_cable_spk_right",
+      "connectionType": "assembly_mount",
+      "howConnected": "Shows the cable path between its connector endpoints.",
+      "whyConnected": "Locates the reference part in the Poppy inspection assembly."
+    },
+    {
+      "id": "rel_poppy_wire_display",
+      "fromComponentId": "poppy_1_28_3",
+      "fromPortId": "port_display_out",
+      "toComponentId": "poppy_1_28_7",
+      "toPortId": "port_display_in",
+      "connectionType": "electrical_bus",
+      "howConnected": "A routed lead connects the reference port datums.",
+      "whyConnected": "Shows the display signal route after a reference HDMI bridge.",
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [-0.050842, 0.344324, -0.022092],
+        [-0.048, 0.354, -0.022],
+        [-0.012, 0.374, -0.004],
+        [0.004, 0.39, 0.004],
+        [0.0215, 0.386594, 0.015]
+      ],
+      "wireBundleDiameterMm": 1.8
+    },
+    {
+      "id": "rel_poppy_mount_cable_display",
+      "fromComponentId": "sub_poppy_wiring",
+      "toComponentId": "comp_poppy_cable_display",
       "connectionType": "assembly_mount",
       "howConnected": "Shows the cable path between its connector endpoints.",
       "whyConnected": "Locates the reference part in the Poppy inspection assembly."

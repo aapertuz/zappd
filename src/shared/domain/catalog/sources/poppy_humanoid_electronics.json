@@ -41,6 +41,38 @@
           "localPositionMeters": [0.029642, 0.002176, 0.0245761],
           "exitDirection": [0.0, 0.0, 1.0],
           "wireColorsHex": ["#222428", "#cc2929", "#3b82f6"]
+        },
+        {
+          "portId": "port_dc_in",
+          "label": "5 V computer power input",
+          "connectorType": "5.5 \u00d7 2.1 mm barrel jack",
+          "busKind": "dc_power",
+          "localPositionMeters": [0.04215, -0.003, -0.018],
+          "exitDirection": [1.0, 0.0, 0.0],
+          "role": "sink",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 4
+        },
+        {
+          "portId": "port_audio_out",
+          "label": "Analog audio after USB adapter",
+          "connectorType": "USB audio adapter output datum",
+          "busKind": "analog_audio",
+          "localPositionMeters": [-0.012858, 0.0081012, -0.002408],
+          "exitDirection": [0.0, 1.0, 0.0],
+          "role": "source",
+          "wireColorsHex": ["#ececec", "#cc2929", "#222428"]
+        },
+        {
+          "portId": "port_display_out",
+          "label": "Display signal after HDMI bridge",
+          "connectorType": "HDMI bridge output datum",
+          "busKind": "mipi_csi2",
+          "localPositionMeters": [-0.0422, 0.009, 0.012],
+          "exitDirection": [-1.0, 0.0, 0.0],
+          "role": "source"
         }
       ]
     },
@@ -59,6 +91,18 @@
           "exitDirection": [0.0, 1.0, 0.0],
           "wireColorsHex": ["#cc2929", "#222428"],
           "nominalVoltageV": 12
+        },
+        {
+          "portId": "port_dc_in",
+          "label": "12 V reference input",
+          "connectorType": "Reference power input",
+          "busKind": "dc_power",
+          "localPositionMeters": [-0.007, -0.02665, -0.0005],
+          "exitDirection": [0.0, -1.0, 0.0],
+          "role": "sink",
+          "minVoltageV": 9,
+          "nominalVoltageV": 12,
+          "maxVoltageV": 14.8
         }
       ]
     },
@@ -540,6 +584,18 @@
           "exitDirection": [0.0, 0.0, -1.0],
           "wireColorsHex": ["#cc2929", "#222428"],
           "nominalVoltageV": 12
+        },
+        {
+          "portId": "port_dc_in",
+          "label": "12 V reference input",
+          "connectorType": "Reference power input",
+          "busKind": "dc_power",
+          "localPositionMeters": [0.007, 0.02665, -0.0005],
+          "exitDirection": [0.0, 1.0, 0.0],
+          "role": "sink",
+          "minVoltageV": 9,
+          "nominalVoltageV": 12,
+          "maxVoltageV": 14.8
         }
       ]
     },
@@ -845,6 +901,48 @@
           "wireColorsHex": ["#222428", "#cc2929", "#3b82f6"]
         }
       ]
+    },
+    "poppy_1_28_7": {
+      "specifications": {},
+      "ports": [
+        {
+          "portId": "port_display_in",
+          "label": "Reference display input",
+          "connectorType": "Display interface datum",
+          "busKind": "mipi_csi2",
+          "localPositionMeters": [0.0215, 0.0258181, -0.013996],
+          "exitDirection": [0.0, 1.0, 0.0],
+          "role": "sink"
+        }
+      ]
+    },
+    "poppy_1_28_10": {
+      "specifications": {},
+      "ports": [
+        {
+          "portId": "port_spk_in",
+          "label": "Left speaker input",
+          "connectorType": "Reference speaker terminals",
+          "busKind": "analog_audio",
+          "localPositionMeters": [0.0052, -0.002, 0.0],
+          "exitDirection": [1.0, 0.0, 0.0],
+          "role": "sink"
+        }
+      ]
+    },
+    "poppy_1_28_11": {
+      "specifications": {},
+      "ports": [
+        {
+          "portId": "port_spk_in",
+          "label": "Right speaker input",
+          "connectorType": "Reference speaker terminals",
+          "busKind": "analog_audio",
+          "localPositionMeters": [-0.0052, -0.002, 0.0],
+          "exitDirection": [-1.0, 0.0, 0.0],
+          "role": "sink"
+        }
+      ]
     }
   },
   "subsystems": [
@@ -905,6 +1003,51 @@
           "busKind": "dc_power",
           "nominalVoltageV": 12
         }
+      }
+    },
+    {
+      "id": "comp_poppy_battery",
+      "cotsId": "cots_battery_3s_18650",
+      "name": "3S 18650 battery pack",
+      "mountComponentId": "poppy_1_14",
+      "mountDescription": "Reference pack placement behind the lower torso.",
+      "restPositionMeters": [0.0, 0.138, -0.108],
+      "specifications": {
+        "controller": "power_distribution"
+      }
+    },
+    {
+      "id": "comp_poppy_power_dist",
+      "cotsId": "kicad_poppy_power_dist",
+      "name": "12 V power distribution and switch board",
+      "mountComponentId": "poppy_1_17_1",
+      "mountDescription": "Rear torso placement between the two Dynamixel power injectors.",
+      "restPositionMeters": [0.0, 0.171, -0.062],
+      "specifications": {
+        "controller": "power_distribution"
+      }
+    },
+    {
+      "id": "comp_poppy_5v_buck",
+      "cotsId": "kicad_poppy_5v_buck",
+      "name": "12 V to 5 V buck regulator",
+      "mountComponentId": "poppy_1_17_1",
+      "mountDescription": "Rear upper chest placement below the neck.",
+      "restPositionMeters": [0.037, 0.269, -0.082],
+      "specifications": {
+        "controller": "power_distribution",
+        "combinedOutputLimitA": 4
+      }
+    },
+    {
+      "id": "comp_poppy_audio_amp",
+      "cotsId": "kicad_poppy_audio_amp",
+      "name": "Stereo class-D audio amplifier",
+      "mountComponentId": "poppy_1_28_1",
+      "mountDescription": "Reference amplifier placement behind the head computer.",
+      "restPositionMeters": [0.0, 0.375, -0.057],
+      "specifications": {
+        "controller": "head_peripherals"
       }
     }
   ],
@@ -1833,6 +1976,300 @@
           [0.0165, 0.3345549, 0.0175]
         ],
         "wireBundleDiameterMm": 2.25
+      }
+    },
+    {
+      "id": "comp_poppy_cable_batt_main",
+      "name": "Battery pack feed",
+      "specifications": {
+        "controller": "power_distribution",
+        "circuit": "power_distribution",
+        "busKind": "dc_power",
+        "fromConnectorClearanceMm": 0.5,
+        "toConnectorClearanceMm": 0.5
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_batt_main",
+        "fromComponentId": "comp_poppy_battery",
+        "fromPortId": "port_pack_out",
+        "toComponentId": "comp_poppy_power_dist",
+        "toPortId": "port_battery_in",
+        "connectionType": "power_bus",
+        "howConnected": "A routed lead connects the reference port datums.",
+        "whyConnected": "Feeds the 3S pack into the distribution board.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [-0.03624, 0.11963, -0.088745],
+          [-0.023, 0.129, -0.076],
+          [-0.0124, 0.175, -0.07825]
+        ],
+        "wireBundleDiameterMm": 2.2
+      }
+    },
+    {
+      "id": "comp_poppy_cable_smps_upper_in",
+      "name": "Upper injector supply",
+      "specifications": {
+        "controller": "power_distribution",
+        "circuit": "power_distribution",
+        "busKind": "dc_power",
+        "fromConnectorClearanceMm": 0.5,
+        "toConnectorClearanceMm": 0.5
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_smps_upper_in",
+        "fromComponentId": "comp_poppy_power_dist",
+        "fromPortId": "port_upper_smps",
+        "toComponentId": "poppy_1_18",
+        "toPortId": "port_dc_in",
+        "connectionType": "power_bus",
+        "howConnected": "A routed lead connects the reference port datums.",
+        "whyConnected": "Supplies the upper Dynamixel power injector.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [-0.014, 0.164, -0.06825],
+          [-0.025, 0.173, -0.056],
+          [-0.023, 0.175, -0.052],
+          [-0.007, 0.182837, -0.04365]
+        ],
+        "wireBundleDiameterMm": 1.8
+      }
+    },
+    {
+      "id": "comp_poppy_cable_smps_lower_in",
+      "name": "Lower injector supply",
+      "specifications": {
+        "controller": "power_distribution",
+        "circuit": "power_distribution",
+        "busKind": "dc_power",
+        "fromConnectorClearanceMm": 0.5,
+        "toConnectorClearanceMm": 0.5
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_smps_lower_in",
+        "fromComponentId": "comp_poppy_power_dist",
+        "fromPortId": "port_lower_smps",
+        "toComponentId": "poppy_1_19",
+        "toPortId": "port_dc_in",
+        "connectionType": "power_bus",
+        "howConnected": "A routed lead connects the reference port datums.",
+        "whyConnected": "Supplies the lower Dynamixel power injector.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [0.0, 0.164, -0.06825],
+          [0.007, 0.12365, -0.05645]
+        ],
+        "wireBundleDiameterMm": 1.8
+      }
+    },
+    {
+      "id": "comp_poppy_cable_buck_in",
+      "name": "Buck regulator input",
+      "specifications": {
+        "controller": "power_distribution",
+        "circuit": "power_distribution",
+        "busKind": "dc_power",
+        "fromConnectorClearanceMm": 0.5,
+        "toConnectorClearanceMm": 0.5
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_buck_in",
+        "fromComponentId": "comp_poppy_power_dist",
+        "fromPortId": "port_buck_out",
+        "toComponentId": "comp_poppy_5v_buck",
+        "toPortId": "port_dc_in",
+        "connectionType": "power_bus",
+        "howConnected": "A routed lead connects the reference port datums.",
+        "whyConnected": "Supplies the 5 V regulator from the distribution board.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [0.014, 0.164, -0.06825],
+          [0.027, 0.262, -0.0917]
+        ],
+        "wireBundleDiameterMm": 1.8
+      }
+    },
+    {
+      "id": "comp_poppy_cable_xu4_power",
+      "name": "Odroid 5 V supply",
+      "specifications": {
+        "controller": "power_distribution",
+        "circuit": "power_distribution",
+        "busKind": "dc_power",
+        "fromConnectorClearanceMm": 0.5,
+        "toConnectorClearanceMm": 0.5
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_xu4_power",
+        "fromComponentId": "comp_poppy_5v_buck",
+        "fromPortId": "port_5v_compute",
+        "toComponentId": "poppy_1_28_3",
+        "toPortId": "port_dc_in",
+        "connectionType": "power_bus",
+        "howConnected": "A routed lead connects the reference port datums.",
+        "whyConnected": "Supplies regulated 5 V to the head computer.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [0.037, 0.262, -0.0917],
+          [0.032, 0.288, -0.082],
+          [0.022, 0.288, -0.052],
+          [0.01, 0.282, -0.04],
+          [0.006, 0.282, -0.036],
+          [0.004, 0.284, -0.034],
+          [0.004, 0.29, -0.032],
+          [0.042, 0.328, -0.048],
+          [0.043508, 0.332324, -0.052092]
+        ],
+        "wireBundleDiameterMm": 1.8
+      }
+    },
+    {
+      "id": "comp_poppy_cable_amp_power",
+      "name": "Amplifier 5 V supply",
+      "specifications": {
+        "controller": "power_distribution",
+        "circuit": "power_distribution",
+        "busKind": "dc_power",
+        "fromConnectorClearanceMm": 0.5,
+        "toConnectorClearanceMm": 0.5
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_amp_power",
+        "fromComponentId": "comp_poppy_5v_buck",
+        "fromPortId": "port_5v_aux",
+        "toComponentId": "comp_poppy_audio_amp",
+        "toPortId": "port_5v_in",
+        "connectionType": "power_bus",
+        "howConnected": "A routed lead connects the reference port datums.",
+        "whyConnected": "Supplies regulated 5 V to the amplifier.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [0.047, 0.262, -0.0917],
+          [0.018, 0.312, -0.09],
+          [-0.008, 0.374, -0.072],
+          [-0.01, 0.379, -0.0677]
+        ],
+        "wireBundleDiameterMm": 1.8
+      }
+    },
+    {
+      "id": "comp_poppy_cable_audio_in",
+      "name": "Stereo line input",
+      "specifications": {
+        "controller": "head_peripherals",
+        "circuit": "head_peripherals",
+        "busKind": "analog_audio",
+        "fromConnectorClearanceMm": 0.5,
+        "toConnectorClearanceMm": 0.5
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_audio_in",
+        "fromComponentId": "poppy_1_28_3",
+        "fromPortId": "port_audio_out",
+        "toComponentId": "comp_poppy_audio_amp",
+        "toPortId": "port_audio_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A routed lead connects the reference port datums.",
+        "whyConnected": "Carries the audio signal from a reference USB audio adapter to the amplifier input.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [-0.0155, 0.349425, -0.0365],
+          [-0.022, 0.358, -0.028],
+          [-0.016, 0.358, -0.02],
+          [-0.008, 0.372, -0.012],
+          [-0.006, 0.388, -0.016],
+          [0.006, 0.39, -0.062],
+          [0.01, 0.3795, -0.0679]
+        ],
+        "wireBundleDiameterMm": 1.8
+      }
+    },
+    {
+      "id": "comp_poppy_cable_spk_left",
+      "name": "Left speaker harness",
+      "specifications": {
+        "controller": "head_peripherals",
+        "circuit": "head_peripherals",
+        "busKind": "analog_audio",
+        "fromConnectorClearanceMm": 0.5,
+        "toConnectorClearanceMm": 0.5
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_spk_left",
+        "fromComponentId": "comp_poppy_audio_amp",
+        "fromPortId": "port_spk_left",
+        "toComponentId": "poppy_1_28_10",
+        "toPortId": "port_spk_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A routed lead connects the reference port datums.",
+        "whyConnected": "Carries the amplified left channel to the left head speaker.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [-0.009, 0.369, -0.0677],
+          [-0.022, 0.374, -0.062],
+          [-0.048, 0.382, -0.014],
+          [-0.045924, 0.341374, 0.012382]
+        ],
+        "wireBundleDiameterMm": 1.6
+      }
+    },
+    {
+      "id": "comp_poppy_cable_spk_right",
+      "name": "Right speaker harness",
+      "specifications": {
+        "controller": "head_peripherals",
+        "circuit": "head_peripherals",
+        "busKind": "analog_audio",
+        "fromConnectorClearanceMm": 0.5,
+        "toConnectorClearanceMm": 0.5
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_spk_right",
+        "fromComponentId": "comp_poppy_audio_amp",
+        "fromPortId": "port_spk_right",
+        "toComponentId": "poppy_1_28_11",
+        "toPortId": "port_spk_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A routed lead connects the reference port datums.",
+        "whyConnected": "Carries the amplified right channel to the right head speaker.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [0.007, 0.369, -0.0677],
+          [0.02, 0.372, -0.062],
+          [0.048, 0.382, -0.014],
+          [0.045924, 0.341374, 0.012382]
+        ],
+        "wireBundleDiameterMm": 1.6
+      }
+    },
+    {
+      "id": "comp_poppy_cable_display",
+      "name": "Head display harness",
+      "specifications": {
+        "controller": "head_peripherals",
+        "circuit": "head_peripherals",
+        "busKind": "mipi_csi2",
+        "fromConnectorClearanceMm": 0.5,
+        "toConnectorClearanceMm": 0.5
+      },
+      "relationship": {
+        "id": "rel_poppy_wire_display",
+        "fromComponentId": "poppy_1_28_3",
+        "fromPortId": "port_display_out",
+        "toComponentId": "poppy_1_28_7",
+        "toPortId": "port_display_in",
+        "connectionType": "electrical_bus",
+        "howConnected": "A routed lead connects the reference port datums.",
+        "whyConnected": "Shows the display signal route after a reference HDMI bridge.",
+        "routingStyle": "filleted_polyline",
+        "routingWaypointsMeters": [
+          [-0.050842, 0.344324, -0.022092],
+          [-0.048, 0.354, -0.022],
+          [-0.012, 0.374, -0.004],
+          [0.004, 0.39, 0.004],
+          [0.0215, 0.386594, 0.015]
+        ],
+        "wireBundleDiameterMm": 1.8
       }
     }
   ]

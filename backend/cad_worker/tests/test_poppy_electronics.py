@@ -16,13 +16,26 @@ from pygltflib import GLTF2
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from cad_pose import place_shape
 from catalog_ingestor import REPO_STEP_CACHE_DIR, read_xcaf_face_colors, resolve_component_step
-from geometry_pipeline import parse_usdz_prim_paths, world_rest_to_cad_mm
+from geometry_pipeline import parse_usdz_prim_paths, shape_bounds_mm, world_rest_to_cad_mm
 from poppy_catalog import POPPY_SPEC_PATH
-from poppy_electronics import ELECTRONICS_ID, WIRING_ID, apply_poppy_electronics
+from poppy_electronics import ELECTRONICS_ID, WIRING_ID, apply_poppy_electronics, verify_clear
 from poppy_interference import load_cached_report
 from poppy_pipeline import run_poppy_pipeline
 from poppy_visual import HEAD_ID
+from validation_checks import bounds_distance_mm, electrical_failures
+
+
+NEW_ELECTRONICS_IDS = {
+    "comp_poppy_battery", "comp_poppy_power_dist", "comp_poppy_5v_buck", "comp_poppy_audio_amp",
+}
+NEW_CABLE_IDS = {
+    f"comp_poppy_cable_{name}" for name in (
+        "batt_main", "smps_upper_in", "smps_lower_in", "buck_in", "xu4_power",
+        "amp_power", "audio_in", "spk_left", "spk_right", "display",
+    )
+}
 
 
 @pytest.fixture(scope="module")
@@ -36,7 +49,7 @@ def by_id(spec):
 
 
 def test_source_occurrences_and_cable_topology(spec, by_id):
-    assert len(by_id) == len(spec["nodes"]) == 289
+    assert len(by_id) == len(spec["nodes"]) == 303
     assert spec["semantics"] == "source_inspection"
     assert spec["assemblySteps"] == []
     assert by_id[HEAD_ID]["geometry"]["kind"] == "unavailable"
@@ -46,18 +59,24 @@ def test_source_occurrences_and_cable_topology(spec, by_id):
         assert by_id[subsystem]["geometry"] == {"kind": "assembly"}
     boards = [node for node in by_id.values() if node["parentId"] == ELECTRONICS_ID]
     cables = [node for node in by_id.values() if node["parentId"] == WIRING_ID]
-    assert [node["id"] for node in boards] == [
+    assert {node["id"] for node in boards} == {
         "comp_poppy_usb2ax_upper", "comp_poppy_usb2ax_lower", "comp_poppy_upper_3p_hub",
-    ]
-    assert len(cables) == 33
+        *NEW_ELECTRONICS_IDS,
+    }
+    battery = by_id["comp_poppy_battery"]
+    assert battery["category"] == "power"
+    assert battery["origin"] == "cots_library_step"
+    assert battery["sourceUrl"].startswith("https://")
+    assert len(cables) == 43
     assert all(node["explodeDistanceMeters"] > 0 for node in [*boards, *cables])
     assert all(node["geometry"] == {"kind": "available", "role": "solid"} for node in [*boards, *cables])
     relationships = {rel["id"]: rel for rel in spec["relationships"]}
-    assert len(relationships) == len(spec["relationships"]) == 69
+    assert len(relationships) == len(spec["relationships"]) == 93
     mounts = {rel["toComponentId"] for rel in relationships.values() if rel["connectionType"] == "assembly_mount"}
     assert mounts == {node["id"] for node in [*boards, *cables]}
     assert Counter(node["specifications"]["controller"] for node in cables) == {
-        "upper_body_controller": 18, "lower_body_controller": 13, "head_peripherals": 2,
+        "upper_body_controller": 18, "lower_body_controller": 13, "head_peripherals": 6,
+        "power_distribution": 6,
     }
     motors = [node for node in by_id.values() if "motorId" in node["specifications"]]
     assert len(motors) == len({node["specifications"]["motorId"] for node in motors}) == 25
@@ -77,15 +96,32 @@ def test_source_occurrences_and_cable_topology(spec, by_id):
             active_ports.add(port_key)
             assert port["busKind"] == bus
             controller = endpoint["specifications"].get("controller")
-            if controller is not None:
+            if controller is not None and cable["specifications"]["controller"] in {
+                "upper_body_controller", "lower_body_controller",
+            }:
                 assert controller == cable["specifications"]["controller"]
-            if bus == "dc_power":
-                assert port["nominalVoltageV"] == 12
+    assert electrical_failures(spec["nodes"], spec["relationships"]) == []
+
+
+@pytest.mark.parametrize(("status", "volume"), [
+    ("failed", None),
+    ("contact_or_below_threshold", 0.0005),
+    ("intersection", 2.0),
+])
+def test_clearance_verifier_rejects_battery_overlap_or_unresolved_pairs(monkeypatch, spec, tmp_path, status, volume):
+    report = {"pairs": [{
+        "componentIds": ["poppy_1_14", "comp_poppy_battery"],
+        "volumeMm3": volume,
+        "status": status,
+    }]}
+    monkeypatch.setattr("poppy_interference.analyze", lambda *args, **kwargs: report)
+    with pytest.raises(RuntimeError, match="comp_poppy_battery"):
+        verify_clear(spec, tmp_path)
 
 
 def test_source_port_anchors_are_on_or_near_their_pinned_cad(by_id, tmp_path):
     populated = [node for node in by_id.values() if node.get("ports") and node["origin"] == "open_step_catalog"]
-    assert len(populated) == 31
+    assert len(populated) == 34
     for node in populated:
         shape = resolve_component_step(node, tmp_path)["shape"]
         for port in node["ports"]:
@@ -99,6 +135,26 @@ def test_source_port_anchors_are_on_or_near_their_pinned_cad(by_id, tmp_path):
             assert at_port.IsDone() and past_port.IsDone(), (node["id"], port["portId"])
             assert at_port.Value() <= 1.1, (node["id"], port["portId"])
             assert past_port.Value() > 0.05, (node["id"], port["portId"])
+
+
+def test_new_electronics_have_at_least_2_5_mm_of_clearance(by_id, tmp_path):
+    def placement(node):
+        shape = place_shape(resolve_component_step(node, tmp_path)["shape"], node)
+        return shape, shape_bounds_mm(shape)
+
+    placements = {node_id: placement(by_id[node_id]) for node_id in NEW_ELECTRONICS_IDS}
+    for node in by_id.values():
+        if node["id"] in NEW_CABLE_IDS or node["geometry"] != {"kind": "available", "role": "solid"}:
+            continue
+        other, other_bounds = placements[node["id"]] if node["id"] in placements else placement(node)
+        for node_id, (shape, bounds) in placements.items():
+            if node_id == node["id"] or bounds_distance_mm(bounds, other_bounds) >= 2.5:
+                continue
+            clearance = BRepExtrema_DistShapeShape()
+            clearance.LoadS1(shape)
+            clearance.LoadS2(other)
+            clearance.SetMultiThread(True)
+            assert clearance.Perform() and clearance.Value() >= 2.5, (node_id, node["id"])
 
 
 def test_composition_preserves_source_and_regenerates_the_same_cables(spec, tmp_path):
@@ -155,10 +211,10 @@ def test_pipeline_exports_added_boards_and_cables_with_unverified_provenance(spe
             assert sum(products[f"{cid}_wire_{index}"] for index in range(1, 5)) == len(primitives)
     report = load_cached_report(spec, cache)
     assert report == validation["sourceInterferenceReport"]
-    assert report["solidCount"] == 235
+    assert report["solidCount"] == 249
     assert report["intersectionCount"] == 102
     assert report["unresolvedPairCount"] == 0
     assert all(
-        pair["status"] == "contact_or_below_threshold"
+        pair["status"] == "contact_or_below_threshold" and pair["volumeMm3"] == 0
         for pair in report["pairs"] if added_ids.intersection(pair["componentIds"])
     )
