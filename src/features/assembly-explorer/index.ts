@@ -28,7 +28,9 @@ export type {
   AssemblyLoadingPhase,
   AssemblyLoadingProgress,
   AssemblySceneProps,
+  DismissedInspectionWarnings,
   ExplorerCameraState,
+  InspectionWarningKind,
   SeparationAxis,
 } from './types';
 export {

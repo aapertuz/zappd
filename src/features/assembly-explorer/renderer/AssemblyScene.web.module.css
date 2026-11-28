@@ -475,7 +475,8 @@
   .wiringButton,
   .shellButton,
   .zoomButton,
-  .backButton {
+  .backButton,
+  .dismissPanel {
     transition: none;
   }
 }
@@ -523,6 +524,44 @@
 
 .unverifiedWarning p {
   margin: 4px 0 0;
+}
+
+.warningHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.dismissPanel {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: #f5c451;
+  font: 400 18px/1 sans-serif;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
+}
+
+.dismissPanel:hover {
+  background-color: rgba(245, 196, 81, 0.16);
+  border-color: rgba(245, 196, 81, 0.34);
+  color: #fffbeb;
+}
+
+.dismissPanel:focus-visible {
+  outline: 2px solid #fde073;
+  outline-offset: 2px;
 }
 
 .validationFailures {

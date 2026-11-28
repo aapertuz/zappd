@@ -24,6 +24,7 @@ export function NativeAssemblyScene({
   onExitPartFocus,
   learningState,
   onDismissLearningAnswer,
+  onDismissWarning,
   onToggleIsolate,
 }: AssemblySceneProps) {
   const parts = assembly.nodes.filter(
@@ -78,14 +79,24 @@ export function NativeAssemblyScene({
           </Text>
         </View>
       ) : null}
-      {assembly.verificationStatus === 'unverified' ? (
+      {assembly.verificationStatus === 'unverified' && !state.dismissedWarnings.unverified ? (
         <View
           accessibilityRole="alert"
           accessibilityLabel="Unverified assembly warning"
           style={styles.warning}>
-          <Text style={styles.warningText}>
-            Unverified assembly. This assembly failed validation checks.
-          </Text>
+          <View style={styles.warningHeader}>
+            <Text style={[styles.warningText, styles.warningTitle]}>
+              Unverified assembly. This assembly failed validation checks.
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Close unverified assembly warning"
+              hitSlop={8}
+              style={styles.dismissButton}
+              onPress={() => onDismissWarning('unverified')}>
+              <Text style={styles.dismissButtonText}>×</Text>
+            </Pressable>
+          </View>
           <ScrollView style={styles.warningDetails}>
             {getAssemblyValidationFailures(assembly.validation).map((failure) => (
               <Text key={failure} style={styles.warningText}>
@@ -162,6 +173,27 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 10,
     backgroundColor: '#2e2113',
+  },
+  warningHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  warningTitle: {
+    flex: 1,
+  },
+  dismissButton: {
+    minWidth: 24,
+    minHeight: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dismissButtonText: {
+    color: '#f9c774',
+    fontSize: 18,
+    lineHeight: 20,
+    fontWeight: '600',
   },
   warningDetails: {
     maxHeight: 88,

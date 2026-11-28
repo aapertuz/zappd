@@ -27,6 +27,7 @@ import {
   type AssemblyExplorerProps,
   type AssemblyLoadingProgress,
   type ExplorerCameraState,
+  type InspectionWarningKind,
   type SeparationAxis,
 } from '../types';
 
@@ -142,6 +143,10 @@ export function AssemblyExplorerView({
     [],
   );
   const exitPartFocus = useCallback(() => dispatch({ type: 'exitPartFocus' }), []);
+  const dismissWarning = useCallback(
+    (warning: InspectionWarningKind) => dispatch({ type: 'dismissInspectionWarning', warning }),
+    [],
+  );
 
   const applyParameters = useCallback(
     (parameterValues: Readonly<Record<string, number>>) => {
@@ -302,6 +307,7 @@ export function AssemblyExplorerView({
         state={state}
         learningState={learningState}
         onDismissLearningAnswer={dismissAnswer}
+        onDismissWarning={dismissWarning}
         onApplyParameters={applyParameters}
         onSetCamera={setCamera}
         onSetExplodeFactor={(explodeFactor: number) =>
