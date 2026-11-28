@@ -46,7 +46,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [80.91, 55.65, 122.67],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [-0.0002752281839825074, -0.9897334998973615, -0.14292488737223602],
+      "explodeDirection": [-0.0002752281839824932, -0.9897334998973615, -0.14292488737223608],
       "explodeDistanceMeters": 0.061335,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -74,7 +74,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [73.99, 53.53, 122.67],
       "restPositionMeters": [-0.000208, 0.015666, 0.006237],
-      "explodeDirection": [-0.011804800313920038, 0.8891057774897659, 0.4575495198597277],
+      "explodeDirection": [-0.011804800313920043, 0.8891057774897659, 0.45754951985972775],
       "explodeDistanceMeters": 0.061335,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -90,7 +90,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "5691f22e85535abc5467d21a094deae99e040881b79c05d0bc9477d5b30f1ba5"
+      "expectedStepSha256": "b7de6fbee0e3ccacbd6869ba1bcaed86b704210d0d7656bd0a7aa1f9fed11839"
     },
     {
       "id": "poppy_1_1_2",
@@ -103,7 +103,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [51.52, 48.5, 55.84],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [-0.9767267623790555, -0.17632106783435417, -0.12212990088541471],
+      "explodeDirection": [-0.9767267623790555, -0.17632106783435414, -0.12212990088541471],
       "explodeDistanceMeters": 0.02792,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -131,7 +131,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [51.52, 41.85, 55.84],
       "restPositionMeters": [-0.014695, 0.010738, 0.001675],
-      "explodeDirection": [0.5650150216588972, 0.7731784506911223, 0.28801581325800796],
+      "explodeDirection": [0.5650150216588973, 0.7731784506911221, 0.2880158132580079],
       "explodeDistanceMeters": 0.02792,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -152,7 +152,7 @@
         "controller": "lower_body_controller",
         "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
       },
-      "expectedStepSha256": "91a4b49e3d33d8f372d5a75b3e7c218908163adf84419b3130945a378d3b94b5",
+      "expectedStepSha256": "9368360e82572769f349bf1636e2e2e03924495fe71e008030fbd9fd4fa5c9ba",
       "ports": [
         {
           "portId": "port_dxl_in",
@@ -183,7 +183,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [22.0, 0.85, 22.0],
       "restPositionMeters": [-0.022542, 0.0, 0.018175],
-      "explodeDirection": [-0.0488751920905704, -0.06688184180814903, 0.9965631113153144],
+      "explodeDirection": [-0.04887519209057023, -0.06688184180814903, 0.9965631113153144],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -199,7 +199,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "4efa9ef878e493f4bd5eb964c277ec99fd6335e563e4f5f527d8a1c8a8c6a398"
+      "expectedStepSha256": "746b72cf4af5ca146f4027ba27b953b200134cf822c1be26ad1066188f816239"
     },
     {
       "id": "poppy_1_1_2_3",
@@ -212,7 +212,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [22.0, 5.85, 22.0],
       "restPositionMeters": [-0.022542, 0.0, 0.020425],
-      "explodeDirection": [-0.0439617294115559, -0.060158156036866015, 0.9972203179886526],
+      "explodeDirection": [-0.043961729411555746, -0.060158156036866015, 0.9972203179886526],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -228,7 +228,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "56d19ac345d96076dc1d5437271645af4536e2fa54eefacc625f98d8bf24b64d"
+      "expectedStepSha256": "ef2a42f18d0d653f1e88bacf688e1f535197139c799af25119625a33e7a11298"
     },
     {
       "id": "poppy_1_1_2_4",
@@ -241,7 +241,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [4.5, 10.5, 4.5],
       "restPositionMeters": [-0.022542, 0.0, 0.0206],
-      "explodeDirection": [-0.04362054376419594, -0.05969127041416292, 0.9972633555877098],
+      "explodeDirection": [-0.04362054376419579, -0.05969127041416292, 0.9972633555877098],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -257,7 +257,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "74131e87357c4b0fcc28cd60bb44747d6692af6e29472347379816fe11c3ff96"
+      "expectedStepSha256": "688bcd598c7a193932d6dedbb7272384bc003099929b9b1ec7e3544b986dcc4b"
     },
     {
       "id": "poppy_1_1_2_5",
@@ -270,7 +270,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [7.2, 1.8, 7.2],
       "restPositionMeters": [-0.022542, -0.0, -0.02025],
-      "explodeDirection": [-0.053020705914956966, -0.07255465019941486, -0.9959541292041116],
+      "explodeDirection": [-0.05302070591495678, -0.07255465019941486, -0.9959541292041116],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -286,7 +286,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "3c81fbdd421485e43a7957541c4d7901e20fc597c32e4ad034b64d6308ae0b33"
+      "expectedStepSha256": "9e1a965309dca5233829364d9ac6036d2709f752313d8e9f5594e2f00955e179"
     },
     {
       "id": "poppy_1_1_2_6",
@@ -299,7 +299,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [11.2, 3.0, 11.2],
       "restPositionMeters": [-0.022542, -0.0, -0.01885],
-      "explodeDirection": [-0.05734107574497054, -0.07846673522995976, -0.9952662822053007],
+      "explodeDirection": [-0.05734107574497034, -0.07846673522995976, -0.9952662822053007],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -315,7 +315,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "407202829b5ec73b4891b9f7e687981ae54b936b1107bb224f68c703c4399d4f"
+      "expectedStepSha256": "654cbb4814c8dde54338dbf876026fd82e5c220fa4a100aff033badb0d43b11a"
     },
     {
       "id": "poppy_1_1_2_7",
@@ -328,7 +328,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [4.5, 10.5, 4.5],
       "restPositionMeters": [-0.022542, -0.0, -0.0174],
-      "explodeDirection": [-0.06262180942734465, -0.08569300237426117, -0.9943516572763029],
+      "explodeDirection": [-0.06262180942734442, -0.08569300237426117, -0.9943516572763029],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -344,7 +344,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "f4fbad29edf2a8185da8da0ed9529e5ffd46cad7daf06eccf2e79f1ce67a19b1"
+      "expectedStepSha256": "a1e94b6b015d9c4523557b6d019b5cf032ed52207188cbc2793fe0d9a5075956"
     },
     {
       "id": "poppy_1_1_2_8",
@@ -357,7 +357,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [22.0, 3.05, 22.0],
       "restPositionMeters": [-0.022542, 0.0, -0.018975],
-      "explodeDirection": [-0.056927042659303734, -0.07790016363904728, -0.995334554970878],
+      "explodeDirection": [-0.05692704265930353, -0.07790016363904728, -0.995334554970878],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -373,7 +373,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "d97046cea9726101d914d5c44be98be276f5e369ea5ce4309f13a3ae0a0989cf"
+      "expectedStepSha256": "d2b1ca20fc6a904ce0e7cc1258a45df57013b4528e6d48e9bc4af6b03c918c4c"
     },
     {
       "id": "poppy_1_1_3",
@@ -386,7 +386,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [51.52, 48.5, 55.84],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [0.950215482090033, -0.2883643001081191, -0.11805324230854787],
+      "explodeDirection": [0.950215482090033, -0.28836430010811903, -0.11805324230854787],
       "explodeDistanceMeters": 0.02792,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -414,7 +414,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [51.52, 41.85, 55.84],
       "restPositionMeters": [0.014695, -0.010738, 0.001675],
-      "explodeDirection": [-0.5650150216588972, -0.7731784506911223, 0.28801581325800796],
+      "explodeDirection": [-0.5650150216588973, -0.7731784506911221, 0.2880158132580079],
       "explodeDistanceMeters": 0.02792,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -435,7 +435,7 @@
         "controller": "lower_body_controller",
         "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
       },
-      "expectedStepSha256": "bdfa52bb03ad0be4a72aff0842afb36c020f2bbdb4094d263e0fa49927de9c04",
+      "expectedStepSha256": "acbd9ec97eec87bb4c86d59bcad5c6e43801242be29d1f200c1b3287f83c30dd",
       "ports": [
         {
           "portId": "port_dxl_in",
@@ -466,7 +466,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [22.0, 0.85, 22.0],
       "restPositionMeters": [0.022542, 0.0, 0.018175],
-      "explodeDirection": [0.0488751920905704, 0.06688184180814903, 0.9965631113153144],
+      "explodeDirection": [0.04887519209057023, 0.06688184180814903, 0.9965631113153144],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -482,7 +482,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "6be2fbdad46d137812169eb0406a49764b45da5fe0cc61696814e5433b6a1a08"
+      "expectedStepSha256": "975044b86102dde99ed1a4005c30d422695d911fcdaf0277ee870ef635a15fa1"
     },
     {
       "id": "poppy_1_1_3_3",
@@ -495,7 +495,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [22.0, 5.85, 22.0],
       "restPositionMeters": [0.022542, 0.0, 0.020425],
-      "explodeDirection": [0.0439617294115559, 0.060158156036866015, 0.9972203179886526],
+      "explodeDirection": [0.043961729411555746, 0.060158156036866015, 0.9972203179886526],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -511,7 +511,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "d825a420d3b1a93118f72d8d8dca36a2cafc71e0f683089a41b50c6932355d8b"
+      "expectedStepSha256": "c15326239314946548f2d65e4bedae91cceef9928d425ff01a083fe31feb685e"
     },
     {
       "id": "poppy_1_1_3_4",
@@ -524,7 +524,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [4.5, 10.5, 4.5],
       "restPositionMeters": [0.022542, -0.0, 0.0206],
-      "explodeDirection": [0.04362054376419594, 0.05969127041416292, 0.9972633555877098],
+      "explodeDirection": [0.04362054376419579, 0.05969127041416292, 0.9972633555877098],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -540,7 +540,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "6e38d14babbed02796ac111069c5da2b9b8e218024c90c913776c5daaf9a2766"
+      "expectedStepSha256": "30fc0bb01f4aaa1c986d172e8394027489a5e4c9f04d96fd0d8ea63f9298e7c9"
     },
     {
       "id": "poppy_1_1_3_5",
@@ -553,7 +553,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [7.2, 1.8, 7.2],
       "restPositionMeters": [0.022542, 0.0, -0.02025],
-      "explodeDirection": [0.053020705914956966, 0.07255465019941486, -0.9959541292041116],
+      "explodeDirection": [0.05302070591495678, 0.07255465019941486, -0.9959541292041116],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -569,7 +569,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "20cadc9aeb7adb411cef295a0f7b164b215d349ae775a4f01bbcee8d9c7d6882"
+      "expectedStepSha256": "5c713f8248418807863c5bc6ca896fc4853cb3ffbcf8b69cb29c8db3f8a9a294"
     },
     {
       "id": "poppy_1_1_3_6",
@@ -582,7 +582,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [11.2, 3.0, 11.2],
       "restPositionMeters": [0.022542, 0.0, -0.01885],
-      "explodeDirection": [0.05734107574497054, 0.07846673522995976, -0.9952662822053007],
+      "explodeDirection": [0.05734107574497034, 0.07846673522995976, -0.9952662822053007],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -598,7 +598,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "67c605d5eb7954bf4a447d5d60c181161d08aa1808773f285f1995a885ab8800"
+      "expectedStepSha256": "4d4f815ad7f7a43638adc8409e82149378e89dcefa2e09924696077da9d1a79e"
     },
     {
       "id": "poppy_1_1_3_7",
@@ -611,7 +611,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [4.5, 10.5, 4.5],
       "restPositionMeters": [0.022542, 0.0, -0.0174],
-      "explodeDirection": [0.06262180942734465, 0.08569300237426117, -0.9943516572763029],
+      "explodeDirection": [0.06262180942734442, 0.08569300237426117, -0.9943516572763029],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -627,7 +627,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "5bc41e83b1bbccfaea4a195b76e63224cfd1322a8df68d8e089f2455011e29ad"
+      "expectedStepSha256": "9f51f7b5cf2c5467a9bccaa012f78749720cdec27c7e397f39772a80483c119e"
     },
     {
       "id": "poppy_1_1_3_8",
@@ -640,7 +640,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [22.0, 3.05, 22.0],
       "restPositionMeters": [0.022542, 0.0, -0.018975],
-      "explodeDirection": [0.056927042659303734, 0.07790016363904728, -0.995334554970878],
+      "explodeDirection": [0.05692704265930353, 0.07790016363904728, -0.995334554970878],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -656,7 +656,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "4673425cce7afc0452921a2cc300ae2c655f4c630550d7723f10a8df5c5e5748"
+      "expectedStepSha256": "a6f29478caced8de8e886b95e4e1e6aedee8af962a0f906ed633fe1da8fdc961"
     },
     {
       "id": "poppy_1_2",
@@ -669,7 +669,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [75.3, 57.1, 51.25],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [-0.7502966847290872, -0.6508039753484981, -0.11622852728625721],
+      "explodeDirection": [-0.7502966847290873, -0.6508039753484981, -0.11622852728625724],
       "explodeDistanceMeters": 0.037649999999999996,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -713,7 +713,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "ef23a9cf1ad92afecce30f7a1272032388cbc3646a36722f52fe245016ade407"
+      "expectedStepSha256": "22573022ddae428d9b313b36995848d0aebbeee67ec2022d8a628bcbbd2dcac7"
     },
     {
       "id": "poppy_1_2_2",
@@ -775,7 +775,7 @@
         "controller": "lower_body_controller",
         "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
       },
-      "expectedStepSha256": "87a96e07f9ee74a83e477b1f902b5d6baa205b028f1b3b1b08e7024b3dada5e2",
+      "expectedStepSha256": "767bbf04204a179361f3c28b75b0a692760c3fb32716637d21f0f603b0ede811",
       "ports": [
         {
           "portId": "port_dxl_in",
@@ -822,7 +822,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "25ef1d21e4f78b31eec0f2eb179acef76dcaae603e112da368e167b6fa48d60f"
+      "expectedStepSha256": "4029788653bc00b5c2cc39afc268d60dffd3ccc8cb5b6f55c79f838d6af728d8"
     },
     {
       "id": "poppy_1_2_2_3",
@@ -851,7 +851,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "ffc18e023a49311d8c7e06c9231647c1dd3cf746d9592dba724fb3b7628928db"
+      "expectedStepSha256": "d23803f90c2479bf80eed4fd20f3056da793ae38f3adc44767e8c12c675a1156"
     },
     {
       "id": "poppy_1_2_2_4",
@@ -880,7 +880,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "d99b26476c7c2db44e5b279ef897640fa54b02c0ec1d3408858f70bbc61037e0"
+      "expectedStepSha256": "969dc51b9d7507ca233c2ea6ad914254eb7d78d063dc2be38019bcd3a6a182b8"
     },
     {
       "id": "poppy_1_3",
@@ -893,7 +893,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [75.3, 57.1, 51.25],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [0.7509144669501648, -0.6501131122675906, -0.11610514451434449],
+      "explodeDirection": [0.750914466950165, -0.6501131122675906, -0.1161051445143445],
       "explodeDistanceMeters": 0.037649999999999996,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -937,7 +937,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "0de6a63d5b75babb3babbb3ea8929a48f385019ae3c566f124d5154a830c4629"
+      "expectedStepSha256": "853ee1736df0b0207c807dc8f774db2d3ac6b9051dac1dd38fd1f5772a0d2c24"
     },
     {
       "id": "poppy_1_3_2",
@@ -999,7 +999,7 @@
         "controller": "lower_body_controller",
         "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
       },
-      "expectedStepSha256": "3daad47a3ca8db7e87e9565f7bd65df97da84ddcbfa14385842de5b711e92645",
+      "expectedStepSha256": "cd0d6d2387331a64e3f88068ee3c2ab9a581f3f9c946b2da5a8ef3f32ef6b52e",
       "ports": [
         {
           "portId": "port_dxl_in",
@@ -1046,7 +1046,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "812abf68b5a5a028cf1d0e7f5cac15fcb6268eef23aee01ba38fcc853c0e111a"
+      "expectedStepSha256": "97e964865e7b5d84d9114ec595bb3b6fa821e0e45c4e2a5322fdcd90c2803d6b"
     },
     {
       "id": "poppy_1_3_2_3",
@@ -1075,7 +1075,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "d73607cbc0c40c5bf2e48f7a9a7588c9c1cf15a0ac48f97c8f75a32fb5a10bf1"
+      "expectedStepSha256": "91b1c6899ca10159789024b5950befc1e84c4ea257dff2e2a098f18b37b19820"
     },
     {
       "id": "poppy_1_3_2_4",
@@ -1104,7 +1104,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "44b446f650cbf1ca98e4cb773f16b055a479292d2f5a8789fa4542ea4aa03bb8"
+      "expectedStepSha256": "5f2e5f4a8749af7f684d736491c4114e32f4e8c8b70eb4b7952bd26355f0d582"
     },
     {
       "id": "poppy_1_4",
@@ -1117,7 +1117,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [49.56, 62.1, 44.1],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [-0.6435007461331255, -0.7609106613685696, -0.08319708613741701],
+      "explodeDirection": [-0.6435007461331256, -0.7609106613685696, -0.08319708613741703],
       "explodeDistanceMeters": 0.03105,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -1161,7 +1161,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "d5ab6b322de99f9c5a27f68c652e1a1bfb6d0929a6e4542fd6790ce098f55cd9"
+      "expectedStepSha256": "80a57cc397caa7cca5d34fdef9fa91d395c9abc836910609f5d40fb7020ac552"
     },
     {
       "id": "poppy_1_4_2",
@@ -1223,7 +1223,7 @@
         "controller": "lower_body_controller",
         "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
       },
-      "expectedStepSha256": "796796978de20603f2f869be8ba63a64de6c6d74aaf15536e0314bf32f1d5f73",
+      "expectedStepSha256": "a03905a616ad9b4dd097ee097381eb22941385e370cd770f5e8e4efd981412b6",
       "ports": [
         {
           "portId": "port_dxl_in",
@@ -1270,7 +1270,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "081110ea83ea65fa1c8e79eaa6c7b5b0bdd3f78c1585ca5de6de011b015cda97"
+      "expectedStepSha256": "4920deedaa9ef9a89e0e3291ca90a16447395eec4856ccf0e3964e88c003dfc1"
     },
     {
       "id": "poppy_1_4_2_3",
@@ -1299,7 +1299,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "46216109c62aefd73106671d618c32d64d63de0b622dbb1a4cf5de4549bf21db"
+      "expectedStepSha256": "deac389757e464be864e2eaefe248edd50e1217a8e8a2347f7a95f3d316a1046"
     },
     {
       "id": "poppy_1_4_2_4",
@@ -1328,7 +1328,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "4dfec56e9166635e7702263249676001dda7ce6d74122396c78b081d48a1ee9e"
+      "expectedStepSha256": "9aa808a8b18b21699fbc7e325964e8756ee6b6ea3f8f7dda6ec219167e19466d"
     },
     {
       "id": "poppy_1_4_2_5",
@@ -1357,7 +1357,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "eea37e7eb7364a335fdcd9ac8858665c0facd7fec92e4888b5d1cb208fb50e8d"
+      "expectedStepSha256": "4c0d840033e39abb824c48422121a41a89d76f515c0b7b32aef293d352e1130c"
     },
     {
       "id": "poppy_1_5",
@@ -1370,7 +1370,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [49.56, 62.1, 44.1],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [0.6441581178511253, -0.7603608117559144, -0.08313696622070509],
+      "explodeDirection": [0.6441581178511253, -0.7603608117559143, -0.08313696622070509],
       "explodeDistanceMeters": 0.03105,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -1414,7 +1414,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "3597ee68053fa55deb4b67e312ae881508d585c633eb631b31a8c47557a430e5"
+      "expectedStepSha256": "d0405534423f9f607c4520564a32657d38610e2869ebba56ac2df19ce77f04bc"
     },
     {
       "id": "poppy_1_5_2",
@@ -1476,7 +1476,7 @@
         "controller": "lower_body_controller",
         "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
       },
-      "expectedStepSha256": "b8d021a0eb97d9e48f187956c35e55146a40d2bdc576dbc690ef52d3919f5e65",
+      "expectedStepSha256": "b102ca3341bf3a008e9f12bef2234f2130f793e15a44aa8e4ce7e469bd0e44d8",
       "ports": [
         {
           "portId": "port_dxl_in",
@@ -1523,7 +1523,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "a1eb92b816d66e4f12f0cd74b0d4c4ab002292f61c3979b5a3abebf4d67e9691"
+      "expectedStepSha256": "a3bfee101e53eba04386413807bdc69c824397d72d73a9f89151909cd8e20b53"
     },
     {
       "id": "poppy_1_5_2_3",
@@ -1552,7 +1552,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "8d8bace8bd06315500566ddad8a0a0bfe2058233008f9f035f30fe3e429ad74d"
+      "expectedStepSha256": "cedc6d765149e31e932001ce629b449294a7bdb9561db477f257c908f14b583d"
     },
     {
       "id": "poppy_1_5_2_4",
@@ -1581,7 +1581,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "5e0b6e365633a1ee1eb24828aa92701e8b9c5e02480531d9dc7be761cfe9688b"
+      "expectedStepSha256": "1babcfd0967b769d8a3055fe1dcb3e59a342758c16ea91a9cf5548777e564470"
     },
     {
       "id": "poppy_1_5_2_5",
@@ -1610,7 +1610,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "dba03101ac828b7247317d6a5201ebffd788ed52d4f1418650e0860589bde8a5"
+      "expectedStepSha256": "9a143ac7b7796cd310646f5059da4d5e8a365747cfc002e4eef40109d2739b3a"
     },
     {
       "id": "poppy_1_6",
@@ -1623,7 +1623,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [72.38, 63.75, 208.95],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [-0.20638594076854597, -0.9781062131433371, 0.026703544024774276],
+      "explodeDirection": [-0.20638594076854597, -0.9781062131433371, 0.026703544024774283],
       "explodeDistanceMeters": 0.104475,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -1651,7 +1651,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [68.73, 63.75, 189.91],
       "restPositionMeters": [-0.05905, -0.104004, 0.00682],
-      "explodeDirection": [-0.16364369328709333, 0.9789739749726775, -0.12178135314388344],
+      "explodeDirection": [-0.16364369328709333, 0.9789739749726775, -0.12178135314388347],
       "explodeDistanceMeters": 0.094955,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -1667,7 +1667,7 @@
         "geometryStatus": "available",
         "geometryDetail": "surface"
       },
-      "expectedStepSha256": "c013dab9cf730027e47f48e957ead604a21fa1da8e4c98768af6e3b7aa29a9df"
+      "expectedStepSha256": "ee4e125b922a9f3266877dfe1267bf4c8ae0b09f52adb748b6e386fe314d3c51"
     },
     {
       "id": "poppy_1_6_2",
@@ -1680,7 +1680,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [48.5, 35.6, 50.6],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [0.1698148858257465, -0.9491431179622504, -0.26512307741289964],
+      "explodeDirection": [0.16981488582574683, -0.9491431179622503, -0.2651230774128998],
       "explodeDistanceMeters": 0.0253,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -1708,7 +1708,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [41.85, 35.6, 50.6],
       "restPositionMeters": [-0.045362, -0.1927, 0.005],
-      "explodeDirection": [-0.28800838692634256, 0.9576278865300896, 0.0],
+      "explodeDirection": [-0.2880083869263437, 0.9576278865300892, 0.0],
       "explodeDistanceMeters": 0.0253,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -1729,7 +1729,7 @@
         "controller": "lower_body_controller",
         "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
       },
-      "expectedStepSha256": "50bdff664e3440d3561c5c876baf8d41a327ee255d1a33add8f8b34f4209a658",
+      "expectedStepSha256": "8a214963104acbec8d4c4835bfd275f513405f9968d5c6119f2b8a94fd7e0a81",
       "ports": [
         {
           "portId": "port_dxl_in",
@@ -1760,7 +1760,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [0.85, 22.0, 22.0],
       "restPositionMeters": [-0.061862, -0.206, 0.005],
-      "explodeDirection": [-0.9965629190342784, -0.08283929264472358, 0.0],
+      "explodeDirection": [-0.9965629190342784, -0.08283929264472494, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -1776,7 +1776,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "392d7986e03e902acfe1b516337bea36c0147d5136cdbeb3805b2b76e4cf269d"
+      "expectedStepSha256": "cd1a5df6c6bca7e31a23241a5427f2ae506e9f618798afe636d7ad0000643aaf"
     },
     {
       "id": "poppy_1_6_2_3",
@@ -1789,7 +1789,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [5.85, 22.0, 22.0],
       "restPositionMeters": [-0.064112, -0.206, 0.005],
-      "explodeDirection": [-0.9972201623220771, -0.07451139415103086, 0.0],
+      "explodeDirection": [-0.9972201623220769, -0.07451139415103207, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -1805,7 +1805,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "25b14801357ed918980df6c7473614e179d6ee13031d17dced8e74b283407569"
+      "expectedStepSha256": "f292b29f50b5e3374e1ddc93da0a7f56e9f060b2db4a14dd2edff37878a19af4"
     },
     {
       "id": "poppy_1_6_2_4",
@@ -1818,7 +1818,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [10.5, 4.5, 4.5],
       "restPositionMeters": [-0.064287, -0.206, 0.005],
-      "explodeDirection": [-0.9972632023213905, -0.07393311366150705, 0.0],
+      "explodeDirection": [-0.9972632023213904, -0.07393311366150826, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -1834,7 +1834,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "1154be942f19a4bad3278d1736a8e1dbf077b4230efd2205032092293ac77fa9"
+      "expectedStepSha256": "26cbd05c8e4fefcb13cc412ef80f2360900a0827229cf60bdb557368f954a16f"
     },
     {
       "id": "poppy_1_6_2_5",
@@ -1847,7 +1847,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [1.8, 7.2, 7.2],
       "restPositionMeters": [-0.023437, -0.206, 0.005],
-      "explodeDirection": [0.9959539030601391, -0.08986558284056795, 0.0],
+      "explodeDirection": [0.995953903060139, -0.08986558284056946, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -1863,7 +1863,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "2c1b0efc979af1cddb100cb435b1a41635151c882bfe4665863e012a9d26b136"
+      "expectedStepSha256": "5ecdcdda68792cb257c5dd298a19727df2677e7f899c9c980855631baa72f078"
     },
     {
       "id": "poppy_1_6_2_6",
@@ -1876,7 +1876,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [3.0, 11.2, 11.2],
       "restPositionMeters": [-0.024837, -0.206, 0.005],
-      "explodeDirection": [0.9952660178879893, -0.09718823816380415, 0.0],
+      "explodeDirection": [0.9952660178879893, -0.09718823816380581, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -1892,7 +1892,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "50446d5a2ce9abb66d9a3b4df826f12e50c4902453bb44c7554bb1bc687fe2b2"
+      "expectedStepSha256": "e8b966d446fab08ac866e453db43cf48f58ff87067e83f6dc4a02d39dafb91a0"
     },
     {
       "id": "poppy_1_6_2_7",
@@ -1905,7 +1905,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [10.5, 4.5, 4.5],
       "restPositionMeters": [-0.026287, -0.206, 0.005],
-      "explodeDirection": [0.9943513423232394, -0.10613862642776044, 0.0],
+      "explodeDirection": [0.9943513423232394, -0.10613862642776226, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -1921,7 +1921,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "12c903658ecd4f463081c818923c922cab06bdd0df65859e9ae9d066b066f1f4"
+      "expectedStepSha256": "f9a8e0503f3170cf6a4b77420191523f0864cf4b0bf17ff116dd0e0ed175c76a"
     },
     {
       "id": "poppy_1_6_2_8",
@@ -1934,7 +1934,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [3.05, 22.0, 22.0],
       "restPositionMeters": [-0.024712, -0.206, 0.005],
-      "explodeDirection": [0.9953342944389374, -0.09648648772622255, 0.0],
+      "explodeDirection": [0.9953342944389373, -0.09648648772622419, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -1950,7 +1950,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "ce1b464d80e8134e860da487845b46dbfa6a4ea82cd31740fdfb779700b0e68d"
+      "expectedStepSha256": "96cdc5f93332f7089329b17c046a0c28563effdb09c8a4580ddb37a5c8c86433"
     },
     {
       "id": "poppy_1_6_3",
@@ -1979,7 +1979,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "df3f44b1608e0cd2f884b3abb26a7381e1917d84a9c8665d119e6888adf94e9f"
+      "expectedStepSha256": "b6d365b509c394231f63345dd3a9bdfc031260f19ed55342cc68f0bdf73f679c"
     },
     {
       "id": "poppy_1_7",
@@ -1992,7 +1992,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [72.38, 63.75, 208.95],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [0.20683164482945357, -0.97801213111409, 0.026700975465678976],
+      "explodeDirection": [0.20683164482945357, -0.97801213111409, 0.026700975465678983],
       "explodeDistanceMeters": 0.104475,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2020,7 +2020,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [68.73, 63.75, 189.91],
       "restPositionMeters": [0.05905, -0.104004, 0.00682],
-      "explodeDirection": [0.16364369328709333, 0.9789739749726775, -0.12178135314388344],
+      "explodeDirection": [0.16364369328709333, 0.9789739749726775, -0.12178135314388347],
       "explodeDistanceMeters": 0.094955,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2036,7 +2036,7 @@
         "geometryStatus": "available",
         "geometryDetail": "surface"
       },
-      "expectedStepSha256": "5efb282bc874e8334f13794f5ff870b6fbfa46f19b4580deace17871cc506be3"
+      "expectedStepSha256": "db8b489959ab46294754bf96c3c975ad37e42c84e101746f3fe33d599f5e09d4"
     },
     {
       "id": "poppy_1_7_2",
@@ -2049,7 +2049,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [48.5, 35.6, 50.6],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [-0.1698148858257465, -0.9491431179622504, -0.26512307741289964],
+      "explodeDirection": [-0.16981488582574683, -0.9491431179622503, -0.2651230774128998],
       "explodeDistanceMeters": 0.0253,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2077,7 +2077,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [41.85, 35.6, 50.6],
       "restPositionMeters": [0.045362, -0.1927, 0.005],
-      "explodeDirection": [0.28800838692634256, 0.9576278865300896, 0.0],
+      "explodeDirection": [0.2880083869263437, 0.9576278865300892, 0.0],
       "explodeDistanceMeters": 0.0253,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2098,7 +2098,7 @@
         "controller": "lower_body_controller",
         "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
       },
-      "expectedStepSha256": "db8f8510d5a7648497d4780ddead6dc65b0683a9bd88d98000db7f1bb494dad0",
+      "expectedStepSha256": "b2de86dba374d5351daf75339da3370bfd9eeea587f5b377dfe6c93f236d2d3b",
       "ports": [
         {
           "portId": "port_dxl_in",
@@ -2129,7 +2129,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [0.85, 22.0, 22.0],
       "restPositionMeters": [0.061862, -0.206, 0.005],
-      "explodeDirection": [0.9965629190342784, -0.08283929264472358, 0.0],
+      "explodeDirection": [0.9965629190342784, -0.08283929264472494, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2145,7 +2145,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "032e05000bd8dfe50fcfb2bcfe137a5c67bad1857a4a5ef1355dafa4bab5437a"
+      "expectedStepSha256": "1fdd67c72d52c54fa1fd8691906fa908e1104415f65e1f9e8720dd086bb63e71"
     },
     {
       "id": "poppy_1_7_2_3",
@@ -2158,7 +2158,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [5.85, 22.0, 22.0],
       "restPositionMeters": [0.064112, -0.206, 0.005],
-      "explodeDirection": [0.9972201623220771, -0.07451139415103086, 0.0],
+      "explodeDirection": [0.9972201623220769, -0.07451139415103207, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2174,7 +2174,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "baf12ac17264962ee94733ff2159e0cf5bc4ef5875b8b1e82be15108cf4298ef"
+      "expectedStepSha256": "dc8bfa9d03b3bdb3c6f6a73f8106897876959e9a052503ada4b4647056331177"
     },
     {
       "id": "poppy_1_7_2_4",
@@ -2187,7 +2187,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [10.5, 4.5, 4.5],
       "restPositionMeters": [0.064287, -0.206, 0.005],
-      "explodeDirection": [0.9972632023213905, -0.07393311366150705, 0.0],
+      "explodeDirection": [0.9972632023213904, -0.07393311366150826, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2203,7 +2203,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "33f47a068ceacc2058bea9368d0eeef3a85cfc05f5ae910a3e7660493bfedb7b"
+      "expectedStepSha256": "9c5d1ab2effabf6f298f1c97a6b5d901a6a289bbf8e369b12fcb49ef1ab5a395"
     },
     {
       "id": "poppy_1_7_2_5",
@@ -2216,7 +2216,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [1.8, 7.2, 7.2],
       "restPositionMeters": [0.023437, -0.206, 0.005],
-      "explodeDirection": [-0.9959539030601391, -0.08986558284056795, 0.0],
+      "explodeDirection": [-0.995953903060139, -0.08986558284056946, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2232,7 +2232,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "fee86792cb34bab38da73a9ac8a3fa95f8dc75b55157b1409e934162f77942a3"
+      "expectedStepSha256": "39efe49ab680d26a7c04fc84ce6f78e8eeed5519cc94fa3d2d057f1ddac5bf14"
     },
     {
       "id": "poppy_1_7_2_6",
@@ -2245,7 +2245,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [3.0, 11.2, 11.2],
       "restPositionMeters": [0.024837, -0.206, 0.005],
-      "explodeDirection": [-0.9952660178879893, -0.09718823816380415, 0.0],
+      "explodeDirection": [-0.9952660178879893, -0.09718823816380581, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2261,7 +2261,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "d9350a45a38bcd3e03cf45e94d49fbf7cc0e1d78b0c0bf99b181e7d74a741136"
+      "expectedStepSha256": "4a80517a1ca4d8c810964e1d9452e8f89b751e7fb8db4a1d64bd5100a92db259"
     },
     {
       "id": "poppy_1_7_2_7",
@@ -2274,7 +2274,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [10.5, 4.5, 4.5],
       "restPositionMeters": [0.026287, -0.206, 0.005],
-      "explodeDirection": [-0.9943513423232394, -0.10613862642776044, 0.0],
+      "explodeDirection": [-0.9943513423232394, -0.10613862642776226, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2290,7 +2290,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "4579db89a878ad868bed0cf33577e7182453d655bbf5c60a5b40281623fd714e"
+      "expectedStepSha256": "103e9f8f4a8a51861620e7b464a73c339a85ed0d547843766478aa947b3857ef"
     },
     {
       "id": "poppy_1_7_2_8",
@@ -2303,7 +2303,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [3.05, 22.0, 22.0],
       "restPositionMeters": [0.024712, -0.206, 0.005],
-      "explodeDirection": [-0.9953342944389374, -0.09648648772622255, 0.0],
+      "explodeDirection": [-0.9953342944389373, -0.09648648772622419, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2319,7 +2319,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "fa4db72b53fc090d390df698dcb08ebda59426bae73e716049511397b19feea4"
+      "expectedStepSha256": "3b3583991713abc983828896339b7d00d7b5ce9e359b9319ae538fd74dbb4913"
     },
     {
       "id": "poppy_1_7_3",
@@ -2348,7 +2348,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "593ca57d5606fe65524dc8359ba8eaaddfa9ec26b802911dee6bb32966a64001"
+      "expectedStepSha256": "e4ac06deee5c73a5c5267b3e851c1572baac62067587c6b7c2be10ee874a5a86"
     },
     {
       "id": "poppy_1_8",
@@ -2389,7 +2389,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [47.0, 61.47, 192.04],
       "restPositionMeters": [-0.043687, -0.289022, 0.007971],
-      "explodeDirection": [0.01913414010096314, 0.9993315785169014, 0.031149331638334957],
+      "explodeDirection": [0.019134140100963117, 0.9993315785169014, 0.031149331638334922],
       "explodeDistanceMeters": 0.09602,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2405,7 +2405,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "83aa2dc269ef296917b6c6c84a368cef77668fef4805f2ea7ccef104c18a5ab5"
+      "expectedStepSha256": "02d8c034be0e8ca31bb1b873f01f69c7acf872e1de1fff1235b30d823251b594"
     },
     {
       "id": "poppy_1_8_2",
@@ -2446,7 +2446,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [41.85, 35.6, 50.6],
       "restPositionMeters": [-0.042012, -0.3727, 0.005],
-      "explodeDirection": [0.2880083869263419, 0.9576278865300898, 0.0],
+      "explodeDirection": [0.2880083869263406, 0.9576278865300901, 0.0],
       "explodeDistanceMeters": 0.0253,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2467,7 +2467,7 @@
         "controller": "lower_body_controller",
         "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
       },
-      "expectedStepSha256": "0f695670dea458b21733eae4201d9f3c603283e53cd40ba2c30ef8acf77dc32f",
+      "expectedStepSha256": "79c00e3dae4aaedcf809424689eb7ad2118192ec9f3f292f8c47363a3e733ffb",
       "ports": [
         {
           "portId": "port_dxl_in",
@@ -2498,7 +2498,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [0.85, 22.0, 22.0],
       "restPositionMeters": [-0.025512, -0.386, 0.005],
-      "explodeDirection": [0.9965629190342784, -0.08283929264472496, 0.0],
+      "explodeDirection": [0.9965629190342786, -0.08283929264472221, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2514,7 +2514,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "8cac8902f630c82e64e5a8b778e03d1201a737fa06a35867dc2f4ec16b92ab11"
+      "expectedStepSha256": "e00beaa0433feff58f51f2d586a91bef91d46e2135b02daea7633e9ba54e508c"
     },
     {
       "id": "poppy_1_8_2_3",
@@ -2527,7 +2527,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [5.85, 22.0, 22.0],
       "restPositionMeters": [-0.023262, -0.386, 0.005],
-      "explodeDirection": [0.9972201623220769, -0.07451139415103211, 0.0],
+      "explodeDirection": [0.9972201623220772, -0.07451139415102964, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2543,7 +2543,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "5f4aadd1ad9eac070af1b5e3b50bdfd392c3d2c4e4a111a478d47a838e42c88c"
+      "expectedStepSha256": "5a433ac97bbbed24eb0829b1ef9e91a01dcb82bc20becdadd12d2542b5aac498"
     },
     {
       "id": "poppy_1_8_2_4",
@@ -2556,7 +2556,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [10.5, 4.5, 4.5],
       "restPositionMeters": [-0.023087, -0.386, 0.005],
-      "explodeDirection": [0.9972632023213904, -0.07393311366150827, 0.0],
+      "explodeDirection": [0.9972632023213905, -0.07393311366150582, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2572,7 +2572,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "d04c1f18e8dfa5ea1fd3d4f90c534ab7e3eb6e94a912ad632ed0b79477179b5f"
+      "expectedStepSha256": "47a21bc95b857b6986f3bf76b1d5689d572ac3239781bbb3f70a615c5c92d09e"
     },
     {
       "id": "poppy_1_8_2_5",
@@ -2585,7 +2585,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [1.8, 7.2, 7.2],
       "restPositionMeters": [-0.063937, -0.386, 0.005],
-      "explodeDirection": [-0.995953903060139, -0.08986558284056946, 0.0],
+      "explodeDirection": [-0.9959539030601393, -0.0898655828405665, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2601,7 +2601,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "1761e5103e869af317403f8b8c5803cb3832c5cbd5414c6980613169ef8ebf19"
+      "expectedStepSha256": "9b2f1a764427555153c1e6139839763ff5e0743c178182a5a80ae9e5c813c30c"
     },
     {
       "id": "poppy_1_8_2_6",
@@ -2614,7 +2614,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [3.0, 11.2, 11.2],
       "restPositionMeters": [-0.062537, -0.386, 0.005],
-      "explodeDirection": [-0.9952660178879893, -0.09718823816380578, 0.0],
+      "explodeDirection": [-0.9952660178879895, -0.09718823816380256, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2630,7 +2630,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "aa79472c50c2720d93edff380dd72c0a4b07c77812ab5866da3b196fd283d31c"
+      "expectedStepSha256": "2c5520cc407fe9111e48ed6b7986ac8b4026e375874e5ab7f2402dbecffc2694"
     },
     {
       "id": "poppy_1_8_2_7",
@@ -2643,7 +2643,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [10.5, 4.5, 4.5],
       "restPositionMeters": [-0.061087, -0.386, 0.005],
-      "explodeDirection": [-0.9943513423232394, -0.10613862642776219, 0.0],
+      "explodeDirection": [-0.9943513423232396, -0.10613862642775868, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2659,7 +2659,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "dd86067bee88e8bfd41bd819a0ca1ea276a2238739cfcb0b537cbd37f0d56c2c"
+      "expectedStepSha256": "def2a6b3558f70b50bd19fca55cac7cfd95dc0c481725c6da8ce055043a60ccc"
     },
     {
       "id": "poppy_1_8_2_8",
@@ -2672,7 +2672,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [3.05, 22.0, 22.0],
       "restPositionMeters": [-0.062662, -0.386, 0.005],
-      "explodeDirection": [-0.9953342944389373, -0.09648648772622416, 0.0],
+      "explodeDirection": [-0.9953342944389376, -0.09648648772622098, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2688,7 +2688,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "c776dd1a3a11371f0d98322ccbbdcf62c4f939a25b7b8c84b76bf79028bb99b0"
+      "expectedStepSha256": "05506ccc50f0d49cd5beb0130e0b2ca038cafd5b5350c4e25576c4e85afad9bb"
     },
     {
       "id": "poppy_1_9",
@@ -2729,7 +2729,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [47.0, 61.47, 192.04],
       "restPositionMeters": [0.043687, -0.289022, 0.007971],
-      "explodeDirection": [-0.01913414010096314, 0.9993315785169014, 0.031149331638334957],
+      "explodeDirection": [-0.019134140100963117, 0.9993315785169014, 0.031149331638334922],
       "explodeDistanceMeters": 0.09602,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2745,7 +2745,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "b6ef83340ce286fe22ce22dbb4e7ddea82a45406dd41a88bcddc61e217827b01"
+      "expectedStepSha256": "78a17f6e471c8c29bb800e4c137560440e1eb64268b6ace9d335fa3d2f49a493"
     },
     {
       "id": "poppy_1_9_2",
@@ -2786,7 +2786,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [41.85, 35.6, 50.6],
       "restPositionMeters": [0.042012, -0.3727, 0.005],
-      "explodeDirection": [-0.2880083869263419, 0.9576278865300898, 0.0],
+      "explodeDirection": [-0.2880083869263406, 0.9576278865300901, 0.0],
       "explodeDistanceMeters": 0.0253,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2807,7 +2807,7 @@
         "controller": "lower_body_controller",
         "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
       },
-      "expectedStepSha256": "684fff68d62add42c2afdb35b3cfebaaae2ec1b0c7503c4ad9d2c0524221ae3c",
+      "expectedStepSha256": "8fe149631450f9b9f3407f70e0541a61d482eb6de1efe46009ae82e30aa88df9",
       "ports": [
         {
           "portId": "port_dxl_in",
@@ -2838,7 +2838,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [0.85, 22.0, 22.0],
       "restPositionMeters": [0.025512, -0.386, 0.005],
-      "explodeDirection": [-0.9965629190342784, -0.08283929264472496, 0.0],
+      "explodeDirection": [-0.9965629190342786, -0.08283929264472221, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2854,7 +2854,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "c8507b7217bc199e62f37499931eca8ca4530aacde3dc9d036c4d7e6e4b85afc"
+      "expectedStepSha256": "eee742de85e5fe13d4ef5b30c55f72264e4341e8cfba05a88df394ab2a5298b0"
     },
     {
       "id": "poppy_1_9_2_3",
@@ -2867,7 +2867,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [5.85, 22.0, 22.0],
       "restPositionMeters": [0.023262, -0.386, 0.005],
-      "explodeDirection": [-0.9972201623220769, -0.07451139415103211, 0.0],
+      "explodeDirection": [-0.9972201623220772, -0.07451139415102964, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2883,7 +2883,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "7d626d70f8aa90411e0eefbceecd86be5235fc840c79178168f2c97916cabb7b"
+      "expectedStepSha256": "9af4f55ad2de54efab53661b48fc86fa051c25f00e1fdea4a65f5eeb039def6a"
     },
     {
       "id": "poppy_1_9_2_4",
@@ -2896,7 +2896,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [10.5, 4.5, 4.5],
       "restPositionMeters": [0.023087, -0.386, 0.005],
-      "explodeDirection": [-0.9972632023213904, -0.07393311366150827, 0.0],
+      "explodeDirection": [-0.9972632023213905, -0.07393311366150582, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2912,7 +2912,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "162fca5669d2869c2bcdf02317a3c92345a8298f1e78dd4f244f555768429b3d"
+      "expectedStepSha256": "73763c1883c43c5f371ce0b6297dd639805a9674e9b868a03489ce6bd10d6779"
     },
     {
       "id": "poppy_1_9_2_5",
@@ -2925,7 +2925,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [1.8, 7.2, 7.2],
       "restPositionMeters": [0.063937, -0.386, 0.005],
-      "explodeDirection": [0.995953903060139, -0.08986558284056946, 0.0],
+      "explodeDirection": [0.9959539030601393, -0.0898655828405665, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2941,7 +2941,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "fbc400ef219a2c785c982ba3af3d0811df765dff5bf4310295939446289203a0"
+      "expectedStepSha256": "37479787423941a3d8a227c5ec51bb344433fdfbc294bfc27076aa80e8eaf43d"
     },
     {
       "id": "poppy_1_9_2_6",
@@ -2954,7 +2954,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [3.0, 11.2, 11.2],
       "restPositionMeters": [0.062537, -0.386, 0.005],
-      "explodeDirection": [0.9952660178879893, -0.09718823816380578, 0.0],
+      "explodeDirection": [0.9952660178879895, -0.09718823816380256, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2970,7 +2970,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "7aaa6bc26655fafad8f9e93a34480bec807fbd7c252693c77a0b505f325ebef9"
+      "expectedStepSha256": "8d615bc91015fff9bb6586239d06e08860a457f4c0e22c5f7e8d7d14a8c1b9cb"
     },
     {
       "id": "poppy_1_9_2_7",
@@ -2983,7 +2983,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [10.5, 4.5, 4.5],
       "restPositionMeters": [0.061087, -0.386, 0.005],
-      "explodeDirection": [0.9943513423232394, -0.10613862642776219, 0.0],
+      "explodeDirection": [0.9943513423232396, -0.10613862642775868, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -2999,7 +2999,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "bb5522fbecc6f5a748970d6252fca208fa689145c8562e97722fcbd69c6e7306"
+      "expectedStepSha256": "0f260bbd7dd7cac6393ef60f04c736bdf4a6d7845d85a2ddc19ab74c112917eb"
     },
     {
       "id": "poppy_1_9_2_8",
@@ -3012,7 +3012,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [3.05, 22.0, 22.0],
       "restPositionMeters": [0.062662, -0.386, 0.005],
-      "explodeDirection": [0.9953342944389373, -0.09648648772622416, 0.0],
+      "explodeDirection": [0.9953342944389376, -0.09648648772622098, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -3028,7 +3028,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "aec00574dcbe8cdca5d986d62dfb2ebdb2b246d3cbd829bae403b7283ea0e789"
+      "expectedStepSha256": "8d398d9b0433a10a9bceb858aaaec4e81764558f3b10d51f099200f86380a9fb"
     },
     {
       "id": "poppy_1_10",
@@ -3057,7 +3057,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "8ce1371e5c6e10f591d9e9c44c9cc5a52ae6c55e00e7e9404236829f5925e0e2"
+      "expectedStepSha256": "3c802cfcaed3c1ff0cd2940e2c450fbdcef84a24461148f319c896890d004bfc"
     },
     {
       "id": "poppy_1_11",
@@ -3086,7 +3086,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "00fb48c5e2d32ebbf033f3274d5865852973e9703d40a03971c108910cfe82c7"
+      "expectedStepSha256": "ba28f715586849091bf0ded090a1fbc9dc039e2a841553f49be4e18fc3b891b9"
     },
     {
       "id": "poppy_1_12",
@@ -3099,7 +3099,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [20.0, 9.6, 28.22],
       "restPositionMeters": [-0.0, -9.6e-5, -0.022199],
-      "explodeDirection": [0.0008117939860895141, -0.8872101570365669, -0.4613647995260091],
+      "explodeDirection": [0.0008117939860895251, -0.8872101570365667, -0.4613647995260091],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -3117,7 +3117,7 @@
         "controller": "lower_body_controller",
         "connectorPlacement": "Reference exits at the pinned Bioloid hub."
       },
-      "expectedStepSha256": "84c081b7a638a40832a42bdf2ff88a3776a6ff3dab57ea8990db51d1a96f7f12",
+      "expectedStepSha256": "f0d1e7334d69c2b0e93288b74f04a33708785d8f2378b2a1d95378f207091619",
       "ports": [
         {
           "portId": "port_hub_1",
@@ -3182,7 +3182,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [49.56, 93.78, 62.1],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [-0.20482883610408467, 0.9481300568124797, -0.24309369236779885],
+      "explodeDirection": [-0.2048288361040842, 0.94813005681248, -0.24309369236779838],
       "explodeDistanceMeters": 0.04689,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -3210,7 +3210,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [49.56, 40.2, 62.1],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [-0.5782976683972347, -0.08678539457628855, 0.8111967098149251],
+      "explodeDirection": [-0.578297668397235, -0.08678539457628855, 0.8111967098149251],
       "explodeDistanceMeters": 0.03105,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -3238,7 +3238,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [46.1, 40.2, 61.1],
       "restPositionMeters": [0.00105, 0.07855, 0.017],
-      "explodeDirection": [0.5630664811644294, 0.8264116031307325, 0.0],
+      "explodeDirection": [0.5630664811644295, 0.8264116031307325, 0.0],
       "explodeDistanceMeters": 0.03055,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -3259,7 +3259,7 @@
         "controller": "upper_body_controller",
         "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
       },
-      "expectedStepSha256": "baea52f361585952aa89551cca4729b3a8fcea70e3368c0b955c2d682b7008e1",
+      "expectedStepSha256": "04eb8a3b5bdde0858cd741939bea2e4b3a4421516f10df72d1dc526695154d74",
       "ports": [
         {
           "portId": "port_dxl_in",
@@ -3290,7 +3290,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [3.48, 14.0, 14.0],
       "restPositionMeters": [-0.02152, 0.061, 0.017],
-      "explodeDirection": [-0.9654492577888885, -0.2605911177206242, 0.0],
+      "explodeDirection": [-0.9654492577888885, -0.26059111772062427, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -3306,7 +3306,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "53a576519d6c0ec84bd251f97e7ff0f8e2ea16e04c8507acc336deaab828a8c5"
+      "expectedStepSha256": "073bd96624285e57d806dcac54bf5ac19fefe5a8a4354a2d545d9fbb1be1fbd8"
     },
     {
       "id": "poppy_1_13_1_3",
@@ -3319,7 +3319,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [2.2, 9.5, 9.5],
       "restPositionMeters": [-0.02316, 0.061, 0.017],
-      "explodeDirection": [-0.972455976934325, -0.23308662107617317, 0.0],
+      "explodeDirection": [-0.972455976934325, -0.2330866210761732, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -3335,7 +3335,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "4b4bd14ca1777bf7d359c11d2d591e328332a7235ba3c5f81f59829f7f7cc06f"
+      "expectedStepSha256": "7849d5a149f6277a6ff4097fc6beeb5fdfdf07f0ae12356f76a375a6292f9be7"
     },
     {
       "id": "poppy_1_13_1_4",
@@ -3348,7 +3348,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [3.8, 28.0, 28.0],
       "restPositionMeters": [-0.0216, 0.061, 0.017],
-      "explodeDirection": [-0.9658491455732354, -0.2591050520454032, 0.0],
+      "explodeDirection": [-0.9658491455732354, -0.25910505204540324, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -3364,7 +3364,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "552ae1b3b8ca22ab0fc3b17d0d35258a54595b7874919e6a0e3973ca88306fb6"
+      "expectedStepSha256": "d6d01f8b63d09dcd811717087bea25d714c470139e94ebacf2805f4b3b1b2bb6"
     },
     {
       "id": "poppy_1_13_1_5",
@@ -3393,7 +3393,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "f283631e444a3667ced07dd60ce54131f7492e86625abdbdecce6d7941bccbf5"
+      "expectedStepSha256": "5aac04781619dd5e7c2b66904b03c09b47c2b9f63f01c12a5c7df4d3d3f2d3ba"
     },
     {
       "id": "poppy_1_13_2",
@@ -3422,7 +3422,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "577e39e788afe3b38fd7941a54b4210bbf158ee2df22f2e8e4b8f4acc2a17856"
+      "expectedStepSha256": "44e09e38e89463fd50928ce07b36e6235084708e45ee7d38e671006509ec71e6"
     },
     {
       "id": "poppy_1_13_3",
@@ -3435,7 +3435,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [41.0, 8.15, 35.09],
       "restPositionMeters": [0.0, 0.06509, 0.035775],
-      "explodeDirection": [0.04933577060373711, -0.016858512500807762, 0.9986399612949582],
+      "explodeDirection": [0.04933577060373712, -0.016858512500807762, 0.9986399612949582],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -3451,7 +3451,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "0b36efa48c1daff3bbbed744c6c3e65ef6b9fb8e769916ee800268ba3afae850"
+      "expectedStepSha256": "c5ae080e5d70f7c078d15b9c3b52aae60b9f3a94d8e209da44136709c02e489a"
     },
     {
       "id": "poppy_1_13_4",
@@ -3464,7 +3464,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [28.0, 4.56, 28.0],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [0.042731349260096675, -0.13773785077379713, 0.9895465205105958],
+      "explodeDirection": [0.04273134926009668, -0.13773785077379713, 0.9895465205105958],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -3508,7 +3508,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "cef7d0e2730398132e82e90f5b8e1f6f4ff9f38458712e2f68652063b09ee722"
+      "expectedStepSha256": "14cfe8ca8982cab59bdf4e3134f7d5e6b788c589a2218113a61659a32420a2fd"
     },
     {
       "id": "poppy_1_13_4_2",
@@ -3537,7 +3537,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "5199e8ae29113fd7a03ee88d8e725c364dc6d3c5b2651ae9e02d2e4092bc42d9"
+      "expectedStepSha256": "de2139602a56cdf12c10a2ba21ca065b79110fbc9f449155c977d8815d91bf3d"
     },
     {
       "id": "poppy_1_13_4_3",
@@ -3566,7 +3566,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "5821d6a6c40f0dd2971a9ff3935c96f4f138ca1c560a0e40041064ef5bdf6dc2"
+      "expectedStepSha256": "3baba2e208658e05d496789978b8e6a10466482c6259407f397685e0e2ea46a4"
     },
     {
       "id": "poppy_1_13_5",
@@ -3579,7 +3579,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [40.2, 48.8, 62.1],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [0.030006768750277815, 0.026955352388401247, -0.9991861702439563],
+      "explodeDirection": [0.030006768750277822, 0.026955352388401247, -0.9991861702439563],
       "explodeDistanceMeters": 0.03105,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -3628,7 +3628,7 @@
         "controller": "upper_body_controller",
         "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
       },
-      "expectedStepSha256": "a381cc46f8bdc6f32f3827bb6ed024ef52c5c2262cb094c09708ddefc26247a1",
+      "expectedStepSha256": "fdb81e92be9afe3051bf74232f6b7dc4030fa970680ed662ce2dcb9acca47efa",
       "ports": [
         {
           "portId": "port_dxl_in",
@@ -3675,7 +3675,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "c8512a1e33d83d228809c0da26f96bbbafe3e889e77cd96f96f80f641ef0677b"
+      "expectedStepSha256": "34593d5e51b389ea79e40734e32cf28cf4b4e1929c521502d1a23295c2761f99"
     },
     {
       "id": "poppy_1_13_5_3",
@@ -3704,7 +3704,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "0b77e527c6989ebd9dbd79b558eb57f44dde2ec6dbce444fd328f69e18297f04"
+      "expectedStepSha256": "b12ee793db91d1f700541b203665b62534feb3545bcfb2ba8b753769652942fa"
     },
     {
       "id": "poppy_1_13_6",
@@ -3733,7 +3733,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "005186097676155f01eb2f7c380b81bdf0cc042e6408478f58b19a986762c724"
+      "expectedStepSha256": "7f29c0013300fea9448807ab76bc728ec49d57428262a835482c53fd3017a93f"
     },
     {
       "id": "poppy_1_14",
@@ -3746,7 +3746,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [64.79, 98.5, 74.89],
       "restPositionMeters": [-0.0, 0.083444, -0.00425],
-      "explodeDirection": [0.00198058505720037, 0.8821197105539, -0.47102111792905305],
+      "explodeDirection": [0.001980585057200396, 0.8821197105539, -0.4710211179290528],
       "explodeDistanceMeters": 0.04925,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -3762,7 +3762,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "c5790005abd9975a3b8e753995797f9e0cbf0f6a523502b297e6a4a99725ca78"
+      "expectedStepSha256": "8a18bb387f4e35947622fdbb5d41092a55487b8efbe9cb22bfa45fe16805aa75"
     },
     {
       "id": "poppy_1_15",
@@ -3775,7 +3775,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [47.4, 54.4, 92.85],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [0.0006448484206639563, 0.9990094251483961, 0.04449441128035916],
+      "explodeDirection": [0.0006448484206639648, 0.9990094251483961, 0.044494411280359136],
       "explodeDistanceMeters": 0.046424999999999994,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -3803,7 +3803,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [35.6, 50.6, 45.1],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [0.0, -0.9980374716196625, 0.06261952764937792],
+      "explodeDirection": [0.0, -0.9980374716196625, 0.06261952764937788],
       "explodeDistanceMeters": 0.0253,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -3831,7 +3831,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [35.6, 50.6, 41.85],
       "restPositionMeters": [0.0, 0.136812, 0.0037],
-      "explodeDirection": [0.0, 0.8051865668307545, -0.5930215785241739],
+      "explodeDirection": [0.0, 0.8051865668307542, -0.5930215785241744],
       "explodeDistanceMeters": 0.0253,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -3852,7 +3852,7 @@
         "controller": "upper_body_controller",
         "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
       },
-      "expectedStepSha256": "f0d4cfe35e177472916b84db7eefb2c512a642e0c399b4193c6228ae2a2055c8",
+      "expectedStepSha256": "d9ceb45c254acb44fbc599b1f185672be178689728119d2cef894e38fcf14312",
       "ports": [
         {
           "portId": "port_dxl_in",
@@ -3883,7 +3883,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [22.0, 22.0, 0.85],
       "restPositionMeters": [0.0, 0.120312, 0.017],
-      "explodeDirection": [0.0, -0.6644510262496138, 0.74733180965073],
+      "explodeDirection": [0.0, -0.6644510262496155, 0.7473318096507284],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -3899,7 +3899,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "dbf51980e6f5a72243b4c5ea017b937f4e42c0e12ad63c74ae9fa544244a0381"
+      "expectedStepSha256": "e2cd561bf70a57f7dab2d312d8f4809e275231b73327e21180b577c0820fc030"
     },
     {
       "id": "poppy_1_15_1_3",
@@ -3912,7 +3912,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [22.0, 22.0, 5.85],
       "restPositionMeters": [0.0, 0.118062, 0.017],
-      "explodeDirection": [0.0, -0.842785503747412, 0.5382495654185157],
+      "explodeDirection": [0.0, -0.8427855037474127, 0.5382495654185147],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -3928,7 +3928,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "2c0e1c0040de670f102ea2b8b78b7873e866f9f7b37a2ce9ddbcbf5ccfd2b3dc"
+      "expectedStepSha256": "de88bdc82175d6e37b4e4041ee9a8939fd0065cd78ddb80b15dde8a1d6702107"
     },
     {
       "id": "poppy_1_15_1_4",
@@ -3941,7 +3941,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [4.5, 4.5, 10.5],
       "restPositionMeters": [0.0, 0.117887, 0.017],
-      "explodeDirection": [0.0, -0.8507070374256179, 0.5256401206857486],
+      "explodeDirection": [0.0, -0.8507070374256186, 0.5256401206857476],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -3957,7 +3957,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "d593d02cf61ec007d951f78ede18ffcb4e90a149806df16394be9ba300ac20c3"
+      "expectedStepSha256": "dab00fe343822fd0a7b057806a253a91d2667b812c2a98c8b0e0794088e5f87b"
     },
     {
       "id": "poppy_1_15_2",
@@ -3970,7 +3970,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [47.4, 43.3, 83.95],
       "restPositionMeters": [0.0, 0.163512, 0.01115],
-      "explodeDirection": [0.0, 0.9980374716196625, -0.06261952764937775],
+      "explodeDirection": [0.0, 0.9980374716196625, -0.06261952764937784],
       "explodeDistanceMeters": 0.041975,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -3986,7 +3986,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "787781c486eab6789ee88ba5e768d76ebb0d48174daae41d485db75f7eee30f2"
+      "expectedStepSha256": "63f2fd275ad920f49d2c08ae23704f24d7ea9954747f7f202daa52501df98f0e"
     },
     {
       "id": "poppy_1_16",
@@ -3999,7 +3999,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [48.5, 85.1, 50.6],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [-0.0018387609810228385, 0.9998784534887515, 0.015482157698376143],
+      "explodeDirection": [-0.0018387609810228344, 0.9998784534887515, 0.015482157698376162],
       "explodeDistanceMeters": 0.04255,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -4027,7 +4027,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [48.5, 35.6, 50.6],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [-0.1651315725556736, -0.10587422084788861, 0.9805723905480629],
+      "explodeDirection": [-0.1651315725556738, -0.10587422084788269, 0.9805723905480636],
       "explodeDistanceMeters": 0.0253,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -4055,7 +4055,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [41.85, 35.6, 50.6],
       "restPositionMeters": [0.001675, 0.205787, 0.0198],
-      "explodeDirection": [0.28800838692634284, 0.9576278865300896, 0.0],
+      "explodeDirection": [0.28800838692634284, 0.9576278865300895, 0.0],
       "explodeDistanceMeters": 0.0253,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -4076,7 +4076,7 @@
         "controller": "upper_body_controller",
         "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
       },
-      "expectedStepSha256": "bf4816ae0c08a7ed93abbfca4b8c134ac15f932d3244f9007d7b570757f56fe8",
+      "expectedStepSha256": "54dd87cfcda5c65aecea72b747a8d80252e806196bfff4c69a913d689964fda6",
       "ports": [
         {
           "portId": "port_dxl_in",
@@ -4123,7 +4123,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "4df869fc01be1ef2ead0223a7e8ddf6097e7f12879889b8dd295926a437a3383"
+      "expectedStepSha256": "4399f6ab478b57de9fcd9c6aa1c6acb9957c84e4d0bc7cba2d7f21fce8a413ce"
     },
     {
       "id": "poppy_1_16_1_3",
@@ -4152,7 +4152,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "cdceec3c9875240764dfe4499826edd6ee61889c694a4db65fdc35de82d3ef46"
+      "expectedStepSha256": "2c92a5bf6f4c0d9d9bd02168e42e72d73f1ef5aa4778f2e75fe12fdd40ed84ed"
     },
     {
       "id": "poppy_1_16_1_4",
@@ -4181,7 +4181,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "4777e49a6544e9d210973282d4cba7effccb6f52b3118b44e41d6911cabeb07e"
+      "expectedStepSha256": "c7db932aa8dc4af305fc0789e599370e48e0300e0bb99510dcef88c7c2518541"
     },
     {
       "id": "poppy_1_16_1_5",
@@ -4210,7 +4210,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "f595a3d684d267f8d3e5c3ba10eace53cd4bc8b1ef7f5b64440810a74c76de3e"
+      "expectedStepSha256": "f6ae0bc64772e695b247dab10d1c315e3c84f68fb1d786edba1c8e21192ff3f0"
     },
     {
       "id": "poppy_1_16_1_6",
@@ -4239,7 +4239,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "a712b4828c1e0cbec9989863b7d4698db8292104b11dcf336fe7136ceb24108b"
+      "expectedStepSha256": "46ff8e2495ede69ebfc96507f1c6cce09811043c39d69c89f8960262d84d0ec0"
     },
     {
       "id": "poppy_1_16_1_7",
@@ -4268,7 +4268,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "b7387acc9fe41e1534652a2c55c36ecbb3d4621ff4b063419116b0a0326da480"
+      "expectedStepSha256": "2e4ce05a597711e47c85ef87f50ae124633d9c5f32a484066cc76e00d93b048d"
     },
     {
       "id": "poppy_1_16_1_8",
@@ -4297,7 +4297,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "6bd34fd90d784378ec2bb1896bc16a43ac45a71cb27f9f7bd7816009612dc9c2"
+      "expectedStepSha256": "f1d94dfd32a45ce9064d8ec2f63c266345e3c018fcfa00e59aaa5fde13d243d0"
     },
     {
       "id": "poppy_1_16_2",
@@ -4310,7 +4310,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [35.6, 45.1, 50.6],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [0.00704180974680158, 0.015914490027770838, -0.9998485594942095],
+      "explodeDirection": [0.007041809746801583, 0.01591449002777212, -0.9998485594942095],
       "explodeDistanceMeters": 0.0253,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -4359,7 +4359,7 @@
         "controller": "upper_body_controller",
         "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
       },
-      "expectedStepSha256": "b8cde2b5964b80c89e4b654a0d087478ffa671c830b2f413b3d66be88ba3b203",
+      "expectedStepSha256": "613c8b0a08815058ea312464fb05e32a77c1538c1d6c21dd3b9794dc47c8558d",
       "ports": [
         {
           "portId": "port_dxl_in",
@@ -4406,7 +4406,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "cb229143bb67ba8c28d93f15b794633bfcf4735f49bbdb586808d10f596f92b9"
+      "expectedStepSha256": "437bee7bbd81fbfe9590bdaa181f590960524065ba6cf9e812ebf7fc9fcbcc8e"
     },
     {
       "id": "poppy_1_16_2_3",
@@ -4435,7 +4435,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "c615a900d7bf5b52fd75e2f8f5447cb384485e9d956e0eae56620216792c09ca"
+      "expectedStepSha256": "3f8db0494e1d095c73bcdc15fee3460bd72f1d985c7f3faf614ee387e2487c6d"
     },
     {
       "id": "poppy_1_16_2_4",
@@ -4464,7 +4464,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "6d4a318d60ef2fb9be3d729ca37dd1aea16dfa8e214cc015fc9960b8f86849b5"
+      "expectedStepSha256": "026b440a86e0799769d36f7f66a7648eed66e0e561f937c088465e93a3990bda"
     },
     {
       "id": "poppy_1_16_3",
@@ -4477,7 +4477,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [7.4, 14.1, 26.0],
       "restPositionMeters": [0.0161, 0.196487, 0.00035],
-      "explodeDirection": [0.8420585764657409, 0.06993556345764879, -0.53483303073422],
+      "explodeDirection": [0.8420585764657407, 0.06993556345765163, -0.53483303073422],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -4493,7 +4493,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "3d4341b5fb6602113e5ead512f6993f8048c9f485eebf081d5ae95102376689c"
+      "expectedStepSha256": "3c4494daef85f5bb6e8c038e460660399f80cf95baaf1285849a547581a1dcf8"
     },
     {
       "id": "poppy_1_16_4",
@@ -4506,7 +4506,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [35.5, 8.15, 28.22],
       "restPositionMeters": [0.0, 0.195325, 0.036275],
-      "explodeDirection": [0.011924128138385068, 0.007856857033647488, 0.9998980372846484],
+      "explodeDirection": [0.011924128138385072, 0.007856857033649665, 0.9998980372846484],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -4522,7 +4522,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "051210fd28f12de62e944129b5dc72ec29f12c6303ae238993dec59e904a1675"
+      "expectedStepSha256": "8595cdfb2ed2ffb21fd10bcfa55256a99304c347536b3ef1fc1722ed8660d20d"
     },
     {
       "id": "poppy_1_16_5",
@@ -4535,7 +4535,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [22.0, 3.8, 22.0],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [0.010272944234138466, -0.08908190628896437, 0.9959713251839566],
+      "explodeDirection": [0.010272944234138472, -0.0890819062889625, 0.9959713251839567],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -4579,7 +4579,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "895e238174fdba7e05d2eb4473ccf6d5eea35c0af3f396e71ca0817f9c2926a5"
+      "expectedStepSha256": "f86ecbfacebef24af0d26ed0f1c752d7f45bc52870c0cce801ffa4373c2f6bed"
     },
     {
       "id": "poppy_1_16_5_2",
@@ -4608,7 +4608,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "c25c10776c160f123b0b95baf215896590a2d768bf52b0639300e9bb2ca75955"
+      "expectedStepSha256": "c9b07a5b8a1eeace7e78e142847856c18b9f72ef9dfa83c127beb761b387c1a9"
     },
     {
       "id": "poppy_1_16_5_3",
@@ -4637,7 +4637,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "3356bb5d834a353623e43a73e40ff8cfac57c789666d2e6388e4e46c4626b8d8"
+      "expectedStepSha256": "b0c0316be85e21de564eed84c300ac26f80989cc645f8289f20a146b3c194b15"
     },
     {
       "id": "poppy_1_16_6",
@@ -4650,7 +4650,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [7.4, 14.1, 26.0],
       "restPositionMeters": [-0.0161, 0.196487, 0.00035],
-      "explodeDirection": [-0.8326035830954895, 0.07181343170682106, -0.5491940498977043],
+      "explodeDirection": [-0.8326035830954892, 0.07181343170682396, -0.5491940498977042],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -4666,7 +4666,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "e0f9e44511fb1a22f71e96ab83b5df2f8d553d1b95e2f8f22baa2b6533922e27"
+      "expectedStepSha256": "dca24c553603c56749a960a60900b9ff8e3830e9f92ad5488920ce818a068ea0"
     },
     {
       "id": "poppy_1_17",
@@ -4679,7 +4679,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [167.7, 99.53, 95.62],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [0.00029226416842851287, 0.9995844740758688, 0.0288234933365935],
+      "explodeDirection": [0.0002922641684285168, 0.9995844740758688, 0.028823493336593498],
       "explodeDistanceMeters": 0.08385,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -4723,7 +4723,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "07390b9fe0595ba33dd73c91d7e1e687c04d0c646d4c3632127b1f49245555ef"
+      "expectedStepSha256": "fa4165197238a71201ff6fbb4921060efaec0fed992c1edd4a9505574b2a68a0"
     },
     {
       "id": "poppy_1_17_2",
@@ -4736,7 +4736,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [32.0, 50.0, 40.12],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [0.0, 0.960939595817486, 0.2767581854076347],
+      "explodeDirection": [0.0, 0.960939595817486, 0.2767581854076346],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -4764,7 +4764,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [32.0, 50.0, 38.0],
       "restPositionMeters": [0.0, 0.255487, 0.0113],
-      "explodeDirection": [0.0, -0.7824347698453388, -0.6227325516921945],
+      "explodeDirection": [0.0, -0.7824347698453389, -0.6227325516921944],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -4785,7 +4785,7 @@
         "controller": "upper_body_controller",
         "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
       },
-      "expectedStepSha256": "1e73be9b309e7cb3d74b2ccf7ccc6b2b0cbaa7747aa553e9a95562fa746c6ff2",
+      "expectedStepSha256": "990d7cc4e4957e5b3d91ef5d49e53a1d52748f5a2bcc831fa592fe84faf7bfb4",
       "ports": [
         {
           "portId": "port_dxl_in",
@@ -4816,7 +4816,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [22.0, 22.0, 6.7],
       "restPositionMeters": [0.0, 0.273077, 0.024799],
-      "explodeDirection": [0.0, 0.8130012480516197, 0.5822619433438088],
+      "explodeDirection": [0.0, 0.8130012480516196, 0.5822619433438091],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -4832,7 +4832,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "6d54ac0ce4f609ea1b95731773da7e7de30a4889ceb9a070ddbd3eef5b9457ed"
+      "expectedStepSha256": "917940bb2d79f71eb0f52fb887a2daffead382f9b4db781fed698b59299700f2"
     },
     {
       "id": "poppy_1_17_2_3",
@@ -4845,7 +4845,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [5.5, 5.5, 9.57],
       "restPositionMeters": [-0.0, 0.27182, 0.0248],
-      "explodeDirection": [-0.0, 0.7449478812074388, 0.6671226680937679],
+      "explodeDirection": [-0.0, 0.7449478812074387, 0.6671226680937682],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -4861,7 +4861,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "aa00c0b5b2185b0c1468240eade6a36dfaf382eeecedfc07e249ef3e401be87a"
+      "expectedStepSha256": "2fc309f2200f8b7fdf3de79dbe6217895bce02706376928e18d3bc30cb80aa35"
     },
     {
       "id": "poppy_1_17_3",
@@ -4923,7 +4923,7 @@
         "controller": "upper_body_controller",
         "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
       },
-      "expectedStepSha256": "87396f792e7752013ac5ee41d0ccca580959f545c4f03f2a2f96d4bc5fffde60",
+      "expectedStepSha256": "99c6ad15be1aa1ba291eeb828430e0c13f24556711e691dc0f435f8ec58ee870",
       "ports": [
         {
           "portId": "port_dxl_in",
@@ -4970,7 +4970,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "ef1d20e04b8c789dc29c600c8b68b9c5056cf65e821b2135821cf481f4e71901"
+      "expectedStepSha256": "aac20ec0cc9c36c20b7c9fa59243a146f0ce1f50c8a914556a033c3717f43413"
     },
     {
       "id": "poppy_1_17_3_3",
@@ -4999,7 +4999,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "8f8fa2aab2e6312f6bd2b416354997602c250566a14d077c775fb4108d6c2b1e"
+      "expectedStepSha256": "7f57fba09fb00f1e9ecaae933b742610f7bd89799ca3892fc01f0f19e69ec449"
     },
     {
       "id": "poppy_1_17_3_4",
@@ -5028,7 +5028,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "ce5d562079e563f0b65c1dd49a22a2998f11df44bd6b36a35a2babd4649dab30"
+      "expectedStepSha256": "3bbd2ced645acd4223852a167d0ebc9cbb3cce068857d899fcb3286c82f5b6d2"
     },
     {
       "id": "poppy_1_17_4",
@@ -5090,7 +5090,7 @@
         "controller": "upper_body_controller",
         "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
       },
-      "expectedStepSha256": "b1525a9c318ddf6cbdf277466debe8672bf1e5eac9f21469e13600d0295d38b8",
+      "expectedStepSha256": "d4ea067964aa50e54c39a2bb26767d84f83e989a8c972248be64775b20bc00c5",
       "ports": [
         {
           "portId": "port_dxl_in",
@@ -5137,7 +5137,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "45ecb3953aade9d75255b9d9514f438a4db92d8468e66380754701d01f00c333"
+      "expectedStepSha256": "3672be108d621a46e7d13b0eb7dafa7feb4476884bf4cb248454fa4e3edccafa"
     },
     {
       "id": "poppy_1_17_4_3",
@@ -5166,7 +5166,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "85edeba35ceb59371b535c992c16ea6c79abb41ad3c127d13a05711041cf2451"
+      "expectedStepSha256": "0eba828036b79a905f5b79a866aad62af130a209b3e5cc581b4033e3fb560b24"
     },
     {
       "id": "poppy_1_17_4_4",
@@ -5195,7 +5195,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "2603b8b36f5b1f55939b6230a330f0df819cf8b424aa57b127681663918d7bf2"
+      "expectedStepSha256": "bb8a51808693bc041fd64cb16d73a8408820da24c72610cd4c069fffa00f7e03"
     },
     {
       "id": "poppy_1_18",
@@ -5208,7 +5208,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [28.0, 8.4, 54.0],
       "restPositionMeters": [0.0, 0.215487, -0.04315],
-      "explodeDirection": [0.00032993688485595643, 0.9491588581979674, -0.31479732058259785],
+      "explodeDirection": [0.00032993688485596093, 0.9491588581979674, -0.31479732058259785],
       "explodeDistanceMeters": 0.027,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -5226,7 +5226,7 @@
         "nominalVoltageV": 12,
         "controller": "upper_body_controller"
       },
-      "expectedStepSha256": "55f0d6181d27b2559970e9a4776daa1d877604ec24af3f10a435adb25417359a",
+      "expectedStepSha256": "003fa02e201c0d6ce860cc46b0962f953258877be490464c94c5628047141f97",
       "ports": [
         {
           "portId": "port_dxl_power",
@@ -5251,7 +5251,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [28.0, 8.4, 54.0],
       "restPositionMeters": [0.0, 0.091, -0.05595],
-      "explodeDirection": [0.0007543553015053004, 0.44093397946181834, -0.8975392229334848],
+      "explodeDirection": [0.0007543553015053107, 0.44093397946181856, -0.8975392229334848],
       "explodeDistanceMeters": 0.027,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -5269,7 +5269,7 @@
         "nominalVoltageV": 12,
         "controller": "lower_body_controller"
       },
-      "expectedStepSha256": "c809ba0721dfd5d6a17fbb349616163fd1d4160cd5dd12c1a80c7b067efdc832",
+      "expectedStepSha256": "9cc5b93c6afee7bc8dd19c7a9bcbe60b88e5b844ef167f6f84afa74c599e7708",
       "ports": [
         {
           "portId": "port_dxl_power",
@@ -5294,7 +5294,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [41.1, 35.5, 47.0],
       "restPositionMeters": [0.09765, 0.233987, 0.021902],
-      "explodeDirection": [0.4869892705669825, 0.8709125303665629, 0.06597586530807278],
+      "explodeDirection": [0.48698927056698244, 0.8709125303665629, 0.06597586530807278],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -5310,7 +5310,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "88c4d1e8d641ccfcd8a104602b6779d00803adb16a65ae6489b5229d6c5c3d33"
+      "expectedStepSha256": "dd0045a9a5dcc9d9cb9d4a547129487da722fadbf23c413919f92c40abd30d9b"
     },
     {
       "id": "poppy_1_21",
@@ -5323,7 +5323,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [56.1, 38.6, 48.85],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [0.581559943149772, 0.8103995569102355, 0.07099711742971071],
+      "explodeDirection": [0.5815599431497719, 0.8103995569102355, 0.07099711742971071],
       "explodeDistanceMeters": 0.028050000000000002,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -5351,7 +5351,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [50.6, 35.6, 48.5],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [-0.999959934297797, 0.008951524962010042, 0.0],
+      "explodeDirection": [-0.999959934297797, 0.00895152496201005, 0.0],
       "explodeDistanceMeters": 0.0253,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -5379,7 +5379,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [50.6, 35.6, 41.85],
       "restPositionMeters": [0.1188, 0.235662, 0.0238],
-      "explodeDirection": [0.9576278865300895, 0.28800838692634273, 0.0],
+      "explodeDirection": [0.9576278865300895, 0.28800838692634306, 0.0],
       "explodeDistanceMeters": 0.0253,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -5400,7 +5400,7 @@
         "controller": "upper_body_controller",
         "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
       },
-      "expectedStepSha256": "cf0ee937085124a757fc4cbaacb36c43a5f8d554f7320618b85eddcdac6a00be",
+      "expectedStepSha256": "e806a2cf295f7404cf5ed34ce20c415d9f0fea77d6607c51cc6d3a194b73518d",
       "ports": [
         {
           "portId": "port_dxl_in",
@@ -5431,7 +5431,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [22.0, 22.0, 0.85],
       "restPositionMeters": [0.1055, 0.252162, 0.0238],
-      "explodeDirection": [-0.0828392926447243, 0.9965629190342784, 0.0],
+      "explodeDirection": [-0.08283929264472499, 0.9965629190342784, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -5447,7 +5447,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "039300b58d3fe3c7b5c5abe00434bf9727c8bd0464217691f6191efcb16de223"
+      "expectedStepSha256": "60bff0c9f284322780ad0242e9f72bae11fce5c06d070f8c9c581da21fd1512c"
     },
     {
       "id": "poppy_1_21_1_3",
@@ -5460,7 +5460,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [22.0, 22.0, 5.85],
       "restPositionMeters": [0.1055, 0.254412, 0.0238],
-      "explodeDirection": [-0.07451139415103142, 0.9972201623220771, 0.0],
+      "explodeDirection": [-0.07451139415103203, 0.9972201623220769, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -5476,7 +5476,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "1c35c26fa57525e31249c8b98049e31823785b629b808bcf31c6db15dcfe8231"
+      "expectedStepSha256": "5ce59d9b5bd5aed8748be4a14f07a13b7f6bfa8e45f57c8922a34339ddff11aa"
     },
     {
       "id": "poppy_1_21_1_4",
@@ -5489,7 +5489,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [4.5, 4.5, 10.5],
       "restPositionMeters": [0.1055, 0.254587, 0.0238],
-      "explodeDirection": [-0.07393311366150765, 0.9972632023213904, 0.0],
+      "explodeDirection": [-0.07393311366150826, 0.9972632023213904, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -5505,7 +5505,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "d0dbaabf8ef820a734b6b7b93c50495f75e62c38588d93faf9552e041f4c8c7b"
+      "expectedStepSha256": "07775ff73c63b7b30a3161bd0e19a59dc9528c23c149c6b69b4cde19f6acd9a8"
     },
     {
       "id": "poppy_1_21_1_5",
@@ -5518,7 +5518,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [7.2, 7.2, 1.8],
       "restPositionMeters": [0.1055, 0.213737, 0.0238],
-      "explodeDirection": [-0.08986558284056874, -0.9959539030601391, 0.0],
+      "explodeDirection": [-0.08986558284056946, -0.995953903060139, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -5534,7 +5534,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "434d1cdfc08e619599468a87d0b767ef96d2791b1b09c7a97aba018bad9c7ad8"
+      "expectedStepSha256": "1af27c75611a840ad0f2b28669c75751392862bc32e69bc99a38f18dcd5e9454"
     },
     {
       "id": "poppy_1_21_1_6",
@@ -5547,7 +5547,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [11.2, 11.2, 3.0],
       "restPositionMeters": [0.1055, 0.215137, 0.0238],
-      "explodeDirection": [-0.0971882381638049, -0.9952660178879893, 0.0],
+      "explodeDirection": [-0.09718823816380572, -0.9952660178879893, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -5563,7 +5563,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "53ee826d39408a023fe0d4d7dd1305629087b137fea6b2f84c6f7a43241d5276"
+      "expectedStepSha256": "e036b13b49c3192c391387cc557d3f7fdc7cd77e220b1c6a99633a1ef5db6e06"
     },
     {
       "id": "poppy_1_21_1_7",
@@ -5576,7 +5576,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [4.5, 4.5, 10.5],
       "restPositionMeters": [0.1055, 0.216587, 0.0238],
-      "explodeDirection": [-0.10613862642776131, -0.9943513423232394, 0.0],
+      "explodeDirection": [-0.10613862642776219, -0.9943513423232394, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -5592,7 +5592,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "798ff09de04cc25c3123138c01a3677840798ee2a65804d6a9d4061b9461cc33"
+      "expectedStepSha256": "6110cc4b272ea067d0269330a24a38a99b3a005371aac85680f9445edf410956"
     },
     {
       "id": "poppy_1_21_1_8",
@@ -5605,7 +5605,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [22.0, 22.0, 3.05],
       "restPositionMeters": [0.1055, 0.215012, 0.0238],
-      "explodeDirection": [-0.09648648772622338, -0.9953342944389374, 0.0],
+      "explodeDirection": [-0.09648648772622416, -0.9953342944389373, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -5621,7 +5621,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "5e7f6287db4cc69bee581d09624a97c876509ef8c5188f8d33ffdb2205849070"
+      "expectedStepSha256": "61fcd4e577f685dc711db3037a7204f1b9375f2cda7d2aeb8adabe8becdf352a"
     },
     {
       "id": "poppy_1_21_2",
@@ -5650,7 +5650,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "76f41ecfb5d56703ec67392de6b2af8d4599efec8114213ac78c774141fee102"
+      "expectedStepSha256": "0f2fc5634ee8f9f7d4d19e2fca141a9d4a54939a5de8eb4746b60a66ddf52615"
     },
     {
       "id": "poppy_1_22",
@@ -5663,7 +5663,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [123.75, 48.5, 59.08],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [0.7591838477279451, 0.6481938155410228, 0.059031032884092095],
+      "explodeDirection": [0.7591838477279451, 0.6481938155410228, 0.05903103288409211],
       "explodeDistanceMeters": 0.061875,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -5691,7 +5691,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [107.14, 43.6, 59.08],
       "restPositionMeters": [0.20102, 0.235072, 0.0238],
-      "explodeDirection": [-0.41992376352646027, 0.8888365392501384, -0.1833947636101171],
+      "explodeDirection": [-0.4199237635264602, 0.8888365392501382, -0.18339476361011814],
       "explodeDistanceMeters": 0.05357,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -5707,7 +5707,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "d5bdc0a45620b6bb6674522b7ee76a6d526df201df5dbe3943b85be14b52dcb8"
+      "expectedStepSha256": "82a271bba90d3d4031d4ce4b38b591467a227d20e86f13d9fd57a4cc3d02d5d5"
     },
     {
       "id": "poppy_1_22_2",
@@ -5720,7 +5720,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [45.1, 35.6, 50.6],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [-0.9951435153226216, -0.09765727348775968, -0.012346693738494036],
+      "explodeDirection": [-0.9951435153226216, -0.09765727348776024, -0.012346693738494105],
       "explodeDistanceMeters": 0.0253,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -5748,7 +5748,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [41.85, 35.6, 50.6],
       "restPositionMeters": [0.166925, 0.237287, 0.0238],
-      "explodeDirection": [0.8051865668307542, 0.5930215785241744, 0.0],
+      "explodeDirection": [0.8051865668307534, 0.5930215785241754, 0.0],
       "explodeDistanceMeters": 0.0253,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -5769,7 +5769,7 @@
         "controller": "upper_body_controller",
         "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
       },
-      "expectedStepSha256": "aff2250c83179c253ab8b19643e4e4749ea0aa875a840089b664a9380c25b589",
+      "expectedStepSha256": "088099de9d2479f247b21a325f7c93e24efc83ea38e4c6a3281776a82da53d11",
       "ports": [
         {
           "portId": "port_dxl_in",
@@ -5800,7 +5800,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [0.85, 22.0, 22.0],
       "restPositionMeters": [0.150425, 0.223987, 0.0238],
-      "explodeDirection": [-0.6644510262496144, -0.7473318096507294, 0.0],
+      "explodeDirection": [-0.6644510262496175, -0.7473318096507267, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -5816,7 +5816,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "25fe8b5a7d86ea8ed7cc08edf806bafd991e48a4473d78df1da26f6a39f5e47c"
+      "expectedStepSha256": "bc088f30cac52b81d4bf250d5d155ea65e93d37950a9a918398647420d291756"
     },
     {
       "id": "poppy_1_22_2_3",
@@ -5829,7 +5829,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [5.85, 22.0, 22.0],
       "restPositionMeters": [0.148175, 0.223987, 0.0238],
-      "explodeDirection": [-0.8427855037474125, -0.5382495654185151, 0.0],
+      "explodeDirection": [-0.8427855037474145, -0.5382495654185119, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -5845,7 +5845,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "bb874f007e5cbf067b29051ab6a51bfdfe04b3a7ad328a7495c58870272dde9d"
+      "expectedStepSha256": "2b3cc10152490ec8274bb27d67d9aae28dfe82e02448deca768e5e63fbf7b1c3"
     },
     {
       "id": "poppy_1_22_2_4",
@@ -5858,7 +5858,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [10.5, 4.5, 4.5],
       "restPositionMeters": [0.148, 0.223987, 0.0238],
-      "explodeDirection": [-0.8507070374256189, -0.5256401206857471, 0.0],
+      "explodeDirection": [-0.8507070374256209, -0.5256401206857438, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -5874,7 +5874,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "716aa23c4a13e48a34bd2a3ecc9ede59e8127db09fa3af53843e6ce1e6b44b41"
+      "expectedStepSha256": "a3a0b42d55f8df2f84ba34ca41d06e3ff7ab215498d342740b874be09151afc6"
     },
     {
       "id": "poppy_1_22_3",
@@ -5887,7 +5887,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [50.6, 48.5, 35.6],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [0.9990275719021842, 0.03691694115425367, 0.024104979465657247],
+      "explodeDirection": [0.9990275719021842, 0.03691694115425311, 0.024104979465657247],
       "explodeDistanceMeters": 0.0253,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -5915,7 +5915,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [50.6, 41.85, 35.6],
       "restPositionMeters": [0.2412, 0.233987, 0.022125],
-      "explodeDirection": [-0.9576278865300896, 0.0, -0.28800838692634284],
+      "explodeDirection": [-0.9576278865300895, 2.283953874648405e-15, -0.28800838692634306],
       "explodeDistanceMeters": 0.0253,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -5936,7 +5936,7 @@
         "controller": "upper_body_controller",
         "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
       },
-      "expectedStepSha256": "d1434f092c8534116a8c0067621ec3d14bc0bb2e52d0e0ad82d354d83de64a09",
+      "expectedStepSha256": "b7b7e494c1b4c578f9a1e803dfa467a84c94923cd4dd5192e849f0be9716cf44",
       "ports": [
         {
           "portId": "port_dxl_in",
@@ -5967,7 +5967,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [22.0, 0.85, 22.0],
       "restPositionMeters": [0.2545, 0.233987, 0.005625],
-      "explodeDirection": [0.08283929264472496, 0.0, -0.9965629190342784],
+      "explodeDirection": [0.08283929264472494, 1.3830088727493893e-15, -0.9965629190342784],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -5983,7 +5983,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "1ea610aef998dc7a1a0e4218e9b3d5382c441269c1d70e5c9bca03022fdaf904"
+      "expectedStepSha256": "9361922451608d353afd8a8c07b3d7f701c5c178f34cc193e4a2dacfd06e435d"
     },
     {
       "id": "poppy_1_22_3_3",
@@ -5996,7 +5996,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [22.0, 5.85, 22.0],
       "restPositionMeters": [0.2545, 0.233987, 0.003375],
-      "explodeDirection": [0.0745113941510321, 0.0, -0.9972201623220769],
+      "explodeDirection": [0.07451139415103208, 1.2439739155397817e-15, -0.9972201623220769],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6012,7 +6012,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "b29f8d7d28f3ee5eb0c7dbf3e06a50e7679e5057bf9aa94ae1b2ef10c7e030a8"
+      "expectedStepSha256": "972a14c4fd5512b72dfec4f4d9d51b80121adc6e83378fc967aef8f6fd303c71"
     },
     {
       "id": "poppy_1_22_3_4",
@@ -6025,7 +6025,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [4.5, 10.5, 4.5],
       "restPositionMeters": [0.2545, 0.233987, 0.0032],
-      "explodeDirection": [0.07393311366150827, 0.0, -0.9972632023213904],
+      "explodeDirection": [0.07393311366150826, 1.2343194747253328e-15, -0.9972632023213904],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6041,7 +6041,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "74e08e5fe4992c7efb8adaabef1b7b4ea1330be23ac448d2ed736b2819a3b151"
+      "expectedStepSha256": "5f0097e8e94bedfc5f225a82e105bcaec5f33c19359174d8279f14b0b40b3eb5"
     },
     {
       "id": "poppy_1_22_3_5",
@@ -6054,7 +6054,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [7.2, 1.8, 7.2],
       "restPositionMeters": [0.2545, 0.233987, 0.04405],
-      "explodeDirection": [0.08986558284056945, 0.0, 0.995953903060139],
+      "explodeDirection": [0.08986558284056946, 1.5003133712926155e-15, 0.995953903060139],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6070,7 +6070,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "84b20f15b5b44506052effdbc3e954e41031daa4496fa92bd4bec8c6476173b1"
+      "expectedStepSha256": "5950f597614b3b615331b3920a64250e4998c381d6fe9cafe79789a1f2b76c8c"
     },
     {
       "id": "poppy_1_22_3_6",
@@ -6083,7 +6083,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [11.2, 3.0, 11.2],
       "restPositionMeters": [0.2545, 0.233987, 0.04265],
-      "explodeDirection": [0.09718823816380577, 0.0, 0.9952660178879893],
+      "explodeDirection": [0.09718823816380578, 1.6225657102587941e-15, 0.9952660178879893],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6099,7 +6099,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "befbc8fa485b0722ce4d9f75885332c54c699f5be452c565ba19f8a22bd6e196"
+      "expectedStepSha256": "9b0258cffbc49bd48c4a32c8b8ed1c037c37fd91a1155dc94f5100e54f9b3ae8"
     },
     {
       "id": "poppy_1_22_3_7",
@@ -6112,7 +6112,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [4.5, 10.5, 4.5],
       "restPositionMeters": [0.2545, 0.233987, 0.0412],
-      "explodeDirection": [0.10613862642776221, 0.0, 0.9943513423232394],
+      "explodeDirection": [0.10613862642776224, 1.7719931858975786e-15, 0.9943513423232394],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6128,7 +6128,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "690347d54e16ed5806a986b78e37145d919844e2c9a45fa9b900805d734c0b29"
+      "expectedStepSha256": "fb96d95db861c327e78d8d743a8c35444f352597e0a978b85517c4e2a9e55e56"
     },
     {
       "id": "poppy_1_22_3_8",
@@ -6141,7 +6141,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [22.0, 3.05, 22.0],
       "restPositionMeters": [0.2545, 0.233987, 0.042775],
-      "explodeDirection": [0.09648648772622415, 0.0, 0.9953342944389373],
+      "explodeDirection": [0.09648648772622416, 1.6108499284039987e-15, 0.9953342944389373],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6157,7 +6157,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "6ae9560eba5c7292597d3510585de0941a43726c7720216fc8dcd8169a80ce0b"
+      "expectedStepSha256": "68735899060e76d58cfcf87396d5d2a9e776151aa3725582b45991a0c06b488e"
     },
     {
       "id": "poppy_1_23",
@@ -6170,7 +6170,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [227.5, 47.0, 60.07],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [0.9027637000865555, 0.428849736300851, 0.033250646320367505],
+      "explodeDirection": [0.9027637000865555, 0.42884973630085105, 0.033250646320367505],
       "explodeDistanceMeters": 0.11375,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6214,7 +6214,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "5f1fc3e26307904bbfc2c4afc71969a49a2afec5590f5217127323677b9cd296"
+      "expectedStepSha256": "9c752be3c09d7cc0aaa7fccc0e2bc17694282aea7db1f04271dd8a6c490843ec"
     },
     {
       "id": "poppy_1_23_2",
@@ -6243,7 +6243,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "ed7de65ae18939037c2cb26312c035910da154efbcfdd547775f592b74627ed7"
+      "expectedStepSha256": "77f4dd65bda926e28080f3129578a8b102c4c2243cdfb43c74e8b5b2e7446850"
     },
     {
       "id": "poppy_1_24",
@@ -6256,7 +6256,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [41.1, 35.5, 47.0],
       "restPositionMeters": [-0.09765, 0.233987, 0.021902],
-      "explodeDirection": [-0.4865761283020304, 0.8711421017655365, 0.06599325645950208],
+      "explodeDirection": [-0.4865761283020304, 0.8711421017655366, 0.06599325645950208],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6272,7 +6272,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "8a77d2f66fbcd0c0fd27af2d462090c3fd0c4d061353044a4792eb804ed57f3c"
+      "expectedStepSha256": "82904dbfe7d6fd0b51d5fdb6b983c38296a5da1626707cfc372acab1ad696a12"
     },
     {
       "id": "poppy_1_25",
@@ -6285,7 +6285,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [56.1, 38.6, 48.85],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [-0.5812226037678303, 0.8106396897187694, 0.07101815487606769],
+      "explodeDirection": [-0.5812226037678302, 0.8106396897187694, 0.07101815487606768],
       "explodeDistanceMeters": 0.028050000000000002,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6313,7 +6313,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [50.6, 35.6, 48.5],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [0.999959934297797, 0.008951524962010042, 0.0],
+      "explodeDirection": [0.999959934297797, 0.00895152496201005, 0.0],
       "explodeDistanceMeters": 0.0253,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6341,7 +6341,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [50.6, 35.6, 41.85],
       "restPositionMeters": [-0.1188, 0.235662, 0.0238],
-      "explodeDirection": [-0.9576278865300895, 0.28800838692634273, 0.0],
+      "explodeDirection": [-0.9576278865300895, 0.28800838692634306, 0.0],
       "explodeDistanceMeters": 0.0253,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6362,7 +6362,7 @@
         "controller": "upper_body_controller",
         "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
       },
-      "expectedStepSha256": "f78237f73e06807e761ef16612dbf82c00a8c56ae2bbb699e362e194195489b2",
+      "expectedStepSha256": "0343fb048741529a31417bfeb5a81aa9109f5273685edb0b00a529eedeb3adf7",
       "ports": [
         {
           "portId": "port_dxl_in",
@@ -6393,7 +6393,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [22.0, 22.0, 0.85],
       "restPositionMeters": [-0.1055, 0.252162, 0.0238],
-      "explodeDirection": [0.0828392926447243, 0.9965629190342784, 0.0],
+      "explodeDirection": [0.08283929264472499, 0.9965629190342784, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6409,7 +6409,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "6fb33d369385a8a57301d31fe07090300dcae1f4c386499d72b0ca49ba8fa651"
+      "expectedStepSha256": "b13e59541e307b830a59853073fb8e813cd04ef87eb2a614db1928775656f00b"
     },
     {
       "id": "poppy_1_25_1_3",
@@ -6422,7 +6422,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [22.0, 22.0, 5.85],
       "restPositionMeters": [-0.1055, 0.254412, 0.0238],
-      "explodeDirection": [0.07451139415103142, 0.9972201623220771, 0.0],
+      "explodeDirection": [0.07451139415103203, 0.9972201623220769, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6438,7 +6438,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "42dacef88219c7360a11072b7957d69023a5e94022f33ac529f2b8db1a2cdf58"
+      "expectedStepSha256": "d63782726c544ccdec7cb2826dff5eb9d481600117848251c51ab43d1db34a7a"
     },
     {
       "id": "poppy_1_25_1_4",
@@ -6451,7 +6451,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [4.5, 4.5, 10.5],
       "restPositionMeters": [-0.1055, 0.254587, 0.0238],
-      "explodeDirection": [0.07393311366150765, 0.9972632023213904, 0.0],
+      "explodeDirection": [0.07393311366150826, 0.9972632023213904, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6467,7 +6467,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "2b0db66da5bb6e4c6d6859ae5abc29f4891a0f65d04bae1ebae608ca6c90f80b"
+      "expectedStepSha256": "3535ca8779327925aefb182e517fe9b9c6314d8cd07c8686e4fccb062f83836c"
     },
     {
       "id": "poppy_1_25_1_5",
@@ -6480,7 +6480,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [7.2, 7.2, 1.8],
       "restPositionMeters": [-0.1055, 0.213737, 0.0238],
-      "explodeDirection": [0.08986558284056874, -0.9959539030601391, 0.0],
+      "explodeDirection": [0.08986558284056946, -0.995953903060139, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6496,7 +6496,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "dea6251e68cc045303db72d4f6ab4a72c67f0bb4351aa6ed14a10e31d69c9aa0"
+      "expectedStepSha256": "67fe43749388120fb6ba5418764e764971932b62713d9e7a27e3e3503acd4f86"
     },
     {
       "id": "poppy_1_25_1_6",
@@ -6509,7 +6509,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [11.2, 11.2, 3.0],
       "restPositionMeters": [-0.1055, 0.215137, 0.0238],
-      "explodeDirection": [0.0971882381638049, -0.9952660178879893, 0.0],
+      "explodeDirection": [0.09718823816380572, -0.9952660178879893, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6525,7 +6525,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "da03c5595aa753c887e18cab87f2437e417d7549076f35eeef656e2549084c76"
+      "expectedStepSha256": "0f925defec72e9811721305b4891b1381cc77f8d88a51247403f277d966a9004"
     },
     {
       "id": "poppy_1_25_1_7",
@@ -6538,7 +6538,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [4.5, 4.5, 10.5],
       "restPositionMeters": [-0.1055, 0.216587, 0.0238],
-      "explodeDirection": [0.10613862642776131, -0.9943513423232394, 0.0],
+      "explodeDirection": [0.10613862642776219, -0.9943513423232394, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6554,7 +6554,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "8dfac80f90950f24b82335dbbbeffddac253af23c44a1f7e870c1d46098b3809"
+      "expectedStepSha256": "1ea80d6f7997a40eb49e8a4f0353ed029b6d6178ddf46da2ca2fdc6a474106f4"
     },
     {
       "id": "poppy_1_25_1_8",
@@ -6567,7 +6567,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [22.0, 22.0, 3.05],
       "restPositionMeters": [-0.1055, 0.215012, 0.0238],
-      "explodeDirection": [0.09648648772622338, -0.9953342944389374, 0.0],
+      "explodeDirection": [0.09648648772622416, -0.9953342944389373, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6583,7 +6583,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "fa23d1d3dd13fe4816ffdfce79087b92b8e8f452c8641dcf30e54b0cc0df7c76"
+      "expectedStepSha256": "480b4b6406ae0e1be3b6a76b764e3c93427fba6e307da14cf047e4f15d3d4ad4"
     },
     {
       "id": "poppy_1_25_2",
@@ -6612,7 +6612,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "2bc4caeedf932a87a9096bbd06f1b5b9b444547221a0315db17aed6c822e74b4"
+      "expectedStepSha256": "a6970a1334c259414287fb6e79d3cbaf8d71b9d6b02850be3ac393048581cf71"
     },
     {
       "id": "poppy_1_26",
@@ -6625,7 +6625,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [123.75, 48.5, 59.08],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [-0.7590112327609315, 0.6483942705565396, 0.05904928832919052],
+      "explodeDirection": [-0.7590112327609315, 0.6483942705565396, 0.059049288329190534],
       "explodeDistanceMeters": 0.061875,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6653,7 +6653,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [107.14, 43.6, 59.08],
       "restPositionMeters": [-0.20102, 0.235072, 0.0238],
-      "explodeDirection": [0.41992376352646027, 0.8888365392501384, -0.1833947636101171],
+      "explodeDirection": [0.4199237635264602, 0.8888365392501382, -0.18339476361011814],
       "explodeDistanceMeters": 0.05357,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6669,7 +6669,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "17c8c7bf9cc6d4d86b261d92ed25376696caa7faf1255a8eb90d977c72eb7e01"
+      "expectedStepSha256": "2dfe016f311a2bfda48659c9201e6de93740a34974c9d50866999d2145fa6318"
     },
     {
       "id": "poppy_1_26_2",
@@ -6682,7 +6682,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [45.1, 35.6, 50.6],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [0.9951435153226216, -0.09765727348775968, -0.012346693738494036],
+      "explodeDirection": [0.9951435153226216, -0.09765727348776024, -0.012346693738494105],
       "explodeDistanceMeters": 0.0253,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6710,7 +6710,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [41.85, 35.6, 50.6],
       "restPositionMeters": [-0.166925, 0.237287, 0.0238],
-      "explodeDirection": [-0.8051865668307542, 0.5930215785241744, 0.0],
+      "explodeDirection": [-0.8051865668307534, 0.5930215785241754, 0.0],
       "explodeDistanceMeters": 0.0253,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6731,7 +6731,7 @@
         "controller": "upper_body_controller",
         "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
       },
-      "expectedStepSha256": "3d4819d9c5bf912411669c156a6cccae8f24bcd009b42bdc5ead2e9f39cdee1b",
+      "expectedStepSha256": "82d4ab0f3dc525e3dbdc4c034308d13ac2e33a709ef6a710ecedcda5304d9056",
       "ports": [
         {
           "portId": "port_dxl_in",
@@ -6762,7 +6762,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [0.85, 22.0, 22.0],
       "restPositionMeters": [-0.150425, 0.223987, 0.0238],
-      "explodeDirection": [0.6644510262496144, -0.7473318096507294, 0.0],
+      "explodeDirection": [0.6644510262496175, -0.7473318096507267, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6778,7 +6778,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "b6f6614791f39f4692b0823f32455bf0cc37873e20f4dd47c48723dd177ac933"
+      "expectedStepSha256": "09c0bf9c7883f3c5a9529b531fdced1fdc8b59c9c504af19a39dbe1e44f5299e"
     },
     {
       "id": "poppy_1_26_2_3",
@@ -6791,7 +6791,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [5.85, 22.0, 22.0],
       "restPositionMeters": [-0.148175, 0.223987, 0.0238],
-      "explodeDirection": [0.8427855037474125, -0.5382495654185151, 0.0],
+      "explodeDirection": [0.8427855037474145, -0.5382495654185119, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6807,7 +6807,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "76057b4e9c773dc56ce5f412f47a0959bb96b17381ff083a403fa675b94e358d"
+      "expectedStepSha256": "fac80c2cc2d7668b5a182533f20579ed8db922fa1ca9f86ff0344866112f1629"
     },
     {
       "id": "poppy_1_26_2_4",
@@ -6820,7 +6820,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [10.5, 4.5, 4.5],
       "restPositionMeters": [-0.148, 0.223987, 0.0238],
-      "explodeDirection": [0.8507070374256189, -0.5256401206857471, 0.0],
+      "explodeDirection": [0.8507070374256209, -0.5256401206857438, 0.0],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6836,7 +6836,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "005a4a7ce387fd7efd20d17bb98667c25f6a5cbcd3ec4575db756fdebdbd29aa"
+      "expectedStepSha256": "bed13857e5b1ec0d7a818c0076ab005f77ae02ae28edb9efaea99c8b9944da50"
     },
     {
       "id": "poppy_1_26_3",
@@ -6849,7 +6849,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [50.6, 48.5, 35.6],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [-0.9990275719021842, 0.03691694115425367, 0.024104979465657247],
+      "explodeDirection": [-0.9990275719021842, 0.03691694115425311, 0.024104979465657247],
       "explodeDistanceMeters": 0.0253,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6877,7 +6877,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [50.6, 41.85, 35.6],
       "restPositionMeters": [-0.2412, 0.233987, 0.022125],
-      "explodeDirection": [0.9576278865300896, 0.0, -0.28800838692634284],
+      "explodeDirection": [0.9576278865300895, 2.283953874648405e-15, -0.28800838692634306],
       "explodeDistanceMeters": 0.0253,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6898,7 +6898,7 @@
         "controller": "upper_body_controller",
         "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
       },
-      "expectedStepSha256": "f70ca92ced6c92d2ec253446bf14ea9afdfdceddb7ad1a3b1fa7eb56c97ce7f9",
+      "expectedStepSha256": "699353403096bb482f44d2f6db82b15e9322f0bf8b926b002342f7a4d8dc524d",
       "ports": [
         {
           "portId": "port_dxl_in",
@@ -6929,7 +6929,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [22.0, 0.85, 22.0],
       "restPositionMeters": [-0.2545, 0.233987, 0.005625],
-      "explodeDirection": [-0.08283929264472496, 0.0, -0.9965629190342784],
+      "explodeDirection": [-0.08283929264472494, 1.3830088727493893e-15, -0.9965629190342784],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6945,7 +6945,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "7d464f0a980bbe9a2341d3fd7c8a4b36890236030b7c2483cc4ab983eead856d"
+      "expectedStepSha256": "229d3b749c06d0f33a0d63038fb891874e0eec4916654e42b93c9d28bbae9718"
     },
     {
       "id": "poppy_1_26_3_3",
@@ -6958,7 +6958,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [22.0, 5.85, 22.0],
       "restPositionMeters": [-0.2545, 0.233987, 0.003375],
-      "explodeDirection": [-0.0745113941510321, 0.0, -0.9972201623220769],
+      "explodeDirection": [-0.07451139415103208, 1.2439739155397817e-15, -0.9972201623220769],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -6974,7 +6974,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "3066df9f9b3f32b82f263cc0a93da1e0743a947f0a52067d83524f2187261d13"
+      "expectedStepSha256": "3cc3c4761ee35f5a0ad5d9c96705fdf1bcfc649823514223280c5a6ae574ccf9"
     },
     {
       "id": "poppy_1_26_3_4",
@@ -6987,7 +6987,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [4.5, 10.5, 4.5],
       "restPositionMeters": [-0.2545, 0.233987, 0.0032],
-      "explodeDirection": [-0.07393311366150827, 0.0, -0.9972632023213904],
+      "explodeDirection": [-0.07393311366150826, 1.2343194747253328e-15, -0.9972632023213904],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7003,7 +7003,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "023aa4846b8bc73314e9b4f90078b55e6707315c720ba6fd657826a3b800b2eb"
+      "expectedStepSha256": "490f5a1fc9b3f7793108c79ac04202e35de51db2f5b28781d00038077047afad"
     },
     {
       "id": "poppy_1_26_3_5",
@@ -7016,7 +7016,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [7.2, 1.8, 7.2],
       "restPositionMeters": [-0.2545, 0.233987, 0.04405],
-      "explodeDirection": [-0.08986558284056945, 0.0, 0.995953903060139],
+      "explodeDirection": [-0.08986558284056946, 1.5003133712926155e-15, 0.995953903060139],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7032,7 +7032,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "48b5bbdb9f4c09f99efc161ac823845fecc459a5ac04480e15ebb4ec8412fe52"
+      "expectedStepSha256": "79c2639d3ea96c2775a2fb3cef4da39319f180af1ac1e93287b817944cc01a07"
     },
     {
       "id": "poppy_1_26_3_6",
@@ -7045,7 +7045,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [11.2, 3.0, 11.2],
       "restPositionMeters": [-0.2545, 0.233987, 0.04265],
-      "explodeDirection": [-0.09718823816380577, 0.0, 0.9952660178879893],
+      "explodeDirection": [-0.09718823816380578, 1.6225657102587941e-15, 0.9952660178879893],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7061,7 +7061,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "c7f00ee9fdba9fc7bb7d776b5a4eb7ee92f04b93e7fd6d46d1c34a4c7190992a"
+      "expectedStepSha256": "0425865b47ec52f2a3dfe8acbcf46c7b651e1b7f4e19c82d1b78b1edd733cdc9"
     },
     {
       "id": "poppy_1_26_3_7",
@@ -7074,7 +7074,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [4.5, 10.5, 4.5],
       "restPositionMeters": [-0.2545, 0.233987, 0.0412],
-      "explodeDirection": [-0.10613862642776221, 0.0, 0.9943513423232394],
+      "explodeDirection": [-0.10613862642776224, 1.7719931858975786e-15, 0.9943513423232394],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7090,7 +7090,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "787feb9f0c7587daba80247d5780dda83d8aed551ea24ec1269df846ec01d17e"
+      "expectedStepSha256": "4bd5944c1817b9dd8ffdb3934e7ec9cf65b32b3675a9630d097d80c91ca0d3d8"
     },
     {
       "id": "poppy_1_26_3_8",
@@ -7103,7 +7103,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [22.0, 3.05, 22.0],
       "restPositionMeters": [-0.2545, 0.233987, 0.042775],
-      "explodeDirection": [-0.09648648772622415, 0.0, 0.9953342944389373],
+      "explodeDirection": [-0.09648648772622416, 1.6108499284039987e-15, 0.9953342944389373],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7119,7 +7119,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "c09f6e2d1f9389ddd2e3002bcfead8919d423bc0aec0798e2fe0c633dd859a40"
+      "expectedStepSha256": "3b607b3e91590dce826e5727b58af478ed415f9502031d31a0db7921941f1147"
     },
     {
       "id": "poppy_1_27",
@@ -7132,7 +7132,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [227.5, 47.0, 60.07],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [-0.9027135343760613, 0.4289548850614255, 0.033256299196076325],
+      "explodeDirection": [-0.9027135343760612, 0.4289548850614255, 0.03325629919607632],
       "explodeDistanceMeters": 0.11375,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7176,7 +7176,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "46a03ec3be0998640896e2aa15e7db8405ff55a4ba3c93e0ff42ac632ad608f0"
+      "expectedStepSha256": "637256d6664c4261fa2c0e60c56b1c0204f247166eed74d591e321d386f2f258"
     },
     {
       "id": "poppy_1_27_2",
@@ -7205,7 +7205,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "84105763bb2c61135ed785f0436062cab146de6502868ccc320e933dba52ae9c"
+      "expectedStepSha256": "c4b1b2e675ea31507e003d3bb3192e2c46eef2eaf8f73ec26b2413fbeab98bc2"
     },
     {
       "id": "poppy_1_28",
@@ -7218,7 +7218,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [133.17, 144.18, 110.94],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [0.0009610072252575603, 0.9999652943391105, 0.008275662052630499],
+      "explodeDirection": [0.0009610072252575632, 0.9999652943391105, 0.008275662052630495],
       "explodeDistanceMeters": 0.07209,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7246,7 +7246,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [133.06, 110.27, 105.39],
       "restPositionMeters": [-0.0, 0.330335, -0.021144],
-      "explodeDirection": [-0.006337451994643053, -0.35441844205917017, -0.9350654547306119],
+      "explodeDirection": [-0.006337451994643062, -0.354418442059166, -0.9350654547306136],
       "explodeDistanceMeters": 0.06653,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7262,7 +7262,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "5d230cba646150bdfb21d03abcfd1bf201e19a9cedf6006f85a147ffcccccee1"
+      "expectedStepSha256": "5adb9646c80fee8815730d3fc59d1a8c382dd8f998be40ce2f150a57b9bbf856"
     },
     {
       "id": "poppy_1_28_2",
@@ -7275,7 +7275,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [40.12, 50.0, 32.0],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [0.2298163117621565, -0.9540021696125641, 0.1925209682672505],
+      "explodeDirection": [0.22981631176215725, -0.9540021696125638, 0.19252096826725107],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7303,7 +7303,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [38.0, 50.0, 32.0],
       "restPositionMeters": [-0.0, 0.296487, 0.0113],
-      "explodeDirection": [-0.7824347698453389, 0.0, -0.6227325516921943],
+      "explodeDirection": [-0.782434769845339, 0.0, -0.6227325516921941],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7324,7 +7324,7 @@
         "controller": "upper_body_controller",
         "connectorPlacement": "Reference lead exits located on the pinned actuator housing."
       },
-      "expectedStepSha256": "1fa4f98e6694c7605a7d53c6c71fa37be32f19b5f1514f84aec745eb61148222",
+      "expectedStepSha256": "61a330b2a12682a1e67a5a869a47c2d910501a67ffa2e53784c7d7ec266315b1",
       "ports": [
         {
           "portId": "port_dxl_in",
@@ -7355,7 +7355,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [6.7, 22.0, 22.0],
       "restPositionMeters": [0.01759, 0.296487, 0.024799],
-      "explodeDirection": [0.8130012480516197, 0.0, 0.5822619433438088],
+      "explodeDirection": [0.8130012480516196, 0.0, 0.5822619433438091],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7371,7 +7371,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "698eb7c6367e975f230ede8424dbf1437c8a1279c49456b77d9ec9aed5973e0c"
+      "expectedStepSha256": "633827709713b34fdbbeeb93167668f9f5c24951dbc204b0b2a894e275746a81"
     },
     {
       "id": "poppy_1_28_2_3",
@@ -7384,7 +7384,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [9.57, 5.5, 5.5],
       "restPositionMeters": [0.016333, 0.296487, 0.0248],
-      "explodeDirection": [0.7449478812074394, 0.0, 0.6671226680937673],
+      "explodeDirection": [0.7449478812074392, 0.0, 0.6671226680937676],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7400,7 +7400,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "0c9aa228a1669c9f3013fdb0a27980f39a8afe17a10be4a8b07f5c89e1fc4332"
+      "expectedStepSha256": "fe3e801ccfe053c1d4870514e531e8de80b2bde6aa7b11c68502d2b764db71b1"
     },
     {
       "id": "poppy_1_28_3",
@@ -7413,7 +7413,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [83.0, 62.69, 39.16],
       "restPositionMeters": [-0.002642, 0.335324, -0.034092],
-      "explodeDirection": [-0.06249576922371562, -0.15729692993670472, -0.9855718921832255],
+      "explodeDirection": [-0.062495769223715664, -0.1572969299367012, -0.985571892183226],
       "explodeDistanceMeters": 0.0415,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7431,7 +7431,7 @@
         "headComputer": "Odroid XU4",
         "connectorPlacement": "Reference wiring datums on the pinned head computer."
       },
-      "expectedStepSha256": "0a04f4bfdf30cfa5a1df5ae7fc70c543173f25893f8ac1f57aa5937b6c55cb0c",
+      "expectedStepSha256": "1660214bd663f93afebf8b40c8d8f0b23b6e8593eb9952b7ae2f36e7fbac818f",
       "ports": [
         {
           "portId": "port_usb_upper",
@@ -7482,7 +7482,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [106.0, 34.51, 63.29],
       "restPositionMeters": [-0.0, 0.342572, 0.02941],
-      "explodeDirection": [-0.011842490918038823, 0.002706262011541323, 0.9999262130551339],
+      "explodeDirection": [-0.01184249091803882, 0.0027062620115503727, 0.9999262130551339],
       "explodeDistanceMeters": 0.053,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7498,7 +7498,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "11cdf127a8895fd00a598588aa6da3395e604946061d385d40dc862c9c765b0a"
+      "expectedStepSha256": "31cce0de76d889d8acd690e748424de090be63713e00a1c53d1b05f315c546bf"
     },
     {
       "id": "poppy_1_28_5",
@@ -7514,7 +7514,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [133.17, 91.23, 104.29],
       "restPositionMeters": [4.263256414560601e-17, 0.33642830040470106, 0.02228501960856539],
-      "explodeDirection": [-0.017000416653968998, -0.4753927477181778, 0.8796094140302004],
+      "explodeDirection": [-0.0170004166539691, -0.4753927477181677, 0.8796094140302059],
       "explodeDistanceMeters": 0.06658499999999999,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7542,7 +7542,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [115.5, 34.9, 55.33],
       "restPositionMeters": [-0.0, 0.352967, 0.026733],
-      "explodeDirection": [-0.011543934013374274, 0.5532885121155735, 0.8329096949540387],
+      "explodeDirection": [-0.011543934013374215, 0.5532885121155797, 0.8329096949540347],
       "explodeDistanceMeters": 0.05775,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7558,7 +7558,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "2570695b8a80b453104bb2d6e3e4e97800c4c0d2f1c4085d306bd82960570100"
+      "expectedStepSha256": "5478c40af92e8cdafbb2be3d004d82ceaf10209796d00a78b32f8e477b5d86b7"
     },
     {
       "id": "poppy_1_28_7",
@@ -7571,7 +7571,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [114.79, 31.46, 52.25],
       "restPositionMeters": [0.0, 0.354776, 0.028996],
-      "explodeDirection": [-0.010012542788850347, 0.5630057911049952, 0.8263922967750486],
+      "explodeDirection": [-0.010012542788850302, 0.5630057911050004, 0.826392296775045],
       "explodeDistanceMeters": 0.057395,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7587,7 +7587,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "02b73e5a66026e5fb29711b77b5c5993a4613b635309bbace8abd06411349238"
+      "expectedStepSha256": "7db455ec6f3a3e16cf35fa63788ebaf5c5df9eba7ea73237538db9c4e4af99c9"
     },
     {
       "id": "poppy_1_28_8",
@@ -7600,7 +7600,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [60.45, 17.75, 16.16],
       "restPositionMeters": [0.0, 0.0, 0.0],
-      "explodeDirection": [-0.17150777527873068, 0.9847509198020282, -0.02916691564084216],
+      "explodeDirection": [-0.17150777527873015, 0.9847509198020282, -0.029166915640841964],
       "explodeDistanceMeters": 0.030225000000000002,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7628,7 +7628,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [60.0, 4.45, 7.27],
       "restPositionMeters": [0.0025, 0.374528, 0.006474],
-      "explodeDirection": [0.8925313387407983, -0.24084136018545832, -0.381291553262824],
+      "explodeDirection": [0.8925313387407994, -0.24084136018545263, -0.3812915532628247],
       "explodeDistanceMeters": 0.03,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7644,7 +7644,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "8785b1317b184cdf8e63e02e0b5d3bd8726432d5f14790c780211db14ee4fd62"
+      "expectedStepSha256": "c12c8bad4969ff54ece5fccc252452218dff1ed3604b659a16f5edaf02b5fb98"
     },
     {
       "id": "poppy_1_28_8_2",
@@ -7657,7 +7657,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [4.95, 5.92, 7.47],
       "restPositionMeters": [-0.025475, 0.37541, 0.008017],
-      "explodeDirection": [-0.9927366865900275, -0.06754508719655779, -0.09955667880088775],
+      "explodeDirection": [-0.9927366865900277, -0.06754508719655501, -0.09955667880088787],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7675,7 +7675,7 @@
         "cameraModule": "Videw JDEPC-OV04",
         "connectorModel": "SM05B-SRSS-TB"
       },
-      "expectedStepSha256": "0e0e123335b9e11945c6aceaf7e5372fbf3c6ca59fb9b401ae8556f41f90b9e5",
+      "expectedStepSha256": "da3ad431cff93620c37e6d2445a8bf46ee424a1b80888d7d9f9d7e4ca8084c2f",
       "ports": [
         {
           "portId": "port_camera",
@@ -7699,7 +7699,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [10.0, 14.55, 13.41],
       "restPositionMeters": [0.0, 0.37793, 0.012087],
-      "explodeDirection": [0.9226922884475693, 0.18915693922037186, 0.33594433048373973],
+      "explodeDirection": [0.9226922884475678, 0.18915693922038046, 0.3359443304837389],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7715,7 +7715,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "4f562dbb66633258e8d4fd7f7ede30f3278a048e4a2f6f2d481262bcf09b33a8"
+      "expectedStepSha256": "efe8e16ce36b619960eabd651adb96ece63a0f83d4426700bbd98ff17b14affb"
     },
     {
       "id": "poppy_1_28_8_4",
@@ -7728,7 +7728,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [12.74, 17.19, 15.83],
       "restPositionMeters": [0.0, 0.379142, 0.013405],
-      "explodeDirection": [0.8096749703290637, 0.3368388842831405, 0.48058923048432833],
+      "explodeDirection": [0.8096749703290617, 0.3368388842831475, 0.48058923048432683],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7744,7 +7744,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "ec68b5760c4081a7cff29f6c636356be620dcc545407f951f8d161e91645403d"
+      "expectedStepSha256": "bcbc60cb1bb9bfd83dc6e5486e5b8da81c44bb5339c796e6ef7b98f23361c154"
     },
     {
       "id": "poppy_1_28_9",
@@ -7757,7 +7757,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [81.74, 9.15, 17.54],
       "restPositionMeters": [0.000129, 0.376223, 0.008571],
-      "explodeDirection": [-0.0026317007828878013, 0.9973887703461828, -0.07217142743716946],
+      "explodeDirection": [-0.0026317007828877874, 0.997388770346183, -0.07217142743716908],
       "explodeDistanceMeters": 0.04087,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7773,7 +7773,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "2ba52ee3344e90afed4d560307c0836110afe402eed572988abbc7971f4c9f50"
+      "expectedStepSha256": "6ce846031caf3459c1bb3cbff94183ff6103569ebb7f83b65ab4f8317a3b128b"
     },
     {
       "id": "poppy_1_28_10",
@@ -7786,7 +7786,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [11.54, 35.87, 44.68],
       "restPositionMeters": [-0.057124, 0.343374, 0.012382],
-      "explodeDirection": [-0.999603496046118, 0.014848860835954214, 0.02392408878626207],
+      "explodeDirection": [-0.999603496046118, 0.014848860835957118, 0.023924088786262097],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7802,7 +7802,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "d8dd6890692385304afb87648412e265d3c0c10df30e3f76e90b865c5445f31b"
+      "expectedStepSha256": "dd7acbb585cc6846e63fdbdeab8e28bdebd04fb6b2c1b8a7658d41061d061024"
     },
     {
       "id": "poppy_1_28_11",
@@ -7815,7 +7815,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [11.54, 35.87, 44.68],
       "restPositionMeters": [0.057124, 0.343374, 0.012382],
-      "explodeDirection": [0.9995974027985914, 0.014962497469439465, 0.0241071771011778],
+      "explodeDirection": [0.9995974027985914, 0.014962497469442391, 0.02410717710117783],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7831,7 +7831,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "cdadd9624a3e544e9686d5e7ea431ed8a446a018ab6817caa32b6e28bc531251"
+      "expectedStepSha256": "0a9f1ad2b18a92dc7859e99b96f0eb52965d5909bdedc4affea11d373cf27b18"
     },
     {
       "id": "poppy_1_28_12",
@@ -7844,7 +7844,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [13.19, 39.51, 52.45],
       "restPositionMeters": [0.057989, 0.34308, 0.011924],
-      "explodeDirection": [0.9998281694928616, 0.009653690900781036, 0.0158252248181705],
+      "explodeDirection": [0.9998281694928616, 0.009653690900783917, 0.01582522481817053],
       "explodeDistanceMeters": 0.026225000000000002,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7860,7 +7860,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "d3e52ce86cb40deba898bd1372a91dbef2f17838530178880e870361300703bd"
+      "expectedStepSha256": "26d4e4cdfbe0f8ecb552426bb3de37783a886d216dc1a6d69a397b533b5f90ee"
     },
     {
       "id": "poppy_1_28_13",
@@ -7873,7 +7873,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [13.19, 39.51, 52.45],
       "restPositionMeters": [-0.057989, 0.34308, 0.011924],
-      "explodeDirection": [-0.9998307324930557, 0.009581429984407865, 0.015706768026988185],
+      "explodeDirection": [-0.9998307324930557, 0.009581429984410725, 0.015706768026988213],
       "explodeDistanceMeters": 0.026225000000000002,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7889,7 +7889,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "3eaa615ce0991b848d16eddfb4296f09cc24387f92baeec24621f4ee9e168a16"
+      "expectedStepSha256": "408bbe7789b62f45920cd5cfb45cd247901b96a382c8d610a858e39e71caac6f"
     },
     {
       "id": "poppy_1_28_14",
@@ -7902,7 +7902,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [41.0, 26.86, 14.1],
       "restPositionMeters": [0.0, 0.320538, 0.014468],
-      "explodeDirection": [-0.009791797485896037, -0.9878039990215449, 0.1553942734435182],
+      "explodeDirection": [-0.009791797485896106, -0.9878039990215447, 0.15539427344351942],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7919,7 +7919,7 @@
         "geometryDetail": "solid",
         "imuModel": "9DOF Razor v23"
       },
-      "expectedStepSha256": "426f205b7a68f5f671b2f302299ff53db380ecc9a3aa0726943381bf1d9c331c",
+      "expectedStepSha256": "2d619b6ca428f7d5cf59e4dd3934c7e67eb23f1b3de5614f7062e6539f8b9b60",
       "ports": [
         {
           "portId": "port_serial",
@@ -7943,7 +7943,7 @@
       "colorHex": "#cbd5e1",
       "dimensionsMm": [48.0, 23.0, 31.5],
       "restPositionMeters": [0.0, 0.292237, 0.0248],
-      "explodeDirection": [0.00023254087234152166, 0.9976105492315277, 0.0690879004364185],
+      "explodeDirection": [0.00023254087234152477, 0.9976105492315277, 0.0690879004364185],
       "explodeDistanceMeters": 0.025,
       "materialHint": "unspecified",
       "origin": "open_step_catalog",
@@ -7959,7 +7959,7 @@
         "geometryStatus": "available",
         "geometryDetail": "solid"
       },
-      "expectedStepSha256": "1f5bf19bb6fc2cdc844cb1e77b0dfc839280c82a498f89f0d7880569216a15e4"
+      "expectedStepSha256": "6ed9d7c43f8528c387f1d70a832fae8d6b6b2f4414e62e419a9a8bd1ab84df1a"
     },
     {
       "id": "sub_poppy_electronics",
@@ -8026,7 +8026,7 @@
       "restPositionMeters": [-0.02125, 0.29125, -0.065],
       "dimensionsMm": [15.0, 30.0, 9.4],
       "stepFixtureName": "kicad_poppy_usb2ax.step",
-      "expectedStepSha256": "49ff1a64ccb7bad6bd397133395a40f6d0da4f41901402833cfb2da13dee2f3f",
+      "expectedStepSha256": "1710be7c5d669b0c9cb25a5d060d3a1b8433039ca4307aae6fe2d4839e795f6b",
       "specifications": {
         "pcbWidthMm": 15,
         "pcbLengthMm": 30,
@@ -8075,7 +8075,7 @@
       "restPositionMeters": [0.01625, 0.29625, -0.0725],
       "dimensionsMm": [15.0, 30.0, 9.4],
       "stepFixtureName": "kicad_poppy_usb2ax.step",
-      "expectedStepSha256": "49ff1a64ccb7bad6bd397133395a40f6d0da4f41901402833cfb2da13dee2f3f",
+      "expectedStepSha256": "1710be7c5d669b0c9cb25a5d060d3a1b8433039ca4307aae6fe2d4839e795f6b",
       "specifications": {
         "pcbWidthMm": 15,
         "pcbLengthMm": 30,
@@ -8124,7 +8124,7 @@
       "restPositionMeters": [0.0, 0.255, -0.0625],
       "dimensionsMm": [48.0, 16.0, 9.4],
       "stepFixtureName": "kicad_poppy_upper_3p_hub.step",
-      "expectedStepSha256": "5710c2fbffa5c35f170a64687eefea5fd5de17e65f84458906b3707b30981599",
+      "expectedStepSha256": "ac751e79a90fd4f1235d663a474230dd1a5ba0bb54a4a7c5fea6f91bc2c73928",
       "specifications": {
         "pcbWidthMm": 48,
         "pcbLengthMm": 16,
