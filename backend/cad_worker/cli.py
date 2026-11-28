@@ -5,6 +5,7 @@ import json
 import os
 import shutil
 import sys
+from tempfile import TemporaryDirectory
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -46,6 +47,8 @@ def main() -> int:
     parser.add_argument("--public-dir", required=False)
     parser.add_argument("--cache-dir", required=False)
     parser.add_argument("--catalog-json", required=False)
+    parser.add_argument("--source-archive", required=False)
+    parser.add_argument("--download-source", action="store_true")
     parser.add_argument("--params-json", type=json.loads)
     parser.add_argument("--xbf-cache-dir", type=Path)
     parser.add_argument("--render-views-dir", type=Path)
@@ -83,6 +86,8 @@ def main() -> int:
                 parser.error("--inject-collision-test --json-out must not already exist")
 
     targets = list(CATALOG_SPECS.keys()) if args.all_archetypes else [args.archetype]
+    if args.all_archetypes and (args.source_archive or args.download_source):
+        targets.append("dual_scorpion_v1")
     results = []
     for archetype_id in targets:
         out_dir = (
@@ -90,19 +95,51 @@ def main() -> int:
             if args.output_dir and not args.all_archetypes
             else repo_root / "backend" / "data" / "exports" / archetype_id
         )
-        spec = resolve_catalog_spec(archetype_id, args.catalog_json)
+        if archetype_id == "dual_scorpion_v1":
+            from dual_scorpion_catalog import CATALOG_PATH, download_pinned_archive, prepare_pinned_source
+
+            catalog_path = Path(args.catalog_json) if args.catalog_json else CATALOG_PATH
+            if args.source_archive and args.download_source:
+                raise ValueError("Choose either --source-archive or --download-source")
+            if args.source_archive:
+                spec = prepare_pinned_source(Path(args.source_archive), cache_dir, catalog_path)
+            elif args.download_source:
+                with TemporaryDirectory(prefix="zappd-dual-scorpion-") as temporary:
+                    source_archive = download_pinned_archive(Path(temporary) / "dual_scorpion.zip")
+                    spec = prepare_pinned_source(source_archive, cache_dir, catalog_path)
+            else:
+                raise ValueError("Dual Scorpion source inspection needs --source-archive or --download-source")
+        else:
+            spec = resolve_catalog_spec(archetype_id, args.catalog_json)
         pipeline = run_cad_pipeline
         if archetype_id == "poppy_humanoid_v1":
             from poppy_pipeline import run_poppy_pipeline
             pipeline = run_poppy_pipeline
-        result = pipeline(
-            spec,
-            output_dir=out_dir,
-            cache_dir=cache_dir,
-            inject_collision_test=args.inject_collision_test,
-            parameter_overrides=args.params_json,
-            xbf_cache_dir=args.xbf_cache_dir,
-            render_views_dir=args.render_views_dir,
+        elif archetype_id == "dual_scorpion_v1":
+            from dual_scorpion_pipeline import run_dual_scorpion_pipeline
+            pipeline = run_dual_scorpion_pipeline
+        if archetype_id == "dual_scorpion_v1":
+            result = pipeline(
+                spec,
+                output_dir=out_dir,
+                cache_dir=cache_dir,
+                inject_collision_test=args.inject_collision_test,
+                xbf_cache_dir=args.xbf_cache_dir,
+                render_views_dir=args.render_views_dir,
+            )
+        else:
+            result = pipeline(
+                spec,
+                output_dir=out_dir,
+                cache_dir=cache_dir,
+                inject_collision_test=args.inject_collision_test,
+                parameter_overrides=args.params_json,
+                xbf_cache_dir=args.xbf_cache_dir,
+                render_views_dir=args.render_views_dir,
+            )
+        out_dir.mkdir(parents=True, exist_ok=True)
+        (out_dir / "pipeline_result.json").write_text(
+            json.dumps(result, indent=2), encoding="utf-8"
         )
         if args.public_dir or args.all_archetypes:
             pub_base = Path(args.public_dir) if args.public_dir else repo_root / "public" / "assemblies"

@@ -206,13 +206,16 @@ async function runCadAssemblyAndValidation(
     if (cloud !== null) return { payload: cloud, source: 'cloud_catalog' };
   }
 
-  await requestWarmCadBuild({
-    ...operation,
-    archetypeId,
-    outputDir,
-    injectCollisionTest,
-    cacheDir: path.resolve('backend/data/open_step_cache'),
-  });
+  await requestWarmCadBuild(
+    {
+      ...operation,
+      archetypeId,
+      outputDir,
+      injectCollisionTest,
+      cacheDir: path.resolve('backend/data/open_step_cache'),
+    },
+    archetypeId === 'dual_scorpion_v1' ? { timeoutMs: 600_000 } : undefined,
+  );
   const raw: unknown = JSON.parse(
     await fs.readFile(path.join(outputDir, 'pipeline_result.json'), 'utf8'),
   );

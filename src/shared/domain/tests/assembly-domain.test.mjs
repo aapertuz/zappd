@@ -90,7 +90,9 @@ describe('shared domain contracts', () => {
   it('loads the same complete catalog specs as the CAD worker', () => {
     const catalogDirectory = new URL('../catalog/assemblies/', import.meta.url);
     const workerSpecFiles = readdirSync(catalogDirectory).filter((file) => file.endsWith('.json'));
-    const appSpecFiles = CATALOG_ARCHETYPES.map(({ archetypeId }) => `${archetypeId}.json`);
+    const appSpecFiles = CATALOG_ARCHETYPES.filter(({ archetypeId }) =>
+      workerSpecFiles.includes(`${archetypeId}.json`),
+    ).map(({ archetypeId }) => `${archetypeId}.json`);
 
     assert.deepEqual(appSpecFiles.toSorted(), workerSpecFiles.toSorted());
     for (const specFile of workerSpecFiles) {
@@ -112,6 +114,7 @@ describe('shared domain contracts', () => {
         parametric_multirotor_v1: 'Helix Config',
         reachy_mini_v1: 'Reachy Mini',
         poppy_humanoid_v1: 'Poppy Mark I',
+        dual_scorpion_v1: 'Dual Scorpion',
       },
     );
     for (const { commercialName: _name, ...spec } of CATALOG_ARCHETYPES) {

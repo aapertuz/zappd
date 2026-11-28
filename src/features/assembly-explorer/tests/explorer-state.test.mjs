@@ -117,6 +117,7 @@ describe('geometry-driven camera framing', () => {
     open_quadruped_v1: [1.4, 1.7],
     reachy_mini_v1: [1.25, 1.4],
     poppy_humanoid_v1: [2.8, 3.4],
+    dual_scorpion_v1: [1.95, 2.15],
   };
 
   for (const [name, assembly, minDistance, maxDistance] of [

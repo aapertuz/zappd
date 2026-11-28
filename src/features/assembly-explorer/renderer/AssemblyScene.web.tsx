@@ -48,6 +48,10 @@ import {
 } from '../model/assemblyAnimation';
 import { type CalloutAnchor, computePartCalloutRect } from '../model/calloutPlacement';
 import {
+  resolveDualScorpionDisplayStyles,
+  type DualScorpionDisplayStyle,
+} from '../model/dualScorpionDisplayStyle';
+import {
   type AssemblyBoundingBoxMeters,
   computeAssemblyBoundingBoxMeters,
   computeCameraZoomLimits,
@@ -508,6 +512,7 @@ function buildPhysicalCadMaterial(
   baseMaterial: THREE.Material,
   materialHint: string,
   maxAnisotropy: number,
+  displayStyle?: DualScorpionDisplayStyle,
 ): THREE.MeshPhysicalMaterial {
   const profile = SURFACE_PROFILES[materialHint] ?? DEFAULT_SURFACE_PROFILE;
   const upgraded =
@@ -556,8 +561,15 @@ function buildPhysicalCadMaterial(
     });
   }
 
-  upgraded.envMapIntensity = profile.envMapIntensity;
-  upgraded.ior = profile.ior;
+  upgraded.envMapIntensity = displayStyle?.envMapIntensity ?? profile.envMapIntensity;
+  upgraded.ior = displayStyle?.ior ?? profile.ior;
+  if (displayStyle !== undefined) {
+    upgraded.color.set(displayStyle.colorHex);
+    upgraded.metalness = displayStyle.metalness;
+    upgraded.roughness = displayStyle.roughness;
+    upgraded.clearcoat = displayStyle.clearcoat;
+    upgraded.clearcoatRoughness = displayStyle.clearcoatRoughness;
+  }
   for (const texture of materialTextures(upgraded)) {
     if (texture.anisotropy === maxAnisotropy) continue;
     texture.anisotropy = maxAnisotropy;
@@ -579,6 +591,7 @@ type MeshBinding = {
   readonly ownerId: ComponentId;
   readonly restScale: THREE.Vector3;
   readonly materials: readonly CadMaterialBinding[];
+  readonly displayStyle?: DualScorpionDisplayStyle;
   edgeMaterial?: THREE.LineBasicMaterial;
 };
 
@@ -667,6 +680,7 @@ function bindAssemblyModel(
   buildEdges: boolean,
   maxAnisotropy: number,
   environmentMap: THREE.Texture | undefined,
+  displayStyles: ReadonlyMap<ComponentId, DualScorpionDisplayStyle>,
 ): WebAssemblyModel {
   const objectsById = new Map<ComponentId, THREE.Object3D>();
   const meshes: { readonly mesh: THREE.Mesh; readonly ownerId: ComponentId }[] = [];
@@ -685,10 +699,13 @@ function bindAssemblyModel(
       objectsById.set(ownerId, anchor);
     }
     mesh.userData.componentId = ownerId;
+    const displayStyle = displayStyles.get(ownerId);
     const hasMaterialGroups = Array.isArray(mesh.material);
     const upgraded = [mesh.material]
       .flat()
-      .map((material) => buildPhysicalCadMaterial(material, materialHint, maxAnisotropy));
+      .map((material) =>
+        buildPhysicalCadMaterial(material, materialHint, maxAnisotropy, displayStyle),
+      );
     if (environmentMap !== undefined) {
       for (const material of upgraded) material.envMap ??= environmentMap;
     }
@@ -701,7 +718,7 @@ function bindAssemblyModel(
       emissive: material.emissive.clone(),
       emissiveIntensity: material.emissiveIntensity,
     }));
-    return { mesh, ownerId, restScale: mesh.scale.clone(), materials };
+    return { mesh, ownerId, restScale: mesh.scale.clone(), materials, displayStyle };
   });
 
   const startTimes = new Map(schedule.map(({ nodeId, startSec }) => [nodeId, startSec]));
@@ -759,7 +776,11 @@ function buildQueuedEdges(model: WebAssemblyModel): void {
       model.circuitHighlightIds,
     );
     const pose = model.lastPoses?.[binding.ownerId];
-    const { color, opacity } = pose?.isShellXRay ? SHELL_XRAY_EDGE : EDGE_HIGHLIGHTS[highlight];
+    const { color, opacity } = pose?.isShellXRay
+      ? SHELL_XRAY_EDGE
+      : highlight === 'normal' && binding.displayStyle !== undefined
+        ? { color: binding.displayStyle.edgeColorHex, opacity: binding.displayStyle.edgeOpacity }
+        : EDGE_HIGHLIGHTS[highlight];
     const material = new THREE.LineBasicMaterial({
       color,
       transparent: true,
@@ -819,7 +840,11 @@ function applyMeshPose(
     }
   }
   if (edgeMaterial !== undefined) {
-    const { color, opacity } = pose.isShellXRay ? SHELL_XRAY_EDGE : EDGE_HIGHLIGHTS[highlight];
+    const { color, opacity } = pose.isShellXRay
+      ? SHELL_XRAY_EDGE
+      : highlight === 'normal' && binding.displayStyle !== undefined
+        ? { color: binding.displayStyle.edgeColorHex, opacity: binding.displayStyle.edgeOpacity }
+        : EDGE_HIGHLIGHTS[highlight];
     edgeMaterial.color.set(color);
     edgeMaterial.opacity = pose.isShellXRay ? opacity : opacity * pose.opacity;
   }
@@ -1492,6 +1517,7 @@ export function AssemblyScene({
           runtime.webglActive,
           runtime.maxAnisotropy,
           runtime.environmentMap,
+          resolveDualScorpionDisplayStyles(assembly),
         );
         rootGroup.add(gltf.scene);
         const glbBounds = new THREE.Box3().setFromObject(rootGroup, true);
@@ -1754,8 +1780,9 @@ export function AssemblyScene({
               className={classes.inspectionStatus}>
               <div className={classes.warningHeader}>
                 <p className={classes.inspectionHeadline}>
-                  Partial CAD inspection · engineering unverified. Head shell is visual only; two
-                  thighs are surfaces.
+                  {assembly.archetypeId === 'dual_scorpion_v1'
+                    ? `Source CAD inspection · ${assembly.nodes.filter((node) => node.geometry?.kind === 'unavailable').length} motor-case STEP files are unavailable after source topology validation. Engineering remains unverified.`
+                    : 'Partial CAD inspection · engineering unverified. Head shell is visual only; two thighs are surfaces.'}
                 </p>
                 <button
                   type="button"
@@ -1772,7 +1799,9 @@ export function AssemblyScene({
                     assembly.nodes.find((node) => node.id === assembly.rootNodeId)?.provenance
                       .sourceUrl
                   }>
-                  Poppy project and authors · CC-BY-SA-4.0 · Official source STEP
+                  {assembly.archetypeId === 'dual_scorpion_v1'
+                    ? 'Dual Scorpion source · Apache-2.0 · Official URDF and pinned STEP files'
+                    : 'Poppy project and authors · CC-BY-SA-4.0 · Official source STEP'}
                 </a>
                 {assembly.nodes.map((node) =>
                   node.geometry?.kind === 'visual_only' ? (
