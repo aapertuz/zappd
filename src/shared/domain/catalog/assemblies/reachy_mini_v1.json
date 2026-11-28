@@ -1333,7 +1333,23 @@
         "heypcbNodeId": "key_cap",
         "sourceSha256": "e70267bef2fe938b82a511259610593458f2196bc57316cd08fc55429dfdf2c2"
       },
-      "expectedStepSha256": "167d81d86c4b2dfeae81337c8cb4811ff4966a46e84fdabbcc596d0acbeac0b7"
+      "expectedStepSha256": "167d81d86c4b2dfeae81337c8cb4811ff4966a46e84fdabbcc596d0acbeac0b7",
+      "ports": [
+        {
+          "portId": "port_pwr_sw",
+          "label": "Power switch signal",
+          "connectorType": "Solder pads",
+          "busKind": "i2c_spi_uart",
+          "role": "sink",
+          "minVoltageV": 3,
+          "nominalVoltageV": 3.3,
+          "maxVoltageV": 3.6,
+          "maxCurrentA": 0.05,
+          "localPositionMeters": [0, -0.0015, 0.00225],
+          "exitDirection": [0, 0, 1],
+          "wireColorsHex": ["#3b82f6", "#222428"]
+        }
+      ]
     },
     {
       "id": "comp_reachy_usb_socket",
@@ -2389,6 +2405,20 @@
           "maxCurrentA": 4.0,
           "localPositionMeters": [-0.012, 0.0036694, 0.051275],
           "exitDirection": [-0.9457324874869207, -0.07881104062391013, -0.3152441624956405]
+        },
+        {
+          "portId": "port_pwr_sw",
+          "label": "Power switch signal",
+          "connectorType": "Solder pads",
+          "busKind": "i2c_spi_uart",
+          "role": "source",
+          "minVoltageV": 3,
+          "nominalVoltageV": 3.3,
+          "maxVoltageV": 3.6,
+          "maxCurrentA": 0.05,
+          "localPositionMeters": [-0.02115, -0.00064, -0.036],
+          "exitDirection": [0, -1, 0],
+          "wireColorsHex": ["#3b82f6", "#222428"]
         }
       ]
     },
@@ -2528,6 +2558,34 @@
           "maxCurrentA": 0.02,
           "localPositionMeters": [0.032954, 0.00353455, 0.01642],
           "exitDirection": [-0.5182136424256133, 0.8492945806419776, 0.10076376380498037]
+        },
+        {
+          "portId": "port_cm_5v",
+          "label": "Compute module 5 V",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "dc_power",
+          "role": "source",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 2.5,
+          "localPositionMeters": [0.034, 0.00064, -0.022],
+          "exitDirection": [0, 1, 0],
+          "wireColorsHex": ["#cc2929", "#222428"]
+        },
+        {
+          "portId": "port_cm_usb",
+          "label": "Compute module USB",
+          "connectorType": "USB-C",
+          "busKind": "usb_data",
+          "role": "bidirectional",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 0.5,
+          "localPositionMeters": [0.042454, 0.00064, 0.026],
+          "exitDirection": [0, 1, 0],
+          "wireColorsHex": ["#cc2929", "#222428", "#f4f4f5", "#228b55"]
         }
       ]
     },
@@ -3047,6 +3105,152 @@
         "brepFaces": 24
       },
       "expectedStepSha256": "3ac224f76e84e03c07853475537a73edd42606869bb4daaaa69ff3af35811cfc"
+    },
+    {
+      "id": "comp_reachy_compute_module",
+      "parentId": "sub_reachy_electronics",
+      "name": "Onboard Wireless Compute Module",
+      "level": "component",
+      "depth": 2,
+      "origin": "kicad_pcb_step",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "kicad://zappd/kicad_reachy_compute_module",
+      "sourceName": "Zappd kicad_reachy_compute_module.kicad_pcb with KiCad kicad-packages3D models",
+      "stepFixtureName": "kicad_reachy_compute_module.step",
+      "expectedStepSha256": "8352fdda07f46019d00a7ae32035cea70879f00a258a8bee15c8dc27cf29acd2",
+      "dimensionsMm": [54.0, 9.4, 28.175],
+      "materialHint": "fr4_pcb",
+      "colorHex": "#247052",
+      "category": "compute_module",
+      "mountingInterfaces": [
+        {
+          "interfaceId": "mount_board",
+          "label": "Four-hole M2.5 PCB mount",
+          "kind": "m2_5_standoff",
+          "holeDiameterMm": 2.5,
+          "boltPitchMm": [46, 20],
+          "localPositionMeters": [0, 0, 0],
+          "normalDirection": [0, 1, 0]
+        }
+      ],
+      "specifications": {
+        "pcbWidthMm": 54,
+        "pcbLengthMm": 28,
+        "pcbThicknessMm": 1.6,
+        "brepFaces": 3228,
+        "xcafColors": 10,
+        "referenceLayout": true
+      },
+      "ports": [
+        {
+          "portId": "port_usb_bus",
+          "label": "USB data bus",
+          "connectorType": "USB-C",
+          "busKind": "usb_data",
+          "role": "bidirectional",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 0.5,
+          "localPositionMeters": [0.002, 0.00035, 0.0140875],
+          "exitDirection": [0.0, 0.0, 1.0]
+        },
+        {
+          "portId": "port_5v_in",
+          "label": "5V power input",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "dc_power",
+          "role": "sink",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 2.5,
+          "wireColorsHex": ["#cc2929", "#222428"],
+          "localPositionMeters": [0.002, 0.0047, -0.0080875],
+          "exitDirection": [0.0, 1.0, -0.0]
+        }
+      ],
+      "restPositionMeters": [0.0405, 0.212, -0.0008],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.05
+    },
+    {
+      "id": "comp_reachy_cable_cm_pwr",
+      "parentId": "sub_reachy_wiring",
+      "name": "Compute module 5 V harness",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [9.879000200000014, 17.819550100000015, 16.957500200000005],
+      "restPositionMeters": [0.0385355, 0.21246522504999998, -0.016916249999999997],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.05,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/reachy_mini_v1/rel_reachy_cm_pwr",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "reachy_mini/cable_cm_pwr.step",
+      "specifications": {
+        "relationshipId": "rel_reachy_cm_pwr",
+        "fromConnectorClearanceMm": 0.45,
+        "toConnectorClearanceMm": 0.45,
+        "brepFaces": 48
+      },
+      "expectedStepSha256": "7aff1704496a88c7ee60d46f1ff80e8eaec4ffb3beaf84ebbc35f6e5478ccaa5"
+    },
+    {
+      "id": "comp_reachy_cable_cm_usb",
+      "parentId": "sub_reachy_wiring",
+      "name": "Compute module USB harness",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#292e37",
+      "dimensionsMm": [0.9000002000001075, 10.819550100000043, 11.867500100000013],
+      "restPositionMeters": [0.04250000000000005, 0.20896522505, 0.019671250050000002],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.05,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/reachy_mini_v1/rel_reachy_cm_usb",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "reachy_mini/cable_cm_usb.step",
+      "specifications": {
+        "relationshipId": "rel_reachy_cm_usb",
+        "fromConnectorClearanceMm": 0.45,
+        "toConnectorClearanceMm": 0.45,
+        "brepFaces": 32
+      },
+      "expectedStepSha256": "1ccaa2acc91987d80cf80ab7d3bb2ee8a702d64dd0d1dc8fa1d3d195da9b340b"
+    },
+    {
+      "id": "comp_reachy_cable_pwr_sw",
+      "parentId": "sub_reachy_wiring",
+      "name": "Power switch harness",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#292e37",
+      "dimensionsMm": [0.9000002000000009, 5.010600100000001, 6.630000099999997],
+      "restPositionMeters": [-0.02115, 0.00473529995, -0.042614999949999996],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.05,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/reachy_mini_v1/rel_reachy_pwr_sw",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "reachy_mini/cable_pwr_sw.step",
+      "specifications": {
+        "relationshipId": "rel_reachy_pwr_sw",
+        "fromConnectorClearanceMm": 0.45,
+        "toConnectorClearanceMm": 0.45,
+        "brepFaces": 16
+      },
+      "expectedStepSha256": "58d25866cea67daf7d69b370bb1b1afc52bc83dc64c4c884726e93080a4b2b52"
     }
   ],
   "relationships": [
@@ -4115,6 +4319,83 @@
       "connectionType": "assembly_mount",
       "howConnected": "Install the cable at both connectors: LEAD EXIT and J2.",
       "whyConnected": "The cable carries the rated connection between the two installed components."
+    },
+    {
+      "id": "rel_reachy_mount_compute_module",
+      "fromComponentId": "comp_reachy_compute_module",
+      "toComponentId": "comp_reachy_head_board",
+      "connectionType": "assembly_mount",
+      "howConnected": "Seat the compute module above the head board.",
+      "whyConnected": "The head board locates the compute module inside the head."
+    },
+    {
+      "id": "rel_reachy_cm_pwr",
+      "fromComponentId": "comp_reachy_head_board",
+      "toComponentId": "comp_reachy_compute_module",
+      "connectionType": "power_bus",
+      "howConnected": "Plug the compute module 5 v harness into the labeled ports.",
+      "whyConnected": "The head board supplies regulated power to the compute module.",
+      "fromPortId": "port_cm_5v",
+      "toPortId": "port_5v_in",
+      "wireBundleDiameterMm": 1.4,
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [0.034046, 0.213, -0.02442],
+        [0.034046, 0.213, -0.0165],
+        [0.034046, 0.2204, -0.0165],
+        [0.034046, 0.2204, -0.0088875],
+        [0.0425, 0.2204, -0.0088875]
+      ]
+    },
+    {
+      "id": "rel_reachy_cm_pwr_harness",
+      "fromComponentId": "comp_reachy_cable_cm_pwr",
+      "toComponentId": "comp_reachy_head_board",
+      "connectionType": "assembly_mount",
+      "howConnected": "Seat the harness at its source connector.",
+      "whyConnected": "The source connector holds the first end of the harness."
+    },
+    {
+      "id": "rel_reachy_cm_usb",
+      "fromComponentId": "comp_reachy_head_board",
+      "toComponentId": "comp_reachy_compute_module",
+      "connectionType": "electrical_bus",
+      "howConnected": "Plug the compute module usb harness into the labeled ports.",
+      "whyConnected": "The head board and compute module exchange USB data.",
+      "fromPortId": "port_cm_usb",
+      "toPortId": "port_usb_bus",
+      "wireBundleDiameterMm": 1.8,
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [[0.0425, 0.21235, 0.02358]]
+    },
+    {
+      "id": "rel_reachy_cm_usb_harness",
+      "fromComponentId": "comp_reachy_cable_cm_usb",
+      "toComponentId": "comp_reachy_head_board",
+      "connectionType": "assembly_mount",
+      "howConnected": "Seat the harness at its source connector.",
+      "whyConnected": "The source connector holds the first end of the harness."
+    },
+    {
+      "id": "rel_reachy_pwr_sw",
+      "fromComponentId": "comp_reachy_power_board",
+      "toComponentId": "comp_reachy_key_cap",
+      "connectionType": "electrical_bus",
+      "howConnected": "Plug the power switch harness into the labeled ports.",
+      "whyConnected": "The switch opens or closes the power board sense circuit.",
+      "fromPortId": "port_pwr_sw",
+      "toPortId": "port_pwr_sw",
+      "wireBundleDiameterMm": 1.4,
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [[-0.02115, 0.003205, -0.040275]]
+    },
+    {
+      "id": "rel_reachy_pwr_sw_harness",
+      "fromComponentId": "comp_reachy_cable_pwr_sw",
+      "toComponentId": "comp_reachy_power_board",
+      "connectionType": "assembly_mount",
+      "howConnected": "Seat the harness at its source connector.",
+      "whyConnected": "The source connector holds the first end of the harness."
     }
   ],
   "assemblySteps": [
@@ -4794,6 +5075,32 @@
       "summary": "Confirm the servo bus is regulated to 5.0 V (within the 3.7\u20136.0 V ROBOTIS XL330/XC330 rating) before powering on.",
       "componentIds": [],
       "relationshipIds": []
+    },
+    {
+      "id": "step_reachy_s52",
+      "order": 52,
+      "title": "Mount and connect the compute module",
+      "summary": "Seat the compute module above the head board and attach its 5 V and USB harnesses.",
+      "componentIds": [
+        "comp_reachy_compute_module",
+        "comp_reachy_cable_cm_pwr",
+        "comp_reachy_cable_cm_usb"
+      ],
+      "relationshipIds": [
+        "rel_reachy_mount_compute_module",
+        "rel_reachy_cm_pwr",
+        "rel_reachy_cm_pwr_harness",
+        "rel_reachy_cm_usb",
+        "rel_reachy_cm_usb_harness"
+      ]
+    },
+    {
+      "id": "step_reachy_s53",
+      "order": 53,
+      "title": "Connect the power switch",
+      "summary": "Attach the switch signal harness between the power board and the switch.",
+      "componentIds": ["comp_reachy_cable_pwr_sw"],
+      "relationshipIds": ["rel_reachy_pwr_sw", "rel_reachy_pwr_sw_harness"]
     }
   ]
 }
