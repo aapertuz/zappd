@@ -2,7 +2,7 @@
   "archetypeId": "open_quadruped_v1",
   "title": "Open Quadruped",
   "commercialName": "Strider Q4",
-  "summary": "Four-legged walking robot by Adham Elarabawy with a 3S battery, a PWM servo hub, and three routed leads in an open service bay.",
+  "summary": "Four-legged walking robot by Adham Elarabawy with a 3S battery, power distribution and 5 V regulation, gait controller, IMU, and a 12-channel hub that powers and commands three servos per leg.",
   "keywords": [
     "open quadruped",
     "open-quadruped",
@@ -23,7 +23,7 @@
       "depth": 0,
       "category": "project",
       "colorHex": "#53606A",
-      "dimensionsMm": [338.1, 317.03, 351.8],
+      "dimensionsMm": [338.1, 312.39, 351.8],
       "restPositionMeters": [0, 0, 0],
       "explodeDirection": [0, 0, 0],
       "explodeDistanceMeters": 0,
@@ -86,7 +86,7 @@
       "depth": 1,
       "category": "subsystem",
       "colorHex": "#8396A6",
-      "dimensionsMm": [66.38, 288.16, 146.7],
+      "dimensionsMm": [87.98, 288.16, 146.7],
       "restPositionMeters": [0, 0, 0],
       "explodeDirection": [0, 1, 0],
       "explodeDistanceMeters": 0,
@@ -106,7 +106,7 @@
       "depth": 1,
       "category": "subsystem",
       "colorHex": "#8396A6",
-      "dimensionsMm": [67.78, 287.96, 146.7],
+      "dimensionsMm": [81.7, 287.96, 146.7],
       "restPositionMeters": [0, 0, 0],
       "explodeDirection": [0, 1, 0],
       "explodeDistanceMeters": 0,
@@ -146,7 +146,7 @@
       "depth": 1,
       "category": "subsystem",
       "colorHex": "#8396A6",
-      "dimensionsMm": [320.56, 83.46, 129.48],
+      "dimensionsMm": [320.44, 141.56, 277.62],
       "restPositionMeters": [0, 0, 0],
       "explodeDirection": [0, 1, 0],
       "explodeDistanceMeters": 0,
@@ -893,7 +893,7 @@
           "label": "USB data",
           "connectorType": "USB-C",
           "busKind": "usb_data",
-          "role": "bidirectional",
+          "role": "sink",
           "minVoltageV": 4.75,
           "nominalVoltageV": 5,
           "maxVoltageV": 5.25,
@@ -1233,15 +1233,633 @@
       ]
     },
     {
+      "id": "comp_oq_front_left_upper_servo",
+      "parentId": "sub_oq_front_left",
+      "name": "Front left shoulder pitch DS3218MG servo",
+      "level": "component",
+      "depth": 2,
+      "category": "actuator",
+      "colorHex": "#39434D",
+      "dimensionsMm": [20.1, 55.6, 45.9],
+      "restPositionMeters": [0.097842, 0.004548, -0.142],
+      "explodeDirection": [0, -0.4, -1],
+      "explodeDistanceMeters": 0.036,
+      "materialHint": "servo_housing",
+      "origin": "open_step_catalog",
+      "spdxLicense": "NOASSERTION",
+      "sourceName": "Xon4 RobotQuadrupedCAD DS3218MG MS24 Digital Servo 270",
+      "sourceUrl": "https://raw.githubusercontent.com/Xon4/RobotQuadrupedCAD/9dc9f53194a32a4885cf98b57febe645d0905e59/legAssembly.STEP",
+      "stepFixtureName": "oq_left_servo.step",
+      "specifications": {
+        "brepFaces": 1871,
+        "upstreamStepSha256": "cbc981ab738014f7c1d624946762246c504a1886d349c4cd1bdc33a9952ee4cd"
+      },
+      "expectedStepSha256": "9506dc4d274335425110cbf2d776950255a24f3be5590727bfac5f5adf94387e",
+      "ports": [
+        {
+          "portId": "port_pwm_input",
+          "label": "Servo power and PWM input",
+          "connectorType": "3-wire servo lead",
+          "busKind": "pwm_signal",
+          "localPositionMeters": [0.0, 0.027800000000000002, -0.00455],
+          "exitDirection": [0, 1, 0],
+          "role": "sink",
+          "minVoltageV": 4.8,
+          "nominalVoltageV": 6,
+          "maxVoltageV": 6.8,
+          "maxCurrentA": 1.5
+        }
+      ],
+      "restRotationDeg": [0, 180, 0]
+    },
+    {
+      "id": "comp_oq_front_left_knee_servo",
+      "parentId": "sub_oq_front_left",
+      "name": "Front left knee pitch DS3218MG servo",
+      "level": "component",
+      "depth": 2,
+      "category": "actuator",
+      "colorHex": "#39434D",
+      "dimensionsMm": [20.1, 55.6, 45.9],
+      "restPositionMeters": [0.092462, -0.105696, -0.138],
+      "explodeDirection": [0, -0.4, -1],
+      "explodeDistanceMeters": 0.036,
+      "materialHint": "servo_housing",
+      "origin": "open_step_catalog",
+      "spdxLicense": "NOASSERTION",
+      "sourceName": "Xon4 RobotQuadrupedCAD DS3218MG MS24 Digital Servo 270",
+      "sourceUrl": "https://raw.githubusercontent.com/Xon4/RobotQuadrupedCAD/9dc9f53194a32a4885cf98b57febe645d0905e59/legAssembly.STEP",
+      "stepFixtureName": "oq_left_servo.step",
+      "specifications": {
+        "brepFaces": 1871,
+        "upstreamStepSha256": "cbc981ab738014f7c1d624946762246c504a1886d349c4cd1bdc33a9952ee4cd"
+      },
+      "expectedStepSha256": "9506dc4d274335425110cbf2d776950255a24f3be5590727bfac5f5adf94387e",
+      "ports": [
+        {
+          "portId": "port_pwm_input",
+          "label": "Servo power and PWM input",
+          "connectorType": "3-wire servo lead",
+          "busKind": "pwm_signal",
+          "localPositionMeters": [0.0, 0.027800000000000002, -0.00455],
+          "exitDirection": [0, 1, 0],
+          "role": "sink",
+          "minVoltageV": 4.8,
+          "nominalVoltageV": 6,
+          "maxVoltageV": 6.8,
+          "maxCurrentA": 1.5
+        }
+      ],
+      "restRotationDeg": [0, 180, 0]
+    },
+    {
+      "id": "comp_oq_front_right_servo",
+      "parentId": "sub_oq_front_right",
+      "name": "Front right hip abduction DS3218MG servo",
+      "level": "component",
+      "depth": 2,
+      "category": "actuator",
+      "colorHex": "#39434D",
+      "dimensionsMm": [20.1, 55.6, 45.9],
+      "restPositionMeters": [0.148, 0.003, 0.060899999999999996],
+      "explodeDirection": [0, -0.4, 1],
+      "explodeDistanceMeters": 0.036,
+      "materialHint": "servo_housing",
+      "origin": "open_step_catalog",
+      "spdxLicense": "NOASSERTION",
+      "sourceName": "Xon4 RobotQuadrupedCAD DS3218MG MS24 Digital Servo 270",
+      "sourceUrl": "https://raw.githubusercontent.com/Xon4/RobotQuadrupedCAD/9dc9f53194a32a4885cf98b57febe645d0905e59/legAssembly.STEP",
+      "stepFixtureName": "oq_right_servo.step",
+      "specifications": {
+        "brepFaces": 1871,
+        "upstreamStepSha256": "cbc981ab738014f7c1d624946762246c504a1886d349c4cd1bdc33a9952ee4cd"
+      },
+      "expectedStepSha256": "83369309cc33aee7c481a2f2ec7186e6813e463b9cf0f6032d2deece1ca512b7",
+      "ports": [
+        {
+          "portId": "port_pwm_input",
+          "label": "Servo power and PWM input",
+          "connectorType": "3-wire servo lead",
+          "busKind": "pwm_signal",
+          "localPositionMeters": [0.0, 0.027800000000000002, 0.00455],
+          "exitDirection": [0, 1, 0],
+          "role": "sink",
+          "minVoltageV": 4.8,
+          "nominalVoltageV": 6,
+          "maxVoltageV": 6.8,
+          "maxCurrentA": 1.5
+        }
+      ]
+    },
+    {
+      "id": "comp_oq_front_right_upper_servo",
+      "parentId": "sub_oq_front_right",
+      "name": "Front right shoulder pitch DS3218MG servo",
+      "level": "component",
+      "depth": 2,
+      "category": "actuator",
+      "colorHex": "#39434D",
+      "dimensionsMm": [20.1, 55.6, 45.9],
+      "restPositionMeters": [0.09764199999999999, 0.004548, 0.142],
+      "explodeDirection": [0, -0.4, 1],
+      "explodeDistanceMeters": 0.036,
+      "materialHint": "servo_housing",
+      "origin": "open_step_catalog",
+      "spdxLicense": "NOASSERTION",
+      "sourceName": "Xon4 RobotQuadrupedCAD DS3218MG MS24 Digital Servo 270",
+      "sourceUrl": "https://raw.githubusercontent.com/Xon4/RobotQuadrupedCAD/9dc9f53194a32a4885cf98b57febe645d0905e59/legAssembly.STEP",
+      "stepFixtureName": "oq_right_servo.step",
+      "specifications": {
+        "brepFaces": 1871,
+        "upstreamStepSha256": "cbc981ab738014f7c1d624946762246c504a1886d349c4cd1bdc33a9952ee4cd"
+      },
+      "expectedStepSha256": "83369309cc33aee7c481a2f2ec7186e6813e463b9cf0f6032d2deece1ca512b7",
+      "ports": [
+        {
+          "portId": "port_pwm_input",
+          "label": "Servo power and PWM input",
+          "connectorType": "3-wire servo lead",
+          "busKind": "pwm_signal",
+          "localPositionMeters": [0.0, 0.027800000000000002, 0.00455],
+          "exitDirection": [0, 1, 0],
+          "role": "sink",
+          "minVoltageV": 4.8,
+          "nominalVoltageV": 6,
+          "maxVoltageV": 6.8,
+          "maxCurrentA": 1.5
+        }
+      ],
+      "restRotationDeg": [0, 180, 0]
+    },
+    {
+      "id": "comp_oq_front_right_knee_servo",
+      "parentId": "sub_oq_front_right",
+      "name": "Front right knee pitch DS3218MG servo",
+      "level": "component",
+      "depth": 2,
+      "category": "actuator",
+      "colorHex": "#39434D",
+      "dimensionsMm": [20.1, 55.6, 45.9],
+      "restPositionMeters": [0.092262, -0.105696, 0.138],
+      "explodeDirection": [0, -0.4, 1],
+      "explodeDistanceMeters": 0.036,
+      "materialHint": "servo_housing",
+      "origin": "open_step_catalog",
+      "spdxLicense": "NOASSERTION",
+      "sourceName": "Xon4 RobotQuadrupedCAD DS3218MG MS24 Digital Servo 270",
+      "sourceUrl": "https://raw.githubusercontent.com/Xon4/RobotQuadrupedCAD/9dc9f53194a32a4885cf98b57febe645d0905e59/legAssembly.STEP",
+      "stepFixtureName": "oq_right_servo.step",
+      "specifications": {
+        "brepFaces": 1871,
+        "upstreamStepSha256": "cbc981ab738014f7c1d624946762246c504a1886d349c4cd1bdc33a9952ee4cd"
+      },
+      "expectedStepSha256": "83369309cc33aee7c481a2f2ec7186e6813e463b9cf0f6032d2deece1ca512b7",
+      "ports": [
+        {
+          "portId": "port_pwm_input",
+          "label": "Servo power and PWM input",
+          "connectorType": "3-wire servo lead",
+          "busKind": "pwm_signal",
+          "localPositionMeters": [0.0, 0.027800000000000002, 0.00455],
+          "exitDirection": [0, 1, 0],
+          "role": "sink",
+          "minVoltageV": 4.8,
+          "nominalVoltageV": 6,
+          "maxVoltageV": 6.8,
+          "maxCurrentA": 1.5
+        }
+      ],
+      "restRotationDeg": [0, 180, 0]
+    },
+    {
+      "id": "comp_oq_rear_left_servo",
+      "parentId": "sub_oq_rear_left",
+      "name": "Rear left hip abduction DS3218MG servo",
+      "level": "component",
+      "depth": 2,
+      "category": "actuator",
+      "colorHex": "#39434D",
+      "dimensionsMm": [20.1, 55.6, 45.9],
+      "restPositionMeters": [-0.17, 0.003, -0.0573],
+      "explodeDirection": [0, -0.4, -1],
+      "explodeDistanceMeters": 0.036,
+      "materialHint": "servo_housing",
+      "origin": "open_step_catalog",
+      "spdxLicense": "NOASSERTION",
+      "sourceName": "Xon4 RobotQuadrupedCAD DS3218MG MS24 Digital Servo 270",
+      "sourceUrl": "https://raw.githubusercontent.com/Xon4/RobotQuadrupedCAD/9dc9f53194a32a4885cf98b57febe645d0905e59/legAssembly.STEP",
+      "stepFixtureName": "oq_left_servo.step",
+      "specifications": {
+        "brepFaces": 1871,
+        "upstreamStepSha256": "cbc981ab738014f7c1d624946762246c504a1886d349c4cd1bdc33a9952ee4cd"
+      },
+      "expectedStepSha256": "9506dc4d274335425110cbf2d776950255a24f3be5590727bfac5f5adf94387e",
+      "ports": [
+        {
+          "portId": "port_pwm_input",
+          "label": "Servo power and PWM input",
+          "connectorType": "3-wire servo lead",
+          "busKind": "pwm_signal",
+          "localPositionMeters": [0.0, 0.027800000000000002, -0.00455],
+          "exitDirection": [0, 1, 0],
+          "role": "sink",
+          "minVoltageV": 4.8,
+          "nominalVoltageV": 6,
+          "maxVoltageV": 6.8,
+          "maxCurrentA": 1.5
+        }
+      ]
+    },
+    {
+      "id": "comp_oq_rear_left_upper_servo",
+      "parentId": "sub_oq_rear_left",
+      "name": "Rear left shoulder pitch DS3218MG servo",
+      "level": "component",
+      "depth": 2,
+      "category": "actuator",
+      "colorHex": "#39434D",
+      "dimensionsMm": [20.1, 55.6, 45.9],
+      "restPositionMeters": [-0.13715799999999997, 0.004548, -0.142],
+      "explodeDirection": [0, -0.4, -1],
+      "explodeDistanceMeters": 0.036,
+      "materialHint": "servo_housing",
+      "origin": "open_step_catalog",
+      "spdxLicense": "NOASSERTION",
+      "sourceName": "Xon4 RobotQuadrupedCAD DS3218MG MS24 Digital Servo 270",
+      "sourceUrl": "https://raw.githubusercontent.com/Xon4/RobotQuadrupedCAD/9dc9f53194a32a4885cf98b57febe645d0905e59/legAssembly.STEP",
+      "stepFixtureName": "oq_left_servo.step",
+      "specifications": {
+        "brepFaces": 1871,
+        "upstreamStepSha256": "cbc981ab738014f7c1d624946762246c504a1886d349c4cd1bdc33a9952ee4cd"
+      },
+      "expectedStepSha256": "9506dc4d274335425110cbf2d776950255a24f3be5590727bfac5f5adf94387e",
+      "ports": [
+        {
+          "portId": "port_pwm_input",
+          "label": "Servo power and PWM input",
+          "connectorType": "3-wire servo lead",
+          "busKind": "pwm_signal",
+          "localPositionMeters": [0.0, 0.027800000000000002, -0.00455],
+          "exitDirection": [0, 1, 0],
+          "role": "sink",
+          "minVoltageV": 4.8,
+          "nominalVoltageV": 6,
+          "maxVoltageV": 6.8,
+          "maxCurrentA": 1.5
+        }
+      ],
+      "restRotationDeg": [0, 180, 0]
+    },
+    {
+      "id": "comp_oq_rear_left_knee_servo",
+      "parentId": "sub_oq_rear_left",
+      "name": "Rear left knee pitch DS3218MG servo",
+      "level": "component",
+      "depth": 2,
+      "category": "actuator",
+      "colorHex": "#39434D",
+      "dimensionsMm": [20.1, 55.6, 45.9],
+      "restPositionMeters": [-0.142538, -0.105696, -0.138],
+      "explodeDirection": [0, -0.4, -1],
+      "explodeDistanceMeters": 0.036,
+      "materialHint": "servo_housing",
+      "origin": "open_step_catalog",
+      "spdxLicense": "NOASSERTION",
+      "sourceName": "Xon4 RobotQuadrupedCAD DS3218MG MS24 Digital Servo 270",
+      "sourceUrl": "https://raw.githubusercontent.com/Xon4/RobotQuadrupedCAD/9dc9f53194a32a4885cf98b57febe645d0905e59/legAssembly.STEP",
+      "stepFixtureName": "oq_left_servo.step",
+      "specifications": {
+        "brepFaces": 1871,
+        "upstreamStepSha256": "cbc981ab738014f7c1d624946762246c504a1886d349c4cd1bdc33a9952ee4cd"
+      },
+      "expectedStepSha256": "9506dc4d274335425110cbf2d776950255a24f3be5590727bfac5f5adf94387e",
+      "ports": [
+        {
+          "portId": "port_pwm_input",
+          "label": "Servo power and PWM input",
+          "connectorType": "3-wire servo lead",
+          "busKind": "pwm_signal",
+          "localPositionMeters": [0.0, 0.027800000000000002, -0.00455],
+          "exitDirection": [0, 1, 0],
+          "role": "sink",
+          "minVoltageV": 4.8,
+          "nominalVoltageV": 6,
+          "maxVoltageV": 6.8,
+          "maxCurrentA": 1.5
+        }
+      ],
+      "restRotationDeg": [0, 180, 0]
+    },
+    {
+      "id": "comp_oq_rear_right_upper_servo",
+      "parentId": "sub_oq_rear_right",
+      "name": "Rear right shoulder pitch DS3218MG servo",
+      "level": "component",
+      "depth": 2,
+      "category": "actuator",
+      "colorHex": "#39434D",
+      "dimensionsMm": [20.1, 55.6, 45.9],
+      "restPositionMeters": [-0.137358, 0.004548, 0.142],
+      "explodeDirection": [0, -0.4, 1],
+      "explodeDistanceMeters": 0.036,
+      "materialHint": "servo_housing",
+      "origin": "open_step_catalog",
+      "spdxLicense": "NOASSERTION",
+      "sourceName": "Xon4 RobotQuadrupedCAD DS3218MG MS24 Digital Servo 270",
+      "sourceUrl": "https://raw.githubusercontent.com/Xon4/RobotQuadrupedCAD/9dc9f53194a32a4885cf98b57febe645d0905e59/legAssembly.STEP",
+      "stepFixtureName": "oq_right_servo.step",
+      "specifications": {
+        "brepFaces": 1871,
+        "upstreamStepSha256": "cbc981ab738014f7c1d624946762246c504a1886d349c4cd1bdc33a9952ee4cd"
+      },
+      "expectedStepSha256": "83369309cc33aee7c481a2f2ec7186e6813e463b9cf0f6032d2deece1ca512b7",
+      "ports": [
+        {
+          "portId": "port_pwm_input",
+          "label": "Servo power and PWM input",
+          "connectorType": "3-wire servo lead",
+          "busKind": "pwm_signal",
+          "localPositionMeters": [0.0, 0.027800000000000002, 0.00455],
+          "exitDirection": [0, 1, 0],
+          "role": "sink",
+          "minVoltageV": 4.8,
+          "nominalVoltageV": 6,
+          "maxVoltageV": 6.8,
+          "maxCurrentA": 1.5
+        }
+      ],
+      "restRotationDeg": [0, 180, 0]
+    },
+    {
+      "id": "comp_oq_rear_right_knee_servo",
+      "parentId": "sub_oq_rear_right",
+      "name": "Rear right knee pitch DS3218MG servo",
+      "level": "component",
+      "depth": 2,
+      "category": "actuator",
+      "colorHex": "#39434D",
+      "dimensionsMm": [20.1, 55.6, 45.9],
+      "restPositionMeters": [-0.142738, -0.105696, 0.138],
+      "explodeDirection": [0, -0.4, 1],
+      "explodeDistanceMeters": 0.036,
+      "materialHint": "servo_housing",
+      "origin": "open_step_catalog",
+      "spdxLicense": "NOASSERTION",
+      "sourceName": "Xon4 RobotQuadrupedCAD DS3218MG MS24 Digital Servo 270",
+      "sourceUrl": "https://raw.githubusercontent.com/Xon4/RobotQuadrupedCAD/9dc9f53194a32a4885cf98b57febe645d0905e59/legAssembly.STEP",
+      "stepFixtureName": "oq_right_servo.step",
+      "specifications": {
+        "brepFaces": 1871,
+        "upstreamStepSha256": "cbc981ab738014f7c1d624946762246c504a1886d349c4cd1bdc33a9952ee4cd"
+      },
+      "expectedStepSha256": "83369309cc33aee7c481a2f2ec7186e6813e463b9cf0f6032d2deece1ca512b7",
+      "ports": [
+        {
+          "portId": "port_pwm_input",
+          "label": "Servo power and PWM input",
+          "connectorType": "3-wire servo lead",
+          "busKind": "pwm_signal",
+          "localPositionMeters": [0.0, 0.027800000000000002, 0.00455],
+          "exitDirection": [0, 1, 0],
+          "role": "sink",
+          "minVoltageV": 4.8,
+          "nominalVoltageV": 6,
+          "maxVoltageV": 6.8,
+          "maxCurrentA": 1.5
+        }
+      ],
+      "restRotationDeg": [0, 180, 0]
+    },
+    {
+      "name": "3S power distribution and 5 V BEC board",
+      "origin": "kicad_pcb_step",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "kicad://zappd/kicad_quadruped_power_bec",
+      "sourceName": "Zappd kicad_quadruped_power_bec.kicad_pcb with KiCad kicad-packages3D models",
+      "stepFixtureName": "kicad_quadruped_power_bec.step",
+      "expectedStepSha256": "21da2b688f8d5996fed2a38f630fa54e8018066c91d09d71a3e0fb6806f17453",
+      "dimensionsMm": [44.0, 20.5, 28.0],
+      "materialHint": "fr4_pcb",
+      "colorHex": "#247052",
+      "category": "power",
+      "mountingInterfaces": [
+        {
+          "interfaceId": "mount_board",
+          "label": "Four-hole M3 PCB mount",
+          "kind": "m3_standoff",
+          "holeDiameterMm": 3.2,
+          "boltPitchMm": [36, 20],
+          "localPositionMeters": [0, 0, 0],
+          "normalDirection": [0, 1, 0]
+        }
+      ],
+      "specifications": {
+        "pcbWidthMm": 44,
+        "pcbLengthMm": 28,
+        "pcbThicknessMm": 1.6,
+        "brepFaces": 736,
+        "xcafColors": 10,
+        "referenceLayout": true
+      },
+      "ports": [
+        {
+          "portId": "port_batt_in",
+          "label": "3S battery input",
+          "connectorType": "XT60",
+          "busKind": "dc_power",
+          "role": "sink",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 12.6,
+          "maxCurrentA": 15,
+          "wireColorsHex": ["#cc2929", "#222428"],
+          "localPositionMeters": [-0.0109, 0.01025, 0.0025],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_hub_out",
+          "label": "Servo hub power output",
+          "connectorType": "XT60",
+          "busKind": "dc_power",
+          "role": "source",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 12.6,
+          "maxCurrentA": 15,
+          "wireColorsHex": ["#cc2929", "#222428"],
+          "localPositionMeters": [0.0096, 0.01025, 0.0025],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_5v_out",
+          "label": "5V compute rail",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "dc_power",
+          "role": "source",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 3,
+          "wireColorsHex": ["#cc2929", "#222428"],
+          "localPositionMeters": [-0.009, 0.00025, -0.0085],
+          "exitDirection": [0.0, 1.0, -0.0]
+        }
+      ],
+      "id": "comp_oq_power_bec",
+      "parentId": "sub_oq_electronics",
+      "level": "component",
+      "depth": 2,
+      "restPositionMeters": [-0.049, -0.0040999999999999995, -0.02],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.036
+    },
+    {
+      "name": "Quadruped gait controller board",
+      "origin": "kicad_pcb_step",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "kicad://zappd/kicad_quadruped_compute",
+      "sourceName": "Zappd kicad_quadruped_compute.kicad_pcb with KiCad kicad-packages3D models",
+      "stepFixtureName": "kicad_quadruped_compute.step",
+      "expectedStepSha256": "ac24887d8cfd37827d90dbf7e8639eb40c4ca49d47266956a98ee39d0fdd3907",
+      "dimensionsMm": [56.0, 11.4, 42.175],
+      "materialHint": "fr4_pcb",
+      "colorHex": "#247052",
+      "category": "electronics",
+      "mountingInterfaces": [
+        {
+          "interfaceId": "mount_board",
+          "label": "Four-hole M3 PCB mount",
+          "kind": "m3_standoff",
+          "holeDiameterMm": 3.2,
+          "boltPitchMm": [48, 34],
+          "localPositionMeters": [0, 0, 0],
+          "normalDirection": [0, 1, 0]
+        }
+      ],
+      "specifications": {
+        "pcbWidthMm": 56,
+        "pcbLengthMm": 42,
+        "pcbThicknessMm": 1.6,
+        "brepFaces": 3148,
+        "xcafColors": 11,
+        "referenceLayout": true
+      },
+      "ports": [
+        {
+          "portId": "port_usb",
+          "label": "USB host link",
+          "connectorType": "USB-C",
+          "busKind": "usb_data",
+          "role": "source",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 0.5,
+          "localPositionMeters": [0.0, -0.00065, 0.0210875],
+          "exitDirection": [0.0, 0.0, 1.0]
+        },
+        {
+          "portId": "port_dc_in",
+          "label": "5V power input",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "dc_power",
+          "role": "sink",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 3,
+          "wireColorsHex": ["#cc2929", "#222428"],
+          "localPositionMeters": [-0.012, 0.0037, -0.0140875],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_imu",
+          "label": "IMU sensor bus",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "i2c_spi_uart",
+          "role": "source",
+          "minVoltageV": 3,
+          "nominalVoltageV": 3.3,
+          "maxVoltageV": 3.6,
+          "maxCurrentA": 0.25,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"],
+          "localPositionMeters": [0.012, 0.0019, -0.0140875],
+          "exitDirection": [0.0, 1.0, -0.0]
+        }
+      ],
+      "id": "comp_oq_compute",
+      "parentId": "sub_oq_electronics",
+      "level": "component",
+      "depth": 2,
+      "restPositionMeters": [-0.041, -0.00865, 0.016],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.036,
+      "restRotationDeg": [0, 180, 0]
+    },
+    {
+      "name": "9-DOF navigation IMU board",
+      "origin": "kicad_pcb_step",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "kicad://zappd/kicad_nav_imu",
+      "sourceName": "Zappd kicad_nav_imu.kicad_pcb with KiCad kicad-packages3D models",
+      "stepFixtureName": "kicad_nav_imu.step",
+      "expectedStepSha256": "499d5523ee54c403344ae3c6e340ac0abf3328da1475d8c8475580cb5f18ae2a",
+      "dimensionsMm": [22.0, 5.845, 18.0],
+      "materialHint": "fr4_pcb",
+      "colorHex": "#247052",
+      "category": "electronics",
+      "mountingInterfaces": [
+        {
+          "interfaceId": "mount_board",
+          "label": "Edge clamp mount",
+          "kind": "clamp",
+          "holeDiameterMm": 3.2,
+          "localPositionMeters": [0, 0, 0],
+          "normalDirection": [0, 1, 0]
+        }
+      ],
+      "specifications": {
+        "pcbWidthMm": 22,
+        "pcbLengthMm": 18,
+        "pcbThicknessMm": 1.6,
+        "brepFaces": 688,
+        "xcafColors": 7,
+        "referenceLayout": true
+      },
+      "ports": [
+        {
+          "portId": "port_sensor_bus",
+          "label": "Navigation sensor bus",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "i2c_spi_uart",
+          "role": "sink",
+          "minVoltageV": 3,
+          "nominalVoltageV": 3.3,
+          "maxVoltageV": 3.6,
+          "maxCurrentA": 0.25,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"],
+          "localPositionMeters": [0.0045, 0.0029225, -0.0],
+          "exitDirection": [0.0, 1.0, -0.0]
+        }
+      ],
+      "id": "comp_oq_imu",
+      "parentId": "sub_oq_electronics",
+      "level": "component",
+      "depth": 2,
+      "restPositionMeters": [-0.013, -0.0114275, -0.023],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.036
+    },
+    {
       "id": "comp_oq_battery_dc",
       "parentId": "sub_oq_electronics",
-      "name": "Battery to hub power lead",
+      "name": "Battery to BEC power lead",
       "level": "component",
       "depth": 2,
       "category": "wiring",
       "colorHex": "#CC2929",
-      "dimensionsMm": [119.93990545284007, 25.53507543541108, 21.17249393402072],
-      "restPositionMeters": [-0.014705494290584369, 0.01235617982534109, 0.028127425415286518],
+      "dimensionsMm": [15.311169176443023, 10.227698220203985, 57.04038021373336],
+      "restPositionMeters": [-0.06623852686096571, 0.008762610730355468, 0.010103927640192146],
       "explodeDirection": [0, 1, 0],
       "explodeDistanceMeters": 0.036,
       "materialHint": "silicone_wire",
@@ -1252,20 +1870,126 @@
       "stepFixtureName": "oq_battery_dc.step",
       "specifications": {
         "relationshipId": "rel_oq_battery_dc",
-        "brepFaces": 44
+        "brepFaces": 40,
+        "fromConnectorClearanceMm": 0.8,
+        "toConnectorClearanceMm": 0.8
       },
-      "expectedStepSha256": "00544ccc106c413c6d57dff1cf0efc8d2e515bb108679400c00adab97e6fc56e"
+      "expectedStepSha256": "424cde1b3165cb9f0c0876a395d5f23a4c6a5fafccc795769f08fa670c750486"
     },
     {
-      "id": "comp_oq_front_pwm",
+      "id": "comp_oq_bec_hub_dc",
       "parentId": "sub_oq_electronics",
-      "name": "Front left servo PWM lead",
+      "name": "BEC to servo hub power lead",
       "level": "component",
       "depth": 2,
       "category": "wiring",
       "colorHex": "#CC2929",
-      "dimensionsMm": [85.89045134373586, 70.59348172826094, 47.50298774753291],
-      "restPositionMeters": [0.10644494409679216, 0.03224674076413046, -0.04231942372870864],
+      "dimensionsMm": [85.95987586236396, 12.714999289832896, 38.708203430834274],
+      "restPositionMeters": [0.002932879007652577, 0.013307499644916447, 0.00048498396835831414],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.036,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceName": "Zappd cable route",
+      "sourceUrl": "harness://zappd/open_quadruped_v1/rel_oq_bec_hub_dc",
+      "stepFixtureName": "oq_bec_hub_dc.step",
+      "specifications": {
+        "relationshipId": "rel_oq_bec_hub_dc",
+        "brepFaces": 32,
+        "fromConnectorClearanceMm": 0.8,
+        "toConnectorClearanceMm": 0.8
+      },
+      "expectedStepSha256": "e052d5ed1c7d51fb9583281906a4931fc5b6b45f9a94d901aa7e504bea523b95"
+    },
+    {
+      "id": "comp_oq_bec_compute_dc",
+      "parentId": "sub_oq_electronics",
+      "name": "BEC to gait controller 5 V lead",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#CC2929",
+      "dimensionsMm": [53.47993970603744, 9.934878045028224, 61.05290067839371],
+      "restPositionMeters": [-0.031907089070510694, 0.0008174390225141126, 0.0006573325921380295],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.036,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceName": "Zappd cable route",
+      "sourceUrl": "harness://zappd/open_quadruped_v1/rel_oq_bec_compute_dc",
+      "stepFixtureName": "oq_bec_compute_dc.step",
+      "specifications": {
+        "relationshipId": "rel_oq_bec_compute_dc",
+        "brepFaces": 32,
+        "fromConnectorClearanceMm": 0.8,
+        "toConnectorClearanceMm": 0.8
+      },
+      "expectedStepSha256": "3d660a70d47b34b8dbc3c2f901b46809fd52a7590bc8117cb8d20c9ed8ad8a6d"
+    },
+    {
+      "id": "comp_oq_compute_usb",
+      "parentId": "sub_oq_electronics",
+      "name": "Gait controller to servo hub USB lead",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#CC2929",
+      "dimensionsMm": [69.8000002, 23.1000002, 50.097450815258824],
+      "restPositionMeters": [-0.007, 0.0013499999999999996, 0.008851274692370594],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.036,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceName": "Zappd cable route",
+      "sourceUrl": "harness://zappd/open_quadruped_v1/rel_oq_compute_usb",
+      "stepFixtureName": "oq_compute_usb.step",
+      "specifications": {
+        "relationshipId": "rel_oq_compute_usb",
+        "brepFaces": 28,
+        "fromConnectorClearanceMm": 0.8,
+        "toConnectorClearanceMm": 0.8
+      },
+      "expectedStepSha256": "ece489c6734a80c2fc4d21fd1cb5f549981c541a3cc4459bf385eae1f117dbc2"
+    },
+    {
+      "id": "comp_oq_compute_imu",
+      "parentId": "sub_oq_electronics",
+      "name": "Gait controller to IMU sensor lead",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#CC2929",
+      "dimensionsMm": [45.48967139841376, 16.244671298413756, 56.083664181493845],
+      "restPositionMeters": [-0.030705164400793124, 0.0004173356492068772, 0.0035456680092530793],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.036,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceName": "Zappd cable route",
+      "sourceUrl": "harness://zappd/open_quadruped_v1/rel_oq_compute_imu",
+      "stepFixtureName": "oq_compute_imu.step",
+      "specifications": {
+        "relationshipId": "rel_oq_compute_imu",
+        "brepFaces": 60,
+        "fromConnectorClearanceMm": 0.8,
+        "toConnectorClearanceMm": 0.8
+      },
+      "expectedStepSha256": "dbce9ca53f10ba8d95787ead0526c1dc957af20325090a341cf9d2376b1fb04e"
+    },
+    {
+      "id": "comp_oq_front_pwm",
+      "parentId": "sub_oq_electronics",
+      "name": "Front left hip abduction PWM lead",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#CC2929",
+      "dimensionsMm": [85.7731897917495, 59.99508296894374, 47.44562963405416],
+      "restPositionMeters": [0.10643659479587474, 0.026947541484471874, -0.04231031471702708],
       "explodeDirection": [0, 1, 0],
       "explodeDistanceMeters": 0.036,
       "materialHint": "silicone_wire",
@@ -1276,20 +2000,230 @@
       "stepFixtureName": "oq_front_pwm.step",
       "specifications": {
         "relationshipId": "rel_oq_front_pwm",
-        "brepFaces": 66
+        "brepFaces": 36,
+        "fromConnectorClearanceMm": 0.8,
+        "toConnectorClearanceMm": 0.8
       },
-      "expectedStepSha256": "7efa9eca0171b805d471aaaa934d55994c79cb34f623e97bb41d1b747a202378"
+      "expectedStepSha256": "0df157f432e5aa12555102f423f97020f34c2f4cd34e1a4765e2fbf6615b50e4"
     },
     {
-      "id": "comp_oq_rear_pwm",
+      "id": "comp_oq_front_left_upper_pwm",
       "parentId": "sub_oq_electronics",
-      "name": "Rear right servo PWM lead",
+      "name": "Front left shoulder pitch PWM lead",
       "level": "component",
       "depth": 2,
       "category": "wiring",
       "colorHex": "#CC2929",
-      "dimensionsMm": [183.68783851778403, 72.15532697122723, 53.008833967549194],
-      "restPositionMeters": [-0.07932406880471496, 0.03302766338561361, 0.036900786759207785],
+      "dimensionsMm": [35.270395163302716, 67.5137125909935, 128.21985832265955],
+      "restPositionMeters": [0.08118519748165136, 0.030706856295496757, -0.07469742906132976],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.036,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceName": "Zappd cable route",
+      "sourceUrl": "harness://zappd/open_quadruped_v1/rel_oq_front_left_upper_pwm",
+      "stepFixtureName": "oq_front_left_upper_pwm.step",
+      "specifications": {
+        "relationshipId": "rel_oq_front_left_upper_pwm",
+        "brepFaces": 36,
+        "fromConnectorClearanceMm": 0.8,
+        "toConnectorClearanceMm": 0.8
+      },
+      "expectedStepSha256": "162cae1f145a053ae82bed41371211b7f083992590744ea669c9afff18d5fa3f"
+    },
+    {
+      "id": "comp_oq_front_left_knee_pwm",
+      "parentId": "sub_oq_electronics",
+      "name": "Front left knee pitch PWM lead",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#CC2929",
+      "dimensionsMm": [72.78575759762609, 129.46647525637658, 131.8763564162029],
+      "restPositionMeters": [0.09994287869881306, -0.012362762371811694, -0.06852567810810146],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.036,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceName": "Zappd cable route",
+      "sourceUrl": "harness://zappd/open_quadruped_v1/rel_oq_front_left_knee_pwm",
+      "stepFixtureName": "oq_front_left_knee_pwm.step",
+      "specifications": {
+        "relationshipId": "rel_oq_front_left_knee_pwm",
+        "brepFaces": 60,
+        "fromConnectorClearanceMm": 0.8,
+        "toConnectorClearanceMm": 0.8
+      },
+      "expectedStepSha256": "33ad525e0a89cfc28fbe47a37bdd538facb717e3efb10ab68a525504ad7386ef"
+    },
+    {
+      "id": "comp_oq_front_right_pwm",
+      "parentId": "sub_oq_electronics",
+      "name": "Front right hip abduction PWM lead",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#CC2929",
+      "dimensionsMm": [85.90113929884481, 60.12052204408803, 63.80407642267661],
+      "restPositionMeters": [0.10650056954942243, 0.027010261022044017, 0.0343145381113383],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.036,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceName": "Zappd cable route",
+      "sourceUrl": "harness://zappd/open_quadruped_v1/rel_oq_front_right_pwm",
+      "stepFixtureName": "oq_front_right_pwm.step",
+      "specifications": {
+        "relationshipId": "rel_oq_front_right_pwm",
+        "brepFaces": 36,
+        "fromConnectorClearanceMm": 0.8,
+        "toConnectorClearanceMm": 0.8
+      },
+      "expectedStepSha256": "3316007a60afa10d21644528c097edacf5729325b8ded4c831359ab8691e6f7c"
+    },
+    {
+      "id": "comp_oq_front_right_upper_pwm",
+      "parentId": "sub_oq_electronics",
+      "name": "Front right shoulder pitch PWM lead",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#CC2929",
+      "dimensionsMm": [35.067058701237606, 67.51421347512061, 128.39679309575916],
+      "restPositionMeters": [0.0810835292506188, 0.03070710673756031, 0.07461089644787958],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.036,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceName": "Zappd cable route",
+      "sourceUrl": "harness://zappd/open_quadruped_v1/rel_oq_front_right_upper_pwm",
+      "stepFixtureName": "oq_front_right_upper_pwm.step",
+      "specifications": {
+        "relationshipId": "rel_oq_front_right_upper_pwm",
+        "brepFaces": 36,
+        "fromConnectorClearanceMm": 0.8,
+        "toConnectorClearanceMm": 0.8
+      },
+      "expectedStepSha256": "37794fe0af53cdd7fe1a682bb735c4d7e1980e206ae1ed9f20657de007eac10c"
+    },
+    {
+      "id": "comp_oq_front_right_knee_pwm",
+      "parentId": "sub_oq_electronics",
+      "name": "Front right knee pitch PWM lead",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#CC2929",
+      "dimensionsMm": [72.84404794335106, 129.43626063194827, 115.94714556141872],
+      "restPositionMeters": [0.09997202387167554, -0.012377869684025856, 0.07638607268070936],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.036,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceName": "Zappd cable route",
+      "sourceUrl": "harness://zappd/open_quadruped_v1/rel_oq_front_right_knee_pwm",
+      "stepFixtureName": "oq_front_right_knee_pwm.step",
+      "specifications": {
+        "relationshipId": "rel_oq_front_right_knee_pwm",
+        "brepFaces": 60,
+        "fromConnectorClearanceMm": 0.8,
+        "toConnectorClearanceMm": 0.8
+      },
+      "expectedStepSha256": "5963ce81334c2b8b330fbe303581c652a37395ff32c2c1974b11ef6e6cb000ab"
+    },
+    {
+      "id": "comp_oq_rear_left_pwm",
+      "parentId": "sub_oq_electronics",
+      "name": "Rear left hip abduction PWM lead",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#CC2929",
+      "dimensionsMm": [183.35777176103718, 59.73483444106557, 44.65745797572629],
+      "restPositionMeters": [-0.07922888578051858, 0.02681741722053279, -0.04091622888786314],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.036,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceName": "Zappd cable route",
+      "sourceUrl": "harness://zappd/open_quadruped_v1/rel_oq_rear_left_pwm",
+      "stepFixtureName": "oq_rear_left_pwm.step",
+      "specifications": {
+        "relationshipId": "rel_oq_rear_left_pwm",
+        "brepFaces": 36,
+        "fromConnectorClearanceMm": 0.8,
+        "toConnectorClearanceMm": 0.8
+      },
+      "expectedStepSha256": "e741652dcbc7a6c5f2cbe030eeca3fc638ded610d844eb76eb38f45fcfb4f161"
+    },
+    {
+      "id": "comp_oq_rear_left_upper_pwm",
+      "parentId": "sub_oq_electronics",
+      "name": "Rear left shoulder pitch PWM lead",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#CC2929",
+      "dimensionsMm": [151.09233959469907, 67.17557223959665, 127.4931712175253],
+      "restPositionMeters": [-0.06309616969734953, 0.030537786119798325, -0.07433408550876265],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.036,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceName": "Zappd cable route",
+      "sourceUrl": "harness://zappd/open_quadruped_v1/rel_oq_rear_left_upper_pwm",
+      "stepFixtureName": "oq_rear_left_upper_pwm.step",
+      "specifications": {
+        "relationshipId": "rel_oq_rear_left_upper_pwm",
+        "brepFaces": 36,
+        "fromConnectorClearanceMm": 0.8,
+        "toConnectorClearanceMm": 0.8
+      },
+      "expectedStepSha256": "f857e997d8f3fa20c219271ec410d2a427b588298a4e51254b86cf328fcc0e2c"
+    },
+    {
+      "id": "comp_oq_rear_left_knee_pwm",
+      "parentId": "sub_oq_electronics",
+      "name": "Rear left knee pitch PWM lead",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#CC2929",
+      "dimensionsMm": [176.44259871309782, 129.17122334997424, 131.6179209384603],
+      "restPositionMeters": [-0.0757712992565489, -0.012510388325012873, -0.06839646036923015],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.036,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceName": "Zappd cable route",
+      "sourceUrl": "harness://zappd/open_quadruped_v1/rel_oq_rear_left_knee_pwm",
+      "stepFixtureName": "oq_rear_left_knee_pwm.step",
+      "specifications": {
+        "relationshipId": "rel_oq_rear_left_knee_pwm",
+        "brepFaces": 60,
+        "fromConnectorClearanceMm": 0.8,
+        "toConnectorClearanceMm": 0.8
+      },
+      "expectedStepSha256": "91366a148999d34624cd11dc3e5b95cb3875f0bb3140c070f7b6107737f57f8b"
+    },
+    {
+      "id": "comp_oq_rear_pwm",
+      "parentId": "sub_oq_electronics",
+      "name": "Rear right hip abduction PWM lead",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#CC2929",
+      "dimensionsMm": [183.4372430001413, 59.77860832758337, 52.93964773432922],
+      "restPositionMeters": [-0.07926862140007064, 0.026839304163791686, 0.036882323767164604],
       "explodeDirection": [0, 1, 0],
       "explodeDistanceMeters": 0.036,
       "materialHint": "silicone_wire",
@@ -1300,9 +2234,63 @@
       "stepFixtureName": "oq_rear_pwm.step",
       "specifications": {
         "relationshipId": "rel_oq_rear_pwm",
-        "brepFaces": 66
+        "brepFaces": 36,
+        "fromConnectorClearanceMm": 0.8,
+        "toConnectorClearanceMm": 0.8
       },
-      "expectedStepSha256": "cafc5a84f41ad7ee622cb12199601656039457622f58741a4465d1a4f7512bdd"
+      "expectedStepSha256": "f4cb35c9f3e09e22a5265031fdae636892e667df3157d1d3619cab7b2b19da11"
+    },
+    {
+      "id": "comp_oq_rear_right_upper_pwm",
+      "parentId": "sub_oq_electronics",
+      "name": "Rear right shoulder pitch PWM lead",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#CC2929",
+      "dimensionsMm": [151.30145306165358, 67.19984764725469, 135.60457336305072],
+      "restPositionMeters": [-0.06320072643082679, 0.030549923823627347, 0.07021478658152536],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.036,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceName": "Zappd cable route",
+      "sourceUrl": "harness://zappd/open_quadruped_v1/rel_oq_rear_right_upper_pwm",
+      "stepFixtureName": "oq_rear_right_upper_pwm.step",
+      "specifications": {
+        "relationshipId": "rel_oq_rear_right_upper_pwm",
+        "brepFaces": 36,
+        "fromConnectorClearanceMm": 0.8,
+        "toConnectorClearanceMm": 0.8
+      },
+      "expectedStepSha256": "99119e995cae1ec2a2c75e705b29485abe8a4750be5dacbd55de41cc06ed31d0"
+    },
+    {
+      "id": "comp_oq_rear_right_knee_pwm",
+      "parentId": "sub_oq_electronics",
+      "name": "Rear right knee pitch PWM lead",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#CC2929",
+      "dimensionsMm": [176.59743359499743, 129.11808837959765, 115.91410020066095],
+      "restPositionMeters": [-0.07584871669749871, -0.012536955810201164, 0.07636955000033048],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.036,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceName": "Zappd cable route",
+      "sourceUrl": "harness://zappd/open_quadruped_v1/rel_oq_rear_right_knee_pwm",
+      "stepFixtureName": "oq_rear_right_knee_pwm.step",
+      "specifications": {
+        "relationshipId": "rel_oq_rear_right_knee_pwm",
+        "brepFaces": 60,
+        "fromConnectorClearanceMm": 0.8,
+        "toConnectorClearanceMm": 0.8
+      },
+      "expectedStepSha256": "95ec10742aed411893f58256a278daa9a74997629eb3affdcef55bf92b9c89e9"
     }
   ],
   "relationships": [
@@ -1595,23 +2583,125 @@
       "whyConnected": "The rail supports the pack and keeps it away from the moving links."
     },
     {
+      "id": "rel_oq_front_left_upper_servo",
+      "fromComponentId": "comp_oq_front_left_upper_servo",
+      "toComponentId": "comp_oq_front_left_bridge",
+      "connectionType": "rigid_fastener",
+      "howConnected": "Seat the servo beside the bridge with its output shaft facing the upper-leg pivot.",
+      "whyConnected": "It pitches the upper leg forward and backward."
+    },
+    {
+      "id": "rel_oq_front_left_knee_servo",
+      "fromComponentId": "comp_oq_front_left_knee_servo",
+      "toComponentId": "comp_oq_front_left_upper",
+      "connectionType": "rigid_fastener",
+      "howConnected": "Align the output shaft with the knee pivot on the upper leg.",
+      "whyConnected": "It pitches the lower leg about the knee joint."
+    },
+    {
+      "id": "rel_oq_front_right_servo",
+      "fromComponentId": "comp_oq_front_right_servo",
+      "toComponentId": "comp_oq_front_right_hip",
+      "connectionType": "rigid_fastener",
+      "howConnected": "Position the servo case beside the hip joint.",
+      "whyConnected": "It swings the leg sideways."
+    },
+    {
+      "id": "rel_oq_front_right_upper_servo",
+      "fromComponentId": "comp_oq_front_right_upper_servo",
+      "toComponentId": "comp_oq_front_right_bridge",
+      "connectionType": "rigid_fastener",
+      "howConnected": "Seat the servo beside the bridge with its output shaft facing the upper-leg pivot.",
+      "whyConnected": "It pitches the upper leg forward and backward."
+    },
+    {
+      "id": "rel_oq_front_right_knee_servo",
+      "fromComponentId": "comp_oq_front_right_knee_servo",
+      "toComponentId": "comp_oq_front_right_upper",
+      "connectionType": "rigid_fastener",
+      "howConnected": "Align the output shaft with the knee pivot on the upper leg.",
+      "whyConnected": "It pitches the lower leg about the knee joint."
+    },
+    {
+      "id": "rel_oq_rear_left_servo",
+      "fromComponentId": "comp_oq_rear_left_servo",
+      "toComponentId": "comp_oq_rear_left_hip",
+      "connectionType": "rigid_fastener",
+      "howConnected": "Position the servo case beside the hip joint.",
+      "whyConnected": "It swings the leg sideways."
+    },
+    {
+      "id": "rel_oq_rear_left_upper_servo",
+      "fromComponentId": "comp_oq_rear_left_upper_servo",
+      "toComponentId": "comp_oq_rear_left_bridge",
+      "connectionType": "rigid_fastener",
+      "howConnected": "Seat the servo beside the bridge with its output shaft facing the upper-leg pivot.",
+      "whyConnected": "It pitches the upper leg forward and backward."
+    },
+    {
+      "id": "rel_oq_rear_left_knee_servo",
+      "fromComponentId": "comp_oq_rear_left_knee_servo",
+      "toComponentId": "comp_oq_rear_left_upper",
+      "connectionType": "rigid_fastener",
+      "howConnected": "Align the output shaft with the knee pivot on the upper leg.",
+      "whyConnected": "It pitches the lower leg about the knee joint."
+    },
+    {
+      "id": "rel_oq_rear_right_upper_servo",
+      "fromComponentId": "comp_oq_rear_right_upper_servo",
+      "toComponentId": "comp_oq_rear_right_bridge",
+      "connectionType": "rigid_fastener",
+      "howConnected": "Seat the servo beside the bridge with its output shaft facing the upper-leg pivot.",
+      "whyConnected": "It pitches the upper leg forward and backward."
+    },
+    {
+      "id": "rel_oq_rear_right_knee_servo",
+      "fromComponentId": "comp_oq_rear_right_knee_servo",
+      "toComponentId": "comp_oq_rear_right_upper",
+      "connectionType": "rigid_fastener",
+      "howConnected": "Align the output shaft with the knee pivot on the upper leg.",
+      "whyConnected": "It pitches the lower leg about the knee joint."
+    },
+    {
+      "id": "rel_oq_power_bec_mount",
+      "fromComponentId": "comp_oq_power_bec",
+      "toComponentId": "comp_oq_electronics_plate",
+      "connectionType": "rigid_fastener",
+      "howConnected": "Mount the BEC board beside the battery holder on the electronics tray.",
+      "whyConnected": "It distributes 3S battery power to the servo hub and supplies a regulated 5 V rail to the controller."
+    },
+    {
+      "id": "rel_oq_compute_mount",
+      "fromComponentId": "comp_oq_compute",
+      "toComponentId": "comp_oq_electronics_plate",
+      "connectionType": "rigid_fastener",
+      "howConnected": "Mount the gait controller beneath the battery holder on the electronics tray.",
+      "whyConnected": "It computes the gait and sends commands to the servo hub."
+    },
+    {
+      "id": "rel_oq_imu_mount",
+      "fromComponentId": "comp_oq_imu",
+      "toComponentId": "comp_oq_electronics_plate",
+      "connectionType": "rigid_fastener",
+      "howConnected": "Clamp the IMU board to the electronics tray beside the BEC.",
+      "whyConnected": "It supplies orientation and motion data to the gait controller."
+    },
+    {
       "id": "rel_oq_battery_dc",
       "fromComponentId": "comp_oq_battery",
-      "toComponentId": "comp_oq_hub",
+      "toComponentId": "comp_oq_power_bec",
       "connectionType": "power_bus",
-      "howConnected": "The lead connects the labeled ports at its ends.",
-      "whyConnected": "The pack supplies the hub.",
+      "howConnected": "Plug the lead into the labeled port at each end.",
+      "whyConnected": "The battery pack supplies the power distribution board.",
       "fromPortId": "port_pack_out",
-      "toPortId": "port_dc_in",
+      "toPortId": "port_batt_in",
       "wireBundleDiameterMm": 2.2,
+      "routingStyle": "filleted_polyline",
       "routingWaypointsMeters": [
-        [-0.068, 0.0008, 0.03640967],
-        [-0.051, 0.0008, 0.033768],
-        [-0.025, 0.005, 0.0297278],
-        [0.002, 0.01, 0.02553221],
-        [0.022, 0.02, 0.02242436],
-        [0.038, 0.024, 0.01993809],
-        [0.044, 0.02, 0.01900574]
+        [-0.072, 0.005, 0.037255],
+        [-0.072, 0.005, -0.0055],
+        [-0.072, 0.011, -0.0175],
+        [-0.0599, 0.013, -0.0175]
       ]
     },
     {
@@ -1619,27 +2709,127 @@
       "fromComponentId": "comp_oq_battery_dc",
       "toComponentId": "comp_oq_battery",
       "connectionType": "assembly_mount",
-      "howConnected": "The lead is secured at its source port.",
-      "whyConnected": "The connector locates the start of the cable route."
+      "howConnected": "Secure the lead near its source connector.",
+      "whyConnected": "The strain relief transfers cable loads away from the connector pins."
+    },
+    {
+      "id": "rel_oq_bec_hub_dc",
+      "fromComponentId": "comp_oq_power_bec",
+      "toComponentId": "comp_oq_hub",
+      "connectionType": "power_bus",
+      "howConnected": "Plug the lead into the labeled port at each end.",
+      "whyConnected": "The distribution board sends 3S battery power to the servo hub.",
+      "fromPortId": "port_hub_out",
+      "toPortId": "port_dc_in",
+      "wireBundleDiameterMm": 2.2,
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [-0.0394, 0.019, -0.0175],
+        [0.029, 0.019, -0.0158],
+        [0.0446, 0.019, 0.0189125]
+      ]
+    },
+    {
+      "id": "rel_oq_bec_hub_dc_harness",
+      "fromComponentId": "comp_oq_bec_hub_dc",
+      "toComponentId": "comp_oq_power_bec",
+      "connectionType": "assembly_mount",
+      "howConnected": "Secure the lead near its source connector.",
+      "whyConnected": "The strain relief transfers cable loads away from the connector pins."
+    },
+    {
+      "id": "rel_oq_bec_compute_dc",
+      "fromComponentId": "comp_oq_power_bec",
+      "toComponentId": "comp_oq_compute",
+      "connectionType": "power_bus",
+      "howConnected": "Plug the lead into the labeled port at each end.",
+      "whyConnected": "The BEC supplies regulated 5 V power to the gait controller.",
+      "fromPortId": "port_5v_out",
+      "toPortId": "port_dc_in",
+      "wireBundleDiameterMm": 2.2,
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [-0.058, 0.005, -0.0285],
+        [-0.004, 0.005, -0.018],
+        [-0.029, 0.005, 0.0300875]
+      ]
+    },
+    {
+      "id": "rel_oq_bec_compute_dc_harness",
+      "fromComponentId": "comp_oq_bec_compute_dc",
+      "toComponentId": "comp_oq_power_bec",
+      "connectionType": "assembly_mount",
+      "howConnected": "Secure the lead near its source connector.",
+      "whyConnected": "The strain relief transfers cable loads away from the connector pins."
+    },
+    {
+      "id": "rel_oq_compute_usb",
+      "fromComponentId": "comp_oq_compute",
+      "toComponentId": "comp_oq_hub",
+      "connectionType": "electrical_bus",
+      "howConnected": "Plug the lead into the labeled port at each end.",
+      "whyConnected": "The USB link carries controller commands to the hub.",
+      "fromPortId": "port_usb",
+      "toPortId": "port_usb",
+      "wireBundleDiameterMm": 1.8,
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [-0.041, -0.0093, -0.0120875],
+        [-0.041, 0.012, -0.0160875],
+        [0.004, 0.012, 0.004],
+        [0.004, 0.012, 0.033],
+        [0.027, 0.003, 0.033],
+        [0.027, -0.0082, 0.033]
+      ]
+    },
+    {
+      "id": "rel_oq_compute_usb_harness",
+      "fromComponentId": "comp_oq_compute_usb",
+      "toComponentId": "comp_oq_compute",
+      "connectionType": "assembly_mount",
+      "howConnected": "Secure the lead near its source connector.",
+      "whyConnected": "The strain relief transfers cable loads away from the connector pins."
+    },
+    {
+      "id": "rel_oq_compute_imu",
+      "fromComponentId": "comp_oq_compute",
+      "toComponentId": "comp_oq_imu",
+      "connectionType": "electrical_bus",
+      "howConnected": "Plug the lead into the labeled port at each end.",
+      "whyConnected": "The sensor bus carries orientation and motion data to the gait controller.",
+      "fromPortId": "port_imu",
+      "toPortId": "port_sensor_bus",
+      "wireBundleDiameterMm": 1.8,
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [-0.053, 0.008, 0.0300875],
+        [-0.018, 0.008, 0.0270875],
+        [-0.018, 0.008, -0.023],
+        [-0.0085, 0.008, -0.023]
+      ]
+    },
+    {
+      "id": "rel_oq_compute_imu_harness",
+      "fromComponentId": "comp_oq_compute_imu",
+      "toComponentId": "comp_oq_compute",
+      "connectionType": "assembly_mount",
+      "howConnected": "Secure the lead near its source connector.",
+      "whyConnected": "The strain relief transfers cable loads away from the connector pins."
     },
     {
       "id": "rel_oq_front_pwm",
       "fromComponentId": "comp_oq_hub",
       "toComponentId": "comp_oq_front_left_servo",
       "connectionType": "electrical_bus",
-      "howConnected": "The lead connects the labeled ports at its ends.",
-      "whyConnected": "The hub sends power and PWM commands to the servo.",
+      "howConnected": "Plug the lead into the labeled port at each end.",
+      "whyConnected": "The hub supplies servo power and sets the requested joint position.",
       "fromPortId": "port_servo_7",
       "toPortId": "port_pwm_input",
       "wireBundleDiameterMm": 2.0,
+      "routingStyle": "filleted_polyline",
       "routingWaypointsMeters": [
-        [0.0655, 0.019, -0.0208895],
-        [0.068, 0.035, -0.022226],
-        [0.073, 0.052, -0.0248996],
-        [0.093, 0.064, -0.035593],
-        [0.12, 0.065, -0.0500304],
-        [0.136, 0.057, -0.058585],
-        [0.144, 0.052, -0.062861]
+        [0.064, 0.056, -0.0200875],
+        [0.148, 0.056, -0.065]
       ]
     },
     {
@@ -1647,27 +2837,221 @@
       "fromComponentId": "comp_oq_front_pwm",
       "toComponentId": "comp_oq_hub",
       "connectionType": "assembly_mount",
-      "howConnected": "The lead is secured at its source port.",
-      "whyConnected": "The connector locates the start of the cable route."
+      "howConnected": "Secure the lead near its source connector.",
+      "whyConnected": "The strain relief transfers cable loads away from the connector pins."
+    },
+    {
+      "id": "rel_oq_front_left_upper_pwm",
+      "fromComponentId": "comp_oq_hub",
+      "toComponentId": "comp_oq_front_left_upper_servo",
+      "connectionType": "electrical_bus",
+      "howConnected": "Plug the lead into the labeled port at each end.",
+      "whyConnected": "The hub supplies servo power and sets the requested joint position.",
+      "fromPortId": "port_servo_8",
+      "toPortId": "port_pwm_input",
+      "wireBundleDiameterMm": 2.0,
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [0.064, 0.063, -0.0120875],
+        [0.097842, 0.063, -0.13745]
+      ]
+    },
+    {
+      "id": "rel_oq_front_left_upper_pwm_harness",
+      "fromComponentId": "comp_oq_front_left_upper_pwm",
+      "toComponentId": "comp_oq_hub",
+      "connectionType": "assembly_mount",
+      "howConnected": "Secure the lead near its source connector.",
+      "whyConnected": "The strain relief transfers cable loads away from the connector pins."
+    },
+    {
+      "id": "rel_oq_front_left_knee_pwm",
+      "fromComponentId": "comp_oq_hub",
+      "toComponentId": "comp_oq_front_left_knee_servo",
+      "connectionType": "electrical_bus",
+      "howConnected": "Plug the lead into the labeled port at each end.",
+      "whyConnected": "The hub supplies servo power and sets the requested joint position.",
+      "fromPortId": "port_servo_9",
+      "toPortId": "port_pwm_input",
+      "wireBundleDiameterMm": 2.0,
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [0.064, 0.051, -0.0040875],
+        [0.135, 0.051, -0.13345],
+        [0.135, -0.057896, -0.13345],
+        [0.092462, -0.067896, -0.13345]
+      ]
+    },
+    {
+      "id": "rel_oq_front_left_knee_pwm_harness",
+      "fromComponentId": "comp_oq_front_left_knee_pwm",
+      "toComponentId": "comp_oq_hub",
+      "connectionType": "assembly_mount",
+      "howConnected": "Secure the lead near its source connector.",
+      "whyConnected": "The strain relief transfers cable loads away from the connector pins."
+    },
+    {
+      "id": "rel_oq_front_right_pwm",
+      "fromComponentId": "comp_oq_hub",
+      "toComponentId": "comp_oq_front_right_servo",
+      "connectionType": "electrical_bus",
+      "howConnected": "Plug the lead into the labeled port at each end.",
+      "whyConnected": "The hub supplies servo power and sets the requested joint position.",
+      "fromPortId": "port_servo_10",
+      "toPortId": "port_pwm_input",
+      "wireBundleDiameterMm": 2.0,
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [0.064, 0.056, 0.0039125],
+        [0.148, 0.056, 0.06545]
+      ]
+    },
+    {
+      "id": "rel_oq_front_right_pwm_harness",
+      "fromComponentId": "comp_oq_front_right_pwm",
+      "toComponentId": "comp_oq_hub",
+      "connectionType": "assembly_mount",
+      "howConnected": "Secure the lead near its source connector.",
+      "whyConnected": "The strain relief transfers cable loads away from the connector pins."
+    },
+    {
+      "id": "rel_oq_front_right_upper_pwm",
+      "fromComponentId": "comp_oq_hub",
+      "toComponentId": "comp_oq_front_right_upper_servo",
+      "connectionType": "electrical_bus",
+      "howConnected": "Plug the lead into the labeled port at each end.",
+      "whyConnected": "The hub supplies servo power and sets the requested joint position.",
+      "fromPortId": "port_servo_11",
+      "toPortId": "port_pwm_input",
+      "wireBundleDiameterMm": 2.0,
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [0.064, 0.063, 0.0119125],
+        [0.097642, 0.063, 0.13745]
+      ]
+    },
+    {
+      "id": "rel_oq_front_right_upper_pwm_harness",
+      "fromComponentId": "comp_oq_front_right_upper_pwm",
+      "toComponentId": "comp_oq_hub",
+      "connectionType": "assembly_mount",
+      "howConnected": "Secure the lead near its source connector.",
+      "whyConnected": "The strain relief transfers cable loads away from the connector pins."
+    },
+    {
+      "id": "rel_oq_front_right_knee_pwm",
+      "fromComponentId": "comp_oq_hub",
+      "toComponentId": "comp_oq_front_right_knee_servo",
+      "connectionType": "electrical_bus",
+      "howConnected": "Plug the lead into the labeled port at each end.",
+      "whyConnected": "The hub supplies servo power and sets the requested joint position.",
+      "fromPortId": "port_servo_12",
+      "toPortId": "port_pwm_input",
+      "wireBundleDiameterMm": 2.0,
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [0.064, 0.051, 0.0199125],
+        [0.135, 0.051, 0.13345],
+        [0.135, -0.057896, 0.13345],
+        [0.092262, -0.067896, 0.13345]
+      ]
+    },
+    {
+      "id": "rel_oq_front_right_knee_pwm_harness",
+      "fromComponentId": "comp_oq_front_right_knee_pwm",
+      "toComponentId": "comp_oq_hub",
+      "connectionType": "assembly_mount",
+      "howConnected": "Secure the lead near its source connector.",
+      "whyConnected": "The strain relief transfers cable loads away from the connector pins."
+    },
+    {
+      "id": "rel_oq_rear_left_pwm",
+      "fromComponentId": "comp_oq_hub",
+      "toComponentId": "comp_oq_rear_left_servo",
+      "connectionType": "electrical_bus",
+      "howConnected": "Plug the lead into the labeled port at each end.",
+      "whyConnected": "The hub supplies servo power and sets the requested joint position.",
+      "fromPortId": "port_servo_1",
+      "toPortId": "port_pwm_input",
+      "wireBundleDiameterMm": 2.0,
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [0.012, 0.056, -0.0200875],
+        [-0.17, 0.056, -0.06185]
+      ]
+    },
+    {
+      "id": "rel_oq_rear_left_pwm_harness",
+      "fromComponentId": "comp_oq_rear_left_pwm",
+      "toComponentId": "comp_oq_hub",
+      "connectionType": "assembly_mount",
+      "howConnected": "Secure the lead near its source connector.",
+      "whyConnected": "The strain relief transfers cable loads away from the connector pins."
+    },
+    {
+      "id": "rel_oq_rear_left_upper_pwm",
+      "fromComponentId": "comp_oq_hub",
+      "toComponentId": "comp_oq_rear_left_upper_servo",
+      "connectionType": "electrical_bus",
+      "howConnected": "Plug the lead into the labeled port at each end.",
+      "whyConnected": "The hub supplies servo power and sets the requested joint position.",
+      "fromPortId": "port_servo_2",
+      "toPortId": "port_pwm_input",
+      "wireBundleDiameterMm": 2.0,
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [0.012, 0.063, -0.0120875],
+        [-0.137158, 0.063, -0.13745]
+      ]
+    },
+    {
+      "id": "rel_oq_rear_left_upper_pwm_harness",
+      "fromComponentId": "comp_oq_rear_left_upper_pwm",
+      "toComponentId": "comp_oq_hub",
+      "connectionType": "assembly_mount",
+      "howConnected": "Secure the lead near its source connector.",
+      "whyConnected": "The strain relief transfers cable loads away from the connector pins."
+    },
+    {
+      "id": "rel_oq_rear_left_knee_pwm",
+      "fromComponentId": "comp_oq_hub",
+      "toComponentId": "comp_oq_rear_left_knee_servo",
+      "connectionType": "electrical_bus",
+      "howConnected": "Plug the lead into the labeled port at each end.",
+      "whyConnected": "The hub supplies servo power and sets the requested joint position.",
+      "fromPortId": "port_servo_3",
+      "toPortId": "port_pwm_input",
+      "wireBundleDiameterMm": 2.0,
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [0.012, 0.051, -0.0040875],
+        [-0.162538, 0.051, -0.13345],
+        [-0.162538, -0.057896, -0.13345],
+        [-0.142538, -0.067896, -0.13345]
+      ]
+    },
+    {
+      "id": "rel_oq_rear_left_knee_pwm_harness",
+      "fromComponentId": "comp_oq_rear_left_knee_pwm",
+      "toComponentId": "comp_oq_hub",
+      "connectionType": "assembly_mount",
+      "howConnected": "Secure the lead near its source connector.",
+      "whyConnected": "The strain relief transfers cable loads away from the connector pins."
     },
     {
       "id": "rel_oq_rear_pwm",
       "fromComponentId": "comp_oq_hub",
       "toComponentId": "comp_oq_rear_right_servo",
       "connectionType": "electrical_bus",
-      "howConnected": "The lead connects the labeled ports at its ends.",
-      "whyConnected": "The hub sends power and PWM commands to the servo.",
+      "howConnected": "Plug the lead into the labeled port at each end.",
+      "whyConnected": "The hub supplies servo power and sets the requested joint position.",
       "fromPortId": "port_servo_5",
       "toPortId": "port_pwm_input",
       "wireBundleDiameterMm": 2.0,
+      "routingStyle": "filleted_polyline",
       "routingWaypointsMeters": [
-        [0.00836, 0.024, 0.012915],
-        [0.00472, 0.038, 0.013916],
-        [-0.0062, 0.053, 0.01692125],
-        [-0.05352, 0.065, 0.029944],
-        [-0.10812, 0.068, 0.044969],
-        [-0.14452, 0.06, 0.054981],
-        [-0.1609, 0.052, 0.059496]
+        [0.012, 0.056, 0.0119125],
+        [-0.17, 0.056, 0.062]
       ]
     },
     {
@@ -1675,8 +3059,58 @@
       "fromComponentId": "comp_oq_rear_pwm",
       "toComponentId": "comp_oq_hub",
       "connectionType": "assembly_mount",
-      "howConnected": "The lead is secured at its source port.",
-      "whyConnected": "The connector locates the start of the cable route."
+      "howConnected": "Secure the lead near its source connector.",
+      "whyConnected": "The strain relief transfers cable loads away from the connector pins."
+    },
+    {
+      "id": "rel_oq_rear_right_upper_pwm",
+      "fromComponentId": "comp_oq_hub",
+      "toComponentId": "comp_oq_rear_right_upper_servo",
+      "connectionType": "electrical_bus",
+      "howConnected": "Plug the lead into the labeled port at each end.",
+      "whyConnected": "The hub supplies servo power and sets the requested joint position.",
+      "fromPortId": "port_servo_4",
+      "toPortId": "port_pwm_input",
+      "wireBundleDiameterMm": 2.0,
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [0.012, 0.063, 0.0039125],
+        [-0.137358, 0.063, 0.13745]
+      ]
+    },
+    {
+      "id": "rel_oq_rear_right_upper_pwm_harness",
+      "fromComponentId": "comp_oq_rear_right_upper_pwm",
+      "toComponentId": "comp_oq_hub",
+      "connectionType": "assembly_mount",
+      "howConnected": "Secure the lead near its source connector.",
+      "whyConnected": "The strain relief transfers cable loads away from the connector pins."
+    },
+    {
+      "id": "rel_oq_rear_right_knee_pwm",
+      "fromComponentId": "comp_oq_hub",
+      "toComponentId": "comp_oq_rear_right_knee_servo",
+      "connectionType": "electrical_bus",
+      "howConnected": "Plug the lead into the labeled port at each end.",
+      "whyConnected": "The hub supplies servo power and sets the requested joint position.",
+      "fromPortId": "port_servo_6",
+      "toPortId": "port_pwm_input",
+      "wireBundleDiameterMm": 2.0,
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [0.012, 0.051, 0.0199125],
+        [-0.162738, 0.051, 0.13345],
+        [-0.162738, -0.057896, 0.13345],
+        [-0.142738, -0.067896, 0.13345]
+      ]
+    },
+    {
+      "id": "rel_oq_rear_right_knee_pwm_harness",
+      "fromComponentId": "comp_oq_rear_right_knee_pwm",
+      "toComponentId": "comp_oq_hub",
+      "connectionType": "assembly_mount",
+      "howConnected": "Secure the lead near its source connector.",
+      "whyConnected": "The strain relief transfers cable loads away from the connector pins."
     }
   ],
   "assemblySteps": [
@@ -1707,14 +3141,16 @@
       "id": "step_oq_2",
       "order": 2,
       "title": "Assemble the front left leg",
-      "summary": "Mount the hip at the shoulder and fit the two links and foot.",
+      "summary": "Mount the hip at the shoulder and fit the bridge and both leg links. Install the three servos and attach the foot.",
       "componentIds": [
         "comp_oq_front_left_hip",
         "comp_oq_front_left_bridge",
         "comp_oq_front_left_upper",
         "comp_oq_front_left_lower",
         "comp_oq_front_left_foot",
-        "comp_oq_front_left_servo"
+        "comp_oq_front_left_servo",
+        "comp_oq_front_left_upper_servo",
+        "comp_oq_front_left_knee_servo"
       ],
       "relationshipIds": [
         "rel_oq_front_left_subsystem",
@@ -1723,20 +3159,25 @@
         "rel_oq_front_left_upper",
         "rel_oq_front_left_lower",
         "rel_oq_front_left_foot",
-        "rel_oq_front_left_servo"
+        "rel_oq_front_left_servo",
+        "rel_oq_front_left_upper_servo",
+        "rel_oq_front_left_knee_servo"
       ]
     },
     {
       "id": "step_oq_3",
       "order": 3,
       "title": "Assemble the front right leg",
-      "summary": "Mount the hip at the shoulder and fit the two links and foot.",
+      "summary": "Mount the hip at the shoulder and fit the bridge and both leg links. Install the three servos and attach the foot.",
       "componentIds": [
         "comp_oq_front_right_hip",
         "comp_oq_front_right_bridge",
         "comp_oq_front_right_upper",
         "comp_oq_front_right_lower",
-        "comp_oq_front_right_foot"
+        "comp_oq_front_right_foot",
+        "comp_oq_front_right_servo",
+        "comp_oq_front_right_upper_servo",
+        "comp_oq_front_right_knee_servo"
       ],
       "relationshipIds": [
         "rel_oq_front_right_subsystem",
@@ -1744,20 +3185,26 @@
         "rel_oq_front_right_bridge",
         "rel_oq_front_right_upper",
         "rel_oq_front_right_lower",
-        "rel_oq_front_right_foot"
+        "rel_oq_front_right_foot",
+        "rel_oq_front_right_servo",
+        "rel_oq_front_right_upper_servo",
+        "rel_oq_front_right_knee_servo"
       ]
     },
     {
       "id": "step_oq_4",
       "order": 4,
       "title": "Assemble the rear left leg",
-      "summary": "Mount the hip at the shoulder and fit the two links and foot.",
+      "summary": "Mount the hip at the shoulder and fit the bridge and both leg links. Install the three servos and attach the foot.",
       "componentIds": [
         "comp_oq_rear_left_hip",
         "comp_oq_rear_left_bridge",
         "comp_oq_rear_left_upper",
         "comp_oq_rear_left_lower",
-        "comp_oq_rear_left_foot"
+        "comp_oq_rear_left_foot",
+        "comp_oq_rear_left_servo",
+        "comp_oq_rear_left_upper_servo",
+        "comp_oq_rear_left_knee_servo"
       ],
       "relationshipIds": [
         "rel_oq_rear_left_subsystem",
@@ -1765,21 +3212,26 @@
         "rel_oq_rear_left_bridge",
         "rel_oq_rear_left_upper",
         "rel_oq_rear_left_lower",
-        "rel_oq_rear_left_foot"
+        "rel_oq_rear_left_foot",
+        "rel_oq_rear_left_servo",
+        "rel_oq_rear_left_upper_servo",
+        "rel_oq_rear_left_knee_servo"
       ]
     },
     {
       "id": "step_oq_5",
       "order": 5,
       "title": "Assemble the rear right leg",
-      "summary": "Mount the hip at the shoulder and fit the two links and foot.",
+      "summary": "Mount the hip at the shoulder and fit the bridge and both leg links. Install the three servos and attach the foot.",
       "componentIds": [
         "comp_oq_rear_right_hip",
         "comp_oq_rear_right_bridge",
         "comp_oq_rear_right_upper",
         "comp_oq_rear_right_lower",
         "comp_oq_rear_right_foot",
-        "comp_oq_rear_right_servo"
+        "comp_oq_rear_right_servo",
+        "comp_oq_rear_right_upper_servo",
+        "comp_oq_rear_right_knee_servo"
       ],
       "relationshipIds": [
         "rel_oq_rear_right_subsystem",
@@ -1788,34 +3240,134 @@
         "rel_oq_rear_right_upper",
         "rel_oq_rear_right_lower",
         "rel_oq_rear_right_foot",
-        "rel_oq_rear_right_servo"
+        "rel_oq_rear_right_servo",
+        "rel_oq_rear_right_upper_servo",
+        "rel_oq_rear_right_knee_servo"
       ]
     },
     {
       "id": "step_oq_6",
       "order": 6,
-      "title": "Fit the servo hub and battery",
-      "summary": "Mount the hub above the tray, then seat the 3S holder against the right rail and secure it with a strap clamp.",
-      "componentIds": ["comp_oq_hub", "comp_oq_battery"],
+      "title": "Mount the battery and electronics",
+      "summary": "Mount the power board, gait controller, IMU, and servo hub on the tray. Seat the battery holder against the right rail and secure it with a strap clamp.",
+      "componentIds": [
+        "comp_oq_hub",
+        "comp_oq_battery",
+        "comp_oq_power_bec",
+        "comp_oq_compute",
+        "comp_oq_imu"
+      ],
       "relationshipIds": [
         "rel_oq_electronics_subsystem",
         "rel_oq_hub_mount",
-        "rel_oq_battery_mount"
+        "rel_oq_battery_mount",
+        "rel_oq_power_bec_mount",
+        "rel_oq_compute_mount",
+        "rel_oq_imu_mount"
       ]
     },
     {
       "id": "step_oq_7",
       "order": 7,
-      "title": "Connect power and servo leads",
-      "summary": "Connect the battery to the hub, then plug in the front and rear PWM leads.",
-      "componentIds": ["comp_oq_battery_dc", "comp_oq_front_pwm", "comp_oq_rear_pwm"],
+      "title": "Connect the power leads",
+      "summary": "Connect the battery to the BEC, then connect the BEC outputs to the hub and gait controller.",
+      "componentIds": ["comp_oq_battery_dc", "comp_oq_bec_hub_dc", "comp_oq_bec_compute_dc"],
       "relationshipIds": [
         "rel_oq_battery_dc",
         "rel_oq_battery_dc_harness",
+        "rel_oq_bec_hub_dc",
+        "rel_oq_bec_hub_dc_harness",
+        "rel_oq_bec_compute_dc",
+        "rel_oq_bec_compute_dc_harness"
+      ]
+    },
+    {
+      "id": "step_oq_8",
+      "order": 8,
+      "title": "Connect the controller data leads",
+      "summary": "Connect the controller to the servo hub over USB and to the IMU over the sensor bus.",
+      "componentIds": ["comp_oq_compute_usb", "comp_oq_compute_imu"],
+      "relationshipIds": [
+        "rel_oq_compute_usb",
+        "rel_oq_compute_usb_harness",
+        "rel_oq_compute_imu",
+        "rel_oq_compute_imu_harness"
+      ]
+    },
+    {
+      "id": "step_oq_9",
+      "order": 9,
+      "title": "Connect the front left servo leads",
+      "summary": "Connect the three front left servos to hub channels 7, 8, 9.",
+      "componentIds": [
+        "comp_oq_front_pwm",
+        "comp_oq_front_left_upper_pwm",
+        "comp_oq_front_left_knee_pwm"
+      ],
+      "relationshipIds": [
         "rel_oq_front_pwm",
         "rel_oq_front_pwm_harness",
+        "rel_oq_front_left_upper_pwm",
+        "rel_oq_front_left_upper_pwm_harness",
+        "rel_oq_front_left_knee_pwm",
+        "rel_oq_front_left_knee_pwm_harness"
+      ]
+    },
+    {
+      "id": "step_oq_10",
+      "order": 10,
+      "title": "Connect the front right servo leads",
+      "summary": "Connect the three front right servos to hub channels 10, 11, 12.",
+      "componentIds": [
+        "comp_oq_front_right_pwm",
+        "comp_oq_front_right_upper_pwm",
+        "comp_oq_front_right_knee_pwm"
+      ],
+      "relationshipIds": [
+        "rel_oq_front_right_pwm",
+        "rel_oq_front_right_pwm_harness",
+        "rel_oq_front_right_upper_pwm",
+        "rel_oq_front_right_upper_pwm_harness",
+        "rel_oq_front_right_knee_pwm",
+        "rel_oq_front_right_knee_pwm_harness"
+      ]
+    },
+    {
+      "id": "step_oq_11",
+      "order": 11,
+      "title": "Connect the rear left servo leads",
+      "summary": "Connect the three rear left servos to hub channels 1, 2, 3.",
+      "componentIds": [
+        "comp_oq_rear_left_pwm",
+        "comp_oq_rear_left_upper_pwm",
+        "comp_oq_rear_left_knee_pwm"
+      ],
+      "relationshipIds": [
+        "rel_oq_rear_left_pwm",
+        "rel_oq_rear_left_pwm_harness",
+        "rel_oq_rear_left_upper_pwm",
+        "rel_oq_rear_left_upper_pwm_harness",
+        "rel_oq_rear_left_knee_pwm",
+        "rel_oq_rear_left_knee_pwm_harness"
+      ]
+    },
+    {
+      "id": "step_oq_12",
+      "order": 12,
+      "title": "Connect the rear right servo leads",
+      "summary": "Connect the three rear right servos to hub channels 5, 4, 6.",
+      "componentIds": [
+        "comp_oq_rear_pwm",
+        "comp_oq_rear_right_upper_pwm",
+        "comp_oq_rear_right_knee_pwm"
+      ],
+      "relationshipIds": [
         "rel_oq_rear_pwm",
-        "rel_oq_rear_pwm_harness"
+        "rel_oq_rear_pwm_harness",
+        "rel_oq_rear_right_upper_pwm",
+        "rel_oq_rear_right_upper_pwm_harness",
+        "rel_oq_rear_right_knee_pwm",
+        "rel_oq_rear_right_knee_pwm_harness"
       ]
     }
   ]
