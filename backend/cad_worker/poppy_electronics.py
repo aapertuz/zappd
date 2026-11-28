@@ -55,7 +55,10 @@ def subsystem_node(placement, root_id):
     )
 
 
-BOARD_PORT_FIELDS = ("portId", "label", "connectorType", "busKind", "localPositionMeters", "exitDirection")
+BOARD_PORT_FIELDS = (
+    "portId", "label", "connectorType", "busKind", "localPositionMeters", "exitDirection",
+    "role", "minVoltageV", "nominalVoltageV", "maxVoltageV", "maxCurrentA",
+)
 
 
 def board_node(placement, fixture):
@@ -68,9 +71,12 @@ def board_node(placement, fixture):
         for port in fixture["ports"]
     ]
     x, y, z = fixture["dimensionsMm"]
+    origin = fixture["origin"]
     return overlay_node(
-        placement["id"], placement["name"], ELECTRONICS_ID, "electronics",
-        fixture["origin"], fixture["sourceUrl"], fixture["sourceName"],
+        placement["id"], placement["name"], ELECTRONICS_ID,
+        "power" if origin == "cots_library_step" else "electronics",
+        origin, fixture["sourceUrl"], fixture["sourceName"],
+        spdxLicense=fixture["spdxLicense"],
         restPositionMeters=placement["restPositionMeters"],
         dimensionsMm=[x, z, y],
         colorHex=fixture["colorHex"],
@@ -150,14 +156,15 @@ def apply_poppy_electronics(spec: dict, cache_dir: Path) -> dict:
 def verify_clear(spec, cache_dir, previous_report=None):
     from poppy_interference import analyze
 
-    report = analyze(spec, cache_dir, previous_report=previous_report)
+    report = analyze(spec, cache_dir, timeout_seconds=90, previous_report=previous_report)
     added_ids = {
         node["id"] for node in spec["nodes"]
-        if node["origin"] in {"kicad_pcb_step", "procedural_harness"}
+        if node["origin"] in {"cots_library_step", "kicad_pcb_step", "procedural_harness"}
     }
     invalid_pairs = [
         pair for pair in report["pairs"]
-        if added_ids.intersection(pair["componentIds"]) and pair["status"] != "contact_or_below_threshold"
+        if added_ids.intersection(pair["componentIds"])
+        and (pair["status"] != "contact_or_below_threshold" or pair["volumeMm3"] != 0)
     ]
     if invalid_pairs:
         raise RuntimeError(f"Poppy electronics interference or unresolved pairs: {invalid_pairs}")
