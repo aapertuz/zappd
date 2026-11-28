@@ -258,6 +258,9 @@ def materialize_multirotor(template: dict, cache_dir: Path, overrides: dict | No
     esc_two = mount_board("kicad_quad_4in1_esc", "esc_aux", 24, 10, -7.37, -90) if rotor_count == 6 else None
     controller = mount_board("kicad_quad_flight_controller", "fc", -2, -31, -2.9)
     receiver = mount_board("kicad_quad_elrs_receiver", "rx", 35, -30, -2.9)
+    pdb_bec = mount_board("kicad_quad_pdb_bec", "pdb_bec", 0, 42, -7.37)
+    gps = mount_board("kicad_nav_imu", "gps", -39, -31, -2.9)
+    telemetry = mount_board("kicad_quad_telemetry_beacon", "telemetry", 37, 42, -2.9)
 
     battery = "comp_multi_battery"
     tray = "comp_multi_battery_cradle"
@@ -285,39 +288,25 @@ def materialize_multirotor(template: dict, cache_dir: Path, overrides: dict | No
         route_mount = relate(cable_id, first, "Secure the harness near its connector")
         step(f"Install the {cargo.lower()} harness", [cable_id], [relationship, route_mount])
 
-    feed = battery
-    if esc_two is not None:
-        feed = "comp_multi_power_distribution"
-        block, _ = _step_fields(Box(16, 6, 4), "power_distribution", cache_dir)
-        ports = []
-        for port_id, label, role, x, current in (
-            ("port_input", "Battery input", "sink", 0, 15),
-            ("port_primary", "Primary ESC output", "source", -5, 7.5),
-            ("port_aux", "Auxiliary ESC output", "source", 5, 7.5),
-        ):
-            ports.append({
-                "portId": port_id, "label": label, "connectorType": "Solder pad", "busKind": "dc_power",
-                "role": role, "minVoltageV": 9, "nominalVoltageV": 11.1, "maxVoltageV": 12.6,
-                "maxCurrentA": current, "localPositionMeters": [x / 1000, 0.002, -0.002 if role == "sink" else 0.002],
-                "exitDirection": [0, 1, 0], "wireColorsHex": ["#cc2929", "#222428"],
-            })
-        mechanical(feed, "ESC power distribution block", "power_distribution", (-46, 39, top + 2),
-                   block, ports=ports, parentId=_ELECTRONICS_ID)
-        step("Mount the power distribution block", [feed], [
-            relate(feed, "comp_multi_upper", "Fasten the distribution block to the upper deck"),
-        ])
-        wire("main_power", battery, "port_pack_out", feed, "port_input", "Main battery feed", "dc_power")
-    for target in (esc, esc_two):
+    for target, output_port, power_key in (
+        (esc, "port_esc_primary", "esc_power"),
+        (esc_two, "port_esc_aux", "esc_aux_power"),
+    ):
         if target is None:
             continue
         node = next(node for node in nodes if node["id"] == target)
         next(port for port in node["ports"] if port["portId"] == "port_dc_in")["maxCurrentA"] = 7.5
         node["specifications"]["configuredInputCurrentLimitA"] = 7.5
-        feed_port = "port_pack_out" if feed == battery else ("port_primary" if target == esc else "port_aux")
-        key = "esc_power" if target == esc else "esc_aux_power"
-        wire(key, feed, feed_port, target, "port_dc_in", f"{node['name']} battery feed", "dc_power")
+        wire(power_key, pdb_bec, output_port, target, "port_dc_in", f"{node['name']} battery feed", "dc_power")
+    wire("main_power", battery, "port_pack_out", pdb_bec, "port_batt_in", "Main battery feed", "dc_power")
     wire("esc_signal", controller, "port_esc", esc, "port_esc", "Flight controller signal", "pwm_signal")
+    if esc_two is not None:
+        wire("esc_aux_signal", controller, "port_esc_aux", esc_two, "port_esc", "Auxiliary ESC signal", "pwm_signal")
     wire("receiver_data", controller, "port_rx", receiver, "port_rx", "Receiver data", "i2c_spi_uart")
+    wire("telemetry_data", controller, "port_telemetry", telemetry, "port_telemetry", "Telemetry data", "i2c_spi_uart")
+    wire("fc_5v", pdb_bec, "port_5v_fc", controller, "port_power_in", "Flight controller power", "dc_power")
+    wire("telemetry_5v", pdb_bec, "port_5v_vtx", telemetry, "port_5v_in", "Telemetry power", "dc_power")
+    wire("gps_data", controller, "port_gps", gps, "port_sensor_bus", "Navigation sensor data", "i2c_spi_uart")
     for index, motor_id in enumerate(motors):
         target = esc if index < 4 else esc_two
         wire(f"motor_{index + 1}", target, f"port_motor_{index % 4 + 1}", motor_id, "port_phase_in",
