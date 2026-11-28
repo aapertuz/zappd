@@ -36,17 +36,15 @@ inspection explode offsets are computed from source component centers for
 visualization; selection, camera controls, hierarchy navigation, part focus,
 and inspection explode/reset work through the existing renderer.
 
-Reproduce source extraction and generate the real normalized assets:
+Refresh the generated Poppy cache from the pinned sources:
 
 ```sh
-backend/.venv/bin/python backend/cad_worker/build_cots_library.py
-backend/.venv/bin/python backend/cad_worker/ingest_upstream_catalog.py --poppy
-backend/.venv/bin/python backend/cad_worker/cli.py --archetype poppy_humanoid_v1 --public-dir public/assemblies
+backend/.venv/bin/python backend/cad_worker/refresh_poppy_cache.py
 ```
 
-The importer writes source metadata directly into `src/shared/domain/catalog/assemblies/poppy_humanoid_v1.json`, which both the TypeScript app and Python CAD worker load. Generated
-binary files follow the repository's existing ignored cache/export conventions.
-The source URL, SHA-256, occurrence path, attribution, and license are preserved.
+The command rebuilds COTS fixtures, imports the pinned Poppy STEP source, and exports the assembly. It verifies node coverage, the unverified validation status, artifact digests, and both public copies. The importer writes source metadata directly into `src/shared/domain/catalog/assemblies/poppy_humanoid_v1.json`, which both the TypeScript app and Python CAD worker load. Generated binary files follow the repository's ignored cache/export conventions.
+
+Unresolved interference pairs are retried with a 180-second deadline. The command preserves the measured results and retry history in the cached report and public exports. Existing overlaps and rejected CAD remain explicitly unverified.
 
 ## Electronics and reference wiring
 
