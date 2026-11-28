@@ -40,9 +40,9 @@ function finishAnimation(controller, targets, dtSec = 1 / 60) {
 
 describe('assembly playback', () => {
   for (const [id, partCount, expectedDuration] of [
-    ['open_source_rover_v1', 17, 2.7],
-    ['robotic_arm_3dof_v1', 26, 3.1],
-    ['quadcopter_drone_v1', 37, 3.1],
+    ['open_source_rover_v1', 27, 3.1],
+    ['robotic_arm_3dof_v1', 29, 3.1],
+    ['quadcopter_drone_v1', 45, 3.1],
   ]) {
     it(`schedules all ${partCount} CAD parts in instruction order for ${id}`, () => {
       const assembly = getCatalogAssembly(id);

@@ -832,7 +832,8 @@
         "pcbThicknessMm": 1.6,
         "brepFaces": 1538,
         "xcafColors": 10,
-        "referenceLayout": true
+        "referenceLayout": true,
+        "configuredInputCurrentLimitA": 15
       },
       "ports": [
         {
@@ -841,7 +842,8 @@
           "connectorType": "XT60",
           "busKind": "dc_power",
           "localPositionMeters": [0.0, 0.01025, 0.011],
-          "exitDirection": [0.0, 1.0, -0.0]
+          "exitDirection": [0.0, 1.0, -0.0],
+          "maxCurrentA": 15
         },
         {
           "portId": "port_esc",
@@ -900,7 +902,7 @@
       "sourceUrl": "kicad://zappd/kicad_quad_flight_controller",
       "sourceName": "Zappd kicad_quad_flight_controller.kicad_pcb with KiCad kicad-packages3D models",
       "stepFixtureName": "kicad_quad_flight_controller.step",
-      "expectedStepSha256": "0ff4be30d9f595e08107563f24fc1ae2b875371d90602c3d7b367fc42ae4bc7c",
+      "expectedStepSha256": "7cff7e3d053aae646bba2d8e0fd2183cd79ffcc26a83e37982d910061b176648",
       "dimensionsMm": [36.0, 5.845, 36.175],
       "materialHint": "fr4_pcb",
       "colorHex": "#247052",
@@ -908,7 +910,7 @@
         "pcbWidthMm": 36,
         "pcbLengthMm": 36,
         "pcbThicknessMm": 1.6,
-        "brepFaces": 3121,
+        "brepFaces": 4133,
         "xcafColors": 10,
         "referenceLayout": true
       },
@@ -935,6 +937,38 @@
           "connectorType": "JST-GH 4-pin",
           "busKind": "i2c_spi_uart",
           "localPositionMeters": [0.008, 0.0029225, -0.0110875],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_power_in",
+          "label": "5V power input",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "dc_power",
+          "localPositionMeters": [-0.0122, 0.0029225, 0.0054125],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_gps",
+          "label": "GPS / compass bus",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "i2c_spi_uart",
+          "localPositionMeters": [0.0122, 0.0029225, 0.0054125],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_esc_aux",
+          "label": "Auxiliary ESC link",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "pwm_signal",
+          "localPositionMeters": [-0.0122, 0.0029225, -0.0025875],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_telemetry",
+          "label": "Telemetry UART",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "i2c_spi_uart",
+          "localPositionMeters": [0.0122, 0.0029225, -0.0025875],
           "exitDirection": [0.0, 1.0, -0.0]
         }
       ]
@@ -1050,19 +1084,33 @@
           "busKind": "dc_power",
           "localPositionMeters": [0.03624, -0.01237, -0.019255],
           "exitDirection": [0, -1, 0]
+        },
+        {
+          "portId": "port_pack_out",
+          "label": "3S pack output",
+          "connectorType": "Solder tabs",
+          "busKind": "dc_power",
+          "role": "source",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 12.6,
+          "maxCurrentA": 15,
+          "wireColorsHex": ["#cc2929", "#222428"],
+          "localPositionMeters": [-0.03624, -0.01237, 0.019255],
+          "exitDirection": [0, -1, 0]
         }
       ]
     },
     {
       "id": "comp_quad_cable_battery_esc",
       "parentId": "sub_avionics_power",
-      "name": "Battery to ESC power lead",
+      "name": "Battery to PDB power lead",
       "level": "component",
       "depth": 2,
       "category": "wiring",
       "colorHex": "#cc2929",
-      "dimensionsMm": [60.92140873099999, 78.61816917434504, 15.902989248450725],
-      "restPositionMeters": [-0.02893133009894588, 0.0011650325271470407, 0.016999686342471818],
+      "dimensionsMm": [21.907084666481044, 68.04625772818714, 11.24473158678935],
+      "restPositionMeters": [-0.04178846117564163, 0.0017919522935053323, 0.0155899872477818],
       "explodeDirection": [-1, 0, 0],
       "explodeDistanceMeters": 0.026,
       "materialHint": "silicone_wire",
@@ -1073,9 +1121,9 @@
       "stepFixtureName": "comp_quad_cable_battery_esc.step",
       "specifications": {
         "relationshipId": "rel_quad_battery_esc",
-        "brepFaces": 44
+        "brepFaces": 40
       },
-      "expectedStepSha256": "64cca0a5eab53a654f34478dc72fd232a2c44611a20146096f70b1ea3a47749a"
+      "expectedStepSha256": "d355dca371924095d84b84964440f0a1181e60f2e8a77778829b1cd9cd1f3a24"
     },
     {
       "id": "comp_quad_cable_fc_esc",
@@ -1220,6 +1268,371 @@
         "brepFaces": 42
       },
       "expectedStepSha256": "460759b048bb9e4a5a70ca86d689f8581174dd363184095002c0b5bc97e30c82"
+    },
+    {
+      "id": "comp_quad_pdb_bec",
+      "parentId": "sub_avionics_power",
+      "name": "Power Filter, Current Sensor & 5 V BEC",
+      "level": "component",
+      "depth": 2,
+      "origin": "kicad_pcb_step",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "kicad://zappd/kicad_quad_pdb_bec",
+      "sourceName": "Zappd kicad_quad_pdb_bec.kicad_pcb with KiCad kicad-packages3D models",
+      "stepFixtureName": "kicad_quad_pdb_bec.step",
+      "expectedStepSha256": "70feb9dcfd2566bbe4431276dfd7b89a79756cf6f26e97e996ed705337c20267",
+      "dimensionsMm": [46.0, 20.5, 28.0],
+      "materialHint": "fr4_pcb",
+      "colorHex": "#247052",
+      "category": "power_distribution",
+      "mountingInterfaces": [
+        {
+          "interfaceId": "mount_board",
+          "label": "Four-hole M3 PCB mount",
+          "kind": "m3_standoff",
+          "holeDiameterMm": 3.2,
+          "boltPitchMm": [38, 20],
+          "localPositionMeters": [0, 0, 0],
+          "normalDirection": [0, 1, 0]
+        }
+      ],
+      "specifications": {
+        "pcbWidthMm": 46,
+        "pcbLengthMm": 28,
+        "pcbThicknessMm": 1.6,
+        "brepFaces": 1124,
+        "xcafColors": 10,
+        "referenceLayout": true
+      },
+      "ports": [
+        {
+          "portId": "port_batt_in",
+          "label": "Battery input",
+          "connectorType": "XT60",
+          "busKind": "dc_power",
+          "role": "sink",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 25.2,
+          "maxCurrentA": 15,
+          "wireColorsHex": ["#cc2929", "#222428"],
+          "localPositionMeters": [-0.0119, 0.01025, 0.001],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_esc_primary",
+          "label": "Primary ESC power output",
+          "connectorType": "XT60",
+          "busKind": "dc_power",
+          "role": "source",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 25.2,
+          "maxCurrentA": 15,
+          "wireColorsHex": ["#cc2929", "#222428"],
+          "localPositionMeters": [0.0106, 0.01025, 0.001],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_esc_aux",
+          "label": "Auxiliary ESC power output",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "dc_power",
+          "role": "source",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 25.2,
+          "maxCurrentA": 7.5,
+          "wireColorsHex": ["#cc2929", "#222428"],
+          "localPositionMeters": [-0.011, 0.00025, -0.009],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_5v_fc",
+          "label": "5V flight controller rail",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "dc_power",
+          "role": "source",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 2,
+          "wireColorsHex": ["#cc2929", "#222428"],
+          "localPositionMeters": [0.01, -0.00155, -0.009],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_5v_vtx",
+          "label": "5V telemetry / VTX rail",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "dc_power",
+          "role": "source",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 1,
+          "wireColorsHex": ["#cc2929", "#222428"],
+          "localPositionMeters": [0.0, -0.00155, 0.01],
+          "exitDirection": [0.0, 1.0, -0.0]
+        }
+      ],
+      "restPositionMeters": [-0.033, 0.0191, 0],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.05,
+      "restRotationDeg": [0, 90, 0]
+    },
+    {
+      "id": "comp_quad_gps_imu",
+      "parentId": "sub_avionics_power",
+      "name": "GPS + Compass / Nav IMU Module",
+      "level": "component",
+      "depth": 2,
+      "origin": "kicad_pcb_step",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "kicad://zappd/kicad_nav_imu",
+      "sourceName": "Zappd kicad_nav_imu.kicad_pcb with KiCad kicad-packages3D models",
+      "stepFixtureName": "kicad_nav_imu.step",
+      "expectedStepSha256": "499d5523ee54c403344ae3c6e340ac0abf3328da1475d8c8475580cb5f18ae2a",
+      "dimensionsMm": [22.0, 5.845, 18.0],
+      "materialHint": "fr4_pcb",
+      "colorHex": "#247052",
+      "category": "sensor_module",
+      "mountingInterfaces": [
+        {
+          "interfaceId": "mount_board",
+          "label": "Edge clamp mount",
+          "kind": "clamp",
+          "holeDiameterMm": 3.2,
+          "localPositionMeters": [0, 0, 0],
+          "normalDirection": [0, 1, 0]
+        }
+      ],
+      "specifications": {
+        "pcbWidthMm": 22,
+        "pcbLengthMm": 18,
+        "pcbThicknessMm": 1.6,
+        "brepFaces": 688,
+        "xcafColors": 7,
+        "referenceLayout": true
+      },
+      "ports": [
+        {
+          "portId": "port_sensor_bus",
+          "label": "Navigation sensor bus",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "i2c_spi_uart",
+          "role": "bidirectional",
+          "minVoltageV": 3,
+          "nominalVoltageV": 3.3,
+          "maxVoltageV": 3.6,
+          "maxCurrentA": 0.25,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"],
+          "localPositionMeters": [0.0045, 0.0029225, -0.0],
+          "exitDirection": [0.0, 1.0, -0.0]
+        }
+      ],
+      "restPositionMeters": [0, 0.01175, -0.033],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.05
+    },
+    {
+      "id": "comp_quad_telemetry_beacon",
+      "parentId": "sub_avionics_power",
+      "name": "Telemetry VTX & Failsafe Buzzer",
+      "level": "component",
+      "depth": 2,
+      "origin": "kicad_pcb_step",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "kicad://zappd/kicad_quad_telemetry_beacon",
+      "sourceName": "Zappd kicad_quad_telemetry_beacon.kicad_pcb with KiCad kicad-packages3D models",
+      "stepFixtureName": "kicad_quad_telemetry_beacon.step",
+      "expectedStepSha256": "fe7d7edca2783e563d89ac002730057ea963e5017db5c4c1c8e646ecaebdfae6",
+      "dimensionsMm": [22.0, 5.845, 16.0],
+      "materialHint": "fr4_pcb",
+      "colorHex": "#247052",
+      "category": "telemetry_beacon",
+      "mountingInterfaces": [
+        {
+          "interfaceId": "mount_board",
+          "label": "Edge clamp mount",
+          "kind": "clamp",
+          "holeDiameterMm": 3.2,
+          "localPositionMeters": [0, 0, 0],
+          "normalDirection": [0, 1, 0]
+        }
+      ],
+      "specifications": {
+        "pcbWidthMm": 22,
+        "pcbLengthMm": 16,
+        "pcbThicknessMm": 1.6,
+        "brepFaces": 941,
+        "xcafColors": 7,
+        "referenceLayout": true
+      },
+      "ports": [
+        {
+          "portId": "port_5v_in",
+          "label": "5V power input",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "dc_power",
+          "role": "sink",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 1,
+          "wireColorsHex": ["#cc2929", "#222428"],
+          "localPositionMeters": [0.0045, 0.0029225, 0.004],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_telemetry",
+          "label": "Telemetry UART",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "i2c_spi_uart",
+          "role": "bidirectional",
+          "minVoltageV": 3,
+          "nominalVoltageV": 3.3,
+          "maxVoltageV": 3.6,
+          "maxCurrentA": 0.25,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"],
+          "localPositionMeters": [0.0045, 0.0029225, -0.004],
+          "exitDirection": [0.0, 1.0, -0.0]
+        }
+      ],
+      "restPositionMeters": [0.033, 0.01175, 0.001],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.05,
+      "restRotationDeg": [0, 90, 0]
+    },
+    {
+      "id": "comp_quad_cable_pdb_esc",
+      "parentId": "sub_avionics_power",
+      "name": "ESC power lead",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [33.61937736262976, 7.0675638403021175, 23.48927355640138],
+      "restPositionMeters": [-0.015719723183391005, 0.03333378192015106, 1.0813148788925809e-5],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.05,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/quadcopter_drone_v1/rel_quad_pdb_esc",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_quad_cable_pdb_esc.step",
+      "specifications": {
+        "relationshipId": "rel_quad_pdb_esc",
+        "fromConnectorClearanceMm": 0.55,
+        "toConnectorClearanceMm": 0.55,
+        "brepFaces": 24
+      },
+      "expectedStepSha256": "9a39c3719b421db5f741ac66f6b3b5c6c27051e789248bf214144fe1a507901b"
+    },
+    {
+      "id": "comp_quad_cable_pdb_fc_5v",
+      "parentId": "sub_avionics_power",
+      "name": "Flight controller 5 V lead",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [31.352081461000964, 42.707074102943544, 17.42503535318197],
+      "restPositionMeters": [-0.026853371134205405, 0.03945353705147177, -0.0024213059528207783],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.05,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/quadcopter_drone_v1/rel_quad_pdb_fc_5v",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_quad_cable_pdb_fc_5v.step",
+      "specifications": {
+        "relationshipId": "rel_quad_pdb_fc_5v",
+        "fromConnectorClearanceMm": 0.55,
+        "toConnectorClearanceMm": 0.55,
+        "brepFaces": 24
+      },
+      "expectedStepSha256": "3dfb75116cf9645dbc2bc7baab5f16b6cf92b6bbbb54f0e4bac5d1e4ad4e5e41"
+    },
+    {
+      "id": "comp_quad_cable_pdb_telemetry_5v",
+      "parentId": "sub_avionics_power",
+      "name": "Telemetry 5 V lead",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [61.66323549411765, 49.30691186470588, 19.163235494117647],
+      "restPositionMeters": [0.00730220588235294, 0.039875955932352936, 0.00555220588235294],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.05,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/quadcopter_drone_v1/rel_quad_pdb_telemetry_5v",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_quad_cable_pdb_telemetry_5v.step",
+      "specifications": {
+        "relationshipId": "rel_quad_pdb_telemetry_5v",
+        "fromConnectorClearanceMm": 0.55,
+        "toConnectorClearanceMm": 0.55,
+        "brepFaces": 48
+      },
+      "expectedStepSha256": "419519092a73d5f2462d3d986628a1b331b7839f1842971ca3cbb6a2926866c0"
+    },
+    {
+      "id": "comp_quad_cable_gps_fc",
+      "parentId": "sub_avionics_power",
+      "name": "Navigation sensor lead",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#292e37",
+      "dimensionsMm": [9.004695283929863, 54.257019512753175, 41.3313768118774],
+      "restPositionMeters": [0.00814765245803507, 0.04235100975637658, -0.013753188305938696],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.05,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/quadcopter_drone_v1/rel_quad_gps_fc",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_quad_cable_gps_fc.step",
+      "specifications": {
+        "relationshipId": "rel_quad_gps_fc",
+        "fromConnectorClearanceMm": 0.55,
+        "toConnectorClearanceMm": 0.55,
+        "brepFaces": 36
+      },
+      "expectedStepSha256": "f932080f52efd192b32e8a941982f7bc627101bdc135b9769d97edaa4e4c2175"
+    },
+    {
+      "id": "comp_quad_cable_telemetry_fc",
+      "parentId": "sub_avionics_power",
+      "name": "Telemetry UART lead",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#292e37",
+      "dimensionsMm": [33.32103395396413, 47.554239270043496, 13.20915070430341],
+      "restPositionMeters": [0.028410516876982064, 0.03899961963502174, -0.007692075252151705],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.05,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/quadcopter_drone_v1/rel_quad_telemetry_fc",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_quad_cable_telemetry_fc.step",
+      "specifications": {
+        "relationshipId": "rel_quad_telemetry_fc",
+        "fromConnectorClearanceMm": 0.55,
+        "toConnectorClearanceMm": 0.55,
+        "brepFaces": 72
+      },
+      "expectedStepSha256": "6b110ded375151bde121867ea0feaee30bf3d2b89f02c89aa6288b94bf0f36e4"
     }
   ],
   "relationships": [
@@ -1458,21 +1871,12 @@
     {
       "id": "rel_quad_battery_esc",
       "fromComponentId": "comp_quad_battery_pack",
-      "toComponentId": "comp_quad_4in1_esc",
+      "toComponentId": "comp_quad_pdb_bec",
       "connectionType": "power_bus",
-      "howConnected": "Battery to ESC power lead connects the two labeled ports.",
-      "whyConnected": "The battery supplies DC power to the ESC.",
-      "fromPortId": "port_tab_1",
-      "toPortId": "port_dc_in",
-      "routingWaypointsMeters": [
-        [-0.045, -0.037, 0.019],
-        [-0.056, -0.029, 0.021],
-        [-0.058, -0.01, 0.022],
-        [-0.057, 0.012, 0.023],
-        [-0.046, 0.027, 0.022],
-        [-0.028, 0.035, 0.018],
-        [-0.012, 0.038, 0.012]
-      ],
+      "howConnected": "Plug the 3S pack lead into the PDB battery input.",
+      "whyConnected": "The PDB filters and distributes the pack supply.",
+      "fromPortId": "port_pack_out",
+      "toPortId": "port_batt_in",
       "wireBundleDiameterMm": 3.2
     },
     {
@@ -1631,6 +2035,156 @@
       "connectionType": "assembly_mount",
       "howConnected": "The cable plugs into the host at the start of the route.",
       "whyConnected": "The host locates the cable at its first connection."
+    },
+    {
+      "id": "rel_quad_mount_pdb_bec",
+      "fromComponentId": "comp_quad_pdb_bec",
+      "toComponentId": "comp_base_plate_upper",
+      "connectionType": "assembly_mount",
+      "howConnected": "Seat the PCB on the upper airframe plate.",
+      "whyConnected": "The deck supports the power filter and regulated 5 V supply."
+    },
+    {
+      "id": "rel_quad_mount_gps_imu",
+      "fromComponentId": "comp_quad_gps_imu",
+      "toComponentId": "comp_base_plate_upper",
+      "connectionType": "assembly_mount",
+      "howConnected": "Seat the PCB on the upper airframe plate.",
+      "whyConnected": "The deck fixes the navigation module to the airframe."
+    },
+    {
+      "id": "rel_quad_mount_telemetry_beacon",
+      "fromComponentId": "comp_quad_telemetry_beacon",
+      "toComponentId": "comp_base_plate_upper",
+      "connectionType": "assembly_mount",
+      "howConnected": "Seat the PCB on the upper airframe plate.",
+      "whyConnected": "The deck supports the telemetry transmitter and buzzer."
+    },
+    {
+      "id": "rel_quad_pdb_esc",
+      "fromComponentId": "comp_quad_pdb_bec",
+      "toComponentId": "comp_quad_4in1_esc",
+      "connectionType": "power_bus",
+      "howConnected": "Plug the esc power lead into the labeled ports.",
+      "whyConnected": "The ESC receives filtered battery power.",
+      "fromPortId": "port_esc_primary",
+      "toPortId": "port_dc_in",
+      "wireBundleDiameterMm": 1.8,
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [-0.032, 0.036, -0.0106],
+        [0, 0.036, 0.011]
+      ]
+    },
+    {
+      "id": "rel_quad_pdb_esc_harness",
+      "fromComponentId": "comp_quad_cable_pdb_esc",
+      "toComponentId": "comp_quad_pdb_bec",
+      "connectionType": "assembly_mount",
+      "howConnected": "Seat the harness at its source connector.",
+      "whyConnected": "The source connector holds the first end of the harness."
+    },
+    {
+      "id": "rel_quad_pdb_fc_5v",
+      "fromComponentId": "comp_quad_pdb_bec",
+      "toComponentId": "comp_quad_flight_controller",
+      "connectionType": "power_bus",
+      "howConnected": "Plug the flight controller 5 v lead into the labeled ports.",
+      "whyConnected": "The regulated 5 V rail powers the flight controller.",
+      "fromPortId": "port_5v_fc",
+      "toPortId": "port_power_in",
+      "wireBundleDiameterMm": 1.8,
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [-0.042, 0.06, -0.01],
+        [-0.0122, 0.06, 0.0054125]
+      ]
+    },
+    {
+      "id": "rel_quad_pdb_fc_5v_harness",
+      "fromComponentId": "comp_quad_cable_pdb_fc_5v",
+      "toComponentId": "comp_quad_pdb_bec",
+      "connectionType": "assembly_mount",
+      "howConnected": "Seat the harness at its source connector.",
+      "whyConnected": "The source connector holds the first end of the harness."
+    },
+    {
+      "id": "rel_quad_pdb_telemetry_5v",
+      "fromComponentId": "comp_quad_pdb_bec",
+      "toComponentId": "comp_quad_telemetry_beacon",
+      "connectionType": "power_bus",
+      "howConnected": "Plug the telemetry 5 v lead into the labeled ports.",
+      "whyConnected": "The regulated 5 V rail powers the telemetry board.",
+      "fromPortId": "port_5v_vtx",
+      "toPortId": "port_5v_in",
+      "wireBundleDiameterMm": 1.8,
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [-0.023, 0.052, 0],
+        [-0.023, 0.052, 0.014],
+        [-0.023, 0.064, 0.014],
+        [0.037, 0.064, 0.014],
+        [0.037, 0.064, -0.0035]
+      ]
+    },
+    {
+      "id": "rel_quad_pdb_telemetry_5v_harness",
+      "fromComponentId": "comp_quad_cable_pdb_telemetry_5v",
+      "toComponentId": "comp_quad_pdb_bec",
+      "connectionType": "assembly_mount",
+      "howConnected": "Seat the harness at its source connector.",
+      "whyConnected": "The source connector holds the first end of the harness."
+    },
+    {
+      "id": "rel_quad_gps_fc",
+      "fromComponentId": "comp_quad_flight_controller",
+      "toComponentId": "comp_quad_gps_imu",
+      "connectionType": "electrical_bus",
+      "howConnected": "Plug the navigation sensor lead into the labeled ports.",
+      "whyConnected": "The flight controller receives navigation readings.",
+      "fromPortId": "port_gps",
+      "toPortId": "port_sensor_bus",
+      "wireBundleDiameterMm": 1.8,
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [0.0122, 0.068, 0.0054125],
+        [0.0045, 0.068, -0.033]
+      ]
+    },
+    {
+      "id": "rel_quad_gps_fc_harness",
+      "fromComponentId": "comp_quad_cable_gps_fc",
+      "toComponentId": "comp_quad_flight_controller",
+      "connectionType": "assembly_mount",
+      "howConnected": "Seat the harness at its source connector.",
+      "whyConnected": "The source connector holds the first end of the harness."
+    },
+    {
+      "id": "rel_quad_telemetry_fc",
+      "fromComponentId": "comp_quad_flight_controller",
+      "toComponentId": "comp_quad_telemetry_beacon",
+      "connectionType": "electrical_bus",
+      "howConnected": "Plug the telemetry uart lead into the labeled ports.",
+      "whyConnected": "The telemetry board exchanges flight data with the flight controller.",
+      "fromPortId": "port_telemetry",
+      "toPortId": "port_telemetry",
+      "wireBundleDiameterMm": 1.8,
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [0.0122, 0.062, -0.0025875],
+        [0.044, 0.062, -0.013],
+        [0.044, 0.021, -0.013],
+        [0.029, 0.021, -0.013],
+        [0.029, 0.021, -0.0035]
+      ]
+    },
+    {
+      "id": "rel_quad_telemetry_fc_harness",
+      "fromComponentId": "comp_quad_cable_telemetry_fc",
+      "toComponentId": "comp_quad_flight_controller",
+      "connectionType": "assembly_mount",
+      "howConnected": "Seat the harness at its source connector.",
+      "whyConnected": "The source connector holds the first end of the harness."
     }
   ],
   "assemblySteps": [
@@ -1723,26 +2277,32 @@
     {
       "id": "step_quad_5",
       "order": 5,
-      "title": "Install Flight Stack, Receiver, and Battery Pack",
-      "summary": "Place the ESC on the upper plate and stack the flight controller above it. Seat the receiver behind the stack and secure the pack beneath the chassis.",
+      "title": "Install Flight Electronics and Battery Pack",
+      "summary": "Install the flight stack, receiver, power distribution board, navigation module, and telemetry beacon on the upper deck. Secure the battery under the lower deck.",
       "componentIds": [
         "comp_quad_4in1_esc",
         "comp_quad_flight_controller",
         "comp_quad_elrs_receiver",
-        "comp_quad_battery_pack"
+        "comp_quad_battery_pack",
+        "comp_quad_pdb_bec",
+        "comp_quad_gps_imu",
+        "comp_quad_telemetry_beacon"
       ],
       "relationshipIds": [
         "rel_quad_mount_esc",
         "rel_quad_mount_fc",
         "rel_quad_mount_receiver",
-        "rel_quad_mount_battery"
+        "rel_quad_mount_battery",
+        "rel_quad_mount_pdb_bec",
+        "rel_quad_mount_gps_imu",
+        "rel_quad_mount_telemetry_beacon"
       ]
     },
     {
       "id": "step_quad_6",
       "order": 6,
-      "title": "Wire Power Distribution and Motor Phase Harnesses",
-      "summary": "Connect battery power to the ESC, then attach the flight controller and receiver leads. Follow each arm to connect its three motor phases.",
+      "title": "Connect Power, Avionics, and Motor Harnesses",
+      "summary": "Connect the 3S pack to the power distribution board. Wire its ESC and 5 V outputs, then connect the receiver, navigation, telemetry, and motor leads.",
       "componentIds": [
         "comp_quad_cable_battery_esc",
         "comp_quad_cable_fc_esc",
@@ -1750,7 +2310,12 @@
         "comp_quad_cable_motor_fl",
         "comp_quad_cable_motor_fr",
         "comp_quad_cable_motor_rr",
-        "comp_quad_cable_motor_rl"
+        "comp_quad_cable_motor_rl",
+        "comp_quad_cable_pdb_esc",
+        "comp_quad_cable_pdb_fc_5v",
+        "comp_quad_cable_pdb_telemetry_5v",
+        "comp_quad_cable_gps_fc",
+        "comp_quad_cable_telemetry_fc"
       ],
       "relationshipIds": [
         "rel_quad_battery_esc",
@@ -1766,7 +2331,17 @@
         "rel_quad_motor_rr",
         "rel_quad_motor_rr_harness",
         "rel_quad_motor_rl",
-        "rel_quad_motor_rl_harness"
+        "rel_quad_motor_rl_harness",
+        "rel_quad_pdb_esc",
+        "rel_quad_pdb_esc_harness",
+        "rel_quad_pdb_fc_5v",
+        "rel_quad_pdb_fc_5v_harness",
+        "rel_quad_pdb_telemetry_5v",
+        "rel_quad_pdb_telemetry_5v_harness",
+        "rel_quad_gps_fc",
+        "rel_quad_gps_fc_harness",
+        "rel_quad_telemetry_fc",
+        "rel_quad_telemetry_fc_harness"
       ]
     }
   ]

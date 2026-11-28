@@ -35,13 +35,13 @@ from material_skins import build_skin_texture_set, resolve_material_skin, srgb_h
 
 
 EXPECTED_NODE_COUNTS = {
-    "quadcopter_drone_v1": 42,
-    "robotic_arm_3dof_v1": 31,
-    "open_source_rover_v1": 21,
-    "open_quadruped_v1": 40,
-    "parametric_multirotor_v1": 38,
-    "reachy_mini_v1": 98,
-    "poppy_humanoid_v1": 289,
+    "quadcopter_drone_v1": 50,
+    "robotic_arm_3dof_v1": 34,
+    "open_source_rover_v1": 31,
+    "open_quadruped_v1": 67,
+    "parametric_multirotor_v1": 49,
+    "reachy_mini_v1": 102,
+    "poppy_humanoid_v1": 303,
 }
 @pytest.fixture(scope="module")
 def cots_parts() -> dict[str, dict]:
@@ -147,6 +147,17 @@ def test_cots_registry_resolves_valid_centered_steps_with_ports(cots_parts: dict
         "kicad_quadruped_servo_hub",
         "kicad_poppy_usb2ax",
         "kicad_poppy_upper_3p_hub",
+        "kicad_poppy_power_dist",
+        "kicad_poppy_5v_buck",
+        "kicad_poppy_audio_amp",
+        "kicad_quadruped_power_bec",
+        "kicad_quadruped_compute",
+        "kicad_nav_imu",
+        "kicad_nova2_motor_pdb",
+        "kicad_quad_pdb_bec",
+        "kicad_quad_telemetry_beacon",
+        "kicad_so100_power_host",
+        "kicad_reachy_compute_module",
     }
     for cid, part in cots_parts.items():
         resolved = resolve_component_step({**part, "id": cid}, tmp_path)
@@ -171,7 +182,18 @@ def test_cots_registry_resolves_valid_centered_steps_with_ports(cots_parts: dict
             assert port["role"] in {"source", "sink", "bidirectional"}
             assert 0 <= port["minVoltageV"] <= port["nominalVoltageV"] <= port["maxVoltageV"]
             assert port["maxCurrentA"] > 0
-            assert port["busKind"] in {"dc_power", "usb_data", "ttl_serial", "i2c_spi_uart", "pwm_signal", "brushless_phase"}
+            assert port["busKind"] in {
+                "dc_power",
+                "usb_data",
+                "ttl_serial",
+                "i2c_spi_uart",
+                "pwm_signal",
+                "brushless_phase",
+                "can_bus",
+                "analog_audio",
+                "pdm_audio",
+                "mipi_csi2",
+            }
             x, y, z = port["localPositionMeters"]
             position = np.array([x, -z, y]) * 1000
             assert np.all(position >= lower - 0.001)
@@ -423,10 +445,15 @@ def test_all_robotics_categories_pass_opencascade_validation(tmp_path: Path) -> 
 
         if archetype_id == "reachy_mini_v1":
             boards = {node["id"] for node in spec["nodes"] if node["origin"] == "kicad_pcb_step"}
-            assert boards == {"comp_reachy_power_board", "comp_reachy_head_board", "comp_reachy_mic_strip"}
+            assert boards == {
+                "comp_reachy_power_board",
+                "comp_reachy_head_board",
+                "comp_reachy_mic_strip",
+                "comp_reachy_compute_module",
+            }
             cables = {node["id"]: node for node in spec["nodes"] if node["origin"] == "procedural_harness"}
-            assert len(cables) == 17
-            assert len(spec["assemblySteps"]) == 51
+            assert len(cables) == 20
+            assert len(spec["assemblySteps"]) == 53
             assert set(cables) <= set(result["glbNodeIds"])
             assert all((cache_dir / node["stepFixtureName"]).is_file() for node in cables.values())
 
@@ -453,7 +480,7 @@ def test_open_quadruped_documents_pinned_parts_and_rated_circuits(tmp_path: Path
     leaves = [node for node in spec["nodes"] if node["stepFixtureName"] is not None]
     assert installed == {node["id"] for node in leaves}
     cables = [node for node in leaves if node["origin"] == "procedural_harness"]
-    assert len(cables) == 3
+    assert len(cables) == 17
     for node in leaves:
         if node["origin"] == "open_step_catalog":
             fixture = source["fixtures"][node["stepFixtureName"]]

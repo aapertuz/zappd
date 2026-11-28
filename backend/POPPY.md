@@ -27,9 +27,9 @@ remain inspection approximations; they do not establish manufacturing tolerances
 or dimensionally certified production geometry. Successful topology and
 mesh mapping checks establish inspection availability, not manufacturing validity.
 Source-placement volumetric interference analysis is reported separately in
-`interference.json`. The current report has 235 solids, 801 candidate pairs,
+`interference.json`. The current report has 249 solids, 887 candidate pairs,
 102 intersections between original source parts, and zero unresolved pairs.
-All 206 candidate pairs involving an added PCB or cable have zero measured overlap.
+All 292 candidate pairs involving an added PCB, battery, or cable have zero measured overlap.
 Open surface bodies are excluded from volumetric checks.
 The catalog has no mechanical assembly instructions. Deterministic
 inspection explode offsets are computed from source component centers for
@@ -52,7 +52,7 @@ The source URL, SHA-256, occurrence path, attribution, and license are preserved
 
 The inspection overlay adds connector datums to the pinned Odroid XU4, two
 SMPS2Dynamixel injectors, lower Bioloid 3P hub, camera connector, Razor IMU,
-and 25 Dynamixel motors. Motor names, IDs, and controller membership follow
+head screen, both speakers, and 25 Dynamixel motors. Motor names, IDs, and controller membership follow
 the upstream configuration. [Poppy motor configuration](https://github.com/poppy-project/poppy-humanoid/blob/master/software/poppy_humanoid/configuration/poppy_humanoid.json)
 
 Poppy has two isolated TTL buses. Each has a USB2AX, a 3P hub, and a 12 V injector.
@@ -68,11 +68,23 @@ ports, branch order, and paths are inspection datums. Connector mating, pinouts,
 cable lengths, and production PCB routing remain unverified.
 
 The upper bus has 18 cable segments for the head, torso, and arms. The lower
-bus has 13 for the pelvis and legs. Two additional cables link the head
-computer to the camera and IMU. The USB2AX-to-hub leads carry data and ground.
-Each injector supplies only its own bus. Cable endpoints come from the typed
-ports in `poppy_humanoid_electronics.json`. The worker sweeps colored solid
-conductors and preserves cable and board identities in STEP, GLB, and USDZ.
+bus has 13 for the pelvis and legs. The USB2AX-to-hub leads carry data and ground.
+Each injector supplies only its own TTL bus. The shared power feed connects the
+3S 18650 holder to the 12 V distribution board, which feeds both injectors and the
+5 V buck regulator. The buck feeds the Odroid and stereo amplifier. Its 4 A limit
+applies to the combined load. The 3S pack is nominally 11.1 V, up to 12.6 V.
+
+Head wiring connects the computer to the camera, IMU, amplifier, and display.
+Two speaker leads carry the amplifier's left and right outputs. The analog audio
+datum assumes a USB audio adapter. The display datum represents a bridged
+display route from the XU4's HDMI output, with `mipi_csi2` used as the catalog's
+reference route type. Adapter geometry, display protocol, and connector
+mating remain unverified. [Hardkernel Odroid XU4 user manual](https://magazine.odroid.com/wp-content/uploads/odroid-xu4-user-manual.pdf)
+
+The catalog preserves 303 nodes, including six reference PCBs, one battery pack,
+and 43 cables. Cable endpoints come from the typed ports in
+`poppy_humanoid_electronics.json`. The worker sweeps colored solid conductors and
+preserves each added component ID in STEP, GLB, and USDZ.
 
 To regenerate the overlay and refresh the exact OpenCascade check:
 
@@ -81,11 +93,13 @@ backend/.venv/bin/python backend/cad_worker/poppy_electronics.py --verify-clear
 ```
 
 The check rebuilds the candidate set from placed STEP fixtures and measures
-every candidate involving an added PCB or cable. It can reuse prior
+every candidate involving an added PCB, battery, or cable. It can reuse prior
 source-to-source results when both fixture digests and placements match.
 The USB2AX boards clear the head shell and Odroid XU4 by at least 2.5 mm.
 The upper hub clears the chest and its SMPS2Dynamixel by at least 2.5 mm.
-The front shell remains visual only. Manufacturing readiness, materials,
+The four new electronics placements clear the pinned solids and existing cables
+by at least 2.5 mm. The front shell remains visual only. The overlay records
+reference wiring geometry. Battery protection, power budgeting, materials,
 tolerances, loads, and assembly constraints remain unverified.
 
 ## Import

@@ -136,17 +136,17 @@ describe('shared domain contracts', () => {
     assert.ok(CATALOG_ARCHETYPES.length >= 4);
     const drone = matchProjectArchetypeFromPrompt('I want to learn how to build a quadcopter');
     assert.equal(drone.archetypeId, 'quadcopter_drone_v1');
-    assert.equal(getCatalogArchetypeById('quadcopter_drone_v1')?.nodes.length, 42);
+    assert.equal(getCatalogArchetypeById('quadcopter_drone_v1')?.nodes.length, 50);
 
     const arm = matchProjectArchetypeFromPrompt('Build a 5-DOF SO-100 robotic arm with gripper');
     assert.equal(arm.archetypeId, 'robotic_arm_3dof_v1');
-    assert.equal(getCatalogArchetypeById('robotic_arm_3dof_v1')?.nodes.length, 31);
+    assert.equal(getCatalogArchetypeById('robotic_arm_3dof_v1')?.nodes.length, 34);
 
     const rover = matchProjectArchetypeFromPrompt(
       'Inspect a planetary rover chassis with stereo camera',
     );
     assert.equal(rover.archetypeId, 'open_source_rover_v1');
-    assert.equal(getCatalogArchetypeById('open_source_rover_v1')?.nodes.length, 21);
+    assert.equal(getCatalogArchetypeById('open_source_rover_v1')?.nodes.length, 31);
 
     const quadruped = matchProjectArchetypeFromPrompt('Build a four-legged quadruped robot dog');
     assert.equal(quadruped, OPEN_QUADRUPED_ARCHETYPE);
@@ -166,8 +166,8 @@ describe('shared domain contracts', () => {
 
     const reachy = matchProjectArchetypeFromPrompt('Build Reachy Mini desktop companion robot');
     assert.equal(reachy.archetypeId, 'reachy_mini_v1');
-    assert.equal(getCatalogArchetypeById('reachy_mini_v1')?.nodes.length, 98);
-    assert.equal(getCatalogArchetypeById('reachy_mini_v1')?.assemblySteps.length, 51);
+    assert.equal(getCatalogArchetypeById('reachy_mini_v1')?.nodes.length, 102);
+    assert.equal(getCatalogArchetypeById('reachy_mini_v1')?.assemblySteps.length, 53);
   });
 
   it('prevents classifying unvalidated, colliding, or ungrounded models as verified', () => {

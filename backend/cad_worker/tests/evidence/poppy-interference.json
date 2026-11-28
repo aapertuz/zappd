@@ -1,7 +1,7 @@
 {
   "status": "partial",
   "method": "source placement AABB then OCCT common",
-  "solidCount": 235,
+  "solidCount": 249,
   "excludedComponents": [
     { "componentId": "poppy_1_6_1", "reason": { "kind": "available", "role": "surface" } },
     { "componentId": "poppy_1_7_1", "reason": { "kind": "available", "role": "surface" } },
@@ -1227,6 +1227,30 @@
       "restPositionMeters": [0.0, 0.255, -0.0625]
     },
     {
+      "componentId": "comp_poppy_battery",
+      "fixture": "cots_battery_3s_18650.step",
+      "sha256": "2447b23136e63ef600e444d6d1cda79b3e6b0405f8e6f5667f069647d5d4b611",
+      "restPositionMeters": [0.0, 0.138, -0.108]
+    },
+    {
+      "componentId": "comp_poppy_power_dist",
+      "fixture": "kicad_poppy_power_dist.step",
+      "sha256": "a2b367b8903d3bffa393157e06ea24a0b31adfee11e2115ec356400e4880d220",
+      "restPositionMeters": [0.0, 0.171, -0.062]
+    },
+    {
+      "componentId": "comp_poppy_5v_buck",
+      "fixture": "kicad_poppy_5v_buck.step",
+      "sha256": "1375d1459e130d6d3313f6d4edc2ee307394eeede8c96c131a5cc91a33ea08b7",
+      "restPositionMeters": [0.037, 0.269, -0.082]
+    },
+    {
+      "componentId": "comp_poppy_audio_amp",
+      "fixture": "kicad_poppy_audio_amp.step",
+      "sha256": "5c8d5e849e82c7be9c73dfd168f881c207e4f2cfce6c01a244c8916cb34bdaf6",
+      "restPositionMeters": [0.0, 0.375, -0.057]
+    },
+    {
       "componentId": "comp_poppy_cable_usb_upper",
       "fixture": "comp_poppy_cable_usb_upper.step",
       "sha256": "179cceedbd2bda6ed7b89eb33c20f0de6b81721a32ea2ae0640387733097cac0",
@@ -1423,13 +1447,73 @@
       "fixture": "comp_poppy_cable_imu.step",
       "sha256": "f6d1f72580b181382595e969957760d8a83d8a284255bb4c0773352c36adc877",
       "restPositionMeters": [0.02180463536396109, 0.33275245005, 0.004450249769476624]
+    },
+    {
+      "componentId": "comp_poppy_cable_batt_main",
+      "fixture": "comp_poppy_cable_batt_main.step",
+      "sha256": "1c7b3fc3bf019157d3a73824029cb4bffba0836383b291e7036e22bb521edda3",
+      "restPositionMeters": [-0.023960141874991844, 0.14760502596125274, -0.0814320588735294]
+    },
+    {
+      "componentId": "comp_poppy_cable_smps_upper_in",
+      "fixture": "comp_poppy_cable_smps_upper_in.step",
+      "sha256": "bce268d185eb2eae703e4b4ce7c083121ea083645ff08e3cc3e6c69a8bb54995",
+      "restPositionMeters": [-0.015523905634723329, 0.17590379406764708, -0.05522584157251453]
+    },
+    {
+      "componentId": "comp_poppy_cable_smps_lower_in",
+      "fixture": "comp_poppy_cable_smps_lower_in.step",
+      "sha256": "0ef344658e5bafe16fa8698af7f59ea4395f0739a7de68aae3cd14903668993a",
+      "restPositionMeters": [0.003494208802547212, 0.14133970593235293, -0.062016138300840185]
+    },
+    {
+      "componentId": "comp_poppy_cable_buck_in",
+      "fixture": "comp_poppy_cable_buck_in.step",
+      "sha256": "498365d7785d013f8852073b9c15f4ef86741a52fcbb41853e2bf9caea667354",
+      "restPositionMeters": [0.02048954818497541, 0.21307879060556997, -0.07725296046192857]
+    },
+    {
+      "componentId": "comp_poppy_cable_xu4_power",
+      "fixture": "comp_poppy_cable_xu4_power.step",
+      "sha256": "5be59591a85eeadb05e31dc46fc25d36846c8e9c883581b88fff85c0547a2578",
+      "restPositionMeters": [0.023556817385699782, 0.2973069311291951, -0.061696442258132006]
+    },
+    {
+      "componentId": "comp_poppy_cable_amp_power",
+      "fixture": "comp_poppy_cable_amp_power.step",
+      "sha256": "3245f37b2da1844451bc42e7b63f2d3490e0546ef93e1227e434c74ea176a07e",
+      "restPositionMeters": [0.018622144796691092, 0.32074270640856595, -0.07732807627409816]
+    },
+    {
+      "componentId": "comp_poppy_cable_audio_in",
+      "fixture": "comp_poppy_cable_audio_in.step",
+      "sha256": "4483969f84097eab1b183db49d7a0b477605ca9872eb236f7d292bd9ea2e6e96",
+      "restPositionMeters": [-0.0051030153415990145, 0.3672955856553583, -0.03918560605487686]
+    },
+    {
+      "componentId": "comp_poppy_cable_spk_left",
+      "fixture": "comp_poppy_cable_spk_left.step",
+      "sha256": "9cb236985aea2a8d6e01ddd8ae6ecca556a0878c7eccb2d8dfddc696703ddb8c",
+      "restPositionMeters": [-0.029703911714705888, 0.3613587871510192, -0.027446964456080355]
+    },
+    {
+      "componentId": "comp_poppy_cable_spk_right",
+      "fixture": "comp_poppy_cable_spk_right.step",
+      "sha256": "1e95b27f1ea1fe6ea7e26e51d603b16bfe21a10cb58f7ec22e6b7a50b4f0336a",
+      "restPositionMeters": [0.028703911714705887, 0.36126441815611227, -0.027379244547860955]
+    },
+    {
+      "componentId": "comp_poppy_cable_display",
+      "fixture": "comp_poppy_cable_display.step",
+      "sha256": "2220f4386b80c830a5e1d0a788f11c3b7e755a24144f6d502ca7e8a317b1d745",
+      "restPositionMeters": [-0.013903146367251346, 0.3672218993100158, -0.003786006103582675]
     }
   ],
-  "possiblePairCount": 27495,
-  "candidatePairCount": 801,
+  "possiblePairCount": 30876,
+  "candidatePairCount": 887,
   "volumeThresholdMm3": 0.001,
   "aabbToleranceMm": 1e-7,
-  "timeoutSecondsPerPair": 30,
+  "timeoutSecondsPerPair": 90,
   "pairs": [
     {
       "componentIds": ["poppy_1_1_1", "poppy_1_1_2_1"],
@@ -4072,6 +4156,12 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_17_1", "comp_poppy_power_dist"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_17_1", "comp_poppy_cable_power_upper"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -4127,6 +4217,18 @@
     },
     {
       "componentIds": ["poppy_1_17_1", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_1", "comp_poppy_cable_smps_upper_in"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_17_1", "comp_poppy_cable_xu4_power"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -5452,6 +5554,12 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_28_1", "comp_poppy_audio_amp"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_28_1", "comp_poppy_cable_usb_upper"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -5489,6 +5597,42 @@
     },
     {
       "componentIds": ["poppy_1_28_1", "comp_poppy_cable_imu"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "comp_poppy_cable_xu4_power"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "comp_poppy_cable_amp_power"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "comp_poppy_cable_audio_in"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "comp_poppy_cable_spk_left"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "comp_poppy_cable_spk_right"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_1", "comp_poppy_cable_display"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -5566,6 +5710,42 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_28_3", "comp_poppy_cable_xu4_power"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_3", "comp_poppy_cable_amp_power"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_3", "comp_poppy_cable_audio_in"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_3", "comp_poppy_cable_spk_left"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_3", "comp_poppy_cable_spk_right"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_3", "comp_poppy_cable_display"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_28_4", "poppy_1_28_6"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -5627,6 +5807,24 @@
     },
     {
       "componentIds": ["poppy_1_28_4", "comp_poppy_cable_imu"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_4", "comp_poppy_cable_spk_left"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_4", "comp_poppy_cable_spk_right"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_4", "comp_poppy_cable_display"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -5704,6 +5902,24 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_28_6", "comp_poppy_cable_spk_left"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_6", "comp_poppy_cable_spk_right"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_6", "comp_poppy_cable_display"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_28_7", "poppy_1_28_8_3"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -5746,6 +5962,12 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_28_7", "comp_poppy_cable_display"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_28_8_1", "poppy_1_28_8_2"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -5776,6 +5998,24 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_28_8_1", "comp_poppy_cable_spk_left"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_8_1", "comp_poppy_cable_spk_right"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_8_1", "comp_poppy_cable_display"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_28_8_2", "poppy_1_28_9"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -5783,6 +6023,18 @@
     },
     {
       "componentIds": ["poppy_1_28_8_2", "comp_poppy_cable_camera"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_8_2", "comp_poppy_cable_spk_left"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_8_2", "comp_poppy_cable_display"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -5806,6 +6058,12 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_28_8_3", "comp_poppy_cable_display"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_28_8_4", "poppy_1_28_9"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -5818,7 +6076,37 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_28_8_4", "comp_poppy_cable_spk_right"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_8_4", "comp_poppy_cable_display"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_28_9", "comp_poppy_cable_camera"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_9", "comp_poppy_cable_spk_left"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_9", "comp_poppy_cable_spk_right"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_9", "comp_poppy_cable_display"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -5830,9 +6118,33 @@
       "error": null
     },
     {
+      "componentIds": ["poppy_1_28_10", "comp_poppy_cable_spk_left"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["poppy_1_28_11", "poppy_1_28_12"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.000725946100366014,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_11", "comp_poppy_cable_spk_right"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_12", "comp_poppy_cable_spk_right"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["poppy_1_28_13", "comp_poppy_cable_spk_left"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
       "error": null
     },
     {
@@ -5867,6 +6179,18 @@
     },
     {
       "componentIds": ["comp_poppy_usb2ax_lower", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_usb2ax_lower", "comp_poppy_cable_xu4_power"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_usb2ax_lower", "comp_poppy_cable_amp_power"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -5909,6 +6233,114 @@
     },
     {
       "componentIds": ["comp_poppy_upper_3p_hub", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_upper_3p_hub", "comp_poppy_cable_buck_in"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_upper_3p_hub", "comp_poppy_cable_xu4_power"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_upper_3p_hub", "comp_poppy_cable_amp_power"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_battery", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_battery", "comp_poppy_cable_batt_main"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_power_dist", "comp_poppy_cable_head_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_power_dist", "comp_poppy_cable_bust_y"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_power_dist", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_power_dist", "comp_poppy_cable_smps_upper_in"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_power_dist", "comp_poppy_cable_smps_lower_in"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_power_dist", "comp_poppy_cable_buck_in"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_5v_buck", "comp_poppy_cable_buck_in"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_5v_buck", "comp_poppy_cable_xu4_power"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_5v_buck", "comp_poppy_cable_amp_power"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_audio_amp", "comp_poppy_cable_camera"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_audio_amp", "comp_poppy_cable_audio_in"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_audio_amp", "comp_poppy_cable_spk_left"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_audio_amp", "comp_poppy_cable_spk_right"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -5998,6 +6430,18 @@
       "error": null
     },
     {
+      "componentIds": ["comp_poppy_cable_head_z", "comp_poppy_cable_batt_main"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_head_z", "comp_poppy_cable_smps_upper_in"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["comp_poppy_cable_head_y", "comp_poppy_cable_bust_y"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -6022,6 +6466,12 @@
       "error": null
     },
     {
+      "componentIds": ["comp_poppy_cable_head_y", "comp_poppy_cable_xu4_power"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["comp_poppy_cable_bust_y", "comp_poppy_cable_bust_x"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -6035,6 +6485,12 @@
     },
     {
       "componentIds": ["comp_poppy_cable_bust_y", "comp_poppy_cable_ttl_lower"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_bust_y", "comp_poppy_cable_smps_upper_in"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -6094,6 +6550,12 @@
       "error": null
     },
     {
+      "componentIds": ["comp_poppy_cable_l_shoulder_y", "comp_poppy_cable_buck_in"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["comp_poppy_cable_r_shoulder_y", "comp_poppy_cable_r_shoulder_x"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -6106,6 +6568,12 @@
       "error": null
     },
     {
+      "componentIds": ["comp_poppy_cable_r_shoulder_y", "comp_poppy_cable_buck_in"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
       "componentIds": ["comp_poppy_cable_r_arm_z", "comp_poppy_cable_r_elbow_y"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
@@ -6113,6 +6581,18 @@
     },
     {
       "componentIds": ["comp_poppy_cable_usb_lower", "comp_poppy_cable_camera"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_usb_lower", "comp_poppy_cable_xu4_power"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_usb_lower", "comp_poppy_cable_amp_power"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -6143,6 +6623,30 @@
     },
     {
       "componentIds": ["comp_poppy_cable_ttl_lower", "comp_poppy_cable_r_hip_z"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_ttl_lower", "comp_poppy_cable_smps_lower_in"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_ttl_lower", "comp_poppy_cable_buck_in"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_ttl_lower", "comp_poppy_cable_xu4_power"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_ttl_lower", "comp_poppy_cable_amp_power"],
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
@@ -6236,6 +6740,102 @@
       "status": "contact_or_below_threshold",
       "volumeMm3": 0.0,
       "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_camera", "comp_poppy_cable_xu4_power"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_camera", "comp_poppy_cable_amp_power"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_camera", "comp_poppy_cable_audio_in"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_camera", "comp_poppy_cable_spk_left"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_camera", "comp_poppy_cable_display"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_buck_in", "comp_poppy_cable_xu4_power"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_buck_in", "comp_poppy_cable_amp_power"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_xu4_power", "comp_poppy_cable_amp_power"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_amp_power", "comp_poppy_cable_audio_in"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_amp_power", "comp_poppy_cable_spk_left"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_amp_power", "comp_poppy_cable_spk_right"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_audio_in", "comp_poppy_cable_spk_left"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_audio_in", "comp_poppy_cable_spk_right"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_audio_in", "comp_poppy_cable_display"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_spk_left", "comp_poppy_cable_display"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
+    },
+    {
+      "componentIds": ["comp_poppy_cable_spk_right", "comp_poppy_cable_display"],
+      "status": "contact_or_below_threshold",
+      "volumeMm3": 0.0,
+      "error": null
     }
   ],
   "intersectionCount": 102,
@@ -6263,5 +6863,5 @@
       "algorithm": "OCCT BRepAlgoAPI_Common default settings; no fuzzy tolerance or geometry modification"
     }
   ],
-  "catalogSha256": "1105a8554d8ac684313f52ed744d8db4c8d1a96048c896452c8d5bc541ba91ee"
+  "catalogSha256": "e396d809b1960a7fee7db11da1de8a21945474c98d0492ecdeee2122e19cda4d"
 }

@@ -715,6 +715,11 @@
           "label": "USB data",
           "connectorType": "USB-C",
           "busKind": "usb_data",
+          "role": "bidirectional",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 0.5,
           "localPositionMeters": [0.0053, 0.0220875, 0.00175],
           "exitDirection": [0.0, 1.0, 0.0]
         },
@@ -723,6 +728,12 @@
           "label": "DC power input",
           "connectorType": "DC barrel jack",
           "busKind": "dc_power",
+          "role": "sink",
+          "minVoltageV": 5,
+          "nominalVoltageV": 5.5,
+          "maxVoltageV": 6,
+          "maxCurrentA": 3,
+          "wireColorsHex": ["#cc2929", "#222428"],
           "localPositionMeters": [-0.0183, 0.0074125, -0.003],
           "exitDirection": [-1.0, 0.0, -0.0]
         },
@@ -741,6 +752,75 @@
           "busKind": "ttl_serial",
           "localPositionMeters": [0.0043, -0.0090875, -0.0026],
           "exitDirection": [0.0, 0.0, -1.0]
+        }
+      ]
+    },
+    {
+      "id": "comp_so100_power_host",
+      "parentId": "sub_base_turntable",
+      "name": "SO-ARM100 Compute and 5.5 V Power Host",
+      "level": "component",
+      "depth": 2,
+      "category": "electronics",
+      "restPositionMeters": [0.05, 0.036, -0.024],
+      "restRotationDeg": [-90, 0, 0],
+      "dimensionsMm": [56.3, 14.6, 38.175],
+      "explodeDirection": [0, 0, -1],
+      "explodeDistanceMeters": 0.036,
+      "colorHex": "#247052",
+      "materialHint": "fr4_pcb",
+      "origin": "kicad_pcb_step",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "kicad://zappd/kicad_so100_power_host",
+      "sourceName": "Zappd kicad_so100_power_host.kicad_pcb with KiCad kicad-packages3D models",
+      "stepFixtureName": "kicad_so100_power_host.step",
+      "expectedStepSha256": "6c023d3d2078211ff870ace99ad3025c31984f8e060163b50141a26fddc6fa33",
+      "specifications": {
+        "pcbWidthMm": 56,
+        "pcbLengthMm": 38,
+        "pcbThicknessMm": 1.6,
+        "brepFaces": 2902,
+        "xcafColors": 10,
+        "referenceLayout": true
+      },
+      "ports": [
+        {
+          "portId": "port_usb_host",
+          "label": "USB host data",
+          "connectorType": "USB-C",
+          "busKind": "usb_data",
+          "role": "bidirectional",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 0.5,
+          "localPositionMeters": [0.00815, -0.00175, 0.0190875],
+          "exitDirection": [0.0, 0.0, 1.0]
+        },
+        {
+          "portId": "port_dc_out",
+          "label": "5.5V DC barrel output",
+          "connectorType": "DC barrel jack",
+          "busKind": "dc_power",
+          "role": "source",
+          "minVoltageV": 5,
+          "nominalVoltageV": 5.5,
+          "maxVoltageV": 6,
+          "maxCurrentA": 3,
+          "wireColorsHex": ["#cc2929", "#222428"],
+          "localPositionMeters": [-0.02815, 0.003, -8.75e-5],
+          "exitDirection": [-1.0, 0.0, -0.0]
+        }
+      ],
+      "mountingInterfaces": [
+        {
+          "interfaceId": "mount_board",
+          "label": "Four-hole M3 PCB mount",
+          "kind": "m3_standoff",
+          "holeDiameterMm": 3.2,
+          "boltPitchMm": [48, 30],
+          "localPositionMeters": [0, 0, 0],
+          "normalDirection": [0, 1, 0]
         }
       ]
     },
@@ -887,6 +967,58 @@
         "brepFaces": 42
       },
       "expectedStepSha256": "55adedb32853cccf172173c232b9829c750bec6b91dcd244a9eb7868812a79aa"
+    },
+    {
+      "id": "comp_so100_cable_dc_power",
+      "parentId": "sub_base_turntable",
+      "name": "5.5 V DC power lead",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [51.874074509873196, 37.035061692041374, 35.35241368234141],
+      "restPositionMeters": [-0.004887037254936596, 0.05348885427543244, -0.04271885379999423],
+      "explodeDirection": [0, 0, -1],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/robotic_arm_3dof_v1/rel_so100_dc_power",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_so100_cable_dc_power.step",
+      "specifications": {
+        "relationshipId": "rel_so100_dc_power",
+        "fromConnectorClearanceMm": 0.8,
+        "toConnectorClearanceMm": 0.8,
+        "brepFaces": 48
+      },
+      "expectedStepSha256": "787b30003c6385a86fa6a8f054920dd71252ea7fbe389b5d2a15abb565c7a7e3"
+    },
+    {
+      "id": "comp_so100_cable_usb_host",
+      "parentId": "sub_base_turntable",
+      "name": "USB-C host cable",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#27272a",
+      "dimensionsMm": [50.083106830628964, 30.909878627043476, 10.000000200000002],
+      "restPositionMeters": [0.034008446684685514, 0.07134243931352172, -0.02635],
+      "explodeDirection": [0, 0, -1],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/robotic_arm_3dof_v1/rel_so100_usb_host",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_so100_cable_usb_host.step",
+      "specifications": {
+        "relationshipId": "rel_so100_usb_host",
+        "fromConnectorClearanceMm": 0.8,
+        "toConnectorClearanceMm": 4.0,
+        "brepFaces": 24
+      },
+      "expectedStepSha256": "0ad874e959465bb111f0f25d460c698c943e0a95aa25723dc78d1380faf97ade"
     }
   ],
   "relationships": [
@@ -1166,6 +1298,68 @@
       "connectionType": "assembly_mount",
       "howConnected": "The cable plugs into the host at the start of the route.",
       "whyConnected": "The host locates the cable at its first connection."
+    },
+    {
+      "id": "rel_so100_power_host_mount",
+      "fromComponentId": "comp_so100_power_host",
+      "toComponentId": "comp_base_housing",
+      "connectionType": "assembly_mount",
+      "howConnected": "Seat the host board beside the rear Waveshare mount.",
+      "whyConnected": "The base housing supports the USB host and its regulated power output."
+    },
+    {
+      "id": "rel_so100_dc_power",
+      "fromComponentId": "comp_so100_power_host",
+      "toComponentId": "comp_waveshare_bus_adapter",
+      "connectionType": "power_bus",
+      "howConnected": "The DC lead connects the host barrel output to the Waveshare adapter barrel input.",
+      "whyConnected": "The host supplies 5.5 V DC at up to 3 A to the Waveshare adapter.",
+      "fromPortId": "port_dc_out",
+      "toPortId": "port_dc_in",
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [0.015, 0.0359125, -0.027],
+        [0.008, 0.036, -0.053],
+        [-0.028, 0.054, -0.059],
+        [-0.03, 0.0700625, -0.042],
+        [-0.024, 0.0700625, -0.0352]
+      ],
+      "wireBundleDiameterMm": 3.2
+    },
+    {
+      "id": "rel_so100_dc_power_harness",
+      "fromComponentId": "comp_so100_cable_dc_power",
+      "toComponentId": "comp_so100_power_host",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable seats at the source connector.",
+      "whyConnected": "The connector anchors the cable to the assembly."
+    },
+    {
+      "id": "rel_so100_usb_host",
+      "fromComponentId": "comp_so100_power_host",
+      "toComponentId": "comp_waveshare_bus_adapter",
+      "connectionType": "electrical_bus",
+      "howConnected": "The USB-C cable links the host and the Waveshare adapter.",
+      "whyConnected": "The Waveshare adapter receives servo commands over USB from the host.",
+      "fromPortId": "port_usb_host",
+      "toPortId": "port_usb",
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [0.05815, 0.062, -0.02225],
+        [0.053, 0.072, -0.028],
+        [0.037, 0.083, -0.030449999999999998],
+        [0.025, 0.0858, -0.030449999999999998],
+        [0.01, 0.0859, -0.030449999999999998]
+      ],
+      "wireBundleDiameterMm": 1.8
+    },
+    {
+      "id": "rel_so100_usb_host_harness",
+      "fromComponentId": "comp_so100_cable_usb_host",
+      "toComponentId": "comp_so100_power_host",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable seats at the source connector.",
+      "whyConnected": "The connector anchors the cable to the assembly."
     }
   ],
   "assemblySteps": [
@@ -1235,10 +1429,30 @@
     {
       "id": "step_arm_5",
       "order": 5,
-      "title": "Mount Bus Servo Controller and Route Servo Daisy Chain",
-      "summary": "Fit the controller to the rear mount. Follow the six TTL cables from the base yaw servo through to the gripper.",
+      "title": "Mount the Host and Bus Adapter",
+      "summary": "Fit the Waveshare adapter to its rear mount, then seat the host board beside it.",
+      "componentIds": ["comp_waveshare_bus_adapter", "comp_so100_power_host"],
+      "relationshipIds": ["rel_so100_bus_adapter_mount", "rel_so100_power_host_mount"]
+    },
+    {
+      "id": "step_arm_6",
+      "order": 6,
+      "title": "Connect Host Power and USB",
+      "summary": "Plug the regulated 5.5 V lead and the USB-C data cable into the Waveshare adapter.",
+      "componentIds": ["comp_so100_cable_dc_power", "comp_so100_cable_usb_host"],
+      "relationshipIds": [
+        "rel_so100_dc_power",
+        "rel_so100_dc_power_harness",
+        "rel_so100_usb_host",
+        "rel_so100_usb_host_harness"
+      ]
+    },
+    {
+      "id": "step_arm_7",
+      "order": 7,
+      "title": "Route the Servo Daisy Chain",
+      "summary": "Follow the six TTL cables from the base yaw servo through to the gripper.",
       "componentIds": [
-        "comp_waveshare_bus_adapter",
         "comp_so100_cable_bus_1",
         "comp_so100_cable_bus_2",
         "comp_so100_cable_bus_3",
@@ -1247,7 +1461,6 @@
         "comp_so100_cable_bus_6"
       ],
       "relationshipIds": [
-        "rel_so100_bus_adapter_mount",
         "rel_so100_ttl_bus_1",
         "rel_so100_ttl_bus_1_harness",
         "rel_so100_ttl_bus_2",

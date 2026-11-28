@@ -807,7 +807,7 @@
         "pcbWidthMm": 36,
         "pcbLengthMm": 36,
         "pcbThicknessMm": 1.6,
-        "brepFaces": 3121,
+        "brepFaces": 4133,
         "xcafColors": 10,
         "referenceLayout": true
       },
@@ -816,7 +816,7 @@
       "sourceUrl": "kicad://zappd/kicad_quad_flight_controller",
       "sourceName": "Zappd kicad_quad_flight_controller.kicad_pcb with KiCad kicad-packages3D models",
       "stepFixtureName": "kicad_quad_flight_controller.step",
-      "expectedStepSha256": "0ff4be30d9f595e08107563f24fc1ae2b875371d90602c3d7b367fc42ae4bc7c",
+      "expectedStepSha256": "7cff7e3d053aae646bba2d8e0fd2183cd79ffcc26a83e37982d910061b176648",
       "mountingInterfaces": [
         {
           "interfaceId": "mount_board",
@@ -868,6 +868,62 @@
           "maxCurrentA": 0.25,
           "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"],
           "localPositionMeters": [0.008, 0.0029225, -0.0110875],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_power_in",
+          "label": "5V power input",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "dc_power",
+          "role": "sink",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 2,
+          "wireColorsHex": ["#cc2929", "#222428"],
+          "localPositionMeters": [-0.0122, 0.0029225, 0.0054125],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_gps",
+          "label": "GPS / compass bus",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "i2c_spi_uart",
+          "role": "bidirectional",
+          "minVoltageV": 3,
+          "nominalVoltageV": 3.3,
+          "maxVoltageV": 3.6,
+          "maxCurrentA": 0.25,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"],
+          "localPositionMeters": [0.0122, 0.0029225, 0.0054125],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_esc_aux",
+          "label": "Auxiliary ESC link",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "pwm_signal",
+          "role": "source",
+          "minVoltageV": 3,
+          "nominalVoltageV": 3.3,
+          "maxVoltageV": 3.6,
+          "maxCurrentA": 0.25,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"],
+          "localPositionMeters": [-0.0122, 0.0029225, -0.0025875],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_telemetry",
+          "label": "Telemetry UART",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "i2c_spi_uart",
+          "role": "bidirectional",
+          "minVoltageV": 3,
+          "nominalVoltageV": 3.3,
+          "maxVoltageV": 3.6,
+          "maxCurrentA": 0.25,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"],
+          "localPositionMeters": [0.0122, 0.0029225, -0.0025875],
           "exitDirection": [0.0, 1.0, -0.0]
         }
       ],
@@ -946,6 +1002,311 @@
           "maxCurrentA": 0.25,
           "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"],
           "localPositionMeters": [0.0035, 0.0029225, -0.0],
+          "exitDirection": [0.0, 1.0, -0.0]
+        }
+      ],
+      "restRotationDeg": [0, 0, 0]
+    },
+    {
+      "id": "comp_multi_pdb_bec_support",
+      "parentId": "sub_multi_electronics",
+      "name": "PDB_BEC standoff",
+      "level": "component",
+      "depth": 2,
+      "category": "standoff",
+      "colorHex": "#566879",
+      "dimensionsMm": [6.0, 4.0, 6.0],
+      "restPositionMeters": [0.0, 0.031, -0.042],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.04,
+      "materialHint": "anodized_aluminum",
+      "specifications": {
+        "brepFaces": 6
+      },
+      "origin": "parametric_cad",
+      "spdxLicense": "MIT",
+      "sourceUrl": "parametric://zappd/parametric_multirotor_v1/comp_multi_pdb_bec_support",
+      "sourceName": "Zappd Multirotor CAD family",
+      "stepFixtureName": "parametric_multirotor_v1/pcb_support.step",
+      "expectedStepSha256": "c6afa5c3183df4b03c8770b3e18261b360cd2d05fbd4122b210bb516c496e918"
+    },
+    {
+      "id": "comp_multi_pdb_bec",
+      "parentId": "sub_multi_electronics",
+      "name": "Multirotor power distribution and 5V BEC",
+      "level": "component",
+      "depth": 2,
+      "category": "power_distribution",
+      "colorHex": "#247052",
+      "dimensionsMm": [46.0, 20.5, 28.0],
+      "restPositionMeters": [0.0, 0.04037, -0.042],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.04,
+      "materialHint": "fr4_pcb",
+      "specifications": {
+        "pcbWidthMm": 46,
+        "pcbLengthMm": 28,
+        "pcbThicknessMm": 1.6,
+        "brepFaces": 1124,
+        "xcafColors": 10,
+        "referenceLayout": true
+      },
+      "origin": "kicad_pcb_step",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "kicad://zappd/kicad_quad_pdb_bec",
+      "sourceName": "Zappd kicad_quad_pdb_bec.kicad_pcb with KiCad kicad-packages3D models",
+      "stepFixtureName": "kicad_quad_pdb_bec.step",
+      "expectedStepSha256": "70feb9dcfd2566bbe4431276dfd7b89a79756cf6f26e97e996ed705337c20267",
+      "mountingInterfaces": [
+        {
+          "interfaceId": "mount_board",
+          "label": "Four-hole M3 PCB mount",
+          "kind": "m3_standoff",
+          "holeDiameterMm": 3.2,
+          "boltPitchMm": [38, 20],
+          "localPositionMeters": [0, 0, 0],
+          "normalDirection": [0, 1, 0]
+        }
+      ],
+      "ports": [
+        {
+          "portId": "port_batt_in",
+          "label": "Battery input",
+          "connectorType": "XT60",
+          "busKind": "dc_power",
+          "role": "sink",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 25.2,
+          "maxCurrentA": 15,
+          "wireColorsHex": ["#cc2929", "#222428"],
+          "localPositionMeters": [-0.0119, 0.01025, 0.001],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_esc_primary",
+          "label": "Primary ESC power output",
+          "connectorType": "XT60",
+          "busKind": "dc_power",
+          "role": "source",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 25.2,
+          "maxCurrentA": 15,
+          "wireColorsHex": ["#cc2929", "#222428"],
+          "localPositionMeters": [0.0106, 0.01025, 0.001],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_esc_aux",
+          "label": "Auxiliary ESC power output",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "dc_power",
+          "role": "source",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 25.2,
+          "maxCurrentA": 7.5,
+          "wireColorsHex": ["#cc2929", "#222428"],
+          "localPositionMeters": [-0.011, 0.00025, -0.009],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_5v_fc",
+          "label": "5V flight controller rail",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "dc_power",
+          "role": "source",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 2,
+          "wireColorsHex": ["#cc2929", "#222428"],
+          "localPositionMeters": [0.01, -0.00155, -0.009],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_5v_vtx",
+          "label": "5V telemetry / VTX rail",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "dc_power",
+          "role": "source",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 1,
+          "wireColorsHex": ["#cc2929", "#222428"],
+          "localPositionMeters": [0.0, -0.00155, 0.01],
+          "exitDirection": [0.0, 1.0, -0.0]
+        }
+      ],
+      "restRotationDeg": [0, 0, 0]
+    },
+    {
+      "id": "comp_multi_gps_support",
+      "parentId": "sub_multi_electronics",
+      "name": "GPS standoff",
+      "level": "component",
+      "depth": 2,
+      "category": "standoff",
+      "colorHex": "#566879",
+      "dimensionsMm": [6.0, 4.0, 6.0],
+      "restPositionMeters": [-0.039, 0.031, 0.031],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.04,
+      "materialHint": "anodized_aluminum",
+      "specifications": {
+        "brepFaces": 6
+      },
+      "origin": "parametric_cad",
+      "spdxLicense": "MIT",
+      "sourceUrl": "parametric://zappd/parametric_multirotor_v1/comp_multi_gps_support",
+      "sourceName": "Zappd Multirotor CAD family",
+      "stepFixtureName": "parametric_multirotor_v1/pcb_support.step",
+      "expectedStepSha256": "c6afa5c3183df4b03c8770b3e18261b360cd2d05fbd4122b210bb516c496e918"
+    },
+    {
+      "id": "comp_multi_gps",
+      "parentId": "sub_multi_electronics",
+      "name": "9-DOF navigation IMU and GPS sensor module",
+      "level": "component",
+      "depth": 2,
+      "category": "sensor_module",
+      "colorHex": "#247052",
+      "dimensionsMm": [22.0, 5.845, 18.0],
+      "restPositionMeters": [-0.039, 0.0359, 0.031],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.04,
+      "materialHint": "fr4_pcb",
+      "specifications": {
+        "pcbWidthMm": 22,
+        "pcbLengthMm": 18,
+        "pcbThicknessMm": 1.6,
+        "brepFaces": 688,
+        "xcafColors": 7,
+        "referenceLayout": true
+      },
+      "origin": "kicad_pcb_step",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "kicad://zappd/kicad_nav_imu",
+      "sourceName": "Zappd kicad_nav_imu.kicad_pcb with KiCad kicad-packages3D models",
+      "stepFixtureName": "kicad_nav_imu.step",
+      "expectedStepSha256": "499d5523ee54c403344ae3c6e340ac0abf3328da1475d8c8475580cb5f18ae2a",
+      "mountingInterfaces": [
+        {
+          "interfaceId": "mount_board",
+          "label": "Edge clamp mount",
+          "kind": "clamp",
+          "holeDiameterMm": 3.2,
+          "localPositionMeters": [0, 0, 0],
+          "normalDirection": [0, 1, 0]
+        }
+      ],
+      "ports": [
+        {
+          "portId": "port_sensor_bus",
+          "label": "Navigation sensor bus",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "i2c_spi_uart",
+          "role": "bidirectional",
+          "minVoltageV": 3,
+          "nominalVoltageV": 3.3,
+          "maxVoltageV": 3.6,
+          "maxCurrentA": 0.25,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"],
+          "localPositionMeters": [0.0045, 0.0029225, -0.0],
+          "exitDirection": [0.0, 1.0, -0.0]
+        }
+      ],
+      "restRotationDeg": [0, 0, 0]
+    },
+    {
+      "id": "comp_multi_telemetry_support",
+      "parentId": "sub_multi_electronics",
+      "name": "TELEMETRY standoff",
+      "level": "component",
+      "depth": 2,
+      "category": "standoff",
+      "colorHex": "#566879",
+      "dimensionsMm": [6.0, 4.0, 6.0],
+      "restPositionMeters": [0.037, 0.031, -0.042],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.04,
+      "materialHint": "anodized_aluminum",
+      "specifications": {
+        "brepFaces": 6
+      },
+      "origin": "parametric_cad",
+      "spdxLicense": "MIT",
+      "sourceUrl": "parametric://zappd/parametric_multirotor_v1/comp_multi_telemetry_support",
+      "sourceName": "Zappd Multirotor CAD family",
+      "stepFixtureName": "parametric_multirotor_v1/pcb_support.step",
+      "expectedStepSha256": "c6afa5c3183df4b03c8770b3e18261b360cd2d05fbd4122b210bb516c496e918"
+    },
+    {
+      "id": "comp_multi_telemetry",
+      "parentId": "sub_multi_electronics",
+      "name": "Multirotor telemetry and VTX beacon",
+      "level": "component",
+      "depth": 2,
+      "category": "telemetry_beacon",
+      "colorHex": "#247052",
+      "dimensionsMm": [22.0, 5.845, 16.0],
+      "restPositionMeters": [0.037, 0.0359, -0.042],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.04,
+      "materialHint": "fr4_pcb",
+      "specifications": {
+        "pcbWidthMm": 22,
+        "pcbLengthMm": 16,
+        "pcbThicknessMm": 1.6,
+        "brepFaces": 941,
+        "xcafColors": 7,
+        "referenceLayout": true
+      },
+      "origin": "kicad_pcb_step",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "kicad://zappd/kicad_quad_telemetry_beacon",
+      "sourceName": "Zappd kicad_quad_telemetry_beacon.kicad_pcb with KiCad kicad-packages3D models",
+      "stepFixtureName": "kicad_quad_telemetry_beacon.step",
+      "expectedStepSha256": "fe7d7edca2783e563d89ac002730057ea963e5017db5c4c1c8e646ecaebdfae6",
+      "mountingInterfaces": [
+        {
+          "interfaceId": "mount_board",
+          "label": "Edge clamp mount",
+          "kind": "clamp",
+          "holeDiameterMm": 3.2,
+          "localPositionMeters": [0, 0, 0],
+          "normalDirection": [0, 1, 0]
+        }
+      ],
+      "ports": [
+        {
+          "portId": "port_5v_in",
+          "label": "5V power input",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "dc_power",
+          "role": "sink",
+          "minVoltageV": 4.75,
+          "nominalVoltageV": 5,
+          "maxVoltageV": 5.25,
+          "maxCurrentA": 1,
+          "wireColorsHex": ["#cc2929", "#222428"],
+          "localPositionMeters": [0.0045, 0.0029225, 0.004],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_telemetry",
+          "label": "Telemetry UART",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "i2c_spi_uart",
+          "role": "bidirectional",
+          "minVoltageV": 3,
+          "nominalVoltageV": 3.3,
+          "maxVoltageV": 3.6,
+          "maxCurrentA": 0.25,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"],
+          "localPositionMeters": [0.0045, 0.0029225, -0.004],
           "exitDirection": [0.0, 1.0, -0.0]
         }
       ],
@@ -1118,21 +1479,45 @@
       "depth": 2,
       "category": "wiring",
       "colorHex": "#cc2929",
-      "dimensionsMm": [43.258508137062975, 93.30949025214531, 20.47687537468556],
-      "restPositionMeters": [-0.04486911495109208, 0.010025393991366765, 0.010150385942068992],
+      "dimensionsMm": [36.25205825673929, 5.495911450493239, 43.77893500535847],
+      "restPositionMeters": [-0.0069966172636637645, 0.05416795572524662, -0.02024435612673253],
       "explodeDirection": [0, 1, 0],
       "explodeDistanceMeters": 0.04,
       "materialHint": "silicone_wire",
       "specifications": {
-        "relationshipId": "rel_multi_battery_esc",
-        "brepFaces": 40
+        "relationshipId": "rel_multi_pdb_bec_esc",
+        "brepFaces": 24
       },
       "origin": "procedural_harness",
       "spdxLicense": "MIT",
       "sourceUrl": "harness://zappd/parametric_multirotor_v1/comp_multi_wire_esc_power",
       "sourceName": "Zappd Multirotor CAD family",
       "stepFixtureName": "parametric_multirotor_v1/wiring/4-260-26-4/comp_multi_wire_esc_power.step",
-      "expectedStepSha256": "67f3fabb16c7bcce45fd74140d5a6449dd40f5ddd0c154bcf27c3627b45053d4"
+      "expectedStepSha256": "81244a21d50b083e02652d0e23fe6f2228a5eea066c0cc9839a9ed82d7b90f81"
+    },
+    {
+      "id": "comp_multi_wire_main_power",
+      "parentId": "sub_multi_wiring",
+      "name": "Main battery feed harness",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [50.28393011110163, 93.63276630884457, 62.15988382217395],
+      "restPositionMeters": [-0.03595854988141215, 0.010187032019716394, -0.010691118281675203],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.04,
+      "materialHint": "silicone_wire",
+      "specifications": {
+        "relationshipId": "rel_multi_battery_pdb_bec",
+        "brepFaces": 40
+      },
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/parametric_multirotor_v1/comp_multi_wire_main_power",
+      "sourceName": "Zappd Multirotor CAD family",
+      "stepFixtureName": "parametric_multirotor_v1/wiring/4-260-26-4/comp_multi_wire_main_power.step",
+      "expectedStepSha256": "5c57b68a324d7d44b613a4f883dd2acad198bb767e7d7060e008dbad264135fd"
     },
     {
       "id": "comp_multi_wire_esc_signal",
@@ -1183,6 +1568,102 @@
       "expectedStepSha256": "6f932b25dc2791e0370e9da9c10be37cc2bda8d337ce904e39fc45f0f687d85d"
     },
     {
+      "id": "comp_multi_wire_telemetry_data",
+      "parentId": "sub_multi_wiring",
+      "name": "Telemetry data harness",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [32.9505297466302, 9.071094806817527, 77.09680626672903],
+      "restPositionMeters": [0.0262252647733151, 0.04415804740340873, -0.008635903033364518],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.04,
+      "materialHint": "silicone_wire",
+      "specifications": {
+        "relationshipId": "rel_multi_fc_telemetry",
+        "brepFaces": 36
+      },
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/parametric_multirotor_v1/comp_multi_wire_telemetry_data",
+      "sourceName": "Zappd Multirotor CAD family",
+      "stepFixtureName": "parametric_multirotor_v1/wiring/4-260-26-4/comp_multi_wire_telemetry_data.step",
+      "expectedStepSha256": "864c221913fbf6d9bc8a797b2e4a0a7fc1f3e656b453ae1713dda6656e1022fc"
+    },
+    {
+      "id": "comp_multi_wire_fc_5v",
+      "parentId": "sub_multi_wiring",
+      "name": "Flight controller power harness",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [25.569660375618874, 21.89124672301204, 89.5940926689398],
+      "restPositionMeters": [-0.0022554183231035525, 0.05056562336150601, -0.007336777294941871],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.04,
+      "materialHint": "silicone_wire",
+      "specifications": {
+        "relationshipId": "rel_multi_pdb_bec_fc",
+        "brepFaces": 24
+      },
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/parametric_multirotor_v1/comp_multi_wire_fc_5v",
+      "sourceName": "Zappd Multirotor CAD family",
+      "stepFixtureName": "parametric_multirotor_v1/wiring/4-260-26-4/comp_multi_wire_fc_5v.step",
+      "expectedStepSha256": "dc60271559a0772ebcc5ca1e3774ebb17ecbbc6383117723b0726b663aaec497"
+    },
+    {
+      "id": "comp_multi_wire_telemetry_5v",
+      "parentId": "sub_multi_wiring",
+      "name": "Telemetry power harness",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [42.730015004158545, 11.689211876677057, 8.24289671307702],
+      "restPositionMeters": [0.02083559563737339, 0.04546460593833852, -0.03498762472712674],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.04,
+      "materialHint": "silicone_wire",
+      "specifications": {
+        "relationshipId": "rel_multi_pdb_bec_telemetry",
+        "brepFaces": 24
+      },
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/parametric_multirotor_v1/comp_multi_wire_telemetry_5v",
+      "sourceName": "Zappd Multirotor CAD family",
+      "stepFixtureName": "parametric_multirotor_v1/wiring/4-260-26-4/comp_multi_wire_telemetry_5v.step",
+      "expectedStepSha256": "e847d4d312b0bf2cd4e578d4d3c54c6a9a5e0ab8ff6a97fdfbe03a3ffcde37f9"
+    },
+    {
+      "id": "comp_multi_wire_gps_data",
+      "parentId": "sub_multi_wiring",
+      "name": "Navigation sensor data harness",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [45.600000200000004, 4.9500001000000395, 8.4125002],
+      "restPositionMeters": [-0.012150000000000003, 0.042097500049999986, 0.03370625000000001],
+      "explodeDirection": [0, 1, 0],
+      "explodeDistanceMeters": 0.04,
+      "materialHint": "silicone_wire",
+      "specifications": {
+        "relationshipId": "rel_multi_fc_gps",
+        "brepFaces": 60
+      },
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/parametric_multirotor_v1/comp_multi_wire_gps_data",
+      "sourceName": "Zappd Multirotor CAD family",
+      "stepFixtureName": "parametric_multirotor_v1/wiring/4-260-26-4/comp_multi_wire_gps_data.step",
+      "expectedStepSha256": "42c26f11b932fc6f08f75ae54f09f3b58a7fdf2ef0767558da47e27333411317"
+    },
+    {
       "id": "comp_multi_wire_motor_1",
       "parentId": "sub_multi_wiring",
       "name": "Motor 1 phase harness",
@@ -1214,8 +1695,8 @@
       "depth": 2,
       "category": "wiring",
       "colorHex": "#cc2929",
-      "dimensionsMm": [92.3663942805847, 28.6250002, 54.916394280584704],
-      "restPositionMeters": [0.03223319704029235, 0.0270625, -0.05095819704029235],
+      "dimensionsMm": [93.10885640083058, 26.52500020000003, 55.65885640083058],
+      "restPositionMeters": [0.03260442810041529, 0.02706249999999999, -0.051329428100415284],
       "explodeDirection": [0, 1, 0],
       "explodeDistanceMeters": 0.04,
       "materialHint": "silicone_wire",
@@ -1228,7 +1709,7 @@
       "sourceUrl": "harness://zappd/parametric_multirotor_v1/comp_multi_wire_motor_2",
       "sourceName": "Zappd Multirotor CAD family",
       "stepFixtureName": "parametric_multirotor_v1/wiring/4-260-26-4/comp_multi_wire_motor_2.step",
-      "expectedStepSha256": "849d442cd835b7dc80d23395c861853af843ccbdd0c229d64dd5a9bb052eac33"
+      "expectedStepSha256": "ba25c296813d1eba8e7d0e2f54d7bb6defb02783952c12eebc8eccd095b29241"
     },
     {
       "id": "comp_multi_wire_motor_3",
@@ -1262,21 +1743,21 @@
       "depth": 2,
       "category": "wiring",
       "colorHex": "#cc2929",
-      "dimensionsMm": [45.10885640083058, 26.52500020000003, 75.65885640083057],
-      "restPositionMeters": [-0.05660442810041529, 0.02706249999999999, 0.041329428100415296],
+      "dimensionsMm": [45.09337950118333, 26.738272275205254, 75.64337950118332],
+      "restPositionMeters": [-0.056596689650591656, 0.026955863962397377, 0.041321689650591666],
       "explodeDirection": [0, 1, 0],
       "explodeDistanceMeters": 0.04,
       "materialHint": "silicone_wire",
       "specifications": {
         "relationshipId": "rel_multi_esc_motor_4",
-        "brepFaces": 60
+        "brepFaces": 48
       },
       "origin": "procedural_harness",
       "spdxLicense": "MIT",
       "sourceUrl": "harness://zappd/parametric_multirotor_v1/comp_multi_wire_motor_4",
       "sourceName": "Zappd Multirotor CAD family",
       "stepFixtureName": "parametric_multirotor_v1/wiring/4-260-26-4/comp_multi_wire_motor_4.step",
-      "expectedStepSha256": "ca9d8919cbfd509d0998decd456c86b4b9cf0832ca7f226b73ccae3c2c2b21fd"
+      "expectedStepSha256": "f85544370ad0a63e2231aadc076d236743c7da8ea0431dfef0b9a9260a256fc6"
     }
   ],
   "relationships": [
@@ -1497,6 +1978,54 @@
       "whyConnected": "Transfers loads between the mounted parts."
     },
     {
+      "id": "rel_multi_pdb_bec_support_upper",
+      "fromComponentId": "comp_multi_pdb_bec_support",
+      "toComponentId": "comp_multi_upper",
+      "connectionType": "rigid_fastener",
+      "howConnected": "Locate the electronics standoff on the upper deck",
+      "whyConnected": "Transfers loads between the mounted parts."
+    },
+    {
+      "id": "rel_multi_pdb_bec_pdb_bec_support",
+      "fromComponentId": "comp_multi_pdb_bec",
+      "toComponentId": "comp_multi_pdb_bec_support",
+      "connectionType": "rigid_fastener",
+      "howConnected": "Seat the PCB on its standoff",
+      "whyConnected": "Transfers loads between the mounted parts."
+    },
+    {
+      "id": "rel_multi_gps_support_upper",
+      "fromComponentId": "comp_multi_gps_support",
+      "toComponentId": "comp_multi_upper",
+      "connectionType": "rigid_fastener",
+      "howConnected": "Locate the electronics standoff on the upper deck",
+      "whyConnected": "Transfers loads between the mounted parts."
+    },
+    {
+      "id": "rel_multi_gps_gps_support",
+      "fromComponentId": "comp_multi_gps",
+      "toComponentId": "comp_multi_gps_support",
+      "connectionType": "rigid_fastener",
+      "howConnected": "Seat the PCB on its standoff",
+      "whyConnected": "Transfers loads between the mounted parts."
+    },
+    {
+      "id": "rel_multi_telemetry_support_upper",
+      "fromComponentId": "comp_multi_telemetry_support",
+      "toComponentId": "comp_multi_upper",
+      "connectionType": "rigid_fastener",
+      "howConnected": "Locate the electronics standoff on the upper deck",
+      "whyConnected": "Transfers loads between the mounted parts."
+    },
+    {
+      "id": "rel_multi_telemetry_telemetry_support",
+      "fromComponentId": "comp_multi_telemetry",
+      "toComponentId": "comp_multi_telemetry_support",
+      "connectionType": "rigid_fastener",
+      "howConnected": "Seat the PCB on its standoff",
+      "whyConnected": "Transfers loads between the mounted parts."
+    },
+    {
       "id": "rel_multi_battery_cradle_lower",
       "fromComponentId": "comp_multi_battery_cradle",
       "toComponentId": "comp_multi_lower",
@@ -1513,19 +2042,38 @@
       "whyConnected": "Keeps the parts in their installed positions."
     },
     {
-      "id": "rel_multi_battery_esc",
-      "fromComponentId": "comp_multi_battery",
+      "id": "rel_multi_pdb_bec_esc",
+      "fromComponentId": "comp_multi_pdb_bec",
       "toComponentId": "comp_multi_esc",
       "connectionType": "power_bus",
       "howConnected": "Connect the quadcopter 4-in-1 brushless esc battery feed cable",
       "whyConnected": "Feeds the downstream electronics from the 3S battery.",
-      "fromPortId": "port_pack_out",
+      "fromPortId": "port_esc_primary",
       "toPortId": "port_dc_in",
       "wireBundleDiameterMm": 1.8
     },
     {
-      "id": "rel_multi_wire_esc_power_battery",
+      "id": "rel_multi_wire_esc_power_pdb_bec",
       "fromComponentId": "comp_multi_wire_esc_power",
+      "toComponentId": "comp_multi_pdb_bec",
+      "connectionType": "assembly_mount",
+      "howConnected": "Secure the harness near its connector",
+      "whyConnected": "Keeps the parts in their installed positions."
+    },
+    {
+      "id": "rel_multi_battery_pdb_bec",
+      "fromComponentId": "comp_multi_battery",
+      "toComponentId": "comp_multi_pdb_bec",
+      "connectionType": "power_bus",
+      "howConnected": "Connect the main battery feed cable",
+      "whyConnected": "Feeds the downstream electronics from the 3S battery.",
+      "fromPortId": "port_pack_out",
+      "toPortId": "port_batt_in",
+      "wireBundleDiameterMm": 1.8
+    },
+    {
+      "id": "rel_multi_wire_main_power_battery",
+      "fromComponentId": "comp_multi_wire_main_power",
       "toComponentId": "comp_multi_battery",
       "connectionType": "assembly_mount",
       "howConnected": "Secure the harness near its connector",
@@ -1564,6 +2112,82 @@
     {
       "id": "rel_multi_wire_receiver_data_fc",
       "fromComponentId": "comp_multi_wire_receiver_data",
+      "toComponentId": "comp_multi_fc",
+      "connectionType": "assembly_mount",
+      "howConnected": "Secure the harness near its connector",
+      "whyConnected": "Keeps the parts in their installed positions."
+    },
+    {
+      "id": "rel_multi_fc_telemetry",
+      "fromComponentId": "comp_multi_fc",
+      "toComponentId": "comp_multi_telemetry",
+      "connectionType": "electrical_bus",
+      "howConnected": "Connect the telemetry data cable",
+      "whyConnected": "Carries control, data, or motor phase signals.",
+      "fromPortId": "port_telemetry",
+      "toPortId": "port_telemetry",
+      "wireBundleDiameterMm": 1.8
+    },
+    {
+      "id": "rel_multi_wire_telemetry_data_fc",
+      "fromComponentId": "comp_multi_wire_telemetry_data",
+      "toComponentId": "comp_multi_fc",
+      "connectionType": "assembly_mount",
+      "howConnected": "Secure the harness near its connector",
+      "whyConnected": "Keeps the parts in their installed positions."
+    },
+    {
+      "id": "rel_multi_pdb_bec_fc",
+      "fromComponentId": "comp_multi_pdb_bec",
+      "toComponentId": "comp_multi_fc",
+      "connectionType": "power_bus",
+      "howConnected": "Connect the flight controller power cable",
+      "whyConnected": "Feeds the downstream electronics from the 3S battery.",
+      "fromPortId": "port_5v_fc",
+      "toPortId": "port_power_in",
+      "wireBundleDiameterMm": 1.8
+    },
+    {
+      "id": "rel_multi_wire_fc_5v_pdb_bec",
+      "fromComponentId": "comp_multi_wire_fc_5v",
+      "toComponentId": "comp_multi_pdb_bec",
+      "connectionType": "assembly_mount",
+      "howConnected": "Secure the harness near its connector",
+      "whyConnected": "Keeps the parts in their installed positions."
+    },
+    {
+      "id": "rel_multi_pdb_bec_telemetry",
+      "fromComponentId": "comp_multi_pdb_bec",
+      "toComponentId": "comp_multi_telemetry",
+      "connectionType": "power_bus",
+      "howConnected": "Connect the telemetry power cable",
+      "whyConnected": "Feeds the downstream electronics from the 3S battery.",
+      "fromPortId": "port_5v_vtx",
+      "toPortId": "port_5v_in",
+      "wireBundleDiameterMm": 1.8
+    },
+    {
+      "id": "rel_multi_wire_telemetry_5v_pdb_bec",
+      "fromComponentId": "comp_multi_wire_telemetry_5v",
+      "toComponentId": "comp_multi_pdb_bec",
+      "connectionType": "assembly_mount",
+      "howConnected": "Secure the harness near its connector",
+      "whyConnected": "Keeps the parts in their installed positions."
+    },
+    {
+      "id": "rel_multi_fc_gps",
+      "fromComponentId": "comp_multi_fc",
+      "toComponentId": "comp_multi_gps",
+      "connectionType": "electrical_bus",
+      "howConnected": "Connect the navigation sensor data cable",
+      "whyConnected": "Carries control, data, or motor phase signals.",
+      "fromPortId": "port_gps",
+      "toPortId": "port_sensor_bus",
+      "wireBundleDiameterMm": 1.8
+    },
+    {
+      "id": "rel_multi_wire_gps_data_fc",
+      "fromComponentId": "comp_multi_wire_gps_data",
       "toComponentId": "comp_multi_fc",
       "connectionType": "assembly_mount",
       "howConnected": "Secure the harness near its connector",
@@ -1745,8 +2369,35 @@
       "relationshipIds": ["rel_multi_rx_support_upper", "rel_multi_rx_rx_support"]
     },
     {
-      "id": "step_multi_battery",
+      "id": "step_multi_pdb_bec",
       "order": 9,
+      "title": "Mount the PDB_BEC",
+      "summary": "Mount the PDB_BEC.",
+      "componentIds": ["comp_multi_pdb_bec_support", "comp_multi_pdb_bec"],
+      "relationshipIds": ["rel_multi_pdb_bec_support_upper", "rel_multi_pdb_bec_pdb_bec_support"]
+    },
+    {
+      "id": "step_multi_gps",
+      "order": 10,
+      "title": "Mount the GPS",
+      "summary": "Mount the GPS.",
+      "componentIds": ["comp_multi_gps_support", "comp_multi_gps"],
+      "relationshipIds": ["rel_multi_gps_support_upper", "rel_multi_gps_gps_support"]
+    },
+    {
+      "id": "step_multi_telemetry",
+      "order": 11,
+      "title": "Mount the TELEMETRY",
+      "summary": "Mount the TELEMETRY.",
+      "componentIds": ["comp_multi_telemetry_support", "comp_multi_telemetry"],
+      "relationshipIds": [
+        "rel_multi_telemetry_support_upper",
+        "rel_multi_telemetry_telemetry_support"
+      ]
+    },
+    {
+      "id": "step_multi_battery",
+      "order": 12,
       "title": "Mount the battery",
       "summary": "Mount the battery.",
       "componentIds": ["comp_multi_battery_cradle", "comp_multi_battery"],
@@ -1754,15 +2405,23 @@
     },
     {
       "id": "step_multi_wire_esc_power",
-      "order": 10,
+      "order": 13,
       "title": "Install the quadcopter 4-in-1 brushless esc battery feed harness",
       "summary": "Install the quadcopter 4-in-1 brushless esc battery feed harness.",
       "componentIds": ["comp_multi_wire_esc_power"],
-      "relationshipIds": ["rel_multi_battery_esc", "rel_multi_wire_esc_power_battery"]
+      "relationshipIds": ["rel_multi_pdb_bec_esc", "rel_multi_wire_esc_power_pdb_bec"]
+    },
+    {
+      "id": "step_multi_wire_main_power",
+      "order": 14,
+      "title": "Install the main battery feed harness",
+      "summary": "Install the main battery feed harness.",
+      "componentIds": ["comp_multi_wire_main_power"],
+      "relationshipIds": ["rel_multi_battery_pdb_bec", "rel_multi_wire_main_power_battery"]
     },
     {
       "id": "step_multi_wire_esc_signal",
-      "order": 11,
+      "order": 15,
       "title": "Install the flight controller signal harness",
       "summary": "Install the flight controller signal harness.",
       "componentIds": ["comp_multi_wire_esc_signal"],
@@ -1770,15 +2429,47 @@
     },
     {
       "id": "step_multi_wire_receiver_data",
-      "order": 12,
+      "order": 16,
       "title": "Install the receiver data harness",
       "summary": "Install the receiver data harness.",
       "componentIds": ["comp_multi_wire_receiver_data"],
       "relationshipIds": ["rel_multi_fc_rx", "rel_multi_wire_receiver_data_fc"]
     },
     {
+      "id": "step_multi_wire_telemetry_data",
+      "order": 17,
+      "title": "Install the telemetry data harness",
+      "summary": "Install the telemetry data harness.",
+      "componentIds": ["comp_multi_wire_telemetry_data"],
+      "relationshipIds": ["rel_multi_fc_telemetry", "rel_multi_wire_telemetry_data_fc"]
+    },
+    {
+      "id": "step_multi_wire_fc_5v",
+      "order": 18,
+      "title": "Install the flight controller power harness",
+      "summary": "Install the flight controller power harness.",
+      "componentIds": ["comp_multi_wire_fc_5v"],
+      "relationshipIds": ["rel_multi_pdb_bec_fc", "rel_multi_wire_fc_5v_pdb_bec"]
+    },
+    {
+      "id": "step_multi_wire_telemetry_5v",
+      "order": 19,
+      "title": "Install the telemetry power harness",
+      "summary": "Install the telemetry power harness.",
+      "componentIds": ["comp_multi_wire_telemetry_5v"],
+      "relationshipIds": ["rel_multi_pdb_bec_telemetry", "rel_multi_wire_telemetry_5v_pdb_bec"]
+    },
+    {
+      "id": "step_multi_wire_gps_data",
+      "order": 20,
+      "title": "Install the navigation sensor data harness",
+      "summary": "Install the navigation sensor data harness.",
+      "componentIds": ["comp_multi_wire_gps_data"],
+      "relationshipIds": ["rel_multi_fc_gps", "rel_multi_wire_gps_data_fc"]
+    },
+    {
       "id": "step_multi_wire_motor_1",
-      "order": 13,
+      "order": 21,
       "title": "Install the motor 1 phase harness",
       "summary": "Install the motor 1 phase harness.",
       "componentIds": ["comp_multi_wire_motor_1"],
@@ -1786,7 +2477,7 @@
     },
     {
       "id": "step_multi_wire_motor_2",
-      "order": 14,
+      "order": 22,
       "title": "Install the motor 2 phase harness",
       "summary": "Install the motor 2 phase harness.",
       "componentIds": ["comp_multi_wire_motor_2"],
@@ -1794,7 +2485,7 @@
     },
     {
       "id": "step_multi_wire_motor_3",
-      "order": 15,
+      "order": 23,
       "title": "Install the motor 3 phase harness",
       "summary": "Install the motor 3 phase harness.",
       "componentIds": ["comp_multi_wire_motor_3"],
@@ -1802,7 +2493,7 @@
     },
     {
       "id": "step_multi_wire_motor_4",
-      "order": 16,
+      "order": 24,
       "title": "Install the motor 4 phase harness",
       "summary": "Install the motor 4 phase harness.",
       "componentIds": ["comp_multi_wire_motor_4"],
