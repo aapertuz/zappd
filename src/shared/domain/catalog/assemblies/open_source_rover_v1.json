@@ -203,7 +203,22 @@
         "widthMm": 40.0,
         "brepFaces": 14
       },
-      "expectedStepSha256": "0f32dbdb1bbde6c588042f46426aa80282a5483b703e8f2608ae5fea6b5c5c01"
+      "expectedStepSha256": "0f32dbdb1bbde6c588042f46426aa80282a5483b703e8f2608ae5fea6b5c5c01",
+      "ports": [
+        {
+          "portId": "port_bus_in",
+          "label": "Rear auxiliary power input",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "dc_power",
+          "role": "sink",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 12.6,
+          "maxCurrentA": 5,
+          "localPositionMeters": [0, -0.002, 0],
+          "exitDirection": [0, -1, 0]
+        }
+      ]
     },
     {
       "id": "comp_wheel_bracket_left",
@@ -438,6 +453,12 @@
           "label": "Jetson GPIO",
           "connectorType": "40-pin GPIO",
           "busKind": "i2c_spi_uart",
+          "role": "bidirectional",
+          "minVoltageV": 3,
+          "nominalVoltageV": 3.3,
+          "maxVoltageV": 3.6,
+          "maxCurrentA": 0.25,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"],
           "localPositionMeters": [0.04342, 0.00514, 4.25e-5],
           "exitDirection": [0.0, 1.0, -0.0]
         },
@@ -454,6 +475,12 @@
           "label": "DC power input",
           "connectorType": "DC barrel jack",
           "busKind": "dc_power",
+          "role": "sink",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 12.6,
+          "maxCurrentA": 3,
+          "wireColorsHex": ["#cc2929", "#222428"],
           "localPositionMeters": [-0.04815, 0.003, 0.0129125],
           "exitDirection": [-1.0, 0.0, -0.0]
         },
@@ -548,8 +575,299 @@
           "busKind": "dc_power",
           "localPositionMeters": [0.03624, -0.01237, -0.019255],
           "exitDirection": [0, -1, 0]
+        },
+        {
+          "portId": "port_pack_out",
+          "label": "3S pack output",
+          "connectorType": "Solder tabs",
+          "busKind": "dc_power",
+          "role": "source",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 12.6,
+          "maxCurrentA": 15,
+          "wireColorsHex": ["#cc2929", "#222428"],
+          "localPositionMeters": [-0.03624, -0.01237, 0.019255],
+          "exitDirection": [0, -1, 0]
         }
       ]
+    },
+    {
+      "id": "comp_nova2_motor_pdb",
+      "parentId": "sub_chassis_compute",
+      "name": "NOVA2 Motor Controller and Power Distribution Board",
+      "level": "component",
+      "depth": 2,
+      "category": "electronics",
+      "restPositionMeters": [-0.059, -0.0111, 0.008],
+      "restRotationDeg": [180, 90, 0],
+      "dimensionsMm": [58.3, 20.5, 38],
+      "explodeDirection": [0, -1, 0],
+      "explodeDistanceMeters": 0.036,
+      "colorHex": "#247052",
+      "materialHint": "fr4_pcb",
+      "origin": "kicad_pcb_step",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "kicad://zappd/kicad_nova2_motor_pdb",
+      "sourceName": "Zappd kicad_nova2_motor_pdb.kicad_pcb with KiCad kicad-packages3D models",
+      "stepFixtureName": "kicad_nova2_motor_pdb.step",
+      "expectedStepSha256": "1ff9e1b4b1758dc4d1dec406ec5b6a76802bd35d988882ad64f7cb041783f279",
+      "specifications": {
+        "pcbWidthMm": 58,
+        "pcbLengthMm": 38,
+        "pcbThicknessMm": 1.6,
+        "brepFaces": 1762,
+        "xcafColors": 10,
+        "referenceLayout": true
+      },
+      "ports": [
+        {
+          "portId": "port_batt_in",
+          "label": "3S battery input",
+          "connectorType": "XT60",
+          "busKind": "dc_power",
+          "role": "sink",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 12.6,
+          "maxCurrentA": 15,
+          "wireColorsHex": ["#cc2929", "#222428"],
+          "localPositionMeters": [0.01575, 0.01025, -0.0],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_carrier_out",
+          "label": "Jetson carrier DC output",
+          "connectorType": "DC barrel jack",
+          "busKind": "dc_power",
+          "role": "source",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 12.6,
+          "maxCurrentA": 3,
+          "wireColorsHex": ["#cc2929", "#222428"],
+          "localPositionMeters": [-0.02915, 0.00065, -0.0],
+          "exitDirection": [-1.0, 0.0, -0.0]
+        },
+        {
+          "portId": "port_bus_coupler",
+          "label": "Auxiliary power bus coupler",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "dc_power",
+          "role": "source",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 12.6,
+          "maxCurrentA": 5,
+          "wireColorsHex": ["#cc2929", "#222428"],
+          "localPositionMeters": [-0.01285, 0.00025, 0.0125],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_ctrl_uart",
+          "label": "Carrier control UART",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "i2c_spi_uart",
+          "role": "bidirectional",
+          "minVoltageV": 3,
+          "nominalVoltageV": 3.3,
+          "maxVoltageV": 3.6,
+          "maxCurrentA": 0.25,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"],
+          "localPositionMeters": [-0.00085, -0.00155, 0.013],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_imu_bus",
+          "label": "IMU telemetry bus",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "i2c_spi_uart",
+          "role": "bidirectional",
+          "minVoltageV": 3,
+          "nominalVoltageV": 3.3,
+          "maxVoltageV": 3.6,
+          "maxCurrentA": 0.25,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"],
+          "localPositionMeters": [0.01215, -0.00155, 0.013],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_drive_left",
+          "label": "Left drive bus",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "ttl_serial",
+          "role": "source",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 12.6,
+          "maxCurrentA": 2.5,
+          "wireColorsHex": ["#cc2929", "#222428", "#e5c158"],
+          "localPositionMeters": [-0.00985, 0.00025, -0.013],
+          "exitDirection": [0.0, 1.0, -0.0]
+        },
+        {
+          "portId": "port_drive_right",
+          "label": "Right drive bus",
+          "connectorType": "JST-PH 3-pin",
+          "busKind": "ttl_serial",
+          "role": "source",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 12.6,
+          "maxCurrentA": 2.5,
+          "wireColorsHex": ["#cc2929", "#222428", "#e5c158"],
+          "localPositionMeters": [0.00815, 0.00025, -0.013],
+          "exitDirection": [0.0, 1.0, -0.0]
+        }
+      ],
+      "mountingInterfaces": [
+        {
+          "interfaceId": "mount_board",
+          "label": "Four-hole M3 PCB mount",
+          "kind": "m3_standoff",
+          "holeDiameterMm": 3.2,
+          "boltPitchMm": [50, 30],
+          "localPositionMeters": [0, 0, 0],
+          "normalDirection": [0, 1, 0]
+        }
+      ]
+    },
+    {
+      "id": "comp_nova2_nav_imu",
+      "parentId": "sub_perception_avionics",
+      "name": "9-DOF Navigation IMU and GPS Module",
+      "level": "component",
+      "depth": 2,
+      "category": "sensor",
+      "restPositionMeters": [0.054, -0.0035, 0.038],
+      "restRotationDeg": [180, 0, 0],
+      "dimensionsMm": [22, 5.845, 18],
+      "explodeDirection": [0, -1, 0],
+      "explodeDistanceMeters": 0.036,
+      "colorHex": "#247052",
+      "materialHint": "fr4_pcb",
+      "origin": "kicad_pcb_step",
+      "spdxLicense": "CC-BY-SA-4.0",
+      "sourceUrl": "kicad://zappd/kicad_nav_imu",
+      "sourceName": "Zappd kicad_nav_imu.kicad_pcb with KiCad kicad-packages3D models",
+      "stepFixtureName": "kicad_nav_imu.step",
+      "expectedStepSha256": "499d5523ee54c403344ae3c6e340ac0abf3328da1475d8c8475580cb5f18ae2a",
+      "specifications": {
+        "pcbWidthMm": 22,
+        "pcbLengthMm": 18,
+        "pcbThicknessMm": 1.6,
+        "brepFaces": 688,
+        "xcafColors": 7,
+        "referenceLayout": true
+      },
+      "ports": [
+        {
+          "portId": "port_sensor_bus",
+          "label": "Navigation sensor bus",
+          "connectorType": "JST-GH 4-pin",
+          "busKind": "i2c_spi_uart",
+          "role": "bidirectional",
+          "minVoltageV": 3,
+          "nominalVoltageV": 3.3,
+          "maxVoltageV": 3.6,
+          "maxCurrentA": 0.25,
+          "wireColorsHex": ["#cc2929", "#222428", "#3b82f6"],
+          "localPositionMeters": [0.0045, 0.0029225, -0.0],
+          "exitDirection": [0.0, 1.0, -0.0]
+        }
+      ],
+      "mountingInterfaces": [
+        {
+          "interfaceId": "mount_board",
+          "label": "Edge clamp mount",
+          "kind": "clamp",
+          "holeDiameterMm": 3.2,
+          "localPositionMeters": [0, 0, 0],
+          "normalDirection": [0, 1, 0]
+        }
+      ]
+    },
+    {
+      "id": "comp_drive_motor_left",
+      "parentId": "sub_mobility_drivetrain",
+      "name": "Left Dynamixel XL430 Wheel Drive Actuator",
+      "level": "component",
+      "depth": 2,
+      "category": "actuator",
+      "colorHex": "#404754",
+      "dimensionsMm": [28.5, 40.9, 46.5],
+      "restPositionMeters": [-0.105, -0.03, 0.029],
+      "explodeDirection": [0, -0.707, 0.707],
+      "explodeDistanceMeters": 0.055,
+      "materialHint": "servo_housing",
+      "origin": "open_step_catalog",
+      "spdxLicense": "CC-BY-NC-SA-4.0",
+      "sourceUrl": "https://github.com/AstroX-OpenRover/NOVA2/blob/main/Assembly/XL-430_new.stp",
+      "sourceName": "NOVA2 XL-430_new.stp",
+      "stepFixtureName": "nova2_dynamixel_xl430.step",
+      "specifications": {
+        "stallTorqueNm": 1.5,
+        "brepFaces": 1281,
+        "operatingMode": "continuous wheel velocity"
+      },
+      "expectedStepSha256": "54e82d0ec41a87a397f255bad2c3c641ba97da53fb3ebc55288d4453fe230196",
+      "ports": [
+        {
+          "portId": "port_ttl_in",
+          "label": "Wheel drive TTL input",
+          "connectorType": "JST-EH 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.01425, 0.00555, 0.00675],
+          "exitDirection": [1, 0, 0],
+          "role": "sink",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 12.6,
+          "maxCurrentA": 2.5
+        }
+      ],
+      "restRotationDeg": [90, 0, 0]
+    },
+    {
+      "id": "comp_drive_motor_right",
+      "parentId": "sub_mobility_drivetrain",
+      "name": "Right Dynamixel XL430 Wheel Drive Actuator",
+      "level": "component",
+      "depth": 2,
+      "category": "actuator",
+      "colorHex": "#404754",
+      "dimensionsMm": [28.5, 40.9, 46.5],
+      "restPositionMeters": [0.105, -0.03, -0.029],
+      "explodeDirection": [0, -0.707, -0.707],
+      "explodeDistanceMeters": 0.055,
+      "materialHint": "servo_housing",
+      "origin": "open_step_catalog",
+      "spdxLicense": "CC-BY-NC-SA-4.0",
+      "sourceUrl": "https://github.com/AstroX-OpenRover/NOVA2/blob/main/Assembly/XL-430_new.stp",
+      "sourceName": "NOVA2 XL-430_new.stp",
+      "stepFixtureName": "nova2_dynamixel_xl430.step",
+      "specifications": {
+        "stallTorqueNm": 1.5,
+        "brepFaces": 1281,
+        "operatingMode": "continuous wheel velocity"
+      },
+      "expectedStepSha256": "54e82d0ec41a87a397f255bad2c3c641ba97da53fb3ebc55288d4453fe230196",
+      "ports": [
+        {
+          "portId": "port_ttl_in",
+          "label": "Wheel drive TTL input",
+          "connectorType": "JST-EH 3-pin",
+          "busKind": "ttl_serial",
+          "localPositionMeters": [0.01425, 0.00555, 0.00675],
+          "exitDirection": [1, 0, 0],
+          "role": "sink",
+          "minVoltageV": 9,
+          "nominalVoltageV": 11.1,
+          "maxVoltageV": 12.6,
+          "maxCurrentA": 2.5
+        }
+      ],
+      "restRotationDeg": [90, 180, 0]
     },
     {
       "id": "comp_nova2_cable_zed_usb",
@@ -626,13 +944,13 @@
     {
       "id": "comp_nova2_cable_battery_power",
       "parentId": "sub_chassis_compute",
-      "name": "Battery to carrier power lead",
+      "name": "3S battery feed",
       "level": "component",
       "depth": 2,
       "category": "wiring",
       "colorHex": "#cc2929",
-      "dimensionsMm": [47.15148662564841, 108.34779092441039, 21.56139602591626],
-      "restPositionMeters": [-0.058422858969982824, 0.013978377347909412, 0.028018145912265285],
+      "dimensionsMm": [25.636824992011896, 17.25742224642709, 30.112432357733105],
+      "restPositionMeters": [-0.04811723592541771, -0.030778711123213544, 0.006156136862309918],
       "explodeDirection": [-1, 0, 0],
       "explodeDistanceMeters": 0.026,
       "materialHint": "silicone_wire",
@@ -643,9 +961,167 @@
       "stepFixtureName": "comp_nova2_cable_battery_power.step",
       "specifications": {
         "relationshipId": "rel_nova2_battery_power",
-        "brepFaces": 56
+        "fromConnectorClearanceMm": 0.8,
+        "toConnectorClearanceMm": 0.8,
+        "brepFaces": 48
       },
-      "expectedStepSha256": "56fbef276705febc22596ec4665aa280d77f0de94ed2209529cdb3bd2b606ac9"
+      "expectedStepSha256": "004457e7eed48ab924bbb458359d98f707d0733550f64b502409febb399d58dc"
+    },
+    {
+      "id": "comp_nova2_cable_carrier_power",
+      "parentId": "sub_chassis_compute",
+      "name": "Carrier DC lead",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [44.05886792841531, 83.02733344904452, 30.221091385906032],
+      "restPositionMeters": [-0.06012943396420752, 0.02761019149909257, 0.03474231138717035],
+      "explodeDirection": [-1, 0, 0],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/open_source_rover_v1/rel_nova2_carrier_power",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_nova2_cable_carrier_power.step",
+      "specifications": {
+        "relationshipId": "rel_nova2_carrier_power",
+        "fromConnectorClearanceMm": 0.8,
+        "toConnectorClearanceMm": 0.8,
+        "brepFaces": 88
+      },
+      "expectedStepSha256": "00ed1ddc1e879262a8bd6a74e1a47767fafe285e3c5be2e4d5385f17f4f91852"
+    },
+    {
+      "id": "comp_nova2_cable_bus_coupler",
+      "parentId": "sub_chassis_compute",
+      "name": "Rear auxiliary power lead",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#cc2929",
+      "dimensionsMm": [149.2815920378709, 25.77851459679153, 64.4260514304224],
+      "restPositionMeters": [0.002376090036582518, -0.01968925729839576, -0.009758613850505315],
+      "explodeDirection": [0, -1, 0],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/open_source_rover_v1/rel_nova2_bus_coupler",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_nova2_cable_bus_coupler.step",
+      "specifications": {
+        "relationshipId": "rel_nova2_bus_coupler",
+        "fromConnectorClearanceMm": 0.8,
+        "toConnectorClearanceMm": 0.8,
+        "brepFaces": 64
+      },
+      "expectedStepSha256": "ed868ff8dca44d6654f9a21a83dffbcd23d7bb9bb21486036dfd4da95cc144ea"
+    },
+    {
+      "id": "comp_nova2_cable_ctrl_uart",
+      "parentId": "sub_chassis_compute",
+      "name": "Carrier control UART cable",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#27272a",
+      "dimensionsMm": [135.4311774412444, 111.01954006757886, 24.008828426667264],
+      "restPositionMeters": [-0.01223287612060832, 0.029351145673750585, 0.01848514940745128],
+      "explodeDirection": [-1, 0, 0],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/open_source_rover_v1/rel_nova2_ctrl_uart",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_nova2_cable_ctrl_uart.step",
+      "specifications": {
+        "relationshipId": "rel_nova2_ctrl_uart",
+        "fromConnectorClearanceMm": 0.8,
+        "toConnectorClearanceMm": 0.8,
+        "brepFaces": 108
+      },
+      "expectedStepSha256": "c12c976c9f86cd70a5f952eda712d58447daf2e556a31c933bcafadb95a8a85e"
+    },
+    {
+      "id": "comp_nova2_cable_nav_imu",
+      "parentId": "sub_perception_avionics",
+      "name": "Navigation sensor bus cable",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#27272a",
+      "dimensionsMm": [131.95954502852987, 25.949664032012613, 49.01809091807745],
+      "restPositionMeters": [-0.0064908158210291765, -0.020197332016006302, 0.01879728065315637],
+      "explodeDirection": [0, -1, 0],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/open_source_rover_v1/rel_nova2_nav_imu",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_nova2_cable_nav_imu.step",
+      "specifications": {
+        "relationshipId": "rel_nova2_nav_imu",
+        "fromConnectorClearanceMm": 0.8,
+        "toConnectorClearanceMm": 0.8,
+        "brepFaces": 84
+      },
+      "expectedStepSha256": "e34333a8e154f26db3d67752790b9495c90500381158dc37f7e99d4992e1d618"
+    },
+    {
+      "id": "comp_nova2_cable_drive_left",
+      "parentId": "sub_mobility_drivetrain",
+      "name": "Left drive TTL cable",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#27272a",
+      "dimensionsMm": [44.42058833529414, 32.8878339720466, 19.578575213767355],
+      "restPositionMeters": [-0.06773970583235293, -0.028593916986023298, 0.02607752280100133],
+      "explodeDirection": [0, -1, 0],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/open_source_rover_v1/rel_nova2_drive_left",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_nova2_cable_drive_left.step",
+      "specifications": {
+        "relationshipId": "rel_nova2_drive_left",
+        "fromConnectorClearanceMm": 0.8,
+        "toConnectorClearanceMm": 0.8,
+        "brepFaces": 72
+      },
+      "expectedStepSha256": "a10437edcf1e3a353fa273442ce1fb06eef61671493233b044b676557e499f24"
+    },
+    {
+      "id": "comp_nova2_cable_drive_right",
+      "parentId": "sub_mobility_drivetrain",
+      "name": "Right drive TTL cable",
+      "level": "component",
+      "depth": 2,
+      "category": "wiring",
+      "colorHex": "#27272a",
+      "dimensionsMm": [136.42058833529413, 32.81061477545492, 37.382584788054146],
+      "restPositionMeters": [0.02173970583235295, -0.02855530738772746, -0.017279527588144716],
+      "explodeDirection": [0, -1, 0],
+      "explodeDistanceMeters": 0.026,
+      "materialHint": "silicone_wire",
+      "origin": "procedural_harness",
+      "spdxLicense": "MIT",
+      "sourceUrl": "harness://zappd/open_source_rover_v1/rel_nova2_drive_right",
+      "sourceName": "Zappd cable route",
+      "stepFixtureName": "comp_nova2_cable_drive_right.step",
+      "specifications": {
+        "relationshipId": "rel_nova2_drive_right",
+        "fromConnectorClearanceMm": 0.8,
+        "toConnectorClearanceMm": 0.8,
+        "brepFaces": 72
+      },
+      "expectedStepSha256": "71cc50308ed98a41d98f3da4e0eb1142f2fafabb5e5186ae5d8293f10ce8c150"
     }
   ],
   "relationships": [
@@ -809,25 +1285,21 @@
     {
       "id": "rel_nova2_battery_power",
       "fromComponentId": "comp_nova2_battery_pack",
-      "toComponentId": "comp_nova2_jetson_carrier",
+      "toComponentId": "comp_nova2_motor_pdb",
       "connectionType": "power_bus",
-      "howConnected": "Battery to carrier power lead connects the two labeled ports.",
-      "whyConnected": "The battery supplies DC power to the carrier.",
-      "fromPortId": "port_tab_1",
-      "toPortId": "port_dc_in",
+      "howConnected": "The 3S battery lead joins the pack output tabs to the distribution board XT60 input.",
+      "whyConnected": "The 11.1 V pack supplies the motor controller and power distribution board.",
+      "fromPortId": "port_pack_out",
+      "toPortId": "port_batt_in",
       "routingWaypointsMeters": [
-        [-0.046, -0.039, 0.021],
-        [-0.064, -0.032, 0.028],
-        [-0.079, -0.014, 0.033],
-        [-0.08, 0.007, 0.036],
-        [-0.079, 0.028, 0.036],
-        [-0.076, 0.047, 0.037],
-        [-0.069, 0.062, 0.034],
-        [-0.059, 0.067, 0.028],
-        [-0.053, 0.06, 0.022],
-        [-0.05, 0.047, 0.0209]
+        [-0.03624, -0.034, 0.019254999999999998],
+        [-0.039, -0.038, 0.017],
+        [-0.052, -0.038, 0.014],
+        [-0.059, -0.035, 0.004],
+        [-0.059, -0.031, -0.00775]
       ],
-      "wireBundleDiameterMm": 3.2
+      "wireBundleDiameterMm": 3.2,
+      "routingStyle": "filleted_polyline"
     },
     {
       "id": "rel_nova2_battery_power_harness",
@@ -852,6 +1324,211 @@
       "connectionType": "assembly_mount",
       "howConnected": "Align the sourced mounting piece across the chassis seam.",
       "whyConnected": "Connects the wheel bracket to the chassis mounting area."
+    },
+    {
+      "id": "rel_nova2_drive_left_mount",
+      "fromComponentId": "comp_drive_motor_left",
+      "toComponentId": "subcomp_axle_flange_left",
+      "connectionType": "assembly_mount",
+      "howConnected": "The drive output faces the left axle flange below the wheel bracket.",
+      "whyConnected": "The flange couples the left drive actuator to its wheel axle."
+    },
+    {
+      "id": "rel_nova2_drive_right_mount",
+      "fromComponentId": "comp_drive_motor_right",
+      "toComponentId": "subcomp_axle_flange_right",
+      "connectionType": "assembly_mount",
+      "howConnected": "The drive output faces the right axle flange below the wheel bracket.",
+      "whyConnected": "The flange couples the right drive actuator to its wheel axle."
+    },
+    {
+      "id": "rel_nova2_motor_pdb_mount",
+      "fromComponentId": "comp_nova2_motor_pdb",
+      "toComponentId": "comp_rover_base_plate",
+      "connectionType": "assembly_mount",
+      "howConnected": "Seat the board below the left edge of the base plate on its standoff pattern.",
+      "whyConnected": "The base plate supports the drive controller beside the 3S pack."
+    },
+    {
+      "id": "rel_nova2_nav_imu_mount",
+      "fromComponentId": "comp_nova2_nav_imu",
+      "toComponentId": "comp_rover_base_plate",
+      "connectionType": "assembly_mount",
+      "howConnected": "Seat the IMU board below the right edge of the base plate.",
+      "whyConnected": "A fixed chassis mount gives the IMU a stable orientation reference."
+    },
+    {
+      "id": "rel_nova2_carrier_power",
+      "fromComponentId": "comp_nova2_motor_pdb",
+      "toComponentId": "comp_nova2_jetson_carrier",
+      "connectionType": "power_bus",
+      "howConnected": "The DC lead connects the distribution board barrel output to the Jetson carrier barrel input.",
+      "whyConnected": "The distribution board supplies the Jetson carrier DC input.",
+      "fromPortId": "port_carrier_out",
+      "toPortId": "port_dc_in",
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [-0.059, -0.01175, 0.045],
+        [-0.071, -0.013, 0.048],
+        [-0.081, -0.009, 0.047],
+        [-0.081, 0.014, 0.044],
+        [-0.081, 0.046, 0.039],
+        [-0.076, 0.063, 0.035],
+        [-0.061, 0.068, 0.029],
+        [-0.052, 0.061, 0.022],
+        [-0.048, 0.047, 0.0209125],
+        [-0.044, 0.04075, 0.0209125]
+      ],
+      "wireBundleDiameterMm": 3.2
+    },
+    {
+      "id": "rel_nova2_carrier_power_harness",
+      "fromComponentId": "comp_nova2_cable_carrier_power",
+      "toComponentId": "comp_nova2_motor_pdb",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable seats at the source connector.",
+      "whyConnected": "The connector anchors the cable to the assembly."
+    },
+    {
+      "id": "rel_nova2_bus_coupler",
+      "fromComponentId": "comp_nova2_motor_pdb",
+      "toComponentId": "subcomp_rover_bus_coupler",
+      "connectionType": "power_bus",
+      "howConnected": "The auxiliary power lead runs from the distribution board to the rear bus coupler.",
+      "whyConnected": "The rear coupler carries the 11.1 V auxiliary supply.",
+      "fromPortId": "port_bus_coupler",
+      "toPortId": "port_bus_in",
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [-0.0715, -0.022, 0.02085],
+        [-0.068, -0.029, 0.012],
+        [-0.068, -0.031, -0.021],
+        [-0.063, -0.031, -0.041],
+        [0.055, -0.031, -0.041],
+        [0.076, -0.027, -0.035],
+        [0.076, -0.018, -0.02]
+      ],
+      "wireBundleDiameterMm": 2.6
+    },
+    {
+      "id": "rel_nova2_bus_coupler_harness",
+      "fromComponentId": "comp_nova2_cable_bus_coupler",
+      "toComponentId": "comp_nova2_motor_pdb",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable seats at the source connector.",
+      "whyConnected": "The connector anchors the cable to the assembly."
+    },
+    {
+      "id": "rel_nova2_ctrl_uart",
+      "fromComponentId": "comp_nova2_jetson_carrier",
+      "toComponentId": "comp_nova2_motor_pdb",
+      "connectionType": "electrical_bus",
+      "howConnected": "A serial lead connects the Jetson GPIO header to the motor controller UART.",
+      "whyConnected": "The Jetson carrier sends drive commands over its control UART.",
+      "fromPortId": "port_gpio",
+      "toPortId": "port_ctrl_uart",
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [0.054270000000000006, 0.049, 0.008042500000000001],
+        [0.055, 0.057, 0.019],
+        [0.055, 0.084, 0.029],
+        [-0.072, 0.084, 0.029],
+        [-0.0793, 0.069, 0.025],
+        [-0.0793, -0.019, 0.025],
+        [-0.075, -0.026, 0.013],
+        [-0.072, -0.02, 0.00885]
+      ],
+      "wireBundleDiameterMm": 2.4
+    },
+    {
+      "id": "rel_nova2_ctrl_uart_harness",
+      "fromComponentId": "comp_nova2_cable_ctrl_uart",
+      "toComponentId": "comp_nova2_jetson_carrier",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable seats at the source connector.",
+      "whyConnected": "The connector anchors the cable to the assembly."
+    },
+    {
+      "id": "rel_nova2_nav_imu",
+      "fromComponentId": "comp_nova2_motor_pdb",
+      "toComponentId": "comp_nova2_nav_imu",
+      "connectionType": "electrical_bus",
+      "howConnected": "The sensor lead connects the controller telemetry header to the navigation module.",
+      "whyConnected": "The motor controller receives orientation and navigation measurements over the sensor bus.",
+      "fromPortId": "port_imu_bus",
+      "toPortId": "port_sensor_bus",
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [-0.072, -0.024, -0.00415],
+        [-0.066, -0.029, -0.003],
+        [-0.064, -0.031, 0.03],
+        [-0.052, -0.032, 0.042],
+        [0.045, -0.032, 0.042],
+        [0.0585, -0.023, 0.038]
+      ],
+      "wireBundleDiameterMm": 2.4
+    },
+    {
+      "id": "rel_nova2_nav_imu_harness",
+      "fromComponentId": "comp_nova2_cable_nav_imu",
+      "toComponentId": "comp_nova2_motor_pdb",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable seats at the source connector.",
+      "whyConnected": "The connector anchors the cable to the assembly."
+    },
+    {
+      "id": "rel_nova2_drive_left",
+      "fromComponentId": "comp_nova2_motor_pdb",
+      "toComponentId": "comp_drive_motor_left",
+      "connectionType": "electrical_bus",
+      "howConnected": "The TTL cable joins the left motor controller channel to the left XL430.",
+      "whyConnected": "The motor controller supplies TTL control and power to the left drive actuator.",
+      "fromPortId": "port_drive_left",
+      "toPortId": "port_ttl_in",
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [-0.046, -0.023, 0.01785],
+        [-0.047, -0.03, 0.02],
+        [-0.056, -0.044, 0.026],
+        [-0.073, -0.044, 0.033],
+        [-0.082, -0.03675, 0.03455]
+      ],
+      "wireBundleDiameterMm": 2.4
+    },
+    {
+      "id": "rel_nova2_drive_left_harness",
+      "fromComponentId": "comp_nova2_cable_drive_left",
+      "toComponentId": "comp_nova2_motor_pdb",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable seats at the source connector.",
+      "whyConnected": "The connector anchors the cable to the assembly."
+    },
+    {
+      "id": "rel_nova2_drive_right",
+      "fromComponentId": "comp_nova2_motor_pdb",
+      "toComponentId": "comp_drive_motor_right",
+      "connectionType": "electrical_bus",
+      "howConnected": "The TTL cable joins the right motor controller channel to the right XL430.",
+      "whyConnected": "The motor controller supplies TTL control and power to the right drive actuator.",
+      "fromPortId": "port_drive_right",
+      "toPortId": "port_ttl_in",
+      "routingStyle": "filleted_polyline",
+      "routingWaypointsMeters": [
+        [-0.046, -0.023, -0.00015],
+        [-0.044, -0.034, -0.002],
+        [-0.035, -0.044, -0.008],
+        [0.064, -0.044, -0.032],
+        [0.081, -0.03675, -0.03455]
+      ],
+      "wireBundleDiameterMm": 2.4
+    },
+    {
+      "id": "rel_nova2_drive_right_harness",
+      "fromComponentId": "comp_nova2_cable_drive_right",
+      "toComponentId": "comp_nova2_motor_pdb",
+      "connectionType": "assembly_mount",
+      "howConnected": "The cable seats at the source connector.",
+      "whyConnected": "The connector anchors the cable to the assembly."
     }
   ],
   "assemblySteps": [
@@ -877,55 +1554,99 @@
     {
       "id": "step_rover_2",
       "order": 2,
-      "title": "Install Wheel Steering Brackets, Servos, and Axle Flanges",
-      "summary": "Attach left and right wheel brackets, mount the Dynamixel XL430 steering actuators, and bolt the 8mm axle flanges.",
+      "title": "Install Wheel Brackets, Axles, and Actuators",
+      "summary": "Attach both wheel brackets, fit the steering servos, and align each drive actuator with its axle flange.",
       "componentIds": [
         "comp_wheel_bracket_left",
         "comp_wheel_bracket_right",
         "comp_steering_servo_left",
         "comp_steering_servo_right",
         "subcomp_axle_flange_left",
-        "subcomp_axle_flange_right"
+        "subcomp_axle_flange_right",
+        "comp_drive_motor_left",
+        "comp_drive_motor_right"
       ],
       "relationshipIds": [
         "rel_nova2_steering_left",
         "rel_nova2_axle_left",
         "rel_nova2_steering_right",
-        "rel_nova2_axle_right"
+        "rel_nova2_axle_right",
+        "rel_nova2_drive_left_mount",
+        "rel_nova2_drive_right_mount"
       ]
     },
     {
       "id": "step_rover_3",
       "order": 3,
-      "title": "Mount ZED 2i Stereo Depth Camera",
-      "summary": "Secure the Stereolabs ZED 2i stereo depth camera forward of the compute bay.",
-      "componentIds": ["comp_zed2i_stereo_camera"],
-      "relationshipIds": ["rel_nova2_zed2i_compute"]
+      "title": "Mount the Stereo Camera and Navigation IMU",
+      "summary": "Secure the ZED 2i forward of the compute bay and seat the navigation IMU below the base plate.",
+      "componentIds": ["comp_zed2i_stereo_camera", "comp_nova2_nav_imu"],
+      "relationshipIds": ["rel_nova2_zed2i_compute", "rel_nova2_nav_imu_mount"]
     },
     {
       "id": "step_rover_4",
       "order": 4,
-      "title": "Install Jetson Carrier, Battery Pack, and Wiring Harnesses",
-      "summary": "Seat the carrier in the compute bay and secure the battery below the base plate. Connect the camera, both steering servos, and the battery lead.",
+      "title": "Mount the Carrier, Motor Controller, and Battery",
+      "summary": "Seat the Jetson carrier in the compute bay. Secure the motor controller and battery below the base plate.",
       "componentIds": [
         "comp_nova2_jetson_carrier",
-        "comp_nova2_battery_pack",
-        "comp_nova2_cable_zed_usb",
-        "comp_nova2_cable_servo_left",
-        "comp_nova2_cable_servo_right",
-        "comp_nova2_cable_battery_power"
+        "comp_nova2_motor_pdb",
+        "comp_nova2_battery_pack"
       ],
       "relationshipIds": [
         "rel_nova2_carrier_mount",
-        "rel_nova2_battery_mount",
+        "rel_nova2_motor_pdb_mount",
+        "rel_nova2_battery_mount"
+      ]
+    },
+    {
+      "id": "step_rover_5",
+      "order": 5,
+      "title": "Route Battery and DC Power",
+      "summary": "Connect the 3S pack to the distribution board. Connect its outputs to the carrier and rear coupler.",
+      "componentIds": [
+        "comp_nova2_cable_battery_power",
+        "comp_nova2_cable_carrier_power",
+        "comp_nova2_cable_bus_coupler"
+      ],
+      "relationshipIds": [
+        "rel_nova2_battery_power",
+        "rel_nova2_battery_power_harness",
+        "rel_nova2_carrier_power",
+        "rel_nova2_carrier_power_harness",
+        "rel_nova2_bus_coupler",
+        "rel_nova2_bus_coupler_harness"
+      ]
+    },
+    {
+      "id": "step_rover_6",
+      "order": 6,
+      "title": "Route Camera, Steering, Drive, and Sensor Cables",
+      "summary": "Connect the camera and steering servos to the carrier. Connect the carrier UART, navigation IMU, and drive actuators to the motor controller.",
+      "componentIds": [
+        "comp_nova2_cable_zed_usb",
+        "comp_nova2_cable_servo_left",
+        "comp_nova2_cable_servo_right",
+        "comp_nova2_cable_ctrl_uart",
+        "comp_nova2_cable_nav_imu",
+        "comp_nova2_cable_drive_left",
+        "comp_nova2_cable_drive_right"
+      ],
+      "relationshipIds": [
         "rel_nova2_zed2i_usb",
         "rel_nova2_zed2i_usb_harness",
         "rel_nova2_servo_left",
         "rel_nova2_servo_left_harness",
         "rel_nova2_servo_right",
         "rel_nova2_servo_right_harness",
-        "rel_nova2_battery_power",
-        "rel_nova2_battery_power_harness"
+        "rel_nova2_ctrl_uart",
+        "rel_nova2_ctrl_uart_harness",
+        "rel_nova2_nav_imu",
+        "rel_nova2_nav_imu_harness",
+        "rel_nova2_drive_left",
+        "rel_nova2_drive_left_harness",
+        "rel_nova2_drive_right",
+        "rel_nova2_drive_right_harness"
       ]
     }
   ]
