@@ -12,6 +12,7 @@ import {
 import type {
   AssemblyExplorerAction,
   AssemblyExplorerState,
+  DismissedInspectionWarnings,
   ExplorerCameraState,
   SeparationAxis,
   ShellVisibilityMode,
@@ -163,6 +164,11 @@ export function computeDefaultCameraForAssembly(
 
 const INITIAL_EXPLORER_PROVIDER: AiProviderId = 'deepseek';
 
+export const INITIAL_DISMISSED_WARNINGS: DismissedInspectionWarnings = {
+  unverified: false,
+  partial_inspection: false,
+};
+
 export const INITIAL_ASSEMBLY_EXPLORER_STATE: AssemblyExplorerState = {
   selectedProvider: INITIAL_EXPLORER_PROVIDER,
   lastRequestId: null,
@@ -184,6 +190,7 @@ export const INITIAL_ASSEMBLY_EXPLORER_STATE: AssemblyExplorerState = {
   selectedComponentId: null,
   isolatedComponentId: null,
   separatedOffsets: {},
+  dismissedWarnings: INITIAL_DISMISSED_WARNINGS,
 };
 
 function clampNumber(value: number, min: number, max: number): number {
@@ -399,6 +406,7 @@ function applyRebuiltAssembly(
     selectedComponentId: retainId(state.selectedComponentId),
     isolatedComponentId: retainId(state.isolatedComponentId),
     separatedOffsets,
+    dismissedWarnings: INITIAL_DISMISSED_WARNINGS,
     explodeFactor,
     camera:
       focusedComponentId === null
@@ -482,6 +490,7 @@ export function reduceAssemblyExplorerState(
         selectedComponentId: null,
         isolatedComponentId: null,
         separatedOffsets: {},
+        dismissedWarnings: INITIAL_DISMISSED_WARNINGS,
       };
     }
     case 'loadAssemblyError': {
@@ -664,6 +673,18 @@ export function reduceAssemblyExplorerState(
       return {
         ...state,
         separatedOffsets: remaining,
+      };
+    }
+    case 'dismissInspectionWarning': {
+      if (state.dismissedWarnings[action.warning]) {
+        return state;
+      }
+      return {
+        ...state,
+        dismissedWarnings: {
+          ...state.dismissedWarnings,
+          [action.warning]: true,
+        },
       };
     }
   }

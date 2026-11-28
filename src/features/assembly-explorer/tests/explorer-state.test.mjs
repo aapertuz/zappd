@@ -992,3 +992,95 @@ describe('assembly bundle verification status', () => {
     );
   });
 });
+
+describe('inspection warning dismissal state', () => {
+  const assembly = getCatalogArchetypeById('parametric_multirotor_v1');
+
+  it('starts with both warnings visible and dismisses each warning independently and idempotently', () => {
+    assert.deepEqual(INITIAL_ASSEMBLY_EXPLORER_STATE.dismissedWarnings, {
+      unverified: false,
+      partial_inspection: false,
+    });
+
+    const dismissedUnverified = reduceAssemblyExplorerState(INITIAL_ASSEMBLY_EXPLORER_STATE, {
+      type: 'dismissInspectionWarning',
+      warning: 'unverified',
+    });
+    assert.deepEqual(dismissedUnverified.dismissedWarnings, {
+      unverified: true,
+      partial_inspection: false,
+    });
+    assert.equal(
+      reduceAssemblyExplorerState(dismissedUnverified, {
+        type: 'dismissInspectionWarning',
+        warning: 'unverified',
+      }),
+      dismissedUnverified,
+    );
+
+    const dismissedBoth = reduceAssemblyExplorerState(dismissedUnverified, {
+      type: 'dismissInspectionWarning',
+      warning: 'partial_inspection',
+    });
+    assert.deepEqual(dismissedBoth.dismissedWarnings, {
+      unverified: true,
+      partial_inspection: true,
+    });
+    assert.equal(
+      reduceAssemblyExplorerState(dismissedBoth, {
+        type: 'dismissInspectionWarning',
+        warning: 'partial_inspection',
+      }),
+      dismissedBoth,
+    );
+  });
+
+  it('resets dismissed warnings when loading or rebuilding an assembly', () => {
+    const loaded = reduceAssemblyExplorerState(INITIAL_ASSEMBLY_EXPLORER_STATE, {
+      type: 'loadAssemblySuccess',
+      requestId: 1,
+      assembly,
+      glbArrayBuffer: new ArrayBuffer(0),
+    });
+    const dismissedAll = reduceAssemblyExplorerState(
+      reduceAssemblyExplorerState(loaded, {
+        type: 'dismissInspectionWarning',
+        warning: 'unverified',
+      }),
+      {
+        type: 'dismissInspectionWarning',
+        warning: 'partial_inspection',
+      },
+    );
+    assert.deepEqual(dismissedAll.dismissedWarnings, {
+      unverified: true,
+      partial_inspection: true,
+    });
+
+    const reloaded = reduceAssemblyExplorerState(dismissedAll, {
+      type: 'loadAssemblySuccess',
+      requestId: 2,
+      assembly,
+      glbArrayBuffer: new ArrayBuffer(0),
+    });
+    assert.deepEqual(reloaded.dismissedWarnings, {
+      unverified: false,
+      partial_inspection: false,
+    });
+
+    const rebuilding = reduceAssemblyExplorerState(dismissedAll, {
+      type: 'startParameterRebuild',
+      requestId: 1,
+    });
+    const rebuilt = reduceAssemblyExplorerState(rebuilding, {
+      type: 'rebuildParametersSuccess',
+      requestId: 1,
+      assembly: syntheticAssembly([320, 40, 320]),
+      glbArrayBuffer: new ArrayBuffer(8),
+    });
+    assert.deepEqual(rebuilt.dismissedWarnings, {
+      unverified: false,
+      partial_inspection: false,
+    });
+  });
+});

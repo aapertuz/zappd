@@ -11,6 +11,9 @@ import { type LearningQuestionSubmission, type LearningState } from '@/features/
 
 export type SeparationAxis = 'x' | 'y' | 'z';
 
+export type InspectionWarningKind = 'unverified' | 'partial_inspection';
+export type DismissedInspectionWarnings = Readonly<Record<InspectionWarningKind, boolean>>;
+
 export type WiringVisibilityMode = 'auto' | 'show' | 'hide';
 export type ShellVisibilityMode = 'solid' | 'xray' | 'hidden';
 
@@ -58,6 +61,7 @@ export type AssemblyExplorerState = {
   readonly selectedComponentId: ComponentId | null;
   readonly isolatedComponentId: ComponentId | null;
   readonly separatedOffsets: Readonly<Record<string, Vector3Tuple>>;
+  readonly dismissedWarnings: DismissedInspectionWarnings;
 };
 
 export type AssemblyExplorerAction =
@@ -107,11 +111,13 @@ export type AssemblyExplorerAction =
       readonly axis: SeparationAxis;
       readonly deltaMeters: number;
     }
-  | { readonly type: 'resetComponentSeparation' };
+  | { readonly type: 'resetComponentSeparation' }
+  | { readonly type: 'dismissInspectionWarning'; readonly warning: InspectionWarningKind };
 
 export type AssemblySceneProps = {
   readonly learningState: LearningState;
   readonly onDismissLearningAnswer: () => void;
+  readonly onDismissWarning: (warning: InspectionWarningKind) => void;
   readonly assembly: VerifiedProjectAssembly;
   readonly glbArrayBuffer: ArrayBuffer | null;
   readonly state: AssemblyExplorerState;

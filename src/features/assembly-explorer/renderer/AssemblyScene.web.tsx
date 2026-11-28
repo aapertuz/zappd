@@ -872,6 +872,7 @@ export function AssemblyScene({
   onExitPartFocus,
   learningState,
   onDismissLearningAnswer,
+  onDismissWarning,
 }: AssemblySceneProps) {
   const learningCalloutsRef = useRef<LearningCalloutsHandle>(null);
   const mountRef = useRef<HTMLDivElement>(null);
@@ -1510,15 +1511,19 @@ export function AssemblyScene({
     };
   }, [assembly, glbArrayBuffer]);
 
-  const unverified = assembly.verificationStatus === 'unverified';
+  const unverified =
+    assembly.verificationStatus === 'unverified' && !state.dismissedWarnings.unverified;
   const parameters = assembly.parameters;
   const hasParameters = parameters !== undefined && parameters.length > 0;
-  const hasPartialInspection = assembly.nodes.some(
-    (node) => node.geometry?.kind === 'unavailable' || node.geometry?.kind === 'visual_only',
-  );
+  const hasPartialInspection =
+    !state.dismissedWarnings.partial_inspection &&
+    assembly.nodes.some(
+      (node) => node.geometry?.kind === 'unavailable' || node.geometry?.kind === 'visual_only',
+    );
   const hasInspectionControls = unverified || hasParameters || hasPartialInspection;
 
   useEffect(() => {
+    runtimeRef.current?.requestRender();
     const controls = inspectionControlsRef.current;
     if (controls === null) return;
     const observer = new ResizeObserver(() => runtimeRef.current?.requestRender());
@@ -1721,7 +1726,16 @@ export function AssemblyScene({
               className={classes.unverifiedWarning}
               role="alert"
               aria-label="Unverified assembly warning">
-              <strong>Unverified assembly</strong>
+              <div className={classes.warningHeader}>
+                <strong>Unverified assembly</strong>
+                <button
+                  type="button"
+                  className={classes.dismissPanel}
+                  aria-label="Close unverified assembly warning"
+                  onClick={() => onDismissWarning('unverified')}>
+                  ×
+                </button>
+              </div>
               <p>This assembly failed validation checks.</p>
               <ul
                 className={classes.validationFailures}
@@ -1734,11 +1748,23 @@ export function AssemblyScene({
             </div>
           ) : null}
           {hasPartialInspection ? (
-            <div role="status" className={classes.inspectionStatus}>
-              <p className={classes.inspectionHeadline}>
-                Partial CAD inspection · engineering unverified. Head shell is visual only; two
-                thighs are surfaces.
-              </p>
+            <div
+              role="status"
+              aria-label="Partial CAD inspection warning"
+              className={classes.inspectionStatus}>
+              <div className={classes.warningHeader}>
+                <p className={classes.inspectionHeadline}>
+                  Partial CAD inspection · engineering unverified. Head shell is visual only; two
+                  thighs are surfaces.
+                </p>
+                <button
+                  type="button"
+                  className={classes.dismissPanel}
+                  aria-label="Close partial CAD inspection warning"
+                  onClick={() => onDismissWarning('partial_inspection')}>
+                  ×
+                </button>
+              </div>
               <div className={classes.inspectionLinks}>
                 <a
                   className={classes.inspectionLink}
